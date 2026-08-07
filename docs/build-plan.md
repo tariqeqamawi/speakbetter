@@ -1,0 +1,148 @@
+# Speak Better — Build Plan
+
+A phased path from empty repo to the full [master plan](./master-plan.md). Ordered so the easiest, most self-contained things ship first, and each phase leaves a working product that's genuinely usable — never a half-built feature waiting on a later phase to make sense.
+
+Section references (§) point at the master plan.
+
+---
+
+## How to read this plan
+
+**The guiding rule: content before cleverness.** The course's raw material already exists — the lesson videos are filmed and hosted on Vimeo, and the transcripts have already been extracted. The earliest phases simply put that existing material in front of a student in the right structure. The AI, payments, gamification, and community layers are added around a course that already works as a course.
+
+Each phase lists what it builds, which master plan sections it delivers, and what "shippable" means for it.
+
+---
+
+## Phase 0 — Foundation
+
+*The scaffold everything else stands on. No features, but the non-negotiables from day one.*
+
+**Builds:**
+- Next.js (App Router) + TypeScript + Tailwind scaffold, deployed to Vercel with preview-per-branch (§19)
+- Supabase project: Postgres, Auth wired but not yet gating anything (§19)
+- Sentry + PostHog + Vercel Analytics installed on day one — the studio non-negotiable (§19)
+- Design tokens: the dark navy base and the seven category colors defined once, as the single source of truth for every later phase (§03, §14)
+- The three-destination navigation shell: **Community · Challenges · Skills** — with placeholder pages (§14)
+
+**Shippable when:** the empty shell deploys to production, renders the navy shell with working navigation, and errors/analytics are flowing.
+
+---
+
+## Phase 1 — Skills: the color-coded library
+
+*The easiest genuinely useful thing: the ~80 lesson videos, organized and watchable.*
+
+**Builds:**
+- The Skills section: all lesson videos embedded from Vimeo, grouped into the color-coded categories (§03)
+- Category browsing — each category screen carries its color; lessons listed with title and duration
+- Transcript storage: every lesson's transcript imported into Supabase, attached to its lesson record (§08) — invisible to students for now, but this is the AI's future reference layer landing in the database early and cheaply
+- The final sort of all ~80 lessons into seven-or-fewer categories happens here, resolving the first open question in §18
+
+**Shippable when:** a visitor can browse every category and watch every lesson. At this point the product is already a usable (if passive) course.
+
+---
+
+## Phase 2 — Challenges: browsing and structure
+
+*The 22 challenges as content — watchable and connected to Skills, before any uploading exists.*
+
+**Builds:**
+- The Challenges section: all 22 challenges in order, each with its explainer video (§04)
+- Each challenge linked to its related Skills lessons — the "warm up" step of the challenge loop (§06, steps 1–2)
+- Challenge data model: per-challenge success criteria and target skills, stored structurally (not prose) — this becomes the AI's rubric in Phase 4
+- The 22-challenge progress bar, driven for now by simple manual completion (§11)
+
+**Shippable when:** a student can watch a challenge, jump to its related lessons, and see their position across the 22. The full course content is now live — everything after this makes it *interactive* rather than *complete*.
+
+---
+
+## Phase 3 — The gate: landing page, accounts, and payment
+
+*Now that there's something worth buying, sell it.*
+
+**Builds:**
+- The landing page, with a chosen promotional video as its centerpiece (§15)
+- Stripe checkout: pay on the landing page → account unlocked → straight into the app (§15, §19)
+- Supabase Auth actually gating the app; Row Level Security on all student data (§19)
+- The onboarding question — *"How do you feel about speaking?"* — storing the student's chosen level: Beginner / Intermediate / Advanced, manually changeable in settings, never auto-changed (§09)
+- Resend for transactional email (receipts, welcome) (§19)
+
+**Shippable when:** a stranger can land, watch the promo, pay, and be inside the course. Revenue can start here, two phases before the AI exists.
+
+---
+
+## Phase 4 — The practice loop: upload, AI review, spectrum feedback
+
+*The heart of the product, and the hardest phase. Everything before this was arranged so this phase lands into a working course.*
+
+**Builds:**
+- Video upload from the student's phone: 3-minute cap enforced, temporary storage only (§06 steps 3–4, §13)
+- Gemini video review: the model watches the performance — gestures, eye contact, posture, filler words, pacing, storytelling — against the challenge's structured success criteria from Phase 2 and the transcript reference from Phase 1 (§07, §08)
+- Scoring: pass/fail against challenge criteria + the color-spectrum breakdown of which categories showed up (§05)
+- Feedback screen: score first, spectrum chart, then coaching notes — with the level-dependent shape from §08/§09: two-or-three focus skills for everyone; the click-through "everything the AI noticed" reveal for Intermediate and Advanced only
+- Retry flow: best attempt and most recent attempt both tracked and visible; feedback records kept permanently, videos deleted after review (§06 step 7, §13)
+- Downloadable feedback (§13)
+
+**Deliberately excluded, per §13:** annotated video playback, attempt-to-attempt delivery comparison. The video playback question (in-app vs. from the student's phone) gets its cost answer here — it's an open question in §18.
+
+**Shippable when:** a student can complete the full loop — watch, warm up, record, upload, get scored in color, retry — end to end. This is the moment Speak Better becomes what the master plan describes.
+
+---
+
+## Phase 5 — Gamification
+
+*Make the loop feel as good as it works. Pure addition — touches nothing structural.*
+
+**Builds:**
+- Badges and streaks with celebratory on-screen animation (Framer Motion/GSAP — §11, §19)
+- Congratulatory milestone messages ("Well done — you just uploaded your first video," etc.) (§11)
+- Progress bar upgraded from manual completion to real challenge completion
+- Reinforcement identical at every level — never gated (§11)
+
+**Shippable when:** milestones visibly celebrate, and completing things *feels* like leveling up.
+
+---
+
+## Phase 6 — Community
+
+*The comparative layer, last among the app phases because it needs a population of scored students to mean anything.*
+
+**Builds:**
+- Rankings and peer scores, visible by default, per-student opt-out to hide their own (§12)
+- The first-attempt-vs-latest-attempt comparison — *"this is where I started, this is where I am now"* — in whatever form the §18 open question resolves to (§12)
+- Spectrum-widening view: a student's color coverage over time (§10)
+
+**Shippable when:** a student can see where they stand, control their visibility, and see their own before-and-after.
+
+---
+
+## Phase 7 — The digital card deck
+
+*The third leg of the trinity arrives in-app.*
+
+**Builds:**
+- The digital deck inside Skills: pull a card by color, or at random across colors — one skill, succinct explanation, example in action (§16)
+- Deliberately untracked: no logging, no linkage to challenge performance (§16)
+
+**Shippable when:** a student can pull cards on their phone as fast as flipping a physical deck.
+
+---
+
+## Alongside the app (not in the repo's critical path)
+
+These run in parallel as content/product work and never block an app phase:
+
+- **The book** — *How To Be a Powerful Unforgettable Speaker*: written from the transcript library, half story half skills, standalone product with upsell into course + deck (§16)
+- **The physical card deck** — printed and sold as its own product, same categories and colors (§16)
+- **Card copywriting** — the succinct explanations + examples, shared between the physical and digital decks, needed before Phase 7
+
+---
+
+## Deferred by design
+
+Named in the master plan and intentionally *not* scheduled:
+
+- Annotated video returned to the student with skills highlighted in-line (§13)
+- AI comparison of how delivery changed between attempts (§10)
+- Any expansion beyond the three-destination navigation (§14)
