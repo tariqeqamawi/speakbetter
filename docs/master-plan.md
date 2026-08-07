@@ -24,9 +24,29 @@ The course is built from two kinds of content that work together, not two separa
 | Pillar | Scale | What it is |
 |---|---|---|
 | **Skills** | ~80 videos · 1–2 min each | Short, focused lessons — the "what." Reference material, organized by the different dimensions of dynamic speaking. |
-| **Challenges** | 22 challenges | Real speaking tasks — the "practice." Each one asks the student to perform, on camera, not just watch. |
+| **Challenges** | 21 challenges · 5 STORY phases | Real speaking tasks — the "practice." Each one asks the student to perform, on camera, not just watch. |
 
 Lessons stay short on purpose: the goal is to get a student from curiosity to attempt in minutes, not hours. Every challenge is designed to be repeatable, so a student can fail, get specific feedback, and immediately try again while the lesson is still fresh. Repetition with feedback — not runtime of video watched — is the thing the whole course is optimized for.
+
+### Three frameworks, three altitudes
+
+The method is articulated as three named frameworks, each operating at a different altitude — a philosophy the student carries, a cycle they repeat, and a journey they travel.
+
+**SPARK — the core philosophy.** The mindset and approach behind the whole journey:
+
+| | Principle | Description |
+|---|---|---|
+| 🔥 **S** | Start Simple | Remove overwhelm with quick wins and doable actions. |
+| 🎯 **P** | Precision Practice | Practice targeted skills inside real challenges. |
+| 🌈 **A** | Authentic Action | Speak from your truth and lived experiences. |
+| 🎥 **R** | Record & Review | Watch yourself grow and refine over time. |
+| 🚀 **K** | Keep Going | Track your visible growth and stay motivated. |
+
+**STEP — the action cycle.** What a student does inside every single challenge: **S**ee the Challenge (watch the short demo video), **T**ap Into Tools (learn from quick lessons in Skills), **E**xpress & Upload (record and post their version), **P**rogress (watch it back, receive feedback, move on). Unpacked in full in §06.
+
+**STORY — the skill-building journey.** The path the challenges themselves are arranged along, from first words to speaking mastery — five phases that structure the whole curriculum, laid out in §04.
+
+The three nest cleanly: SPARK is how a student approaches everything, STEP is what they do each time, and STORY is where the sequence carries them.
 
 ## 03 · Pillar one — Skills
 
@@ -46,16 +66,73 @@ Seven is the working set, and it's treated as a ceiling rather than a target —
 
 Students aren't expected to work through Skills front to back like a syllabus. It's meant to be dipped into — a student heading into a specific challenge is pointed to the handful of lessons most relevant to it, watches those in a few minutes, and goes straight into attempting the challenge.
 
-## 04 · Pillar two — Challenges
+## 04 · Pillar two — Challenges, on the STORY journey
 
-The 22 challenges are the spine of the course. Each one targets a real situation a speaker might face — telling a story, selling an idea, inviting someone to something, narrating what's happening around you, using physical expression, and so on. A challenge is a task with a clear goal, not a topic to learn about.
+The challenges are the spine of the course, and they're arranged along the **STORY** framework — five phases that carry a student from first words to speaking mastery. Each phase has a clear purpose, and each challenge inside it targets a real situation a speaker might face. A challenge is a task with a clear goal, not a topic to learn about.
 
 - Each challenge has its own short explainer video describing exactly what "success" looks like for that task.
 - Each challenge draws on specific categories from Skills, and points the student to those lessons before they attempt it.
-- Completing a challenge means recording and uploading a real, on-camera attempt — there's no way to pass a challenge without actually speaking.
+- Completing a challenge means recording and uploading a real, on-camera attempt — there's no way to pass a challenge without actually speaking. (One deliberate exception: the passive Mindset Toolbox item in phase one.)
 - Challenges can be retried. A student can attempt one again to raise their score, or move on and return to it later.
 
-Difficulty and scope build gradually across the 22 challenges. Early challenges are meant to be approachable wins; later ones ask for more range — more categories in play at once, harder situations, less room to lean on just one strength.
+Difficulty and scope build phase by phase: STORY opens with baseline self-awareness, trains the voice as an instrument, moves into storytelling craft, deepens into emotional truth, and ends with real-world formats. Early challenges are approachable wins; later ones ask for more range — more categories in play at once, less room to lean on one strength.
+
+### The STORY curriculum — with its matched course videos
+
+Nearly every challenge below already has its explainer video filmed and hosted; the matches were made against the course's actual video library.
+
+#### 🧭 S — Start With Awareness
+*Reflect, baseline, and map your voice's starting point.*
+
+| Challenge | Matched course video |
+|---|---|
+| Record Your Speaking Baseline | [Speak Your Truth (Baseline Challenge 1)](https://vimeo.com/1081200493) |
+| Tell a Story Without Any Help | [Tell a Story, Any Story (Baseline Challenge 2)](https://vimeo.com/1081200781) |
+| Watch the Mindset Toolbox (passive) | The green Mindset & Psychology category in Skills — e.g. [Why You Have a Fear of Public Speaking](https://vimeo.com/1081029629), [You Are One Talk Away From Changing Your Life](https://vimeo.com/1081029780), [You Were a Born Public Speaker](https://vimeo.com/1081197407) |
+
+#### 🎤 T — Train Your Instrument
+*Build vocal clarity, rhythm, tone, and presence through skill warm-ups.*
+
+| Challenge | Matched course video |
+|---|---|
+| Say What You Love — With No Filler Words | [Challenge 5: Speak About Something You Are Passionate About](https://vimeo.com/1081280579) |
+| Avoid Boring Words (Amazing, Beautiful, Exciting) | [Challenge 4: Amazing, Beautiful, Exciting](https://vimeo.com/1081200895) |
+| Play With Your Voice (Tone and Melody) | [Challenge 6: Make Your Message A Melody](https://vimeo.com/1081281914) |
+| Tongue Twister Challenge | [Tongue Twister Warm-Up](https://vimeo.com/1081940261) |
+| Beatbox or Rhythm Flow | [BONUS Challenge: Overcoming Self Consciousness With Beatboxing](https://vimeo.com/1081935006) |
+
+#### 🛠️ O — Own Your Stories
+*Practice storytelling techniques, scene work, and personal expression.*
+
+| Challenge | Matched course video |
+|---|---|
+| Create Your Storybook | [Challenge 2: Creating Your Story Book](https://vimeo.com/1081200682) |
+| Paint the Scene With Sound | [Challenge 8: Bring A Scene to Life With Sound](https://vimeo.com/1082010596) |
+| Describe a Place or Person Vividly | [Challenge 9: Describe a Landscape Or Person Using Figurative Language](https://vimeo.com/1081932833) |
+| Tell a Real-Life Moment From Your Day | [Challenge 13: Narrate A Scene From Your Day](https://vimeo.com/1081938254) |
+| Act Out a High-Stakes Moment | [Challenge 14: Act Out A Story With High Stakes](https://vimeo.com/1081956346) |
+| Add a Twist in Third-Person | [Challenge 11: Own Your Story With A Plot Twist](https://vimeo.com/1081933936) |
+
+#### 💓 R — Reveal Deeper Truths
+*Connect emotionally, explore vulnerability, and expand empathy.*
+
+| Challenge | Matched course video |
+|---|---|
+| Trigger 3 Emotions in 1 Story | [Challenge 22: Tell A Story With 3 Different Emotions](https://vimeo.com/1081948719) |
+| Tell Someone Else's Story | [Challenge 10: Tell Someone Else's Story](https://vimeo.com/1081932244) |
+| Bring a Story to Life With Multiple Characters | [Challenge 19: Tell A Story With Multiple Characters](https://vimeo.com/1081947627) |
+| Share a Story You've Healed | [Challenge 12: Share A Story You've Healed](https://vimeo.com/1081936936) |
+
+#### 🌍 Y — Your Voice in the World
+*Apply what you've learned in real-world speaking formats and challenges.*
+
+| Challenge | Matched course video |
+|---|---|
+| Explain It With Analogies | [Challenge 16: Using Analogies To Explain Abstract Concepts](https://vimeo.com/1081945708) |
+| Podcast Introduction Challenge | [Challenge 18: Podcast Intro & Guest Edification](https://vimeo.com/1081953650) |
+| Pitch Your Idea in 30 Seconds | [Challenge 17: Mastering Your Elevator Pitch](https://vimeo.com/1081950736) |
+
+Three filmed challenge videos don't yet have a home in the STORY curriculum — [Challenge 7: Story with Set & Scene](https://vimeo.com/1081955083), [Challenge 20: Tell A Story Using Foreshadowing & Fulfilment](https://vimeo.com/1081952336), and [Challenge 21: Tell A Story With A Mic Drop Moment](https://vimeo.com/1081949655). All three fit naturally as additions to the O or Y phases, or as bonus challenges; where they land is an open question (§18). Two further videos — [Welcome To The Challenges!](https://vimeo.com/1081200318) and [How To Use The Skills In Your Challenges](https://vimeo.com/1081200420) — serve as the section's introduction rather than challenges themselves.
 
 ## 05 · The color-spectrum scoring system
 
@@ -70,6 +147,8 @@ Because every skill category already has a color, a student's uploaded performan
 This turns feedback into something visual and intuitive — a spectrum or pie-style breakdown of color rather than a wall of notes — while the specific coaching text underneath still explains, in plain language, what to do differently next time.
 
 ## 06 · The challenge experience, step by step
+
+This is the **STEP** cycle from the method (§02) — See, Tap Into Tools, Express & Upload, Progress — unpacked into its full working detail.
 
 1. **Watch the challenge.** A short video explains the task and exactly what completing it successfully looks like.
 2. **Warm up (optional).** The student is offered the small set of Skills lessons most relevant to this challenge — a few minutes of viewing, not the whole library.
@@ -125,13 +204,13 @@ Movement between levels is manual, never automatic. A widening spectrum might ma
 
 Because both the lessons and the challenges are short, the full loop — watch, attempt, get feedback, retry or advance — can happen many times in a single sitting, and many times a week. That repetition is the actual mechanism of improvement; the short format exists to make repetition realistic.
 
-Over time, a student should be able to see their own spectrum widen. An early challenge might light up two colors. A later one, on the same student, might light up six or seven. That visible widening — more than any single score — is the real measure of becoming a more dynamic speaker, and by the end of all 22 challenges, the goal is a student who can produce a genuinely full-spectrum talk on demand.
+Over time, a student should be able to see their own spectrum widen. An early challenge might light up two colors. A later one, on the same student, might light up six or seven. That visible widening — more than any single score — is the real measure of becoming a more dynamic speaker, and by the end of all five STORY phases, the goal is a student who can produce a genuinely full-spectrum talk on demand.
 
 A nice-to-have for later, not a requirement of the first build: the AI noticing not just that a retry scored higher, but how the delivery itself changed from one attempt to the next. Worth layering in once the core loop is working, not something the core loop depends on.
 
 ## 11 · Gamification and positive reinforcement
 
-Repetition only works if it feels good to keep doing. Alongside the score and the color-spectrum breakdown, the course carries a visible, celebratory layer — badges, streaks, and congratulatory messages that recognize effort as much as achievement.
+Repetition only works if it feels good to keep doing. This layer is the SPARK philosophy's *Keep Going* principle (§02) made tangible: alongside the score and the color-spectrum breakdown, the course carries a visible, celebratory layer — badges, streaks, and congratulatory messages that recognize effort as much as achievement.
 
 In the student's own feed, for example:
 
@@ -141,9 +220,9 @@ In the student's own feed, for example:
 
 These moments are meant to be felt, not just read — a short on-screen animation accompanying a badge or streak, so a milestone registers as a small celebration rather than a line of text sliding by. The aim is the same feeling a well-made game gives a player leveling up: excitement, momentum, a pull toward the next attempt.
 
-A progress bar across all 22 challenges gives the same reinforcement at a glance — a student should always be able to see, visually, how far through the course they've come.
+A progress bar across the full STORY journey — every challenge, through all five phases — gives the same reinforcement at a glance: a student should always be able to see, visually, how far through the course they've come.
 
-This layer applies equally to every student, at every level. Unlike the deeper skill-and-color feedback reserved for Intermediate and Advanced (§08), positive reinforcement isn't gated — a Beginner celebrates their first upload exactly as loudly as an Advanced student closing out challenge 22.
+This layer applies equally to every student, at every level. Unlike the deeper skill-and-color feedback reserved for Intermediate and Advanced (§08), positive reinforcement isn't gated — a Beginner celebrates their first upload exactly as loudly as an Advanced student closing out the final phase.
 
 ## 12 · Community
 
@@ -169,6 +248,14 @@ The interface should feel minimalist, clean, modern, and inviting — never clin
 Visually, a dark navy base carries the whole app, calm and consistent throughout. The category colors are the one place the interface gets loud, and they're used deliberately — skill tags, the spectrum chart, progress indicators — so the color-spectrum idea is something a student actually feels while using the app, not just a scoring mechanic explained in a paragraph.
 
 Navigation starts deliberately small — three destinations: **Community**, **Challenges**, **Skills**. Keeping it to three keeps the app feeling approachable rather than like a sprawling course platform with dozens of sections to get lost in. Skills is also where the digital card deck lives, alongside the lesson library — see §16.
+
+### Portrait zoom for video playback
+
+The lesson and challenge videos are filmed in landscape, but most students will watch them on a phone held in portrait — where a landscape video plays small, and the details that matter most in a speaking course (hand gestures, posture, eye contact) shrink with it.
+
+So every video player carries a small zoom-icon button. Tapping it zooms into the center of the landscape frame — where the speaker is — and fills the phone's portrait screen with them. The effect is like having the lesson play fullscreen in portrait: the speaker large and close, their body language actually visible, instead of a distant figure in a letterboxed strip. Tapping again returns to the standard landscape view.
+
+It's a small control, but it serves the course's core subject directly: a course that teaches physical expression has to make physical expression easy to *see*, on the device students actually use.
 
 ## 15 · The landing page and purchase
 
@@ -211,7 +298,7 @@ Where the course scores a talk after it's given and the book teaches the reasoni
 - A new student can complete their first challenge within minutes of arriving, because the content in front of them is short.
 - A student who was one-note — always informative, never vivid, say — starts naturally reaching for story, gesture, or humor, because the spectrum makes the gap visible rather than abstract.
 - Growth is something the student can see, not just feel — a widening spectrum and a rising score become their own motivation, replacing "remember to use what you learned" with a structured habit of practice.
-- By challenge 22, a student can produce a genuinely dynamic, full-spectrum talk on demand — not because they remembered a lecture, but because they've done it, with feedback, dozens of times.
+- By the end of the STORY journey, a student can produce a genuinely dynamic, full-spectrum talk on demand — not because they remembered a lecture, but because they've done it, with feedback, dozens of times.
 
 ## 18 · Open questions
 
@@ -222,6 +309,7 @@ Most of the questions raised during this plan's development have been resolved a
 - Whether in-app playback of a student's own video stays hosted in-app, or falls back to referencing the video on their phone — pending cost analysis.
 - How many cards sit within each color category, across both the physical and digital deck.
 - Which promotional video the landing page centers on, and whether the book and card deck get their own cross-sell moment there too, or stay upsells inside the course and the book itself.
+- Where the three unplaced challenge videos land in the STORY curriculum — Set & Scene, Foreshadowing & Fulfilment, and Mic Drop Moment — as additions to the O or Y phases, or as bonus challenges.
 
 ## 19 · The stack
 

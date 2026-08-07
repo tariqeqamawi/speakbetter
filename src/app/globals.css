@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+/*
+ * Speak Better design tokens — the single source of truth for color.
+ * See docs/master-plan.md §03 (category colors) and §14 (design principles).
+ *
+ * The app is deliberately dark-first: a dark navy base carries every
+ * screen, and the seven category colors are the only place the
+ * interface gets loud.
+ */
+@theme {
+  /* Navy ground, darkest to lightest */
+  --color-navy-950: #070d18;
+  --color-navy-900: #0a1220;
+  --color-navy-850: #0e1830;
+  --color-navy-800: #101c36;
+  --color-navy-700: #16223f;
+  --color-navy-600: #263252;
+
+  /* Text on navy */
+  --color-ink: #e7e9f2;
+  --color-ink-muted: #a6adc4;
+  --color-ink-faint: #767e99;
+
+  /* The seven skill categories — master plan §03.
+   * Tuned for legibility on the navy ground. */
+  --color-storytelling: #e3b637; /* yellow  — Storytelling techniques */
+  --color-figurative: #e08a45; /* orange  — Figurative language */
+  --color-acting: #d96a57; /* red     — Acting skills for speakers */
+  --color-structure: #9b85db; /* purple  — Structure & framing */
+  --color-mindset: #4fb585; /* green   — Speaker's mindset & psychology */
+  --color-body-language: #5b9bc9; /* blue    — Body language & physical expression */
+  --color-advanced: #3fb5ac; /* turquoise — Advanced tips & tricks */
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--color-navy-900);
+  color: var(--color-ink);
+}
+
+/* The full-spectrum brand rule — category colors in canonical order */
+.spectrum-rule {
+  background: linear-gradient(
+    90deg,
+    var(--color-storytelling),
+    var(--color-figurative),
+    var(--color-acting),
+    var(--color-structure),
+    var(--color-mindset),
+    var(--color-body-language),
+    var(--color-advanced)
+  );
+}

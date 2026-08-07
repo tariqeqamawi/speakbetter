@@ -45,15 +45,16 @@ Each phase lists what it builds, which master plan sections it delivers, and wha
 
 ## Phase 2 — Challenges: browsing and structure
 
-*The 22 challenges as content — watchable and connected to Skills, before any uploading exists.*
+*The challenges as content — the five STORY phases, watchable and connected to Skills, before any uploading exists.*
 
 **Builds:**
-- The Challenges section: all 22 challenges in order, each with its explainer video (§04)
-- Each challenge linked to its related Skills lessons — the "warm up" step of the challenge loop (§06, steps 1–2)
+- The Challenges section: the 21 challenges organized into the five STORY phases (S–T–O–R–Y), each with its explainer video, using the video matches already made in §04
+- Each challenge linked to its related Skills lessons — the "Tap Into Tools" step of the STEP cycle (§02, §06)
 - Challenge data model: per-challenge success criteria and target skills, stored structurally (not prose) — this becomes the AI's rubric in Phase 4
-- The 22-challenge progress bar, driven for now by simple manual completion (§11)
+- The STORY progress bar across all five phases, driven for now by simple manual completion (§11)
+- Placement decision for the three unplaced challenge videos (Set & Scene, Foreshadowing & Fulfilment, Mic Drop Moment) — the §18 open question gets resolved here
 
-**Shippable when:** a student can watch a challenge, jump to its related lessons, and see their position across the 22. The full course content is now live — everything after this makes it *interactive* rather than *complete*.
+**Shippable when:** a student can watch a challenge, jump to its related lessons, and see their position across the STORY journey. The full course content is now live — everything after this makes it *interactive* rather than *complete*.
 
 ---
 
