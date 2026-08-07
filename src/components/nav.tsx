@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useStore } from "@/lib/store";
 
 const destinations = [
   { href: "/community", label: "Community" },
@@ -59,6 +60,8 @@ export function TopBar() {
 
 function DesktopLinks() {
   const pathname = usePathname();
+  const { state, ready } = useStore();
+  if (!ready || !state.unlocked) return null;
   return (
     <nav className="hidden gap-6 sm:flex" aria-label="Primary">
       {destinations.map(({ href, label }) => {
@@ -84,6 +87,8 @@ function DesktopLinks() {
 
 export function BottomTabs() {
   const pathname = usePathname();
+  const { state, ready } = useStore();
+  if (!ready || !state.unlocked) return null;
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-20 border-t border-navy-600 bg-navy-850/95 backdrop-blur sm:hidden"
