@@ -52,9 +52,26 @@ export function TopBar() {
         <Link href="/" className="text-lg font-semibold tracking-tight">
           Speak Better
         </Link>
-        <DesktopLinks />
+        <div className="flex items-center gap-4">
+          <DesktopLinks />
+          <LevelChip />
+        </div>
       </div>
     </header>
+  );
+}
+
+function LevelChip() {
+  const { state, ready } = useStore();
+  if (!ready || !state.unlocked || !state.level) return null;
+  return (
+    <Link
+      href="/welcome"
+      title="Change your level"
+      className="rounded-full border border-navy-600 px-2.5 py-1 text-[0.65rem] font-medium capitalize text-ink-faint transition-colors hover:text-ink-muted"
+    >
+      {state.level}
+    </Link>
   );
 }
 
