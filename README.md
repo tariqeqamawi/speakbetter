@@ -1,1 +1,1 @@
-# speakbetter
+# speaker-course
