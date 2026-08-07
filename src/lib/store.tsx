@@ -83,12 +83,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   const [celebrations, setCelebrations] = useState<EarnedBadge[]>([]);
   const stateRef = useRef(state);
-  stateRef.current = state;
 
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
+  // Hydrate from localStorage after mount. This must happen in an effect
+  // (not a useState initializer) so server and first client render agree;
+  // the synchronous setState here is the sync-from-external-store idiom.
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) setState({ ...EMPTY, ...(JSON.parse(raw) as Partial<AppState>) });
+      if (raw) {
+        const loaded = { ...EMPTY, ...(JSON.parse(raw) as Partial<AppState>) };
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setState(loaded);
+        stateRef.current = loaded;
+      }
     } catch {
       // corrupt state — start fresh rather than crash
     }

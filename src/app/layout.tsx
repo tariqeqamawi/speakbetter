@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { TopBar, BottomTabs } from "@/components/nav";
 import { StoreProvider } from "@/lib/store";
 import { CelebrationHost } from "@/components/celebrations";
+import { ServiceWorkerRegister } from "@/components/sw-register";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -22,10 +23,18 @@ export const metadata: Metadata = {
   },
   description:
     "A speaking course built on practice, not playback. Short lessons, real on-camera challenges, and AI coaching across the full spectrum of speaking skills.",
+  appleWebApp: {
+    capable: true,
+    title: "Speak Better",
+    statusBarStyle: "black-translucent",
+  },
 };
 
 export const viewport: Viewport = {
   themeColor: "#0a1220",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -43,6 +52,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </main>
           <BottomTabs />
           <CelebrationHost />
+          <ServiceWorkerRegister />
         </StoreProvider>
       </body>
     </html>
