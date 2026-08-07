@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { TopBar, BottomTabs } from "@/components/nav";
 import { StoreProvider } from "@/lib/store";
+import { CelebrationHost } from "@/components/celebrations";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -41,6 +42,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             {children}
           </main>
           <BottomTabs />
+          <CelebrationHost />
         </StoreProvider>
       </body>
     </html>

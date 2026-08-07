@@ -9,6 +9,7 @@ import {
 import { CategoryDot } from "@/components/category-chip";
 import { ChallengeStatus } from "@/components/challenge-status";
 import { StoryProgress } from "@/components/story-progress";
+import { BadgeShelf, StreakFlame } from "@/components/celebrations";
 
 export const metadata: Metadata = {
   title: "Challenges",
@@ -18,7 +19,10 @@ export default function ChallengesPage() {
   return (
     <div className="flex flex-col gap-8 py-6">
       <header className="flex flex-col gap-2">
-        <h1 className="text-3xl font-semibold tracking-tight">Challenges</h1>
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-3xl font-semibold tracking-tight">Challenges</h1>
+          <StreakFlame />
+        </div>
         <p className="max-w-lg text-ink-muted">
           The STORY journey: five phases, from your first baseline recording to
           your voice in the world. Watch the challenge, warm up with its
@@ -27,6 +31,8 @@ export default function ChallengesPage() {
       </header>
 
       <StoryProgress />
+
+      <BadgeShelf />
 
       <div className="flex flex-wrap gap-2 text-sm">
         {challengesIntro.map((v) => (
