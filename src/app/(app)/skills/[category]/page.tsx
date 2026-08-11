@@ -1,9 +1,8 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BackLink } from "@/components/back-link";
 import { categories, categoryById, type CategoryId } from "@/data/categories";
 import { lessonsInCategory } from "@/data/lessons";
-import { WatchedIndicator } from "@/components/watched-indicator";
+import { LessonCarousel } from "@/components/lesson-carousel";
 
 export function generateStaticParams() {
   return categories.map((c) => ({ category: c.id }));
@@ -29,24 +28,12 @@ export default async function CategoryPage(props: PageProps<"/skills/[category]"
         <div className={`h-1 w-14 rounded-full ${cat.bgClass}`} />
         <h1 className="text-3xl font-semibold tracking-tight">{cat.name}</h1>
         <p className="max-w-lg text-ink-muted">{cat.blurb}</p>
+        <p className="text-xs text-ink-faint">
+          {lessons.length} lessons · one to two minutes each
+        </p>
       </header>
 
-      <ul className="flex flex-col gap-2">
-        {lessons.map((lesson, i) => (
-          <li key={lesson.vimeoId}>
-            <Link
-              href={`/skills/${cat.id}/${lesson.vimeoId}`}
-              className="flex items-center gap-3 rounded-lg border border-navy-600 bg-navy-800 px-4 py-3 transition-colors hover:bg-navy-700"
-            >
-              <span className="w-6 shrink-0 text-right text-sm tabular-nums text-ink-faint">
-                {i + 1}
-              </span>
-              <span className="flex-1 text-sm font-medium text-ink">{lesson.title}</span>
-              <WatchedIndicator vimeoId={lesson.vimeoId} />
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <LessonCarousel lessons={lessons} category={cat} />
     </div>
   );
 }
