@@ -25,7 +25,7 @@ export const categories: Category[] = [
   {
     id: "storytelling",
     name: "Storytelling techniques",
-    colorName: "Yellow",
+    colorName: "Neon yellow",
     blurb: "Relive experiences instead of reporting them — scenes, morals, and stories that sell.",
     bgClass: "bg-storytelling",
     textClass: "text-storytelling",
@@ -34,7 +34,7 @@ export const categories: Category[] = [
   {
     id: "figurative",
     name: "Figurative language",
-    colorName: "Orange",
+    colorName: "Bright orange",
     blurb: "Metaphor, simile, hyperbole, analogy — language that paints instead of describes.",
     bgClass: "bg-figurative",
     textClass: "text-figurative",
@@ -43,7 +43,7 @@ export const categories: Category[] = [
   {
     id: "acting",
     name: "Acting skills for speakers",
-    colorName: "Red",
+    colorName: "Bright red",
     blurb: "Voice, character, emotion, and scene work — deliver the experience, don't just say it.",
     bgClass: "bg-acting",
     textClass: "text-acting",
@@ -52,7 +52,7 @@ export const categories: Category[] = [
   {
     id: "structure",
     name: "Structure & framing",
-    colorName: "Purple",
+    colorName: "Magenta",
     blurb: "Openings, frameworks, open loops, and payoffs — the architecture of a talk.",
     bgClass: "bg-structure",
     textClass: "text-structure",
@@ -61,7 +61,7 @@ export const categories: Category[] = [
   {
     id: "mindset",
     name: "Speaker's mindset & psychology",
-    colorName: "Green",
+    colorName: "Neon green",
     blurb: "Fear, confidence, and conviction — the inner game that everything else stands on.",
     bgClass: "bg-mindset",
     textClass: "text-mindset",
@@ -70,7 +70,7 @@ export const categories: Category[] = [
   {
     id: "body-language",
     name: "Body language & physical expression",
-    colorName: "Blue",
+    colorName: "Bright cyan",
     blurb: "Gestures, posture, movement — expressing visually what you say verbally.",
     bgClass: "bg-body-language",
     textClass: "text-body-language",
@@ -79,7 +79,7 @@ export const categories: Category[] = [
   {
     id: "advanced",
     name: "Advanced tips & tricks",
-    colorName: "Turquoise",
+    colorName: "Deep crimson",
     blurb: "Slides, mic drops, going live, memorization — the professional's toolkit.",
     bgClass: "bg-advanced",
     textClass: "text-advanced",

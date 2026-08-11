@@ -9,13 +9,15 @@
  * interface gets loud.
  */
 @theme {
-  /* Navy ground, darkest to lightest */
-  --color-navy-950: #070d18;
-  --color-navy-900: #0a1220;
-  --color-navy-850: #0e1830;
-  --color-navy-800: #101c36;
-  --color-navy-700: #16223f;
-  --color-navy-600: #263252;
+  /* Midnight blue ground, darkest to lightest. Steps are deliberately
+   * subtle — enough to read cards as raised surfaces, never enough to
+   * compete with the category colors. */
+  --color-navy-950: #03060e;
+  --color-navy-900: #070c1a;
+  --color-navy-850: #0c1428;
+  --color-navy-800: #111b33;
+  --color-navy-700: #1a2647;
+  --color-navy-600: #26345e;
 
   /* Text on navy */
   --color-ink: #e7e9f2;
@@ -23,22 +25,55 @@
   --color-ink-faint: #767e99;
 
   /* The seven skill categories — master plan §03.
-   * Tuned for legibility on the navy ground. */
-  --color-storytelling: #e3b637; /* yellow  — Storytelling techniques */
-  --color-figurative: #e08a45; /* orange  — Figurative language */
-  --color-acting: #d96a57; /* red     — Acting skills for speakers */
-  --color-structure: #9b85db; /* purple  — Structure & framing */
-  --color-mindset: #4fb585; /* green   — Speaker's mindset & psychology */
-  --color-body-language: #5b9bc9; /* blue    — Body language & physical expression */
-  --color-advanced: #3fb5ac; /* turquoise — Advanced tips & tricks */
+   * Neon and saturated, each verified to clear 3:1 contrast on the navy
+   * ground and to stay perceptually distinct from the other six. */
+  --color-storytelling: #ffd60a; /* neon yellow  — Storytelling techniques */
+  --color-figurative: #ff9500; /* bright orange — Figurative language */
+  --color-acting: #ff4a2b; /* bright red    — Acting skills for speakers */
+  --color-structure: #f53de0; /* magenta       — Structure & framing */
+  --color-mindset: #1fe890; /* neon green    — Speaker's mindset & psychology */
+  --color-body-language: #22d9f5; /* bright cyan   — Body language & physical expression */
+  --color-advanced: #d11149; /* deep crimson  — Advanced tips & tricks */
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-body {
+html {
   background: var(--color-navy-900);
+}
+
+body {
+  background: transparent;
   color: var(--color-ink);
+}
+
+/* Ambient background wash — three wide, very low-opacity pools of
+ * category color over the midnight ground, so the backdrop has depth
+ * without competing with content. Fixed, so it stays put while the page
+ * scrolls; sits behind everything and ignores pointer events. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(
+      ellipse 90% 55% at 12% -8%,
+      color-mix(in oklab, var(--color-body-language) 14%, transparent),
+      transparent 62%
+    ),
+    radial-gradient(
+      ellipse 75% 50% at 92% 4%,
+      color-mix(in oklab, var(--color-structure) 12%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 110% 60% at 50% 108%,
+      color-mix(in oklab, var(--color-advanced) 10%, transparent),
+      transparent 65%
+    );
 }
 
 /* Celebration animations (master plan §11) — milestones should be felt.

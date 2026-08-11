@@ -52,15 +52,17 @@ The three nest cleanly: SPARK is how a student approaches everything, STEP is wh
 
 Skills breaks "being a good speaker" into distinct, learnable categories. Each category is assigned a color, which becomes important later — the color isn't decoration, it's the vocabulary the whole feedback system is built on.
 
-| Color | Category |
-|---|---|
-| 🟡 Yellow | Storytelling techniques |
-| 🟠 Orange | Figurative language |
-| 🔴 Red | Acting skills for speakers |
-| 🔵 Blue | Body language & physical expression |
-| 🟣 Purple | Structure & framing |
-| 🟢 Green | Speaker's mindset & psychology |
-| 🩵 Turquoise | Advanced tips & tricks |
+| Color | Hex | Category |
+|---|---|---|
+| 🟡 Neon yellow | `#ffd60a` | Storytelling techniques |
+| 🟠 Bright orange | `#ff9500` | Figurative language |
+| 🔴 Bright red | `#ff4a2b` | Acting skills for speakers |
+| 🩵 Bright cyan | `#22d9f5` | Body language & physical expression |
+| 🟣 Magenta | `#f53de0` | Structure & framing |
+| 🟢 Neon green | `#1fe890` | Speaker's mindset & psychology |
+| ❤️ Deep crimson | `#d11149` | Advanced tips & tricks |
+
+The palette is deliberately neon and highly saturated — these colors are meant to feel alive against the dark ground, not decorative. Each one is verified to clear a 3:1 contrast ratio on the background and to stay perceptually distinct from the other six, so a student can tell colors apart at a glance in the spectrum chart. (An earlier turquoise for Advanced was replaced: it sat too close to both the green and the cyan.)
 
 Seven is the working set, and it's treated as a ceiling rather than a target — categories are deliberately held to seven or fewer, growing only if a skill genuinely doesn't nest into any existing color as Skills is built out. What matters structurally is that every lesson belongs to exactly one category, and every category has one color, consistently across the course, the book, and the card deck.
 
@@ -245,7 +247,9 @@ Beyond visible-by-default scores, opt-out privacy, and the first-vs-latest compa
 
 The interface should feel minimalist, clean, modern, and inviting — never clinical, never cluttered. Detail should be nested rather than laid flat: a student sees a score first, and can go a level deeper for the full breakdown, rather than everything being presented at once.
 
-Visually, a dark navy base carries the whole app, calm and consistent throughout. The category colors are the one place the interface gets loud, and they're used deliberately — skill tags, the spectrum chart, progress indicators — so the color-spectrum idea is something a student actually feels while using the app, not just a scoring mechanic explained in a paragraph.
+Visually, a deep **midnight blue** base carries the whole app, calm and consistent throughout. It isn't a flat block of color: three wide, very low-opacity pools of category color — cyan, magenta, and crimson — wash across the backdrop as a fixed radial gradient, giving the background depth and a modern feel without ever competing with the content in front of it.
+
+Against that dark ground, the category colors are the one place the interface gets genuinely loud. They're neon and fully saturated, used deliberately — skill tags, the spectrum chart, progress indicators — so the color-spectrum idea is something a student actually feels while using the app, not just a scoring mechanic explained in a paragraph. The contrast between a calm, deep background and vivid category color is the core of the app's visual identity.
 
 Navigation starts deliberately small — three destinations: **Community**, **Challenges**, **Skills**. Keeping it to three keeps the app feeling approachable rather than like a sprawling course platform with dozens of sections to get lost in. Skills is also where the digital card deck lives, alongside the lesson library — see §16.
 

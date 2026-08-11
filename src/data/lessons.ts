@@ -95,7 +95,7 @@ export const lessons: Lesson[] = [
   { vimeoId: "1081162384", title: "How To Move On Stage", category: "body-language" },
   { vimeoId: "1080435328", title: "Your Speaking Tools: Body, Voice, Words", category: "body-language" },
 
-  // ── Advanced tips & tricks (turquoise) ──────────────────────────────
+  // ── Advanced tips & tricks (dark red) ───────────────────────────────
   { vimeoId: "1081161473", title: "How To Receive A Standing Ovation", category: "advanced" },
   { vimeoId: "1081161658", title: "How To Use Slides Like A Pro", category: "advanced" },
   { vimeoId: "1081161815", title: "How To Build Mic Drop Moments", category: "advanced" },
