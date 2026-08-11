@@ -21,7 +21,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 const PIVOT_X_PCT = (331 / 762) * 100;
 const PIVOT_Y_PCT = (221 / 610) * 100;
-const MAX_ANGLE = 8;
+// Travel is capped where the raster cut still reads cleanly. The closed
+// state is seamless; past ~6 degrees the cut edge starts to show as a
+// line along the muzzle. Vector artwork would lift this ceiling.
+const MAX_ANGLE = 6;
 
 export function TalkingLion({
   text,
