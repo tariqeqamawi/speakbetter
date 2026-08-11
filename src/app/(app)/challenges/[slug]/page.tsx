@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BackLink } from "@/components/back-link";
 import { challengeBySlug, challenges, storyPhases } from "@/data/challenges";
 import { lessonByVimeoId } from "@/data/lessons";
 import { categoryById } from "@/data/categories";
@@ -31,9 +32,7 @@ export default async function ChallengePage(props: PageProps<"/challenges/[slug]
   return (
     <div className="flex flex-col gap-6 py-6">
       <header className="flex flex-col gap-2">
-        <Link href="/challenges" className="text-sm text-ink-faint hover:text-ink-muted">
-          ← Challenges
-        </Link>
+        <BackLink href="/challenges">Challenges</BackLink>
         <p className="text-xs font-medium uppercase tracking-wider text-ink-faint">
           {phase.id} — {phase.name}
         </p>

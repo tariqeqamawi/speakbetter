@@ -144,13 +144,17 @@ export default function ProfilePage() {
           Badges
         </h2>
         {state.badges.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-navy-600 p-4 text-sm text-ink-faint">
-            No badges yet — your first arrives the moment you upload a video.{" "}
-            <Link href="/challenges" className="text-ink-muted underline">
+          <div className="flex flex-col items-start gap-3 rounded-xl border border-dashed border-navy-600 p-4">
+            <p className="text-sm text-ink-faint">
+              No badges yet — your first arrives the moment you upload a video.
+            </p>
+            <Link
+              href="/challenges"
+              className="flex min-h-11 items-center rounded-lg border border-navy-600 px-4 py-2.5 text-sm font-semibold text-ink-muted transition-colors hover:text-ink"
+            >
               Start a challenge
             </Link>
-            .
-          </p>
+          </div>
         ) : (
           <ul className="grid gap-2 sm:grid-cols-2">
             {state.badges.map((badge) => (

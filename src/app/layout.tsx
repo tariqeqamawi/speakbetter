@@ -29,6 +29,20 @@ export const metadata: Metadata = {
     title: "Speak Better",
     statusBarStyle: "black-translucent",
   },
+  openGraph: {
+    title: "Speak Better",
+    description:
+      "A speaking course built on practice, not playback. Short lessons, real on-camera challenges, and AI coaching across the full spectrum of speaking skills.",
+    images: ["/logo-full.png"],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Speak Better",
+    description:
+      "Short lessons, real on-camera challenges, and AI coaching in full color.",
+    images: ["/logo-full.png"],
+  },
 };
 
 export const viewport: Viewport = {

@@ -170,6 +170,17 @@ body {
   60% { transform: translate3d(40vw, 10vh, 0) scale(0.95); }
 }
 
+/* Phones get three lights instead of five. Each one is a large
+ * composited layer, and the two wanderers add the least on a screen
+ * this size — dropping them cuts memory and paint work where it's
+ * scarcest, with no visible loss. */
+@media (max-width: 640px) {
+  .ambient-light-4,
+  .ambient-light-5 {
+    display: none;
+  }
+}
+
 /* Motion is decoration here — hold the lights still if the viewer
  * would rather not have movement. The color wash remains. */
 @media (prefers-reduced-motion: reduce) {

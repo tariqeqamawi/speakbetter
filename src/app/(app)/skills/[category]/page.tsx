@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BackLink } from "@/components/back-link";
 import { categories, categoryById, type CategoryId } from "@/data/categories";
 import { lessonsInCategory } from "@/data/lessons";
 import { WatchedIndicator } from "@/components/watched-indicator";
@@ -24,9 +25,7 @@ export default async function CategoryPage(props: PageProps<"/skills/[category]"
   return (
     <div className="flex flex-col gap-6 py-6">
       <header className="flex flex-col gap-2">
-        <Link href="/skills" className="text-sm text-ink-faint hover:text-ink-muted">
-          ← Skills
-        </Link>
+        <BackLink href="/skills">Skills</BackLink>
         <div className={`h-1 w-14 rounded-full ${cat.bgClass}`} />
         <h1 className="text-3xl font-semibold tracking-tight">{cat.name}</h1>
         <p className="max-w-lg text-ink-muted">{cat.blurb}</p>

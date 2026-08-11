@@ -27,7 +27,7 @@ export function TopBar() {
       <div className="relative border-b border-navy-700/80">
         <Soundwave variant="header" className="pointer-events-none absolute inset-0 h-full w-full" />
         <div className="relative mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
-          <Link href="/" className="flex items-center gap-2.5">
+          <Link href="/" className="-mx-2 flex min-h-11 items-center gap-2.5 px-2">
             <Image
               src="/logo-mark.png"
               alt=""

@@ -41,7 +41,7 @@ export default function ChallengesPage() {
             href={vimeoWatchUrl(v.vimeoId)}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-1.5 rounded-full border border-navy-600 px-3 py-1.5 text-xs text-ink-faint transition-colors hover:text-ink-muted"
+            className="flex min-h-11 items-center gap-1.5 rounded-full border border-navy-600 px-4 py-2.5 text-xs text-ink-faint transition-colors hover:text-ink-muted"
           >
             <PlayIcon className="size-3" />
             {v.title}
@@ -104,7 +104,7 @@ export default function ChallengesPage() {
                 href={vimeoWatchUrl(bonus.vimeoId)}
                 target="_blank"
                 rel="noreferrer"
-                className="block rounded-lg border border-navy-600 px-3 py-2 text-xs text-ink-muted transition-colors hover:text-ink"
+                className="flex min-h-11 items-center rounded-lg border border-navy-600 px-4 py-2.5 text-xs text-ink-muted transition-colors hover:text-ink"
               >
                 {bonus.title}
               </a>

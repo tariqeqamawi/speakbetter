@@ -35,7 +35,7 @@ export function VimeoPlayer({ vimeoId, title }: { vimeoId: string; title: string
         aria-pressed={zoomed}
         aria-label={zoomed ? "Return to landscape view" : "Zoom into speaker (portrait view)"}
         title={zoomed ? "Landscape view" : "Zoom into speaker"}
-        className="absolute bottom-3 right-3 z-10 flex size-9 items-center justify-center rounded-full bg-navy-900/80 text-ink backdrop-blur transition-colors hover:bg-navy-700"
+        className="absolute bottom-2.5 right-2.5 z-10 flex size-11 items-center justify-center rounded-full bg-navy-900/80 text-ink backdrop-blur transition-colors hover:bg-navy-700"
       >
         {zoomed ? (
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="size-4.5" aria-hidden>
