@@ -10,6 +10,7 @@ import {
   ProfileIcon,
   SkillsIcon,
 } from "@/components/icons";
+import { HeaderSoundwave } from "@/components/header-soundwave";
 
 const destinations = [
   { href: "/community", label: "Community", Icon: CommunityIcon },
@@ -22,19 +23,25 @@ export function TopBar() {
   return (
     <header className="sticky top-0 z-20 bg-navy-900/85 backdrop-blur">
       <div className="spectrum-rule h-0.5" />
-      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-2.5">
-          <Image
-            src="/logo-mark.png"
-            alt=""
-            width={320}
-            height={256}
-            priority
-            className="h-8 w-auto"
-          />
-          <span className="text-lg font-semibold tracking-tight">Speak Better</span>
-        </Link>
-        <DesktopLinks />
+      {/* The soundwave lives in the band between the two rules */}
+      <div className="relative border-b border-navy-700/80">
+        <HeaderSoundwave />
+        <div className="relative mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
+          <Link href="/" className="flex items-center gap-2.5">
+            <Image
+              src="/logo-mark.png"
+              alt=""
+              width={320}
+              height={256}
+              priority
+              className="h-8 w-auto"
+            />
+            <span className="text-lg font-semibold tracking-tight">
+              Speak Better
+            </span>
+          </Link>
+          <DesktopLinks />
+        </div>
       </div>
     </header>
   );

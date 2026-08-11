@@ -173,6 +173,44 @@ body {
   }
 }
 
+/* Header soundwave. Each layer scrolls exactly one viewBox width, so
+ * the loop is seamless; the differing durations keep the three waves
+ * sliding in and out of phase with each other. */
+.soundwave-a,
+.soundwave-b,
+.soundwave-c {
+  will-change: transform;
+}
+
+.soundwave-a {
+  animation: soundwave-scroll 17s linear infinite;
+}
+
+.soundwave-b {
+  animation: soundwave-scroll 26s linear infinite reverse;
+}
+
+.soundwave-c {
+  animation: soundwave-scroll 11s linear infinite;
+}
+
+@keyframes soundwave-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-400px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .soundwave-a,
+  .soundwave-b,
+  .soundwave-c {
+    animation: none;
+  }
+}
+
 /* Celebration animations (master plan §11) — milestones should be felt.
  * Respects prefers-reduced-motion: the toast still appears, statically. */
 @media (prefers-reduced-motion: no-preference) {
