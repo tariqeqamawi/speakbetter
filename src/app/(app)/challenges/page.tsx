@@ -9,7 +9,7 @@ import {
 import { CategoryDot } from "@/components/category-chip";
 import { ChallengeStatus } from "@/components/challenge-status";
 import { StoryProgress } from "@/components/story-progress";
-import { BadgeShelf, StreakFlame } from "@/components/celebrations";
+import { StreakFlame } from "@/components/celebrations";
 import { vimeoWatchUrl } from "@/lib/vimeo";
 
 export const metadata: Metadata = {
@@ -32,8 +32,6 @@ export default function ChallengesPage() {
       </header>
 
       <StoryProgress />
-
-      <BadgeShelf />
 
       <div className="flex flex-wrap gap-2 text-sm">
         {challengesIntro.map((v) => (

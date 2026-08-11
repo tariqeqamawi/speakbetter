@@ -48,32 +48,129 @@ body {
   color: var(--color-ink);
 }
 
-/* Ambient background wash — three wide, very low-opacity pools of
- * category color over the midnight ground, so the backdrop has depth
- * without competing with content. Fixed, so it stays put while the page
- * scrolls; sits behind everything and ignores pointer events. */
-body::before {
-  content: "";
+/* Ambient background — slow-drifting pools of category color over the
+ * midnight ground. Each light is a soft radial gradient moved by
+ * transform (GPU-friendly, no blur filters), on its own long, prime-ish
+ * duration so the loops never visibly sync up. Fixed behind everything
+ * and inert to pointers. */
+.ambient {
   position: fixed;
   inset: 0;
   z-index: -1;
+  overflow: hidden;
   pointer-events: none;
-  background-image:
-    radial-gradient(
-      ellipse 90% 55% at 12% -8%,
-      color-mix(in oklab, var(--color-body-language) 14%, transparent),
-      transparent 62%
-    ),
-    radial-gradient(
-      ellipse 75% 50% at 92% 4%,
-      color-mix(in oklab, var(--color-structure) 12%, transparent),
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 110% 60% at 50% 108%,
-      color-mix(in oklab, var(--color-advanced) 10%, transparent),
-      transparent 65%
-    );
+  contain: strict;
+}
+
+.ambient-light {
+  position: absolute;
+  border-radius: 50%;
+  will-change: transform;
+}
+
+.ambient-light-1 {
+  top: -25%;
+  left: -15%;
+  width: 75vw;
+  height: 75vw;
+  background: radial-gradient(
+    circle closest-side,
+    color-mix(in oklab, var(--color-body-language) 16%, transparent),
+    transparent 100%
+  );
+  animation: ambient-drift-1 53s ease-in-out infinite;
+}
+
+.ambient-light-2 {
+  top: -20%;
+  right: -20%;
+  width: 65vw;
+  height: 65vw;
+  background: radial-gradient(
+    circle closest-side,
+    color-mix(in oklab, var(--color-structure) 14%, transparent),
+    transparent 100%
+  );
+  animation: ambient-drift-2 67s ease-in-out infinite;
+}
+
+.ambient-light-3 {
+  bottom: -30%;
+  left: 20%;
+  width: 85vw;
+  height: 85vw;
+  background: radial-gradient(
+    circle closest-side,
+    color-mix(in oklab, var(--color-advanced) 13%, transparent),
+    transparent 100%
+  );
+  animation: ambient-drift-3 79s ease-in-out infinite;
+}
+
+/* Two smaller spotlights that wander further, for a little intrigue */
+.ambient-light-4 {
+  top: 35%;
+  left: 55%;
+  width: 38vw;
+  height: 38vw;
+  background: radial-gradient(
+    circle closest-side,
+    color-mix(in oklab, var(--color-mindset) 10%, transparent),
+    transparent 100%
+  );
+  animation: ambient-drift-4 89s ease-in-out infinite;
+}
+
+.ambient-light-5 {
+  top: 60%;
+  left: -10%;
+  width: 32vw;
+  height: 32vw;
+  background: radial-gradient(
+    circle closest-side,
+    color-mix(in oklab, var(--color-figurative) 9%, transparent),
+    transparent 100%
+  );
+  animation: ambient-drift-5 71s ease-in-out infinite;
+}
+
+@keyframes ambient-drift-1 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33% { transform: translate3d(8vw, 6vh, 0) scale(1.12); }
+  66% { transform: translate3d(-5vw, 10vh, 0) scale(0.94); }
+}
+
+@keyframes ambient-drift-2 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  40% { transform: translate3d(-10vw, 8vh, 0) scale(1.08); }
+  70% { transform: translate3d(-3vw, -5vh, 0) scale(0.96); }
+}
+
+@keyframes ambient-drift-3 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  35% { transform: translate3d(-12vw, -6vh, 0) scale(1.06); }
+  70% { transform: translate3d(9vw, -10vh, 0) scale(0.92); }
+}
+
+@keyframes ambient-drift-4 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  25% { transform: translate3d(-22vw, 14vh, 0) scale(1.15); }
+  50% { transform: translate3d(-30vw, -12vh, 0) scale(0.9); }
+  75% { transform: translate3d(10vw, -18vh, 0) scale(1.05); }
+}
+
+@keyframes ambient-drift-5 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  30% { transform: translate3d(26vw, -16vh, 0) scale(1.1); }
+  60% { transform: translate3d(40vw, 10vh, 0) scale(0.95); }
+}
+
+/* Motion is decoration here — hold the lights still if the viewer
+ * would rather not have movement. The color wash remains. */
+@media (prefers-reduced-motion: reduce) {
+  .ambient-light {
+    animation: none;
+  }
 }
 
 /* Celebration animations (master plan §11) — milestones should be felt.

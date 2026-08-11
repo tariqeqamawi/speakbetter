@@ -249,9 +249,15 @@ The interface should feel minimalist, clean, modern, and inviting — never clin
 
 Visually, a deep **midnight blue** base carries the whole app, calm and consistent throughout. It isn't a flat block of color: three wide, very low-opacity pools of category color — cyan, magenta, and crimson — wash across the backdrop as a fixed radial gradient, giving the background depth and a modern feel without ever competing with the content in front of it.
 
+Those lights are not static. Each drifts slowly on its own long cycle — fifty to ninety seconds, deliberately out of sync with each other — so the background is always faintly in motion without ever drawing the eye. Two smaller spotlights wander further than the rest, adding a little visual intrigue. All of it holds still for anyone who prefers reduced motion.
+
 Against that dark ground, the category colors are the one place the interface gets genuinely loud. They're neon and fully saturated, used deliberately — skill tags, the spectrum chart, progress indicators — so the color-spectrum idea is something a student actually feels while using the app, not just a scoring mechanic explained in a paragraph. The contrast between a calm, deep background and vivid category color is the core of the app's visual identity.
 
-Navigation starts deliberately small — three destinations: **Community**, **Challenges**, **Skills**. Keeping it to three keeps the app feeling approachable rather than like a sprawling course platform with dozens of sections to get lost in. Skills is also where the digital card deck lives, alongside the lesson library — see §16.
+Navigation stays deliberately small — four destinations: **Community**, **Challenges**, **Skills**, **Profile**. Each carries a matched outline icon, stroke-only and quiet, so the navigation reads as part of the interface rather than sitting on top of it. Keeping it to four keeps the app approachable rather than like a sprawling course platform with dozens of sections to get lost in. Skills is also where the digital card deck lives, alongside the lesson library — see §16.
+
+**Profile** is the student's own corner: their standing (challenges complete, videos uploaded, colors reached, day streak), their demonstrated range as a spectrum of the strongest each color has ever shown, their badges, and their recent attempts. It's also the only place the level is changed — which keeps §09's promise that level movement is always the student's own decision.
+
+The brand mark — a lion with a spectrum-colored mane, speaking into a microphone over a soundwave — sits in the top bar beside the wordmark, and appears in full on the landing page. Its own palette (magenta and violet through to blue, with a warm amber lion) is where the category colors came from, so the identity and the scoring system are visibly the same idea.
 
 ### Portrait zoom for video playback
 

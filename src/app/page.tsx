@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { categories } from "@/data/categories";
 import { storyPhases } from "@/data/challenges";
 import { VimeoPlayer } from "@/components/vimeo-player";
@@ -14,6 +15,14 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section className="flex flex-col items-center gap-6 text-center">
+        <Image
+          src="/logo-full.png"
+          alt="Speak Better"
+          width={432}
+          height={420}
+          priority
+          className="h-28 w-auto sm:h-36"
+        />
         <div className="spectrum-rule h-1 w-24 rounded-full" />
         <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
           You don&apos;t learn to sing by going to concerts.

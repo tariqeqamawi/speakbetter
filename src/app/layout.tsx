@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { TopBar, BottomTabs } from "@/components/nav";
 import { StoreProvider } from "@/lib/store";
+import { AmbientBackground } from "@/components/ambient-background";
 import { CelebrationHost } from "@/components/celebrations";
 import { ServiceWorkerRegister } from "@/components/sw-register";
 import "./globals.css";
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col font-sans">
+        <AmbientBackground />
         <StoreProvider>
           <TopBar />
           {/* bottom padding clears the mobile tab bar */}
