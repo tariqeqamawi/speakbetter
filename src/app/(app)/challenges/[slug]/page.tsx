@@ -6,6 +6,7 @@ import { categoryById } from "@/data/categories";
 import { CategoryChip } from "@/components/category-chip";
 import { VimeoPlayer } from "@/components/vimeo-player";
 import { PracticePanel } from "@/components/practice-panel";
+import { CircleIcon } from "@/components/icons";
 
 export function generateStaticParams() {
   return challenges.map((c) => ({ slug: c.slug }));
@@ -57,8 +58,8 @@ export default async function ChallengePage(props: PageProps<"/challenges/[slug]
         </h2>
         <ul className="flex flex-col gap-1.5">
           {challenge.criteria.map((criterion) => (
-            <li key={criterion} className="flex gap-2 text-sm text-ink">
-              <span className="text-ink-faint">◦</span>
+            <li key={criterion} className="flex items-start gap-2 text-sm text-ink">
+              <CircleIcon className="mt-1 size-3.5 shrink-0 text-ink-faint" />
               {criterion}
             </li>
           ))}

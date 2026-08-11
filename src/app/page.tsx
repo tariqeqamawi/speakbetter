@@ -1,4 +1,9 @@
 import Image from "next/image";
+import {
+  GraduationCapIcon,
+  SpectrumIcon,
+  VideoIcon,
+} from "@/components/icons";
 import { categories } from "@/data/categories";
 import { storyPhases } from "@/data/challenges";
 import { VimeoPlayer } from "@/components/vimeo-player";
@@ -45,7 +50,7 @@ export default function LandingPage() {
         </h2>
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="flex flex-col gap-2 rounded-xl border border-navy-600 bg-navy-800 p-5">
-            <span className="text-2xl">🎓</span>
+            <GraduationCapIcon className="size-7 text-body-language" />
             <h3 className="font-semibold">80+ short lessons</h3>
             <p className="text-sm text-ink-muted">
               One to two minutes each, across seven color-coded skill
@@ -53,7 +58,7 @@ export default function LandingPage() {
             </p>
           </div>
           <div className="flex flex-col gap-2 rounded-xl border border-navy-600 bg-navy-800 p-5">
-            <span className="text-2xl">🎥</span>
+            <VideoIcon className="size-7 text-structure" />
             <h3 className="font-semibold">Real on-camera challenges</h3>
             <p className="text-sm text-ink-muted">
               21 challenges across the five-phase STORY journey. You can&apos;t
@@ -61,7 +66,7 @@ export default function LandingPage() {
             </p>
           </div>
           <div className="flex flex-col gap-2 rounded-xl border border-navy-600 bg-navy-800 p-5">
-            <span className="text-2xl">🌈</span>
+            <SpectrumIcon className="size-7 text-mindset" />
             <h3 className="font-semibold">AI coaching in color</h3>
             <p className="text-sm text-ink-muted">
               An AI coach watches your video — gestures, eye contact, story —

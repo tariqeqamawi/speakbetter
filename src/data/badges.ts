@@ -21,7 +21,7 @@ export interface BadgeDef {
   id: string;
   title: string;
   message: string;
-  emoji: string;
+  icon: string;
   earned: (s: BadgeEvalState) => boolean;
 }
 
@@ -29,7 +29,7 @@ export interface EarnedBadge {
   id: string;
   title: string;
   message: string;
-  emoji: string;
+  icon: string;
   earnedAt: string;
 }
 
@@ -72,21 +72,21 @@ export const badgeDefs: BadgeDef[] = [
     id: "first-upload",
     title: "First Words",
     message: "Well done — you just uploaded your first video.",
-    emoji: "🎬",
+    icon: "film",
     earned: (s) => s.attempts.length >= 1,
   },
   {
     id: "five-uploads",
     title: "Finding Your Voice",
     message: "You've uploaded five videos now. This is how speakers are made.",
-    emoji: "🎥",
+    icon: "video",
     earned: (s) => s.attempts.length >= 5,
   },
   {
     id: "ten-uploads",
     title: "Serious Reps",
     message: "Ten videos uploaded. Your camera is officially your training partner.",
-    emoji: "📈",
+    icon: "trending-up",
     earned: (s) => s.attempts.length >= 10,
   },
   {
@@ -94,7 +94,7 @@ export const badgeDefs: BadgeDef[] = [
     title: "Practicing Machine",
     message:
       "You are a practicing machine. You've already tried the same challenge five times. Go you — you're getting so much better.",
-    emoji: "🔁",
+    icon: "repeat",
     earned: (s) => {
       const counts = new Map<string, number>();
       for (const a of s.attempts)
@@ -106,7 +106,7 @@ export const badgeDefs: BadgeDef[] = [
     id: "first-pass",
     title: "Challenge Complete",
     message: "Your first challenge passed. The journey is officially underway.",
-    emoji: "✅",
+    icon: "check-circle",
     earned: (s) => s.attempts.some((a) => a.passed),
   },
   {
@@ -114,7 +114,7 @@ export const badgeDefs: BadgeDef[] = [
     title: "Full Spectrum",
     message:
       "Every color lit up in a single talk. That is a genuinely dynamic speaker at work.",
-    emoji: "🌈",
+    icon: "spectrum",
     earned: (s) =>
       s.attempts.some((a) =>
         Object.values(a.spectrum).every((v) => v >= 40),
@@ -124,21 +124,21 @@ export const badgeDefs: BadgeDef[] = [
     id: "streak-3",
     title: "On a Roll",
     message: "Three days of practice in a row. Momentum looks good on you.",
-    emoji: "🔥",
+    icon: "flame",
     earned: (s) => currentStreak(s) >= 3,
   },
   {
     id: "streak-7",
     title: "Unstoppable",
     message: "A full week of daily practice. Most people never do this once.",
-    emoji: "⚡",
+    icon: "zap",
     earned: (s) => currentStreak(s) >= 7,
   },
   ...storyPhases.map((phase) => ({
     id: `phase-${phase.id}`,
     title: `${phase.name} — Complete`,
     message: `You've completed every challenge in ${phase.name}. On to the next phase of the journey.`,
-    emoji: "🏅",
+    icon: "medal",
     earned: (s: BadgeEvalState) => phaseComplete(s, phase.id),
   })),
   {
@@ -146,7 +146,7 @@ export const badgeDefs: BadgeDef[] = [
     title: "The Whole STORY",
     message:
       "All five phases complete. You can now produce a dynamic, full-spectrum talk on demand — because you've done it, with feedback, dozens of times.",
-    emoji: "🏆",
+    icon: "trophy",
     earned: (s) => storyPhases.every((p) => phaseComplete(s, p.id)),
   },
 ];
@@ -157,11 +157,11 @@ export function evaluateBadges(state: BadgeEvalState): EarnedBadge[] {
   const now = new Date().toISOString();
   return badgeDefs
     .filter((def) => !held.has(def.id) && def.earned(state))
-    .map(({ id, title, message, emoji }) => ({
+    .map(({ id, title, message, icon }) => ({
       id,
       title,
       message,
-      emoji,
+      icon,
       earnedAt: now,
     }));
 }

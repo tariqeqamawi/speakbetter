@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useStore } from "@/lib/store";
 import { currentStreak } from "@/data/badges";
+import { BadgeIcon, FlameIcon } from "@/components/icons";
 
 // The gamification layer made visible (master plan §11): milestones are
 // felt, not just read. One celebration shows at a time; each dismisses
@@ -31,8 +32,8 @@ export function CelebrationHost() {
         onClick={() => dismissCelebration(current.id)}
         className="celebration-pop flex max-w-sm items-start gap-3 rounded-2xl border border-navy-600 bg-navy-800 p-4 text-left shadow-2xl shadow-navy-950/80"
       >
-        <span className="celebration-bounce text-3xl" aria-hidden>
-          {current.emoji}
+        <span className="celebration-bounce text-ink" aria-hidden>
+          <BadgeIcon name={current.icon} className="size-8" />
         </span>
         <span className="flex flex-col gap-0.5">
           <span className="spectrum-rule h-0.5 w-12 rounded-full" />
@@ -52,9 +53,10 @@ export function StreakFlame() {
   return (
     <span
       title={`${streak}-day practice streak`}
-      className="inline-flex items-center gap-1 rounded-full border border-navy-600 bg-navy-800 px-2.5 py-1 text-xs font-semibold text-storytelling"
+      className="inline-flex items-center gap-1.5 rounded-full border border-navy-600 bg-navy-800 px-2.5 py-1 text-xs font-semibold text-storytelling"
     >
-      🔥 {streak}-day streak
+      <FlameIcon className="size-3.5" />
+      {streak}-day streak
     </span>
   );
 }
@@ -74,7 +76,7 @@ export function BadgeShelf() {
             title={badge.message}
             className="flex items-center gap-2 rounded-full border border-navy-600 bg-navy-800 px-3 py-1.5 text-xs font-medium text-ink-muted"
           >
-            <span aria-hidden>{badge.emoji}</span>
+            <BadgeIcon name={badge.icon} className="size-4" />
             {badge.title}
           </li>
         ))}

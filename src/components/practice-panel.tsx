@@ -6,6 +6,7 @@ import type { Challenge } from "@/data/challenges";
 import { lessonByVimeoId } from "@/data/lessons";
 import { categoryById, type CategoryId } from "@/data/categories";
 import { SpectrumBars, SpectrumStrip } from "@/components/spectrum";
+import { CheckIcon, CircleIcon } from "@/components/icons";
 
 // The practice loop (master plan §06, steps 3–7; build plan Phase 4).
 //
@@ -383,7 +384,11 @@ function PassiveProgress({ challenge }: { challenge: Challenge }) {
             return (
               <li key={id} className="flex items-center gap-2">
                 <span className={isWatched ? "text-mindset" : "text-ink-faint"}>
-                  {isWatched ? "✓" : "○"}
+                  {isWatched ? (
+                    <CheckIcon className="size-3.5" />
+                  ) : (
+                    <CircleIcon className="size-3.5" />
+                  )}
                 </span>
                 {lesson?.title ?? id}
               </li>

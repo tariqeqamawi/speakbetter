@@ -6,6 +6,7 @@ import { categories, type CategoryId } from "@/data/categories";
 import { challenges } from "@/data/challenges";
 import { currentStreak } from "@/data/badges";
 import { SpectrumBars } from "@/components/spectrum";
+import { BadgeIcon } from "@/components/icons";
 import { useChallengeComplete } from "@/components/story-progress";
 
 // The student's own corner of the app: where they stand, what they've
@@ -157,8 +158,8 @@ export default function ProfilePage() {
                 key={badge.id}
                 className="flex items-start gap-3 rounded-xl border border-navy-600 bg-navy-800 p-4"
               >
-                <span className="text-2xl" aria-hidden>
-                  {badge.emoji}
+                <span className="mt-0.5 text-ink-muted" aria-hidden>
+                  <BadgeIcon name={badge.icon} className="size-6" />
                 </span>
                 <span className="flex flex-col gap-0.5">
                   <span className="text-sm font-semibold text-ink">

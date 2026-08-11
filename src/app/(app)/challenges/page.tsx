@@ -10,6 +10,7 @@ import { CategoryDot } from "@/components/category-chip";
 import { ChallengeStatus } from "@/components/challenge-status";
 import { StoryProgress } from "@/components/story-progress";
 import { StreakFlame } from "@/components/celebrations";
+import { PlayIcon } from "@/components/icons";
 import { vimeoWatchUrl } from "@/lib/vimeo";
 
 export const metadata: Metadata = {
@@ -40,9 +41,10 @@ export default function ChallengesPage() {
             href={vimeoWatchUrl(v.vimeoId)}
             target="_blank"
             rel="noreferrer"
-            className="rounded-full border border-navy-600 px-3 py-1.5 text-xs text-ink-faint transition-colors hover:text-ink-muted"
+            className="flex items-center gap-1.5 rounded-full border border-navy-600 px-3 py-1.5 text-xs text-ink-faint transition-colors hover:text-ink-muted"
           >
-            ▸ {v.title}
+            <PlayIcon className="size-3" />
+            {v.title}
           </a>
         ))}
       </div>
