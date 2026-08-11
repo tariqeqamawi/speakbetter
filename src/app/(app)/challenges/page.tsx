@@ -10,6 +10,7 @@ import { CategoryDot } from "@/components/category-chip";
 import { ChallengeStatus } from "@/components/challenge-status";
 import { StoryProgress } from "@/components/story-progress";
 import { BadgeShelf, StreakFlame } from "@/components/celebrations";
+import { vimeoWatchUrl } from "@/lib/vimeo";
 
 export const metadata: Metadata = {
   title: "Challenges",
@@ -38,7 +39,7 @@ export default function ChallengesPage() {
         {challengesIntro.map((v) => (
           <a
             key={v.vimeoId}
-            href={`https://vimeo.com/${v.vimeoId}`}
+            href={vimeoWatchUrl(v.vimeoId)}
             target="_blank"
             rel="noreferrer"
             className="rounded-full border border-navy-600 px-3 py-1.5 text-xs text-ink-faint transition-colors hover:text-ink-muted"
@@ -100,7 +101,7 @@ export default function ChallengesPage() {
           {bonusChallenges.map((bonus) => (
             <li key={bonus.vimeoId}>
               <a
-                href={`https://vimeo.com/${bonus.vimeoId}`}
+                href={vimeoWatchUrl(bonus.vimeoId)}
                 target="_blank"
                 rel="noreferrer"
                 className="block rounded-lg border border-navy-600 px-3 py-2 text-xs text-ink-muted transition-colors hover:text-ink"

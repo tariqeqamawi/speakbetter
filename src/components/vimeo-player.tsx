@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { vimeoEmbedUrl } from "@/lib/vimeo";
 
 // Lesson/challenge video player with the portrait-zoom control
 // (master plan §14): course videos are landscape, but most students watch
@@ -18,7 +19,7 @@ export function VimeoPlayer({ vimeoId, title }: { vimeoId: string; title: string
       }`}
     >
       <iframe
-        src={`https://player.vimeo.com/video/${vimeoId}`}
+        src={vimeoEmbedUrl(vimeoId)}
         title={title}
         allow="autoplay; fullscreen; picture-in-picture"
         allowFullScreen
