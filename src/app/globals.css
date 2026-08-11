@@ -35,6 +35,11 @@
   --color-body-language: #22d9f5; /* bright cyan   — Body language & physical expression */
   --color-advanced: #d11149; /* deep crimson  — Advanced tips & tricks */
 
+  /* The deep crimson is the one category color too dark to carry the
+   * button's dark label (3.75:1). This lifted variant is used only in
+   * the CTA gradient, where text sits on top of it. */
+  --color-advanced-lift: #f0356a;
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -207,6 +212,101 @@ body {
   .soundwave-a,
   .soundwave-b,
   .soundwave-c {
+    animation: none;
+  }
+}
+
+/* Neon call to action. The gradient carries the category palette twice
+ * over, at double the button's width — so sliding the background by one
+ * button width advances exactly one full palette and the loop is
+ * seamless. A blurred copy sits behind it as the glow. */
+.cta-neon-wrap {
+  position: relative;
+  display: inline-flex;
+  isolation: isolate;
+}
+
+.cta-neon,
+.cta-neon-glow {
+  background-image: linear-gradient(
+    90deg,
+    var(--color-storytelling),
+    var(--color-figurative),
+    var(--color-acting),
+    var(--color-structure),
+    var(--color-mindset),
+    var(--color-body-language),
+    var(--color-advanced-lift),
+    var(--color-storytelling),
+    var(--color-figurative),
+    var(--color-acting),
+    var(--color-structure),
+    var(--color-mindset),
+    var(--color-body-language),
+    var(--color-advanced-lift),
+    var(--color-storytelling)
+  );
+  background-size: 200% 100%;
+  animation: cta-flow 9s linear infinite;
+}
+
+.cta-neon {
+  position: relative;
+  z-index: 1;
+  color: var(--color-navy-950);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+
+.cta-neon-glow {
+  position: absolute;
+  inset: -5px;
+  z-index: 0;
+  border-radius: inherit;
+  filter: blur(15px);
+  opacity: 0.6;
+  animation:
+    cta-flow 9s linear infinite,
+    cta-pulse 4.5s ease-in-out infinite;
+}
+
+.cta-neon-wrap:hover .cta-neon {
+  transform: translateY(-1px);
+  filter: brightness(1.08) saturate(1.1);
+}
+
+.cta-neon-wrap:hover .cta-neon-glow {
+  opacity: 0.85;
+}
+
+.cta-neon:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 3px;
+}
+
+@keyframes cta-flow {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes cta-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta-neon,
+  .cta-neon-glow {
     animation: none;
   }
 }

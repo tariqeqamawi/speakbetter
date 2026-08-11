@@ -4,6 +4,7 @@ import {
   SpectrumIcon,
   VideoIcon,
 } from "@/components/icons";
+import { Soundwave } from "@/components/soundwave";
 import { categories } from "@/data/categories";
 import { storyPhases } from "@/data/challenges";
 import { VimeoPlayer } from "@/components/vimeo-player";
@@ -20,15 +21,18 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section className="flex flex-col items-center gap-6 text-center">
-        <Image
-          src="/logo-full.png"
-          alt="Speak Better"
-          width={432}
-          height={420}
-          priority
-          className="h-28 w-auto sm:h-36"
-        />
-        <div className="spectrum-rule h-1 w-24 rounded-full" />
+        {/* The mark, with its soundwave alive rather than printed */}
+        <div className="flex w-full max-w-md flex-col items-center">
+          <Image
+            src="/logo-mark.png"
+            alt="Speak Better"
+            width={320}
+            height={256}
+            priority
+            className="h-24 w-auto sm:h-32"
+          />
+          <Soundwave variant="hero" className="-mt-1 h-12 w-full sm:h-16" />
+        </div>
         <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
           You don&apos;t learn to sing by going to concerts.
         </h1>

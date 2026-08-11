@@ -10,7 +10,7 @@ import {
   ProfileIcon,
   SkillsIcon,
 } from "@/components/icons";
-import { HeaderSoundwave } from "@/components/header-soundwave";
+import { Soundwave } from "@/components/soundwave";
 
 const destinations = [
   { href: "/community", label: "Community", Icon: CommunityIcon },
@@ -25,7 +25,7 @@ export function TopBar() {
       <div className="spectrum-rule h-0.5" />
       {/* The soundwave lives in the band between the two rules */}
       <div className="relative border-b border-navy-700/80">
-        <HeaderSoundwave />
+        <Soundwave variant="header" className="pointer-events-none absolute inset-0 h-full w-full" />
         <div className="relative mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2.5">
             <Image

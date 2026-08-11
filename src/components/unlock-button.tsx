@@ -15,16 +15,19 @@ export function UnlockButton({ className = "" }: { className?: string }) {
   const router = useRouter();
 
   return (
-    <button
-      type="button"
-      onClick={() => {
-        unlock();
-        router.push("/welcome");
-      }}
-      className={`rounded-lg bg-ink px-6 py-3 text-sm font-semibold text-navy-900 transition-opacity hover:opacity-90 ${className}`}
-    >
-      Unlock Speak Better
-    </button>
+    <span className={`cta-neon-wrap rounded-xl ${className}`}>
+      <span className="cta-neon-glow rounded-xl" aria-hidden />
+      <button
+        type="button"
+        onClick={() => {
+          unlock();
+          router.push("/welcome");
+        }}
+        className="cta-neon rounded-xl px-7 py-3.5 text-sm"
+      >
+        Unlock Speak Better
+      </button>
+    </span>
   );
 }
 
