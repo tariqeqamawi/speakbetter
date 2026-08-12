@@ -44,11 +44,14 @@ export function StoryProgress() {
             <div key={phase.id} className="flex flex-1 flex-col gap-1">
               <div className="h-2 overflow-hidden rounded-full bg-navy-700">
                 <div
-                  className="spectrum-rule h-full rounded-full transition-[width] duration-500"
+                  className={`h-full rounded-full ${phase.bgClass} transition-[width] duration-500`}
                   style={{ width: `${(doneInPhase / inPhase.length) * 100}%` }}
                 />
               </div>
-              <span className="text-center text-[0.65rem] font-semibold text-ink-faint">
+              <span
+                className={`text-center text-[0.65rem] font-bold ${phase.textClass}`}
+                title={phase.name}
+              >
                 {phase.id}
               </span>
             </div>

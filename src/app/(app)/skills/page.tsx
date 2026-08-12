@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { categories } from "@/data/categories";
 import { lessonsInCategory } from "@/data/lessons";
+import { CategoryIcon } from "@/components/category-icons";
 
 export const metadata: Metadata = {
   title: "Skills",
@@ -25,9 +26,12 @@ export default function SkillsPage() {
             <li key={cat.id}>
               <Link
                 href={`/skills/${cat.id}`}
-                className="group flex h-full flex-col gap-2 rounded-xl border border-navy-600 bg-navy-800 p-4 transition-colors hover:border-navy-950 hover:bg-navy-700"
+                className="group flex h-full flex-col gap-2 rounded-xl border border-navy-600 bg-navy-800 p-4 transition-colors hover:border-ink-faint hover:bg-navy-700"
               >
-                <div className={`h-1 w-10 rounded-full ${cat.bgClass}`} />
+                <CategoryIcon
+                  category={cat.id}
+                  className={`size-7 ${cat.textClass}`}
+                />
                 <span className="font-semibold text-ink">{cat.name}</span>
                 <span className="text-sm text-ink-muted">{cat.blurb}</span>
                 <span className="mt-auto pt-1 text-xs text-ink-faint">

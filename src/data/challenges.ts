@@ -12,14 +12,54 @@ export interface StoryPhase {
   id: PhaseId;
   name: string;
   tagline: string;
+  /** Each phase owns a color, borrowed from the skill it leans on most.
+   *  Class names stay literal so Tailwind's scanner finds them. */
+  bgClass: string;
+  textClass: string;
+  borderClass: string;
 }
 
 export const storyPhases: StoryPhase[] = [
-  { id: "S", name: "Start With Awareness", tagline: "Reflect, baseline, and map your voice's starting point." },
-  { id: "T", name: "Train Your Instrument", tagline: "Build vocal clarity, rhythm, tone, and presence." },
-  { id: "O", name: "Own Your Stories", tagline: "Storytelling techniques, scene work, and personal expression." },
-  { id: "R", name: "Reveal Deeper Truths", tagline: "Connect emotionally, explore vulnerability, expand empathy." },
-  { id: "Y", name: "Your Voice in the World", tagline: "Real-world speaking formats and challenges." },
+  {
+    id: "S",
+    name: "Start With Awareness",
+    tagline: "Reflect, baseline, and map your voice's starting point.",
+    bgClass: "bg-mindset",
+    textClass: "text-mindset",
+    borderClass: "border-mindset/35",
+  },
+  {
+    id: "T",
+    name: "Train Your Instrument",
+    tagline: "Build vocal clarity, rhythm, tone, and presence.",
+    bgClass: "bg-body-language",
+    textClass: "text-body-language",
+    borderClass: "border-body-language/35",
+  },
+  {
+    id: "O",
+    name: "Own Your Stories",
+    tagline: "Storytelling techniques, scene work, and personal expression.",
+    bgClass: "bg-storytelling",
+    textClass: "text-storytelling",
+    borderClass: "border-storytelling/35",
+  },
+  {
+    id: "R",
+    name: "Reveal Deeper Truths",
+    tagline: "Connect emotionally, explore vulnerability, expand empathy.",
+    bgClass: "bg-acting",
+    textClass: "text-acting",
+    borderClass: "border-acting/35",
+  },
+  {
+    id: "Y",
+    name: "Your Voice in the World",
+    tagline: "Real-world speaking formats and challenges.",
+    bgClass: "bg-structure",
+    textClass: "text-structure",
+    borderClass: "border-structure/35",
+  },
 ];
 
 export interface Challenge {

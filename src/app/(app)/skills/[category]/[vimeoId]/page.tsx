@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BackLink } from "@/components/back-link";
 import { categoryById, type CategoryId } from "@/data/categories";
@@ -6,6 +5,8 @@ import { lessons, lessonByVimeoId } from "@/data/lessons";
 import { getTranscript } from "@/lib/transcripts";
 import { VimeoPlayer } from "@/components/vimeo-player";
 import { LessonWatched } from "@/components/lesson-watched";
+import { LessonFooterNav } from "@/components/lesson-footer-nav";
+import { Suspense } from "react";
 
 export function generateStaticParams() {
   return lessons.map((l) => ({ category: l.category, vimeoId: l.vimeoId }));
@@ -52,14 +53,12 @@ export default async function LessonPage(props: PageProps<"/skills/[category]/[v
         </details>
       )}
 
-      {next && (
-        <Link
-          href={`/skills/${cat.id}/${next.vimeoId}`}
-          className="self-start rounded-lg border border-navy-600 px-4 py-2.5 text-sm font-semibold text-ink-muted transition-colors hover:text-ink"
-        >
-          Next lesson: {next.title} →
-        </Link>
-      )}
+      <Suspense fallback={null}>
+        <LessonFooterNav
+          nextHref={next ? `/skills/${cat.id}/${next.vimeoId}` : undefined}
+          nextTitle={next?.title}
+        />
+      </Suspense>
     </div>
   );
 }

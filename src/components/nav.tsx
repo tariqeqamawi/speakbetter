@@ -11,6 +11,7 @@ import {
   SkillsIcon,
 } from "@/components/icons";
 import { Soundwave } from "@/components/soundwave";
+import { LevelIcon, levelMeta } from "@/components/level-icon";
 
 const destinations = [
   { href: "/community", label: "Community", Icon: CommunityIcon },
@@ -26,7 +27,7 @@ export function TopBar() {
       {/* The soundwave lives in the band between the two rules */}
       <div className="relative border-b border-navy-700/80">
         <Soundwave variant="header" className="pointer-events-none absolute inset-0 h-full w-full" />
-        <div className="relative mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
+        <div className="relative mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4">
           <Link href="/" className="-mx-2 flex min-h-11 items-center gap-2.5 px-2">
             <Image
               src="/logo-mark.png"
@@ -40,10 +41,32 @@ export function TopBar() {
               Speak Better
             </span>
           </Link>
-          <DesktopLinks />
+          <div className="flex items-center gap-2">
+            <DesktopLinks />
+            <LevelBadge />
+          </div>
         </div>
       </div>
     </header>
+  );
+}
+
+/** The student's level lion, following them across the app. */
+function LevelBadge() {
+  const { state, ready } = useStore();
+  if (!ready || !state.unlocked || !state.level) return null;
+  const meta = levelMeta[state.level];
+  return (
+    <Link
+      href="/profile"
+      title={`${meta.label} — change your level`}
+      className="flex min-h-11 items-center gap-1.5 rounded-full border border-navy-600 px-2.5 py-1 transition-colors hover:border-ink-faint"
+    >
+      <LevelIcon level={state.level} className="h-6 w-auto" />
+      <span className="hidden text-[0.7rem] font-semibold text-ink-muted sm:inline">
+        {meta.label}
+      </span>
+    </Link>
   );
 }
 

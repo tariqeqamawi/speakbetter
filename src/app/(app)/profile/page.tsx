@@ -7,29 +7,14 @@ import { challenges } from "@/data/challenges";
 import { currentStreak } from "@/data/badges";
 import { SpectrumBars } from "@/components/spectrum";
 import { BadgeIcon } from "@/components/icons";
+import { LevelIcon, levelMeta } from "@/components/level-icon";
 import { useChallengeComplete } from "@/components/story-progress";
 
 // The student's own corner of the app: where they stand, what they've
 // earned, and the only place the level is changed (master plan §09 —
 // movement between levels is always manual).
 
-const levels: { id: Level; label: string; detail: string }[] = [
-  {
-    id: "beginner",
-    label: "Beginner",
-    detail: "Focused feedback — two or three things at a time.",
-  },
-  {
-    id: "intermediate",
-    label: "Intermediate",
-    detail: "Focused feedback, plus the full set of coach notes on request.",
-  },
-  {
-    id: "advanced",
-    label: "Advanced",
-    detail: "Hardest thresholds. Near full-spectrum talks are the bar.",
-  },
-];
+const levelOrder: Level[] = ["beginner", "intermediate", "advanced"];
 
 export default function ProfilePage() {
   const { state, ready, setLevel, attemptsFor } = useStore();
@@ -110,29 +95,36 @@ export default function ProfilePage() {
           </p>
         </div>
         <div className="flex flex-col gap-2">
-          {levels.map((level) => {
-            const active = state.level === level.id;
+          {levelOrder.map((level) => {
+            const meta = levelMeta[level];
+            const active = state.level === level;
             return (
               <button
-                key={level.id}
+                key={level}
                 type="button"
-                onClick={() => setLevel(level.id)}
+                onClick={() => setLevel(level)}
                 aria-pressed={active}
-                className={`flex flex-col gap-0.5 rounded-xl border p-4 text-left transition-colors ${
+                className={`flex items-center gap-4 rounded-xl border p-4 text-left transition-colors ${
                   active
                     ? "border-ink-faint bg-navy-700"
                     : "border-navy-600 bg-navy-800 hover:bg-navy-700"
                 }`}
               >
-                <span className="flex items-center gap-2 font-semibold text-ink">
-                  {level.label}
-                  {active && (
-                    <span className="rounded-full bg-navy-600 px-2 py-0.5 text-[0.65rem] font-medium text-ink-muted">
-                      Current
-                    </span>
-                  )}
+                <LevelIcon
+                  level={level}
+                  className={`h-12 w-auto shrink-0 ${active ? "" : "opacity-55"}`}
+                />
+                <span className="flex flex-col gap-0.5">
+                  <span className="flex items-center gap-2 font-semibold text-ink">
+                    {meta.label}
+                    {active && (
+                      <span className="rounded-full bg-navy-600 px-2 py-0.5 text-[0.65rem] font-medium text-ink-muted">
+                        Current
+                      </span>
+                    )}
+                  </span>
+                  <span className="text-sm text-ink-muted">{meta.detail}</span>
                 </span>
-                <span className="text-sm text-ink-muted">{level.detail}</span>
               </button>
             );
           })}

@@ -259,6 +259,26 @@ Navigation stays deliberately small — four destinations: **Community**, **Chal
 
 The brand mark — a lion with a spectrum-colored mane, speaking into a microphone over a soundwave — sits in the top bar beside the wordmark, and appears in full on the landing page. Its own palette (magenta and violet through to blue, with a warm amber lion) is where the category colors came from, so the identity and the scoring system are visibly the same idea.
 
+### The level lion
+
+The three levels are each represented by a tinted version of the brand mark: **yellow for Beginner, orange for Intermediate, red for Advanced** — a warming scale that reads as increasing heat rather than arbitrary labels. A student picks their level by choosing a lion at onboarding, and from then on that lion follows them: beside their level in the top bar, and on their Profile. The mark becomes their standing rather than a word.
+
+### Icons throughout
+
+Nothing in the interface is a filled emoji. Every icon is drawn stroke-only on a shared 24×24 grid and takes its color from whatever surface it sits on, so the whole set reads as one family. That covers the four navigation destinations, every badge, and **one icon per skill category** — a book for storytelling, quote marks for figurative language, a mask for acting, stacked blocks for structure, a head for mindset, a figure with arms out for body language, a star for advanced — each carrying its own category color.
+
+### Video stills, not title cards
+
+Lessons and challenges are presented as vertical carousels of **stills taken from the middle of each video**, where the coach is mid-gesture and visibly teaching. This is deliberate: the platform's own thumbnails come from the opening seconds, where these videos show a title card, so half the library would otherwise present as a logo wall rather than a person. Seeing a real teacher on every row is the point.
+
+### The STORY journey, phase by phase
+
+Each of the five phases owns a color, borrowed from the skill it leans on most — **S** green (awareness/mindset), **T** cyan (the physical instrument), **O** yellow (storytelling), **R** red (emotional truth), **Y** magenta (structure and the world). Every phase is drawn as its own bordered section holding just its challenges, so the journey reads as five distinct stages rather than one long list, and the phase's color runs through its letter, its heading, and its progress bars.
+
+Each challenge card carries a still, its brief, a **progress meter**, and a single action button that names where the student actually is: *Start challenge* when untouched, *Resume challenge* once underway, *Practice again* once passed. Progress is weighted across the real sequence rather than being all-or-nothing — warming up on the related skills, recording an attempt, and passing it each move the meter.
+
+One small piece of routing follows from this: a student who opens a lesson from a challenge's warm-up is offered **"Back to the challenge"** rather than the next lesson in the library, because the lesson was a detour rather than a destination.
+
 ### Portrait zoom for video playback
 
 The lesson and challenge videos are filmed in landscape, but most students will watch them on a phone held in portrait — where a landscape video plays small, and the details that matter most in a speaking course (hand gestures, posture, eye contact) shrink with it.
