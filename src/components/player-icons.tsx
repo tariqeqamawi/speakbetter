@@ -71,11 +71,29 @@ export function ZoomPortraitIcon({ className = "size-5" }: IconProps) {
   );
 }
 
-/** Return to the default framing. */
+/** Return to the default framing — a plain, unzoomed frame. */
 export function ResetFrameIcon({ className = "size-5" }: IconProps) {
   return (
     <svg {...base} className={className}>
-      <path d="M9 3.25H5.5a2.25 2.25 0 0 0-2.25 2.25V9M15 3.25h3.5a2.25 2.25 0 0 1 2.25 2.25V9M9 20.75H5.5a2.25 2.25 0 0 1-2.25-2.25V15M15 20.75h3.5a2.25 2.25 0 0 0 2.25-2.25V15" />
+      <rect x="3.25" y="5.75" width="17.5" height="12.5" rx="2" />
+    </svg>
+  );
+}
+
+/** Enter fullscreen — corners pushing outward. */
+export function FullscreenIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M8.75 3.25H5.5a2.25 2.25 0 0 0-2.25 2.25v3.25M15.25 3.25h3.25a2.25 2.25 0 0 1 2.25 2.25v3.25M8.75 20.75H5.5a2.25 2.25 0 0 1-2.25-2.25v-3.25M15.25 20.75h3.25a2.25 2.25 0 0 0 2.25-2.25v-3.25" />
+    </svg>
+  );
+}
+
+/** Leave fullscreen — corners pulling inward. */
+export function ExitFullscreenIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M3.25 8.75H6.5a2.25 2.25 0 0 0 2.25-2.25V3.25M20.75 8.75H17.5a2.25 2.25 0 0 1-2.25-2.25V3.25M3.25 15.25H6.5a2.25 2.25 0 0 1 2.25 2.25v3.25M20.75 15.25H17.5a2.25 2.25 0 0 0-2.25 2.25v3.25" />
     </svg>
   );
 }

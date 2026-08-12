@@ -5,6 +5,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { vimeoEmbedUrl } from "@/lib/vimeo";
 import {
   CaptionsIcon,
+  ExitFullscreenIcon,
+  FullscreenIcon,
   PauseFillIcon,
   PlayFillIcon,
   ResetFrameIcon,
@@ -29,6 +31,8 @@ const SPEEDS = [0.75, 1, 1.25, 1.5, 2];
 export function VimeoPlayer({ vimeoId, title }: { vimeoId: string; title: string }) {
   const holderRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<Player | null>(null);
+  const shellRef = useRef<HTMLDivElement>(null);
+  const [fullscreen, setFullscreen] = useState(false);
 
   const [frame, setFrame] = useState<Frame>("fit");
   const [playing, setPlaying] = useState(false);
@@ -124,11 +128,41 @@ export function VimeoPlayer({ vimeoId, title }: { vimeoId: string; title: string
   const setFrameMode = (mode: Frame) =>
     setFrame((current) => (current === mode ? "fit" : mode));
 
+  // Fullscreen the whole shell, not the iframe — that keeps our own
+  // controls on screen. Vimeo's chrome is off, so handing fullscreen to
+  // the iframe would leave a video with no controls at all.
+  useEffect(() => {
+    const onChange = () => setFullscreen(document.fullscreenElement === shellRef.current);
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  const toggleFullscreen = useCallback(async () => {
+    const shell = shellRef.current;
+    if (!shell) return;
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else if (shell.requestFullscreen) {
+        await shell.requestFullscreen();
+      } else {
+        // iOS Safari won't fullscreen an arbitrary element; hand it to
+        // the player, which can go native even though we lose our bar.
+        await playerRef.current?.requestFullscreen();
+      }
+    } catch {
+      await playerRef.current?.requestFullscreen().catch(() => {});
+    }
+  }, []);
+
   // The holder is scaled inside a masked window; the aspect of that
   // window is what changes between the three framings. The SDK gives the
   // iframe fixed pixel dimensions, so it has to be stretched explicitly.
-  const windowClass =
-    frame === "portrait"
+  const windowClass = fullscreen
+    ? frame === "portrait"
+      ? "mx-auto h-full max-h-full w-auto aspect-[9/16]"
+      : "min-h-0 w-full flex-1"
+    : frame === "portrait"
       ? "mx-auto aspect-[9/16] w-full max-w-sm"
       : "aspect-video w-full";
 
@@ -143,9 +177,18 @@ export function VimeoPlayer({ vimeoId, title }: { vimeoId: string; title: string
         : "absolute inset-0 size-full";
 
   return (
-    <div className="flex flex-col gap-2">
+    <div
+      ref={shellRef}
+      className={
+        fullscreen
+          ? "flex h-full w-full flex-col gap-2 bg-navy-950 p-3"
+          : "flex flex-col gap-2"
+      }
+    >
       <div
-        className={`relative overflow-hidden rounded-xl bg-navy-950 ${windowClass}`}
+        className={`relative overflow-hidden bg-navy-950 ${
+          fullscreen ? "" : "rounded-xl"
+        } ${windowClass}`}
       >
         {/* the iframe the SDK mounts into — it arrives with fixed pixel
             dimensions, so it's stretched to the holder here */}
@@ -263,6 +306,14 @@ export function VimeoPlayer({ vimeoId, title }: { vimeoId: string; title: string
                 <ResetFrameIcon />
               </ControlButton>
             )}
+
+            <ControlButton
+              label={fullscreen ? "Exit fullscreen" : "Fullscreen"}
+              onClick={toggleFullscreen}
+              active={fullscreen}
+            >
+              {fullscreen ? <ExitFullscreenIcon /> : <FullscreenIcon />}
+            </ControlButton>
           </div>
         </div>
       </div>
