@@ -6,7 +6,10 @@ import hashes from "@/data/video-hashes.json";
 
 const hashById = hashes as Record<string, string>;
 
-export function vimeoEmbedUrl(vimeoId: string): string {
+/** Matches the player SDK's own URL type, so it can be passed straight in. */
+export type VimeoEmbedUrl = `https://player.vimeo.com/video/${string}`;
+
+export function vimeoEmbedUrl(vimeoId: string): VimeoEmbedUrl {
   const hash = hashById[vimeoId];
   return hash
     ? `https://player.vimeo.com/video/${vimeoId}?h=${hash}`
