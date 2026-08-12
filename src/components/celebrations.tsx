@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useStore } from "@/lib/store";
 import { currentStreak } from "@/data/badges";
 import { BadgeIcon, FlameIcon } from "@/components/icons";
+import { hapticCelebrate, playCelebration } from "@/lib/feedback-fx";
 
 // The gamification layer made visible (master plan §11): milestones are
 // felt, not just read. One celebration shows at a time; each dismisses
@@ -12,6 +13,13 @@ import { BadgeIcon, FlameIcon } from "@/components/icons";
 export function CelebrationHost() {
   const { celebrations, dismissCelebration } = useStore();
   const current = celebrations[0];
+
+  // Sound and haptics land with the badge, not after it.
+  useEffect(() => {
+    if (!current) return;
+    playCelebration();
+    hapticCelebrate();
+  }, [current]);
 
   useEffect(() => {
     if (!current) return;

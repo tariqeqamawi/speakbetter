@@ -15,6 +15,8 @@ interface BadgeEvalState {
   }[];
   watchedLessons: string[];
   badges: { id: string }[];
+  /** Days a streak freeze covered — they count as practised */
+  frozenDays?: string[];
 }
 
 export interface BadgeDef {
@@ -33,9 +35,19 @@ export interface EarnedBadge {
   earnedAt: string;
 }
 
-/** Days on which the student uploaded, as yyyy-mm-dd strings, newest last */
+/** Days the student practised — uploads, plus any a freeze covered */
 function uploadDays(s: BadgeEvalState): string[] {
-  return [...new Set(s.attempts.map((a) => a.at.slice(0, 10)))].sort();
+  return [
+    ...new Set([
+      ...s.attempts.map((a) => a.at.slice(0, 10)),
+      ...(s.frozenDays ?? []),
+    ]),
+  ].sort();
+}
+
+/** Has the student practised today? Drives the daily goal on Today. */
+export function practisedToday(s: BadgeEvalState): boolean {
+  return uploadDays(s).includes(new Date().toISOString().slice(0, 10));
 }
 
 /** Current consecutive-day upload streak ending today or yesterday */

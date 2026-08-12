@@ -4,6 +4,7 @@ import { TopBar, BottomTabs } from "@/components/nav";
 import { StoreProvider } from "@/lib/store";
 import { AmbientBackground } from "@/components/ambient-background";
 import { CelebrationHost } from "@/components/celebrations";
+import { CoachPopIn } from "@/components/coach-popin";
 import { ServiceWorkerRegister } from "@/components/sw-register";
 import "./globals.css";
 
@@ -68,6 +69,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </main>
           <BottomTabs />
           <CelebrationHost />
+          <CoachPopIn />
           <ServiceWorkerRegister />
         </StoreProvider>
       </body>

@@ -8,6 +8,7 @@ import { currentStreak } from "@/data/badges";
 import { SpectrumBars } from "@/components/spectrum";
 import { BadgeIcon } from "@/components/icons";
 import { LevelIcon, levelMeta } from "@/components/level-icon";
+import { SpectrumHistory } from "@/components/spectrum-history";
 import { useChallengeComplete } from "@/components/story-progress";
 
 // The student's own corner of the app: where they stand, what they've
@@ -83,6 +84,8 @@ export default function ProfilePage() {
           </div>
         </section>
       )}
+
+      <SpectrumHistory attempts={state.attempts} />
 
       <section className="flex flex-col gap-3">
         <div className="flex flex-col gap-1">

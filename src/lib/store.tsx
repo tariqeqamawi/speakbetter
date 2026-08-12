@@ -49,7 +49,12 @@ export interface AppState {
   attempts: Attempt[];
   watchedLessons: string[]; // vimeo ids
   badges: EarnedBadge[];
+  /** Days (yyyy-mm-dd) a freeze covered, so a streak survives one miss */
+  frozenDays: string[];
+  freezesRemaining: number;
 }
+
+const STARTING_FREEZES = 2;
 
 const EMPTY: AppState = {
   unlocked: false,
@@ -57,6 +62,8 @@ const EMPTY: AppState = {
   attempts: [],
   watchedLessons: [],
   badges: [],
+  frozenDays: [],
+  freezesRemaining: STARTING_FREEZES,
 };
 
 const STORAGE_KEY = "speak-better-state-v1";
@@ -74,6 +81,35 @@ interface StoreApi {
   bestAttempt: (challengeSlug: string) => Attempt | undefined;
   latestAttempt: (challengeSlug: string) => Attempt | undefined;
   isChallengeComplete: (challengeSlug: string) => boolean;
+}
+
+/**
+ * Spend a freeze to bridge a single missed day, so one busy day doesn't
+ * wipe a long streak. Runs once on load; only ever covers yesterday, and
+ * only when there is a streak worth saving.
+ */
+function applyStreakFreeze(state: AppState): AppState {
+  if (state.freezesRemaining <= 0 || state.attempts.length === 0) return state;
+  const DAY = 86_400_000;
+  const today = new Date().toISOString().slice(0, 10);
+  const active = new Set([
+    ...state.attempts.map((a) => a.at.slice(0, 10)),
+    ...state.frozenDays,
+  ]);
+  if (active.has(today)) return state;
+
+  const yesterday = new Date(Date.parse(today) - DAY).toISOString().slice(0, 10);
+  const dayBefore = new Date(Date.parse(today) - DAY * 2).toISOString().slice(0, 10);
+  // Yesterday missed, but the day before was active — exactly the gap a
+  // freeze exists to cover.
+  if (!active.has(yesterday) && active.has(dayBefore)) {
+    return {
+      ...state,
+      frozenDays: [...state.frozenDays, yesterday],
+      freezesRemaining: state.freezesRemaining - 1,
+    };
+  }
+  return state;
 }
 
 const StoreContext = createContext<StoreApi | null>(null);
@@ -95,10 +131,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
-        const loaded = { ...EMPTY, ...(JSON.parse(raw) as Partial<AppState>) };
+        const loaded = applyStreakFreeze({
+          ...EMPTY,
+          ...(JSON.parse(raw) as Partial<AppState>),
+        });
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setState(loaded);
         stateRef.current = loaded;
+        try {
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(loaded));
+        } catch {
+          // a spent freeze that fails to persist just gets re-applied
+        }
       }
     } catch {
       // corrupt state — start fresh rather than crash

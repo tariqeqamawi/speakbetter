@@ -8,16 +8,22 @@ import { Soundwave } from "@/components/soundwave";
 import { categories } from "@/data/categories";
 import { storyPhases } from "@/data/challenges";
 import { VimeoPlayer } from "@/components/vimeo-player";
-import { UnlockButton, RedirectIfUnlocked } from "@/components/unlock-button";
+import { UnlockButton } from "@/components/unlock-button";
+import { HomeSwitch } from "@/components/home-switch";
+import { CoachDemo } from "@/components/coach-demo";
+import { SpectrumDemo } from "@/components/spectrum-demo";
 
 // The landing page (master plan §15): promo video as centerpiece,
 // pay-to-unlock, straight into the app. Promo video choice is an open
 // question in §18 — the intro video stands in until decided.
 
-export default function LandingPage() {
+export default function HomePage() {
+  return <HomeSwitch landing={<Landing />} />;
+}
+
+function Landing() {
   return (
     <div className="flex flex-col gap-16 py-8">
-      <RedirectIfUnlocked />
 
       {/* Hero */}
       <section className="flex flex-col items-center gap-6 text-center">
@@ -80,6 +86,18 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* The coach, actually coaching */}
+      <section className="flex flex-col items-center gap-4">
+        <h2 className="text-2xl font-semibold tracking-tight text-balance">
+          Watch your coach at work
+        </h2>
+        <p className="max-w-lg text-center text-ink-muted">
+          Record a challenge and this is what comes back — in seconds, on every
+          attempt, for as many attempts as you want.
+        </p>
+        <CoachDemo />
+      </section>
+
       {/* The spectrum */}
       <section className="flex flex-col items-center gap-4">
         <h2 className="text-2xl font-semibold tracking-tight">
@@ -87,8 +105,10 @@ export default function LandingPage() {
         </h2>
         <p className="max-w-lg text-center text-ink-muted">
           Every skill belongs to one of seven colors. The more colors your talk
-          lights up, the more dynamic a speaker you&apos;re becoming.
+          lights up, the more dynamic a speaker you&apos;re becoming — this is
+          the same speaker, before and after.
         </p>
+        <SpectrumDemo />
         <ul className="flex max-w-2xl flex-wrap justify-center gap-2">
           {categories.map((cat) => (
             <li
@@ -100,6 +120,34 @@ export default function LandingPage() {
             </li>
           ))}
         </ul>
+      </section>
+
+      {/* Who's teaching */}
+      <section className="flex flex-col gap-5 rounded-2xl border border-navy-600 bg-navy-800 p-6 sm:flex-row sm:items-center sm:gap-8 sm:p-8">
+        <div className="relative aspect-video w-full shrink-0 overflow-hidden rounded-xl bg-navy-950 sm:w-64">
+          <Image
+            src="/thumbs/1080326796.jpg"
+            alt="Your instructor"
+            fill
+            sizes="(min-width: 640px) 256px, 100vw"
+            className="object-cover"
+          />
+        </div>
+        <div className="flex flex-col gap-2">
+          <span className="text-xs font-semibold uppercase tracking-wider text-ink-faint">
+            Who&apos;s teaching this
+          </span>
+          <h2 className="text-2xl font-semibold tracking-tight">
+            A decade of watching the best, distilled
+          </h2>
+          <p className="text-sm leading-relaxed text-ink-muted">
+            Every lesson here is a tool of the trade — the things nobody taught
+            me, picked up over more than a decade of studying the best speakers
+            at their craft, and cut down to one or two minutes each. No hour-long
+            recordings. No theory you&apos;ll never use. Just the skill, and then
+            your turn to try it.
+          </p>
+        </div>
       </section>
 
       {/* The journey */}
