@@ -271,6 +271,22 @@ Nothing in the interface is a filled emoji. Every icon is drawn stroke-only on a
 
 Lessons and challenges are presented as vertical carousels of **stills taken from the middle of each video**, where the coach is mid-gesture and visibly teaching. This is deliberate: the platform's own thumbnails come from the opening seconds, where these videos show a title card, so half the library would otherwise present as a logo wall rather than a person. Seeing a real teacher on every row is the point.
 
+### Today — the daily home
+
+The app opens onto **Today**, not the challenge library. A library of 21 challenges invites browsing; a daily surface produces practice, and practice is the entire method. Today carries the greeting, the daily goal, one **named next action** chosen from real progress (resume what's underway, else the next unpassed challenge in journey order), where the student stands, their last talk's spectrum, and lessons to pick back up.
+
+**Streaks survive one missed day.** Every student holds a small number of freezes, spent automatically when exactly one day is missed between two active ones. Losing a long streak to a single busy day is the most common reason people abandon a habit app, and the SPARK principle here is literally *Keep Going*.
+
+### The coach speaks up
+
+Beyond challenge feedback, the coach **drops in unprompted** with encouragement built from the student's own figures — that their spectrum widened from two colours to six, that their score climbed nineteen points, that they went back at one challenge five times, that a streak is holding. It's rationed to once a day, never appears over a badge celebration, and stays silent when there's nothing true worth saying.
+
+The rule that governs it: **every claim is checked against the record first.** The coach never congratulates anyone on something that didn't happen. That constraint holds when a language model replaces the composer — the model receives the same verified figures and phrases them, rather than inventing them.
+
+### Showing the mechanic before the sale
+
+The colour-spectrum score is the product's one genuinely novel idea, and a visitor previously couldn't see it until they had paid, onboarded and uploaded. The landing page now **plays it**: a sample review runs end to end — the coach watches, the spectrum fills, the notes land one after another, and the lion says it aloud. A second demo shows the same speaker before and after, two colours against seven. An instructor section answers who is teaching this.
+
 ### The STORY journey, phase by phase
 
 Each of the five phases owns a color, borrowed from the skill it leans on most — **S** green (awareness/mindset), **T** cyan (the physical instrument), **O** yellow (storytelling), **R** red (emotional truth), **Y** magenta (structure and the world). Every phase is drawn as its own bordered section holding just its challenges, so the journey reads as five distinct stages rather than one long list, and the phase's color runs through its letter, its heading, and its progress bars.
