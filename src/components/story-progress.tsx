@@ -40,16 +40,28 @@ export function StoryProgress() {
         {storyPhases.map((phase) => {
           const inPhase = challenges.filter((c) => c.phase === phase.id);
           const doneInPhase = inPhase.filter((c) => isComplete(c.slug)).length;
+          const started = doneInPhase > 0;
           return (
             <div key={phase.id} className="flex flex-1 flex-col gap-1">
-              <div className="h-2 overflow-hidden rounded-full bg-navy-700">
+              {/* An untouched phase is its own colour, just faded — the
+                  journey is coloured from the start, and completing it
+                  brings each phase up to full strength rather than
+                  colouring in something grey. */}
+              <div
+                className={`h-2 overflow-hidden rounded-full ${phase.tintClass}`}
+              >
                 <div
-                  className={`h-full rounded-full ${phase.bgClass} transition-[width] duration-500`}
+                  className={`h-full rounded-full transition-[width] duration-500 ${phase.bgClass} ${phase.textClass} ${
+                    // The glow is what reads as "vivid"; on an empty bar it
+                    // would sit there as a bright dot, so it waits for
+                    // the first completed challenge.
+                    started ? "shadow-[0_0_10px_currentColor]" : ""
+                  }`}
                   style={{ width: `${(doneInPhase / inPhase.length) * 100}%` }}
                 />
               </div>
               <span
-                className={`text-center text-[0.65rem] font-bold ${phase.textClass}`}
+                className="text-center text-[0.65rem] font-bold text-ink"
                 title={phase.name}
               >
                 {phase.id}

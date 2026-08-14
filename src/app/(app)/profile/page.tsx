@@ -1,176 +1,171 @@
 "use client";
 
 import Link from "next/link";
-import { useStore, type Level } from "@/lib/store";
-import { categories, type CategoryId } from "@/data/categories";
-import { challenges } from "@/data/challenges";
-import { currentStreak } from "@/data/badges";
-import { SpectrumBars } from "@/components/spectrum";
-import { BadgeIcon } from "@/components/icons";
-import { LevelIcon, levelMeta } from "@/components/level-icon";
+import { useStore } from "@/lib/store";
+import { challenges, storyPhases } from "@/data/challenges";
+import { categories } from "@/data/categories";
+import { lessons } from "@/data/lessons";
 import { SpectrumHistory } from "@/components/spectrum-history";
+import { SpectrumSignature } from "@/components/spectrum-signature";
+import { StreakCalendar } from "@/components/streak-calendar";
+import { BadgeCollection } from "@/components/badge-collection";
+import { DashboardHeader } from "@/components/dashboard-header";
+import { SpectrumStrip } from "@/components/spectrum";
 import { useChallengeComplete } from "@/components/story-progress";
+import { CategoryIcon } from "@/components/category-icons";
+import { SectionBanner } from "@/components/section-banner";
+import { ChallengesIcon, SkillsIcon } from "@/components/icons";
 
-// The student's own corner of the app: where they stand, what they've
-// earned, and the only place the level is changed (master plan §09 —
-// movement between levels is always manual).
+// The student's dashboard: where they stand, what they've earned, what
+// they're made of, and the only place the level is changed (master plan
+// §09 — movement between levels is always manual).
+//
+// It's built as a heads-up display rather than a settings page. Every
+// panel is a view of real work: the rank comes from what they did, the
+// signature from what they recorded, the calendar from the days they
+// showed up. Nothing here flatters a student who hasn't practised.
 
-const levelOrder: Level[] = ["beginner", "intermediate", "advanced"];
-
-export default function ProfilePage() {
-  const { state, ready, setLevel, attemptsFor } = useStore();
+export default function DashboardPage() {
+  const { state, ready, attemptsFor } = useStore();
   const isComplete = useChallengeComplete();
 
   if (!ready) return null;
 
   const completed = challenges.filter((c) => isComplete(c.slug)).length;
-  const streak = currentStreak(state);
-
-  // Best score seen in each color across every attempt — the student's
-  // demonstrated range, not just their latest talk.
-  const bestSpectrum = {} as Record<CategoryId, number>;
-  for (const cat of categories) {
-    bestSpectrum[cat.id] = state.attempts.reduce(
-      (best, a) => Math.max(best, a.spectrum[cat.id] ?? 0),
-      0,
-    );
-  }
-  const colorsReached = categories.filter((c) => bestSpectrum[c.id] >= 40).length;
-
-  const stats = [
-    { label: "Challenges complete", value: `${completed}/${challenges.length}` },
-    { label: "Videos uploaded", value: state.attempts.length },
-    { label: "Colors reached", value: `${colorsReached}/7` },
-    { label: "Day streak", value: streak },
-  ];
+  const watched = state.watchedLessons.length;
 
   return (
-    <div className="flex flex-col gap-8 py-6">
-      <header className="flex flex-col gap-2">
-        <h1 className="text-3xl font-semibold tracking-tight">Profile</h1>
-        <p className="max-w-lg text-ink-muted">
-          Where you stand, what you&apos;ve earned, and how you want to be
-          coached.
-        </p>
-      </header>
+    <div className="flex flex-col gap-6 py-6">
+      <DashboardHeader />
 
-      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {stats.map((stat) => (
-          <div
-            key={stat.label}
-            className="flex flex-col gap-1 rounded-xl border border-navy-600 bg-navy-800 p-4"
+      {/* Challenges and lessons, each with their own breakdown — one
+          half of the row each, so they fill the width rather than
+          huddling on the left of it. */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <section className="flex flex-col overflow-hidden rounded-2xl border border-navy-600 bg-navy-800">
+          <SectionBanner
+            image="/sections/challenges.jpg"
+            title="Challenges"
+            Icon={ChallengesIcon}
+            accentClass="text-structure"
+            large
+            right={
+              <span className="text-xs tabular-nums text-ink-faint">
+                {completed} of {challenges.length}
+              </span>
+            }
+          />
+          <div className="flex flex-col gap-4 p-5">
+          <span className="text-sm text-ink-muted">
+            <b className="font-semibold tabular-nums text-ink">{completed}</b>{" "}
+            complete
+          </span>
+          <ul className="flex flex-col gap-2.5">
+            {storyPhases.map((phase) => {
+              const inPhase = challenges.filter((c) => c.phase === phase.id);
+              const done = inPhase.filter((c) => isComplete(c.slug)).length;
+              return (
+                <li key={phase.id} className="flex items-center gap-3">
+                  <span className="w-4 text-xs font-bold text-ink">
+                    {phase.id}
+                  </span>
+                  <span className="flex-1 truncate text-xs text-ink-muted">
+                    {phase.name}
+                  </span>
+                  <span
+                    className={`h-2 w-24 overflow-hidden rounded-full ${phase.tintClass}`}
+                  >
+                    <span
+                      className={`block h-full rounded-full ${phase.bgClass} ${phase.textClass} ${
+                        done > 0 ? "shadow-[0_0_8px_currentColor]" : ""
+                      }`}
+                      style={{ width: `${(done / inPhase.length) * 100}%` }}
+                    />
+                  </span>
+                  <span className="w-8 text-right text-xs tabular-nums text-ink-faint">
+                    {done}/{inPhase.length}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+          <Link
+            href="/challenges"
+            className="self-start text-xs font-semibold text-ink-muted transition-colors hover:text-ink"
           >
-            <span className="text-2xl font-bold tabular-nums text-ink">
-              {stat.value}
-            </span>
-            <span className="text-xs text-ink-faint">{stat.label}</span>
-          </div>
-        ))}
-      </section>
-
-      {state.attempts.length > 0 && (
-        <section className="flex flex-col gap-3">
-          <div className="flex flex-col gap-1">
-            <h2 className="text-sm font-medium uppercase tracking-wider text-ink-faint">
-              Your range
-            </h2>
-            <p className="text-sm text-ink-muted">
-              The strongest each color has ever shown up across all your
-              attempts.
-            </p>
-          </div>
-          <div className="rounded-xl border border-navy-600 bg-navy-800 p-4">
-            <SpectrumBars spectrum={bestSpectrum} />
+            Go to challenges →
+          </Link>
           </div>
         </section>
-      )}
+
+        <section className="flex flex-col overflow-hidden rounded-2xl border border-navy-600 bg-navy-800">
+          <SectionBanner
+            image="/sections/lessons.jpg"
+            title="Lessons"
+            Icon={SkillsIcon}
+            accentClass="text-storytelling"
+            large
+            right={
+              <span className="text-xs tabular-nums text-ink-faint">
+                {watched} of {lessons.length}
+              </span>
+            }
+          />
+          <div className="flex flex-col gap-4 p-5">
+          <span className="text-sm text-ink-muted">
+            <b className="font-semibold tabular-nums text-ink">{watched}</b>{" "}
+            watched
+          </span>
+          <ul className="flex flex-col gap-2.5">
+            {categories.map((cat) => {
+              const inCat = lessons.filter((l) => l.category === cat.id);
+              const seen = inCat.filter((l) =>
+                state.watchedLessons.includes(l.vimeoId),
+              ).length;
+              return (
+                <li key={cat.id} className="flex items-center gap-3">
+                  <CategoryIcon
+                    category={cat.id}
+                    className={`size-4 shrink-0 ${cat.textClass}`}
+                  />
+                  <span className="flex-1 truncate text-xs text-ink-muted">
+                    {cat.name}
+                  </span>
+                  <span className="h-2 w-20 overflow-hidden rounded-full bg-navy-900">
+                    <span
+                      className={`block h-full rounded-full ${cat.bgClass}`}
+                      style={{ width: `${(seen / inCat.length) * 100}%` }}
+                    />
+                  </span>
+                  <span className="w-10 text-right text-xs tabular-nums text-ink-faint">
+                    {seen}/{inCat.length}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+          <Link
+            href="/skills"
+            className="self-start text-xs font-semibold text-ink-muted transition-colors hover:text-ink"
+          >
+            Go to skills →
+          </Link>
+          </div>
+        </section>
+      </div>
+
+      {/* Signature + streak. The spectrum is the centrepiece, so it takes
+          two thirds of the row once there's width for it. */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="flex lg:col-span-2">
+          <SpectrumSignature state={state} />
+        </div>
+        <StreakCalendar state={state} />
+      </div>
+
+      <BadgeCollection state={state} />
 
       <SpectrumHistory attempts={state.attempts} />
-
-      <section className="flex flex-col gap-3">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-sm font-medium uppercase tracking-wider text-ink-faint">
-            Your level
-          </h2>
-          <p className="text-sm text-ink-muted">
-            This changes how hard the challenges push and how much detail your
-            coach gives back. It only ever changes when you change it.
-          </p>
-        </div>
-        <div className="flex flex-col gap-2">
-          {levelOrder.map((level) => {
-            const meta = levelMeta[level];
-            const active = state.level === level;
-            return (
-              <button
-                key={level}
-                type="button"
-                onClick={() => setLevel(level)}
-                aria-pressed={active}
-                className={`flex items-center gap-4 rounded-xl border p-4 text-left transition-colors ${
-                  active
-                    ? "border-ink-faint bg-navy-700"
-                    : "border-navy-600 bg-navy-800 hover:bg-navy-700"
-                }`}
-              >
-                <LevelIcon
-                  level={level}
-                  className={`h-12 w-auto shrink-0 ${active ? "" : "opacity-55"}`}
-                />
-                <span className="flex flex-col gap-0.5">
-                  <span className="flex items-center gap-2 font-semibold text-ink">
-                    {meta.label}
-                    {active && (
-                      <span className="rounded-full bg-navy-600 px-2 py-0.5 text-[0.65rem] font-medium text-ink-muted">
-                        Current
-                      </span>
-                    )}
-                  </span>
-                  <span className="text-sm text-ink-muted">{meta.detail}</span>
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-medium uppercase tracking-wider text-ink-faint">
-          Badges
-        </h2>
-        {state.badges.length === 0 ? (
-          <div className="flex flex-col items-start gap-3 rounded-xl border border-dashed border-navy-600 p-4">
-            <p className="text-sm text-ink-faint">
-              No badges yet — your first arrives the moment you upload a video.
-            </p>
-            <Link
-              href="/challenges"
-              className="flex min-h-11 items-center rounded-lg border border-navy-600 px-4 py-2.5 text-sm font-semibold text-ink-muted transition-colors hover:text-ink"
-            >
-              Start a challenge
-            </Link>
-          </div>
-        ) : (
-          <ul className="grid gap-2 sm:grid-cols-2">
-            {state.badges.map((badge) => (
-              <li
-                key={badge.id}
-                className="flex items-start gap-3 rounded-xl border border-navy-600 bg-navy-800 p-4"
-              >
-                <span className="mt-0.5 text-ink-muted" aria-hidden>
-                  <BadgeIcon name={badge.icon} className="size-6" />
-                </span>
-                <span className="flex flex-col gap-0.5">
-                  <span className="text-sm font-semibold text-ink">
-                    {badge.title}
-                  </span>
-                  <span className="text-xs text-ink-muted">{badge.message}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
 
       {state.attempts.length > 0 && (
         <section className="flex flex-col gap-3">
@@ -195,15 +190,13 @@ export default function ProfilePage() {
                       <span className="flex-1 text-sm font-medium text-ink">
                         {challenge?.title ?? attempt.challengeSlug}
                         <span className="ml-2 text-xs font-normal text-ink-faint">
-                          {new Date(attempt.at).toLocaleDateString()}
-                          {tries > 1 && ` · ${tries} attempts`}
+                          {tries > 1 ? `${tries} attempts` : "1 attempt"}
                         </span>
                       </span>
-                      <span
-                        className={`text-sm font-bold tabular-nums ${
-                          attempt.passed ? "text-mindset" : "text-storytelling"
-                        }`}
-                      >
+                      <span className="hidden w-32 sm:block">
+                        <SpectrumStrip spectrum={attempt.spectrum} />
+                      </span>
+                      <span className="w-10 text-right text-sm font-bold tabular-nums text-ink">
                         {attempt.score}
                       </span>
                     </Link>
@@ -213,6 +206,7 @@ export default function ProfilePage() {
           </ul>
         </section>
       )}
+
     </div>
   );
 }

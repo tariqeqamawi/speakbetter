@@ -34,7 +34,7 @@ export default function SkillsPage() {
                 className="group flex h-full flex-col overflow-hidden rounded-xl border border-navy-600 bg-navy-800 transition-colors hover:border-ink-faint"
               >
                 {/* the category's lion, and a frame from one of its lessons */}
-                <div className="flex h-24 shrink-0 items-stretch bg-navy-950 sm:h-28">
+                <div className="flex h-24 shrink-0 items-stretch bg-gradient-to-br from-navy-700 to-navy-900 sm:h-28">
                   <div className="flex w-[38%] shrink-0 items-center justify-center px-3">
                     <Image
                       src={`/cat-${cat.id}.png`}

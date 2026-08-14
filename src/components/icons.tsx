@@ -181,6 +181,75 @@ export function CheckIcon({ className = "size-5" }: IconProps) {
   );
 }
 
+/** An open hand — gesture, the thing hands do while you speak. */
+export function HandIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M9 11V5.4a1.4 1.4 0 0 1 2.8 0V11" />
+      <path d="M11.8 10.4V4.6a1.4 1.4 0 0 1 2.8 0v5.8" />
+      <path d="M14.6 10.8V6.6a1.4 1.4 0 0 1 2.8 0V14" />
+      <path d="M9 11V9.4a1.4 1.4 0 0 0-2.8 0v5.1c0 3 2.3 5.25 5.3 5.25h1.2c2.5 0 4.7-1.9 4.7-4.6" />
+    </svg>
+  );
+}
+
+/** An eye — eye contact, and being watched by the coach. */
+export function EyeIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M2.75 12S6 6.25 12 6.25 21.25 12 21.25 12 18 17.75 12 17.75 2.75 12 2.75 12Z" />
+      <circle cx="12" cy="12" r="2.75" />
+    </svg>
+  );
+}
+
+/** A brush — painting the picture with words. */
+export function BrushIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M17.6 3.9a2.2 2.2 0 0 1 3.1 3.1l-7.3 7.3-3.1-3.1Z" />
+      <path d="M10.3 11.2 7.5 14a3.5 3.5 0 0 0-1 2.5c0 .9-.5 1.6-1.3 2-.9.4-2 .3-2-.2 0-1.1.5-1.4.5-2.6a5.6 5.6 0 0 1 1.6-4l2.9-2.9Z" />
+    </svg>
+  );
+}
+
+/** A line that goes flat — delivery losing its shape. */
+export function FlatlineIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M2.75 12h3.5l1.6-4.5L9.5 16l1.4-4h1.85" />
+      <path d="M12.75 12h8.5" />
+    </svg>
+  );
+}
+
+/** A closed padlock — a phase the journey hasn't reached yet. */
+export function LockIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="4.75" y="10.5" width="14.5" height="9" rx="2.25" />
+      <path d="M8.25 10.5V7.75a3.75 3.75 0 0 1 7.5 0v2.75" />
+    </svg>
+  );
+}
+
+export function ChevronDownIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="m6 9.5 6 6 6-6" />
+    </svg>
+  );
+}
+
+export function XIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="m6.25 6.25 11.5 11.5" />
+      <path d="m17.75 6.25-11.5 11.5" />
+    </svg>
+  );
+}
+
 export function CircleIcon({ className = "size-5" }: IconProps) {
   return (
     <svg {...base} className={className}>

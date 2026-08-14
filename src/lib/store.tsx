@@ -10,8 +10,10 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { usePathname } from "next/navigation";
 import type { CategoryId } from "@/data/categories";
 import { evaluateBadges, type EarnedBadge } from "@/data/badges";
+import { demoState } from "@/lib/demo-state";
 
 // ─────────────────────────────────────────────────────────────────────
 // Local-first state layer.
@@ -28,6 +30,10 @@ export type Level = "beginner" | "intermediate" | "advanced";
 export interface FeedbackNote {
   category: CategoryId;
   note: string;
+  /** Lessons behind this observation — the skill used or the skill to
+   * learn. Rendered as links into Skills at Intermediate/Advanced (§08),
+   * so a skill stumbled into by chance can be studied on purpose. */
+  lessonIds?: string[];
 }
 
 export interface Attempt {
@@ -52,6 +58,14 @@ export interface AppState {
   /** Days (yyyy-mm-dd) a freeze covered, so a streak survives one miss */
   frozenDays: string[];
   freezesRemaining: number;
+  /** Why they're here, in their own words — asked at onboarding and kept
+   *  at the top of their profile. The whole course asks people to keep
+   *  going; this is the reason they gave for wanting to. */
+  intention: string;
+  displayName: string;
+  /** A downscaled data URL. Small enough to sit in localStorage today,
+   *  and swapped for a storage bucket URL when Supabase lands. */
+  avatar: string;
 }
 
 const STARTING_FREEZES = 2;
@@ -64,6 +78,9 @@ const EMPTY: AppState = {
   badges: [],
   frozenDays: [],
   freezesRemaining: STARTING_FREEZES,
+  intention: "",
+  displayName: "",
+  avatar: "",
 };
 
 const STORAGE_KEY = "speak-better-state-v1";
@@ -74,6 +91,8 @@ interface StoreApi {
   celebrations: EarnedBadge[]; // badges earned but not yet shown
   unlock: () => void;
   setLevel: (level: Level) => void;
+  setIntention: (intention: string) => void;
+  setProfile: (patch: { displayName?: string; avatar?: string }) => void;
   markLessonWatched: (vimeoId: string) => void;
   recordAttempt: (attempt: Attempt) => void;
   dismissCelebration: (badgeId: string) => void;
@@ -115,7 +134,34 @@ function applyStreakFreeze(state: AppState): AppState {
 const StoreContext = createContext<StoreApi | null>(null);
 
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AppState>(EMPTY);
+  // Two preview surfaces, both backed by an ephemeral store that never
+  // reads or writes real progress: /landing always shows the visitor's
+  // view, and /demo shows a worked-in dashboard. The key remount swaps
+  // cleanly between an ephemeral store and the live one on navigation.
+  const pathname = usePathname();
+  const preview =
+    pathname === "/landing" ? "landing" : pathname === "/demo" ? "demo" : null;
+  return (
+    <StoreCore
+      key={preview ?? "live"}
+      ephemeral={preview !== null}
+      seed={preview === "demo" ? demoState : undefined}
+    >
+      {children}
+    </StoreCore>
+  );
+}
+
+function StoreCore({
+  children,
+  ephemeral,
+  seed,
+}: {
+  children: ReactNode;
+  ephemeral: boolean;
+  seed?: AppState;
+}) {
+  const [state, setState] = useState<AppState>(seed ?? EMPTY);
   const [ready, setReady] = useState(false);
   const [celebrations, setCelebrations] = useState<EarnedBadge[]>([]);
   const stateRef = useRef(state);
@@ -128,36 +174,44 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   // (not a useState initializer) so server and first client render agree;
   // the synchronous setState here is the sync-from-external-store idiom.
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const loaded = applyStreakFreeze({
-          ...EMPTY,
-          ...(JSON.parse(raw) as Partial<AppState>),
-        });
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setState(loaded);
-        stateRef.current = loaded;
-        try {
-          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(loaded));
-        } catch {
-          // a spent freeze that fails to persist just gets re-applied
+    // An ephemeral store (the /landing preview) skips hydration entirely —
+    // it always starts from EMPTY and never touches localStorage.
+    if (!ephemeral) {
+      try {
+        const raw = window.localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const loaded = applyStreakFreeze({
+            ...EMPTY,
+            ...(JSON.parse(raw) as Partial<AppState>),
+          });
+          // eslint-disable-next-line react-hooks/set-state-in-effect
+          setState(loaded);
+          stateRef.current = loaded;
+          try {
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(loaded));
+          } catch {
+            // a spent freeze that fails to persist just gets re-applied
+          }
         }
+      } catch {
+        // corrupt state — start fresh rather than crash
       }
-    } catch {
-      // corrupt state — start fresh rather than crash
     }
     setReady(true);
-  }, []);
+  }, [ephemeral]);
 
-  const persist = useCallback((next: AppState) => {
-    setState(next);
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    } catch {
-      // storage full/unavailable — state still lives in memory
-    }
-  }, []);
+  const persist = useCallback(
+    (next: AppState) => {
+      setState(next);
+      if (ephemeral) return; // preview progress lives and dies in memory
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      } catch {
+        // storage full/unavailable — state still lives in memory
+      }
+    },
+    [ephemeral],
+  );
 
   // Apply a state change, then check whether it earned any new badges;
   // newly earned badges join the celebration queue (master plan §11).
@@ -183,6 +237,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       celebrations,
       unlock: () => applyWithBadges((p) => ({ ...p, unlocked: true })),
       setLevel: (level) => applyWithBadges((p) => ({ ...p, level })),
+      setIntention: (intention) =>
+        applyWithBadges((p) => ({ ...p, intention: intention.trim() })),
+      setProfile: (patch) => applyWithBadges((p) => ({ ...p, ...patch })),
       markLessonWatched: (vimeoId) =>
         applyWithBadges((p) =>
           p.watchedLessons.includes(vimeoId)

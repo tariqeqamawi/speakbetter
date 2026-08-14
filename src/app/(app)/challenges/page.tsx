@@ -3,7 +3,7 @@ import { bonusChallenges, challengesIntro } from "@/data/challenges";
 import { StoryJourney } from "@/components/challenge-carousel";
 import { StoryProgress } from "@/components/story-progress";
 import { StreakFlame } from "@/components/celebrations";
-import { PlayIcon } from "@/components/icons";
+import { LazyVimeoPlayer } from "@/components/lazy-vimeo-player";
 import { vimeoWatchUrl } from "@/lib/vimeo";
 
 export const metadata: Metadata = {
@@ -27,18 +27,18 @@ export default function ChallengesPage() {
 
       <StoryProgress />
 
-      <div className="flex flex-wrap gap-2 text-sm">
+      {/* The two orientation videos play here rather than on Vimeo —
+          a student should never have to leave the course to start it. */}
+      <div className="grid gap-4 sm:grid-cols-2">
         {challengesIntro.map((v) => (
-          <a
-            key={v.vimeoId}
-            href={vimeoWatchUrl(v.vimeoId)}
-            target="_blank"
-            rel="noreferrer"
-            className="flex min-h-11 items-center gap-1.5 rounded-full border border-navy-600 px-4 py-2.5 text-xs text-ink-faint transition-colors hover:text-ink-muted"
-          >
-            <PlayIcon className="size-3" />
-            {v.title}
-          </a>
+          <section key={v.vimeoId} className="flex flex-col gap-2">
+            <h2 className="text-sm font-semibold text-ink">{v.title}</h2>
+            <LazyVimeoPlayer
+              vimeoId={v.vimeoId}
+              title={v.title}
+              poster={`/thumbs/${v.vimeoId}.jpg`}
+            />
+          </section>
         ))}
       </div>
 

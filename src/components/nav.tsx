@@ -17,7 +17,9 @@ const destinations = [
   { href: "/community", label: "Community", Icon: CommunityIcon },
   { href: "/challenges", label: "Challenges", Icon: ChallengesIcon },
   { href: "/skills", label: "Skills", Icon: SkillsIcon },
-  { href: "/profile", label: "Profile", Icon: ProfileIcon },
+  // The route stays /profile so existing links keep working; the name a
+  // student sees is Dashboard, which is what the page became.
+  { href: "/profile", label: "Dashboard", Icon: ProfileIcon },
 ] as const;
 
 export function TopBar() {
@@ -107,7 +109,7 @@ export function BottomTabs() {
       className="fixed inset-x-0 bottom-0 z-20 border-t border-navy-600 bg-navy-850/95 backdrop-blur sm:hidden"
       aria-label="Primary"
     >
-      <div className="mx-auto flex max-w-md items-stretch justify-around pb-[env(safe-area-inset-bottom)]">
+      <div className="pb-safe mx-auto flex max-w-md items-stretch justify-around">
         {destinations.map(({ href, label, Icon }) => {
           const active = pathname.startsWith(href);
           return (

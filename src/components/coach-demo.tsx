@@ -2,8 +2,17 @@
 
 import { useCallback, useState } from "react";
 import { categories, categoryById, type CategoryId } from "@/data/categories";
-import { TalkingLion } from "@/components/talking-lion";
-import { CheckIcon, SpectrumIcon } from "@/components/icons";
+import { TalkingLion, type SpokenCue } from "@/components/talking-lion";
+import {
+  BrushIcon,
+  CheckCircleIcon,
+  CheckIcon,
+  FilmIcon,
+  FlatlineIcon,
+  HandIcon,
+  PlayIcon,
+  SpectrumIcon,
+} from "@/components/icons";
 
 // The coaching mechanic, played out on the landing page. A visitor
 // otherwise can't see what they're buying until they've paid, onboarded
@@ -24,18 +33,73 @@ const SAMPLE_SPECTRUM: Record<CategoryId, number> = {
   advanced: 44,
 };
 
-const SAMPLE_NOTES: { category: CategoryId; note: string }[] = [
+// Each note names the real lesson behind it — the same tie between
+// coaching and curriculum a student gets after buying (§08). Shown as
+// text, not links: the lessons live past the paywall.
+const SAMPLE_NOTES: { category: CategoryId; note: string; lesson: string }[] = [
   {
     category: "body-language",
     note: "Your hands went quiet at the key moment — that's exactly when they should be painting the picture.",
+    lesson: "Hand Gestures: Express Visually What You Say Verbally",
   },
   {
     category: "figurative",
     note: "The middle third went flat. One vivid comparison would have lifted it.",
+    lesson: "Metaphors: What They Are And How To Use Them",
   },
   {
     category: "storytelling",
     note: "Strong instinct dropping straight into the scene. Keep doing that.",
+    lesson: "Life Scene NOT Life Story",
+  },
+];
+
+// What the coach is talking about, moment by moment. The times were read
+// off the clip's own speech segments, so each symbol lands on the word
+// being spoken — the student hears "hands" and sees a hand.
+const CUES: SpokenCue[] = [
+  {
+    at: 0.95,
+    until: 1.9,
+    word: "Passed",
+    colorClass: "text-mindset",
+    Icon: CheckCircleIcon,
+    summary: false, // a verdict, not something to work on
+  },
+  {
+    at: 4.0,
+    until: 6.05,
+    word: "Hands",
+    colorClass: "text-body-language",
+    Icon: HandIcon,
+  },
+  {
+    at: 7.5,
+    until: 8.6,
+    word: "Paint the picture",
+    colorClass: "text-figurative",
+    Icon: BrushIcon,
+  },
+  {
+    at: 8.95,
+    until: 10.6,
+    word: "Went flat",
+    colorClass: "text-acting",
+    Icon: FlatlineIcon,
+  },
+  {
+    at: 10.9,
+    until: 12.85,
+    word: "Comparison",
+    colorClass: "text-figurative",
+    Icon: SpectrumIcon,
+  },
+  {
+    at: 13.3,
+    until: 15.8,
+    word: "Into the scene",
+    colorClass: "text-storytelling",
+    Icon: FilmIcon,
   },
 ];
 
@@ -60,9 +124,14 @@ export function CoachDemo() {
     <div className="grid w-full gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
       {/* the coach */}
       <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-navy-600 bg-navy-800 p-5">
-        <TalkingLion text={SPOKEN} />
+        <TalkingLion
+          text={SPOKEN}
+          audioSrc="/coach/sample-review.mp3"
+          cues={CUES}
+        />
         <p className="text-center text-xs text-ink-faint">
-          Sample voice only — the coach&apos;s real voice is being cast.
+          A sample review, spoken aloud by the coach — each skill named as
+          it comes up.
         </p>
       </div>
 
@@ -159,9 +228,22 @@ export function CoachDemo() {
                       categoryById.get(n.category)?.bgClass ?? ""
                     }`}
                   />
-                  {n.note}
+                  <span className="flex flex-col gap-0.5">
+                    {n.note}
+                    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-muted">
+                      <PlayIcon className="size-3 shrink-0" />
+                      Watch the lesson: {n.lesson}
+                    </span>
+                  </span>
                 </span>
               ))}
+              <span
+                className="coach-note text-xs text-ink-faint"
+                style={{ animationDelay: `${700 + SAMPLE_NOTES.length * 260 + 200}ms` }}
+              >
+                Every note links straight to the one- or two-minute lesson that
+                teaches it — feedback is never a dead end.
+              </span>
             </div>
 
             <button

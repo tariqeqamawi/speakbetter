@@ -5,8 +5,9 @@ import { useStore, type Attempt, type FeedbackNote } from "@/lib/store";
 import type { Challenge } from "@/data/challenges";
 import { lessonByVimeoId } from "@/data/lessons";
 import { categoryById, type CategoryId } from "@/data/categories";
+import Link from "next/link";
 import { SpectrumBars, SpectrumStrip } from "@/components/spectrum";
-import { CheckIcon, CircleIcon } from "@/components/icons";
+import { CheckIcon, CircleIcon, PlayIcon } from "@/components/icons";
 
 // The practice loop (master plan §06, steps 3–7; build plan Phase 4).
 //
@@ -242,6 +243,17 @@ function Feedback({
   const { state } = useStore();
   const canRevealAll = state.level !== "beginner"; // §08/§09: nested reveal
 
+  const noteLine = (n: FeedbackNote) => {
+    const refs = canRevealAll
+      ? (n.lessonIds ?? [])
+          .map((id) => lessonByVimeoId.get(id)?.title)
+          .filter(Boolean)
+      : [];
+    return `- [${catName(n.category)}] ${n.note}${
+      refs.length ? ` (lesson: ${refs.join(", ")})` : ""
+    }`;
+  };
+
   const download = () => {
     const lines = [
       `Speak Better — Feedback`,
@@ -252,9 +264,9 @@ function Feedback({
       attempt.summary,
       ``,
       `Focus on next:`,
-      ...attempt.focus.map((n) => `- [${catName(n.category)}] ${n.note}`),
+      ...attempt.focus.map(noteLine),
       ...(canRevealAll
-        ? [``, `Everything the coach noticed:`, ...attempt.fullNotes.map((n) => `- [${catName(n.category)}] ${n.note}`)]
+        ? [``, `Everything the coach noticed:`, ...attempt.fullNotes.map(noteLine)]
         : []),
     ];
     const blob = new Blob([lines.join("\n")], { type: "text/plain" });
@@ -305,7 +317,7 @@ function Feedback({
         </h3>
         <ul className="flex flex-col gap-2">
           {attempt.focus.map((note, i) => (
-            <FeedbackNoteRow key={i} note={note} />
+            <FeedbackNoteRow key={i} note={note} showLessons={canRevealAll} />
           ))}
         </ul>
       </div>
@@ -317,7 +329,7 @@ function Feedback({
           </summary>
           <ul className="flex flex-col gap-2 px-3 pb-3">
             {attempt.fullNotes.map((note, i) => (
-              <FeedbackNoteRow key={i} note={note} />
+              <FeedbackNoteRow key={i} note={note} showLessons />
             ))}
           </ul>
         </details>
@@ -350,12 +362,42 @@ function catName(id: CategoryId): string {
   return categoryById.get(id)?.name ?? id;
 }
 
-function FeedbackNoteRow({ note }: { note: FeedbackNote }) {
+function FeedbackNoteRow({
+  note,
+  showLessons = false,
+}: {
+  note: FeedbackNote;
+  /** Intermediate/Advanced only (§08): link each observation back to the
+   * Skills lesson behind it, so a skill used by instinct — or one still
+   * missing — leads straight to its video. */
+  showLessons?: boolean;
+}) {
   const cat = categoryById.get(note.category);
+  const lessons = showLessons
+    ? (note.lessonIds ?? [])
+        .map((id) => lessonByVimeoId.get(id))
+        .filter((l) => l !== undefined)
+    : [];
   return (
     <li className="flex items-start gap-2 text-sm text-ink">
       <span className={`mt-1.5 size-2 shrink-0 rounded-full ${cat?.bgClass ?? ""}`} />
-      <span>{note.note}</span>
+      <span className="flex flex-col gap-1">
+        {note.note}
+        {lessons.length > 0 && (
+          <span className="flex flex-wrap gap-x-3 gap-y-1">
+            {lessons.map((lesson) => (
+              <Link
+                key={lesson.vimeoId}
+                href={`/skills/${lesson.category}/${lesson.vimeoId}`}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-muted underline decoration-navy-500 underline-offset-4 transition-colors hover:text-ink"
+              >
+                <PlayIcon className="size-3 shrink-0" />
+                Watch the lesson: {lesson.title}
+              </Link>
+            ))}
+          </span>
+        )}
+      </span>
     </li>
   );
 }

@@ -1,5 +1,5 @@
 import type { CategoryId } from "./categories";
-import { challenges, storyPhases } from "./challenges";
+import { challengeBadges, challenges, storyPhases } from "./challenges";
 
 // Gamification layer — master plan §11. Badges recognize effort as much
 // as achievement, and apply identically at every level (never gated).
@@ -11,6 +11,7 @@ interface BadgeEvalState {
     challengeSlug: string;
     at: string;
     passed: boolean;
+    durationSec: number;
     spectrum: Record<CategoryId, number>;
   }[];
   watchedLessons: string[];
@@ -23,7 +24,12 @@ export interface BadgeDef {
   id: string;
   title: string;
   message: string;
+  /** Line-icon name — the fallback, and what celebrations use inline. */
   icon: string;
+  /** What to do to win it, shown on hover before it's earned. Left off
+   *  deliberately on a few, which show as hidden achievements — a
+   *  collection with nothing unknown in it stops being worth exploring. */
+  how?: string;
   earned: (s: BadgeEvalState) => boolean;
 }
 
@@ -85,6 +91,7 @@ export const badgeDefs: BadgeDef[] = [
     title: "First Words",
     message: "Well done — you just uploaded your first video.",
     icon: "film",
+    how: "Upload your first challenge video.",
     earned: (s) => s.attempts.length >= 1,
   },
   {
@@ -92,6 +99,7 @@ export const badgeDefs: BadgeDef[] = [
     title: "Finding Your Voice",
     message: "You've uploaded five videos now. This is how speakers are made.",
     icon: "video",
+    how: "Upload five challenge videos.",
     earned: (s) => s.attempts.length >= 5,
   },
   {
@@ -99,6 +107,7 @@ export const badgeDefs: BadgeDef[] = [
     title: "Serious Reps",
     message: "Ten videos uploaded. Your camera is officially your training partner.",
     icon: "trending-up",
+    how: "Upload ten challenge videos.",
     earned: (s) => s.attempts.length >= 10,
   },
   {
@@ -119,6 +128,7 @@ export const badgeDefs: BadgeDef[] = [
     title: "Challenge Complete",
     message: "Your first challenge passed. The journey is officially underway.",
     icon: "check-circle",
+    how: "Pass any challenge.",
     earned: (s) => s.attempts.some((a) => a.passed),
   },
   {
@@ -137,6 +147,7 @@ export const badgeDefs: BadgeDef[] = [
     title: "On a Roll",
     message: "Three days of practice in a row. Momentum looks good on you.",
     icon: "flame",
+    how: "Practise three days in a row.",
     earned: (s) => currentStreak(s) >= 3,
   },
   {
@@ -144,13 +155,119 @@ export const badgeDefs: BadgeDef[] = [
     title: "Unstoppable",
     message: "A full week of daily practice. Most people never do this once.",
     icon: "zap",
+    how: "Practise seven days in a row.",
     earned: (s) => currentStreak(s) >= 7,
   },
+  {
+    id: "streak-5",
+    title: "High Five",
+    message: "Five days straight. This is a habit now, not an experiment.",
+    icon: "flame",
+    how: "Practise five days in a row.",
+    earned: (s) => currentStreak(s) >= 5,
+  },
+  {
+    id: "ten-minutes",
+    title: "Ten Minutes of Fame",
+    message:
+      "Ten minutes of you, on camera, speaking. Most people never record one.",
+    icon: "video",
+    how: "Upload ten minutes of video in total.",
+    earned: (s) =>
+      s.attempts.reduce((sum, a) => sum + (a.durationSec ?? 0), 0) >= 600,
+  },
+  // Skill badges — earned off what the coach actually saw in a talk, so
+  // each one is evidence of a specific thing done well, not participation.
+  {
+    id: "handy",
+    title: "Handy",
+    message:
+      "Your hands did the talking too — gesture that strong is rare, and it reads on camera.",
+    icon: "spectrum",
+    how: "Score 70 or higher on body language in a single talk.",
+    earned: (s) => s.attempts.some((a) => (a.spectrum["body-language"] ?? 0) >= 70),
+  },
+  {
+    id: "i-see-you",
+    title: "I See You",
+    message:
+      "Three talks holding your eye line and your presence. The camera trusts you now.",
+    icon: "check-circle",
+    how: "Score 60 or higher on body language in three separate talks.",
+    earned: (s) =>
+      s.attempts.filter((a) => (a.spectrum["body-language"] ?? 0) >= 60).length >= 3,
+  },
+  {
+    id: "storyteller",
+    title: "Storyteller",
+    message: "That was a story, properly told — scene, not summary.",
+    icon: "film",
+    how: "Score 75 or higher on storytelling in a single talk.",
+    earned: (s) => s.attempts.some((a) => (a.spectrum.storytelling ?? 0) >= 75),
+  },
+  {
+    id: "oscar",
+    title: "And the Oscar Goes To",
+    message:
+      "You didn't report the moment, you performed it. That's acting for speakers.",
+    icon: "trophy",
+    how: "Score 75 or higher on acting skills in a single talk.",
+    earned: (s) => s.attempts.some((a) => (a.spectrum.acting ?? 0) >= 75),
+  },
+  {
+    id: "twisted",
+    title: "Twisted",
+    message: "You set them up and turned it on them. Plot twist landed.",
+    icon: "repeat",
+    how: "Pass the challenge 'Add a Twist in Third-Person'.",
+    earned: (s) =>
+      s.attempts.some((a) => a.challengeSlug === "twist-third-person" && a.passed),
+  },
+  {
+    id: "sensational",
+    title: "Sensational",
+    message:
+      "Figurative, sensory, vivid — your listener saw it, not just heard it.",
+    icon: "trending-up",
+    how: "Score 75 or higher on figurative language in a single talk.",
+    earned: (s) => s.attempts.some((a) => (a.spectrum.figurative ?? 0) >= 75),
+  },
+  {
+    id: "composer",
+    title: "Composer",
+    message: "You made your message a melody. Range like that keeps a room.",
+    icon: "zap",
+    how: "Pass the challenge 'Play With Your Voice'.",
+    earned: (s) =>
+      s.attempts.some((a) => a.challengeSlug === "voice-melody" && a.passed),
+  },
+  // One per challenge. Passing a challenge is the single most meaningful
+  // thing a student does here, so each one has its own name and art
+  // rather than a generic "challenge complete".
+  ...challenges.map((challenge) => {
+    const meta = challengeBadges[challenge.slug];
+    return {
+      id: `challenge-${challenge.slug}`,
+      title: meta?.title ?? challenge.title,
+      message: meta?.message ?? `${challenge.title} — passed.`,
+      icon: "medal",
+      how: challenge.passive
+        ? `Watch every lesson in "${challenge.title}".`
+        : `Pass the challenge "${challenge.title}".`,
+      earned: (s: BadgeEvalState) =>
+        challenge.passive
+          ? challenge.relatedLessonIds.every((id) =>
+              s.watchedLessons.includes(id),
+            )
+          : s.attempts.some((a) => a.challengeSlug === challenge.slug && a.passed),
+    };
+  }),
   ...storyPhases.map((phase) => ({
     id: `phase-${phase.id}`,
     title: `${phase.name} — Complete`,
     message: `You've completed every challenge in ${phase.name}. On to the next phase of the journey.`,
     icon: "medal",
+    how: `Complete every challenge in ${phase.name}.`,
     earned: (s: BadgeEvalState) => phaseComplete(s, phase.id),
   })),
   {

@@ -23,6 +23,16 @@ interface ReviewRequest {
 interface Note {
   category: CategoryId;
   note: string;
+  lessonIds?: string[];
+}
+
+/** A canned observation plus the Skills lesson(s) it draws on — the tie
+ * between coaching and curriculum (§08). Strengths link the lesson
+ * teaching the skill the student just used (perhaps by accident);
+ * improvements link the lesson that fixes the gap. */
+interface Observation {
+  note: string;
+  lessonIds: string[];
 }
 
 // Deterministic PRNG so the same attempt always reviews the same way.
@@ -46,65 +56,149 @@ function hash(s: string): number {
   return h >>> 0;
 }
 
-const strengths: Record<CategoryId, string[]> = {
+const strengths: Record<CategoryId, Observation[]> = {
   storytelling: [
-    "You dropped into a specific scene instead of summarizing — that's exactly what makes listeners lean in.",
-    "The moral landed naturally at the end rather than being bolted on.",
+    {
+      note: "You dropped into a specific scene instead of summarizing — that's exactly what makes listeners lean in.",
+      lessonIds: ["1081031433"], // Life Scene NOT Life Story
+    },
+    {
+      note: "The moral landed naturally at the end rather than being bolted on.",
+      lessonIds: ["1081292414"], // Add The Moral or Message
+    },
   ],
   figurative: [
-    "That comparison was fresh — nobody has heard it before, so it stuck.",
-    "Your imagery touched more than one sense, which makes it immersive.",
+    {
+      note: "That comparison was fresh — nobody has heard it before, so it stuck.",
+      lessonIds: ["1081032528"], // Metaphors
+    },
+    {
+      note: "Your imagery touched more than one sense, which makes it immersive.",
+      lessonIds: ["1080679081"], // Visual, Aural & Kinaesthetic Speaking
+    },
   ],
   acting: [
-    "Your vocal variety kept the delivery musical — tone shifts arrived right on the story beats.",
-    "You embodied the moment instead of reporting it.",
+    {
+      note: "Your vocal variety kept the delivery musical — tone shifts arrived right on the story beats.",
+      lessonIds: ["1080675446"], // Making Your Message a Melody
+    },
+    {
+      note: "You embodied the moment instead of reporting it.",
+      lessonIds: ["1081163657"], // Simulate Sounds & Embody Emotions
+    },
   ],
   structure: [
-    "Strong open — you earned attention in the first ten seconds.",
-    "The promise you made early paid off cleanly at the end.",
+    {
+      note: "Strong open — you earned attention in the first ten seconds.",
+      lessonIds: ["1081198798"], // How To Open Your Talk
+    },
+    {
+      note: "The promise you made early paid off cleanly at the end.",
+      lessonIds: ["1081163913"], // Using Promise & Payoff
+    },
   ],
   mindset: [
-    "You spoke from conviction — it reads as presence on camera.",
-    "No apologizing, no shrinking. You owned the frame.",
+    {
+      note: "You spoke from conviction — it reads as presence on camera.",
+      lessonIds: ["1081162517"], // As The Speaker You Have ALL The Power!
+    },
+    {
+      note: "No apologizing, no shrinking. You owned the frame.",
+      lessonIds: ["1081162517"],
+    },
   ],
   "body-language": [
-    "Your gestures expressed visually what you said verbally.",
-    "Open posture, steady eye line — the camera reads you as confident.",
+    {
+      note: "Your gestures expressed visually what you said verbally.",
+      lessonIds: ["1080653314"], // Hand Gestures
+    },
+    {
+      note: "Open posture, steady eye line — the camera reads you as confident.",
+      lessonIds: ["1081137961"], // Opening Your Posture
+    },
   ],
   advanced: [
-    "That pause before the key line was a genuine mic-drop setup.",
-    "Succinct and clean — nothing overstayed its welcome.",
+    {
+      note: "That pause before the key line was a genuine mic-drop setup.",
+      lessonIds: ["1081162033"], // Powerful Pause vs Awkward Silence
+    },
+    {
+      note: "Succinct and clean — nothing overstayed its welcome.",
+      lessonIds: ["1081200223"], // Staying Succinct: Pro Tip
+    },
   ],
 };
 
-const improvements: Record<CategoryId, string[]> = {
+const improvements: Record<CategoryId, Observation[]> = {
   storytelling: [
-    "Zoom further into one moment — give us the scene, not the summary. Revisit 'Life Scene NOT Life Story'.",
-    "Try opening inside the action instead of with background. 'Give The Setting Then Dive Into The Scene' shows the move.",
+    {
+      note: "Zoom further into one moment — give us the scene, not the summary.",
+      lessonIds: ["1081031433"], // Life Scene NOT Life Story
+    },
+    {
+      note: "Try opening inside the action instead of with background.",
+      lessonIds: ["1081294121"], // Give The Setting Then Dive Into The Scene
+    },
   ],
   figurative: [
-    "One vivid metaphor would have lifted the flattest stretch. The Metaphors lesson has the pattern.",
-    "Reach past the first adjective that comes to mind — 'Avoid Boring Words' territory.",
+    {
+      note: "One vivid metaphor would have lifted the flattest stretch.",
+      lessonIds: ["1081032528"], // Metaphors
+    },
+    {
+      note: "Reach past the first adjective that comes to mind.",
+      lessonIds: ["1081032662"], // Similes
+    },
   ],
   acting: [
-    "A few filler words crept in under pressure — swap them for silent pauses ('What Are Filler Words').",
-    "Let your voice range wider: the melody flattened in the middle third ('Making Your Message a Melody').",
+    {
+      note: "A few filler words crept in under pressure — swap them for silent pauses.",
+      lessonIds: ["1080629747"], // What Are Filler Words
+    },
+    {
+      note: "Let your voice range wider: the melody flattened in the middle third.",
+      lessonIds: ["1080675446"], // Making Your Message a Melody
+    },
   ],
   structure: [
-    "The ending arrived without warning — plant a promise early so the close pays it off ('Using Promise & Payoff').",
-    "Try a rhetorical question to re-hook attention mid-talk ('Rhetorical Questions').",
+    {
+      note: "The ending arrived without warning — plant a promise early so the close pays it off.",
+      lessonIds: ["1081163913"], // Using Promise & Payoff
+    },
+    {
+      note: "Try a rhetorical question to re-hook attention mid-talk.",
+      lessonIds: ["1080662335"], // Rhetorical Questions
+    },
   ],
   mindset: [
-    "There's an apology hiding in your opening posture — begin as if the audience is already on your side ('As The Speaker You Have ALL The Power!').",
-    "Soften rather than push through nerves — the Soften lesson has the technique.",
+    {
+      note: "There's an apology hiding in your opening posture — begin as if the audience is already on your side.",
+      lessonIds: ["1081162517"], // As The Speaker You Have ALL The Power!
+    },
+    {
+      note: "Soften rather than push through nerves.",
+      lessonIds: ["1094881996"], // How To Overcome Your Fear Of Speaking: Soften
+    },
   ],
   "body-language": [
-    "Your hands went quiet during the key moment — that's exactly when they should be painting ('Hand Gestures').",
-    "Check your eye line: you drifted off-lens during transitions ('How To Speak Naturally To a Phone or Camera').",
+    {
+      note: "Your hands went quiet during the key moment — that's exactly when they should be painting.",
+      lessonIds: ["1080653314"], // Hand Gestures
+    },
+    {
+      note: "Check your eye line: you drifted off-lens during transitions.",
+      lessonIds: ["1081032074"], // How To Speak Naturally To a Phone or Camera
+    },
   ],
   advanced: [
-    "One deliberate pause before your best line would have doubled its weight ('Powerful Pause vs Awkward Silence').",
-    "Trim the runway: the first two sentences could go entirely ('Staying Succinct').",
+    {
+      note: "One deliberate pause before your best line would have doubled its weight.",
+      lessonIds: ["1081162033"], // Powerful Pause vs Awkward Silence
+    },
+    {
+      note: "Trim the runway: the first two sentences could go entirely.",
+      lessonIds: ["1081200223"], // Staying Succinct: Pro Tip
+    },
   ],
 };
 
@@ -147,19 +241,26 @@ export async function POST(request: Request) {
     spectrum[cat.id] = Math.min(97, floor + Math.floor(rand() * spread));
   }
 
+  const toNote = (category: CategoryId, obs: Observation): Note => ({
+    category,
+    note: obs.note,
+    lessonIds: obs.lessonIds,
+  });
+
   // Focus notes: 2–3, anchored to the challenge's target skills (§08).
   const focusCategories = challenge.targetSkills.slice(0, 3);
-  const focus: Note[] = focusCategories.map((category) => ({
-    category,
-    note: pick(rand, improvements[category]),
-  }));
+  const focus: Note[] = focusCategories.map((category) =>
+    toNote(category, pick(rand, improvements[category])),
+  );
 
   // Full notes: everything the AI noticed — strengths + improvements
   // across the whole spectrum (revealed at Intermediate/Advanced, §09).
+  // Strengths carry the lesson behind the skill the student just used,
+  // so a skill hit by instinct can be studied on purpose.
   const fullNotes: Note[] = categories.flatMap((cat) => {
     const value = spectrum[cat.id];
-    if (value >= 60) return [{ category: cat.id, note: pick(rand, strengths[cat.id]) }];
-    if (value <= 35) return [{ category: cat.id, note: pick(rand, improvements[cat.id]) }];
+    if (value >= 60) return [toNote(cat.id, pick(rand, strengths[cat.id]))];
+    if (value <= 35) return [toNote(cat.id, pick(rand, improvements[cat.id]))];
     return [];
   });
 

@@ -11,7 +11,6 @@ import {
   PlayFillIcon,
   ResetFrameIcon,
   SpeedIcon,
-  ZoomLandscapeIcon,
   ZoomPortraitIcon,
 } from "@/components/player-icons";
 
@@ -20,15 +19,25 @@ import {
 // the app rather than a borrowed widget.
 //
 // Framing (master plan §14): course videos are landscape, but most
-// students watch on a phone held in portrait. Two zooms rather than one
-// — push in while staying wide, or crop all the way to portrait so the
-// speaker fills a tall screen and body language stays readable.
+// students watch on a phone held in portrait, where the speaker plays
+// small. One control crops all the way to portrait so they fill a tall
+// screen and body language stays readable. (A second, gentler "zoom in
+// but stay wide" mode was dropped — it earned its place in the bar less
+// than it cost in clutter.)
 
-type Frame = "fit" | "landscape" | "portrait";
+type Frame = "fit" | "portrait";
 
 const SPEEDS = [0.75, 1, 1.25, 1.5, 2];
 
-export function VimeoPlayer({ vimeoId, title }: { vimeoId: string; title: string }) {
+export function VimeoPlayer({
+  vimeoId,
+  title,
+  autoplay = false,
+}: {
+  vimeoId: string;
+  title: string;
+  autoplay?: boolean;
+}) {
   const holderRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<Player | null>(null);
   const shellRef = useRef<HTMLDivElement>(null);
@@ -36,6 +45,7 @@ export function VimeoPlayer({ vimeoId, title }: { vimeoId: string; title: string
 
   const [frame, setFrame] = useState<Frame>("fit");
   const [playing, setPlaying] = useState(false);
+  const [ended, setEnded] = useState(false);
   const [ready, setReady] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -56,7 +66,15 @@ export function VimeoPlayer({ vimeoId, title }: { vimeoId: string; title: string
     });
     playerRef.current = player;
 
-    player.ready().then(() => setReady(true)).catch(() => {});
+    player
+      .ready()
+      .then(() => {
+        setReady(true);
+        // Only ever set from a click on the facade, so the user gesture
+        // that mounted us also authorizes playback.
+        if (autoplay) player.play().catch(() => {});
+      })
+      .catch(() => {});
     player.getDuration().then(setDuration).catch(() => {});
     // Only offer captions if this video actually has a track.
     player
@@ -66,9 +84,21 @@ export function VimeoPlayer({ vimeoId, title }: { vimeoId: string; title: string
       })
       .catch(() => {});
 
-    const onPlay = () => setPlaying(true);
+    const onPlay = () => {
+      setPlaying(true);
+      setEnded(false);
+    };
     const onPause = () => setPlaying(false);
-    const onEnd = () => setPlaying(false);
+    // The course must end where the course is: Vimeo's own end screen can
+    // surface "more from" recommendations the moment playback finishes.
+    // Seeking back to the start dismisses it inside the iframe, and the
+    // opaque ended overlay (below) covers the frame while that happens —
+    // so no Vimeo UI is ever seen, only our own replay state.
+    const onEnd = () => {
+      setPlaying(false);
+      setEnded(true);
+      player.setCurrentTime(0).then(() => player.pause()).catch(() => {});
+    };
     const onTime = (d: { seconds: number; duration: number }) => {
       setProgress(d.duration ? d.seconds / d.duration : 0);
       if (d.duration) setDuration(d.duration);
@@ -86,7 +116,7 @@ export function VimeoPlayer({ vimeoId, title }: { vimeoId: string; title: string
       player.destroy().catch(() => {});
       playerRef.current = null;
     };
-  }, [vimeoId]);
+  }, [vimeoId, autoplay]);
 
   const togglePlay = useCallback(() => {
     const p = playerRef.current;
@@ -94,6 +124,15 @@ export function VimeoPlayer({ vimeoId, title }: { vimeoId: string; title: string
     if (playing) p.pause().catch(() => {});
     else p.play().catch(() => {});
   }, [playing]);
+
+  const replay = useCallback(() => {
+    const p = playerRef.current;
+    if (!p) return;
+    setEnded(false);
+    p.setCurrentTime(0)
+      .then(() => p.play())
+      .catch(() => {});
+  }, []);
 
   const changeSpeed = useCallback((rate: number) => {
     setSpeed(rate);
@@ -172,9 +211,7 @@ export function VimeoPlayer({ vimeoId, title }: { vimeoId: string; title: string
   const holderClass =
     frame === "portrait"
       ? "absolute left-1/2 top-1/2 h-full aspect-video -translate-x-1/2 -translate-y-1/2 scale-[1.18]"
-      : frame === "landscape"
-        ? "absolute inset-0 size-full scale-[1.4]"
-        : "absolute inset-0 size-full";
+      : "absolute inset-0 size-full";
 
   return (
     <div
@@ -197,6 +234,23 @@ export function VimeoPlayer({ vimeoId, title }: { vimeoId: string; title: string
           ref={holderRef}
           data-title={title}
         />
+
+        {/* Ended takeover — an opaque cover so Vimeo's end screen (and its
+            "more from" recommendations) can never show. The course's own
+            replay state is all a student sees. */}
+        {ended && (
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-navy-950">
+            <button
+              type="button"
+              onClick={replay}
+              className="flex items-center gap-2 rounded-lg border border-navy-600 bg-navy-800 px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-navy-700"
+            >
+              <PlayFillIcon className="size-4" />
+              Watch again
+            </button>
+            <span className="text-xs text-ink-faint">Lesson complete</span>
+          </div>
+        )}
 
         {/* click anywhere to play/pause */}
         <button
@@ -284,14 +338,6 @@ export function VimeoPlayer({ vimeoId, title }: { vimeoId: string; title: string
                 </div>
               )}
             </div>
-
-            <ControlButton
-              label="Zoom in, keep it wide"
-              onClick={() => setFrameMode("landscape")}
-              active={frame === "landscape"}
-            >
-              <ZoomLandscapeIcon />
-            </ControlButton>
 
             <ControlButton
               label="Zoom to portrait"

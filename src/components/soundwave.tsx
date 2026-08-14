@@ -23,15 +23,25 @@ interface VariantSpec {
   waves: WaveSpec[];
   /** Edge fade stops — the header has to clear the logo and nav links. */
   fade: [number, number, number, number];
+  /** Half-height of the lens the waves are clipped to, or 0 for none.
+   *  In the brand mark the wave is a cluster of wide ribbons that swell
+   *  in the middle and taper to points at both ends; clipping the
+   *  scrolling waves to that silhouette gives the same shape while
+   *  leaving the motion underneath untouched. */
+  lens: number;
 }
 
 const variants: Record<Variant, VariantSpec> = {
   // Rides low in the header band, beneath the wordmark and navigation —
   // mirroring the mark, where the wave sits under the lion.
+  // Rides low in the header band, beneath the wordmark and navigation.
+  // It spans the whole page rather than sitting under the mark, so it
+  // stays a thin scrolling line — no lens, no ribbon weight.
   header: {
     viewH: 44,
     midY: 33,
     fade: [14, 50, 86, 100],
+    lens: 0,
     waves: [
       { period: 96, amplitude: 7, opacity: 0.5, width: 1.5, className: "soundwave-a" },
       { period: 132, amplitude: 5, opacity: 0.34, width: 1.2, className: "soundwave-b" },
@@ -39,15 +49,25 @@ const variants: Record<Variant, VariantSpec> = {
     ],
   },
   // The hero carries it at full strength, directly under the lion, so
-  // the brand mark reads as one living thing.
+  // the brand mark reads as one living thing. Wide, translucent ribbons
+  // inside a tapered lens — the wave as the logo draws it.
   hero: {
-    viewH: 64,
-    midY: 32,
-    fade: [8, 50, 92, 100],
+    // Tall enough to hold the crests, the troughs, and the halo around
+    // them — a shorter box clipped the tops off the waves.
+    viewH: 80,
+    midY: 40,
+    fade: [4, 46, 94, 100],
+    // Clear of the waves' full reach at the centre, so nothing is cut
+    // where the band is fullest; the taper does its work out toward
+    // the points instead.
+    lens: 27,
+    // Thinner and more transparent than they look: each ribbon is drawn
+    // twice — a blurred halo under a sharper core — so the colour is
+    // see-through everywhere and blooms where ribbons cross.
     waves: [
-      { period: 104, amplitude: 17, opacity: 0.95, width: 2.4, className: "soundwave-a" },
-      { period: 146, amplitude: 12, opacity: 0.65, width: 1.9, className: "soundwave-b" },
-      { period: 74, amplitude: 8, opacity: 0.45, width: 1.4, className: "soundwave-c" },
+      { period: 104, amplitude: 13, opacity: 0.34, width: 7, className: "soundwave-a" },
+      { period: 146, amplitude: 9.5, opacity: 0.3, width: 5.5, className: "soundwave-b" },
+      { period: 74, amplitude: 6, opacity: 0.26, width: 4, className: "soundwave-c" },
     ],
   },
 };
@@ -65,6 +85,25 @@ function wavePath(width: number, period: number, amplitude: number, midY: number
   return d;
 }
 
+/** The tapered silhouette the hero's waves live inside: a lens pointed
+ *  at both ends and fullest at the centre. A cubic peaks at three
+ *  quarters of its control height, so the controls are lifted to hit
+ *  the requested half-height exactly. */
+function lensPath(width: number, midY: number, halfHeight: number) {
+  const h = halfHeight / 0.75;
+  // Controls pulled toward the centre stretch the taper across a wider
+  // span, so the band narrows over the outer quarter at each end rather
+  // than pinching only at the very tip.
+  const a = width * 0.33;
+  const b = width * 0.67;
+  return (
+    `M0 ${midY}` +
+    ` C ${a} ${midY - h} ${b} ${midY - h} ${width} ${midY}` +
+    ` C ${b} ${midY + h} ${a} ${midY + h} 0 ${midY}` +
+    " Z"
+  );
+}
+
 export function Soundwave({
   variant = "header",
   className = "",
@@ -76,6 +115,8 @@ export function Soundwave({
   const gradientId = `soundwave-spectrum-${variant}`;
   const fadeId = `soundwave-fade-${variant}`;
   const maskId = `soundwave-mask-${variant}`;
+  const clipId = `soundwave-lens-${variant}`;
+  const glowId = `soundwave-glow-${variant}`;
 
   return (
     <svg
@@ -110,21 +151,70 @@ export function Soundwave({
             fill={`url(#${fadeId})`}
           />
         </mask>
+        {spec.lens > 0 && (
+          <>
+            <clipPath id={clipId}>
+              <path d={lensPath(VIEW_W, spec.midY, spec.lens)} />
+            </clipPath>
+            {/* The halo that makes the ribbons read as light rather than
+                paint. Kept off the header, where a blur would cost more
+                than it's worth on a thin line. */}
+            <filter
+              id={glowId}
+              x="-10%"
+              y="-40%"
+              width="120%"
+              height="180%"
+              colorInterpolationFilters="sRGB"
+            >
+              <feGaussianBlur stdDeviation="3.2" />
+            </filter>
+          </>
+        )}
       </defs>
 
-      <g mask={`url(#${maskId})`}>
-        {spec.waves.map((wave) => (
-          <g key={wave.className} className={wave.className}>
-            <path
-              d={wavePath(VIEW_W * 2, wave.period, wave.amplitude, spec.midY)}
-              fill="none"
-              stroke={`url(#${gradientId})`}
-              strokeWidth={wave.width}
-              strokeLinecap="round"
-              opacity={wave.opacity}
-            />
-          </g>
-        ))}
+      {/* The lens is fixed to the viewport while the waves scroll beneath
+          it, so the taper stays put instead of travelling with them. */}
+      <g clipPath={spec.lens > 0 ? `url(#${clipId})` : undefined}>
+        <g mask={`url(#${maskId})`}>
+          {spec.waves.map((wave) => {
+            const d = wavePath(
+              VIEW_W * 2,
+              wave.period,
+              wave.amplitude,
+              spec.midY,
+            );
+            return (
+              <g
+                key={wave.className}
+                className={wave.className}
+                // Overlaps brighten instead of muddying, the way the mark's
+                // ribbons go pale where they cross.
+                style={spec.lens > 0 ? { mixBlendMode: "screen" } : undefined}
+              >
+                {spec.lens > 0 && (
+                  <path
+                    d={d}
+                    fill="none"
+                    stroke={`url(#${gradientId})`}
+                    strokeWidth={wave.width * 1.9}
+                    strokeLinecap="round"
+                    opacity={wave.opacity * 0.8}
+                    filter={`url(#${glowId})`}
+                  />
+                )}
+                <path
+                  d={d}
+                  fill="none"
+                  stroke={`url(#${gradientId})`}
+                  strokeWidth={wave.width}
+                  strokeLinecap="round"
+                  opacity={wave.opacity}
+                />
+              </g>
+            );
+          })}
+        </g>
       </g>
     </svg>
   );

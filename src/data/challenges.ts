@@ -17,6 +17,10 @@ export interface StoryPhase {
   bgClass: string;
   textClass: string;
   borderClass: string;
+  /** The same color as a surface wash. The palette is neon, so a full
+   *  fill would blow out any text on top of it — a low-opacity tint
+   *  colors the card while white type stays legible on all five. */
+  tintClass: string;
 }
 
 export const storyPhases: StoryPhase[] = [
@@ -27,6 +31,7 @@ export const storyPhases: StoryPhase[] = [
     bgClass: "bg-mindset",
     textClass: "text-mindset",
     borderClass: "border-mindset/35",
+    tintClass: "bg-mindset/20",
   },
   {
     id: "T",
@@ -35,6 +40,7 @@ export const storyPhases: StoryPhase[] = [
     bgClass: "bg-body-language",
     textClass: "text-body-language",
     borderClass: "border-body-language/35",
+    tintClass: "bg-body-language/20",
   },
   {
     id: "O",
@@ -43,6 +49,7 @@ export const storyPhases: StoryPhase[] = [
     bgClass: "bg-storytelling",
     textClass: "text-storytelling",
     borderClass: "border-storytelling/35",
+    tintClass: "bg-storytelling/20",
   },
   {
     id: "R",
@@ -51,6 +58,7 @@ export const storyPhases: StoryPhase[] = [
     bgClass: "bg-acting",
     textClass: "text-acting",
     borderClass: "border-acting/35",
+    tintClass: "bg-acting/20",
   },
   {
     id: "Y",
@@ -59,6 +67,7 @@ export const storyPhases: StoryPhase[] = [
     bgClass: "bg-structure",
     textClass: "text-structure",
     borderClass: "border-structure/35",
+    tintClass: "bg-structure/20",
   },
 ];
 
@@ -420,6 +429,99 @@ export const challengesIntro = [
   { title: "Welcome To The Challenges!", vimeoId: "1081200318" },
   { title: "How To Use The Skills In Your Challenges", vimeoId: "1081200420" },
 ];
+
+/** The badge each challenge awards when it's passed. Named the way an
+ *  achievement should be — a small joke or a title you'd want, never a
+ *  restatement of the task. Keyed by slug; every challenge has one. */
+export const challengeBadges: Record<
+  string,
+  { title: string; message: string }
+> = {
+  "speaking-baseline": {
+    title: "The Before Shot",
+    message: "Your starting line is on record. Everything from here is progress.",
+  },
+  "story-without-help": {
+    title: "No Net",
+    message: "No notes, no prep, no safety net — and you still told a story.",
+  },
+  "mindset-toolbox": {
+    title: "Head First",
+    message: "You went for the mindset before the mechanics. That's the right order.",
+  },
+  "no-filler-words": {
+    title: "Um-Free",
+    message: "You spoke about what you love without a single crutch word.",
+  },
+  "avoid-boring-words": {
+    title: "Thesaurus Rex",
+    message: "Amazing, beautiful, exciting — banned, and you didn't miss them.",
+  },
+  "voice-melody": {
+    title: "Hitmaker",
+    message: "You turned a message into a melody. Rooms follow a voice like that.",
+  },
+  "tongue-twisters": {
+    title: "Silver Tongue",
+    message: "Cleanly through the twisters. Your articulation is doing push-ups.",
+  },
+  "beatbox-rhythm": {
+    title: "Dropped the Beat",
+    message: "Self-consciousness is hard to keep hold of while beatboxing. That's the trick.",
+  },
+  "create-storybook": {
+    title: "Author, Author",
+    message: "Your own stories, written down and ready. This is your material forever.",
+  },
+  "scene-with-sound": {
+    title: "Foley Artist",
+    message: "You built a scene out of sound. Your listener was standing in it.",
+  },
+  "describe-vividly": {
+    title: "Postcard Perfect",
+    message: "Described so well we could picture it without being there.",
+  },
+  "moment-from-your-day": {
+    title: "Top Narrator",
+    message: "An ordinary moment, told so well it stopped being ordinary.",
+  },
+  "high-stakes-moment": {
+    title: "Edge of the Seat",
+    message: "The stakes were real and we felt them. That's performance.",
+  },
+  "twist-third-person": {
+    title: "Hollywood Worthy",
+    message: "You set it up, then turned it over. The twist landed clean.",
+  },
+  "three-emotions": {
+    title: "Heartstrings",
+    message: "Three emotions, one story. You played us like an instrument.",
+  },
+  "someone-elses-story": {
+    title: "In Their Shoes",
+    message: "You carried someone else's story with care. That's empathy on camera.",
+  },
+  "multiple-characters": {
+    title: "Whole Cast",
+    message: "A full cast, all of them you, all of them distinct.",
+  },
+  "story-youve-healed": {
+    title: "Open Book",
+    message: "You spoke from a healed place. That takes more courage than volume ever will.",
+  },
+  "explain-with-analogies": {
+    title: "Like a Pro",
+    message: "You made something abstract obvious. Analogy is a superpower.",
+  },
+  "podcast-introduction": {
+    title: "On the Air",
+    message: "An intro that would make anyone want to hear the rest.",
+  },
+  "thirty-second-pitch": {
+    title: "Elevator Ready",
+    message: "Thirty seconds, whole idea, no filler. Ready for the real one.",
+  },
+};
 
 export const challengeBySlug = new Map(challenges.map((c) => [c.slug, c]));
 

@@ -11,13 +11,15 @@
 @theme {
   /* Midnight blue ground, darkest to lightest. Steps are deliberately
    * subtle — enough to read cards as raised surfaces, never enough to
-   * compete with the category colors. */
-  --color-navy-950: #03060e;
-  --color-navy-900: #070c1a;
-  --color-navy-850: #0c1428;
-  --color-navy-800: #111b33;
-  --color-navy-700: #1a2647;
-  --color-navy-600: #26345e;
+   * compete with the category colors. The whole ramp was taken down 20%
+   * from its first values, so every surface sits deeper and the
+   * category colors carry further. */
+  --color-navy-950: #02050b;
+  --color-navy-900: #060a15;
+  --color-navy-850: #0a1020;
+  --color-navy-800: #0e1629;
+  --color-navy-700: #151e39;
+  --color-navy-600: #1e2a4b;
 
   /* Text on navy */
   --color-ink: #e7e9f2;
@@ -46,6 +48,15 @@
 
 html {
   background: var(--color-navy-900);
+}
+
+/* The mobile tab bar clears the phone's home indicator. Written as a
+ * plain rule rather than an arbitrary Tailwind value: the generated
+ * class name for `pb-[env(safe-area-inset-bottom)]` repeatedly came back
+ * corrupted from the dev compiler's cache and took the whole stylesheet
+ * down with it. */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 body {
@@ -80,7 +91,7 @@ body {
   height: 75vw;
   background: radial-gradient(
     circle closest-side,
-    color-mix(in oklab, var(--color-body-language) 16%, transparent),
+    color-mix(in oklab, var(--color-body-language) 13%, transparent),
     transparent 100%
   );
   animation: ambient-drift-1 53s ease-in-out infinite;
@@ -93,7 +104,7 @@ body {
   height: 65vw;
   background: radial-gradient(
     circle closest-side,
-    color-mix(in oklab, var(--color-structure) 14%, transparent),
+    color-mix(in oklab, var(--color-structure) 11%, transparent),
     transparent 100%
   );
   animation: ambient-drift-2 67s ease-in-out infinite;
@@ -106,7 +117,7 @@ body {
   height: 85vw;
   background: radial-gradient(
     circle closest-side,
-    color-mix(in oklab, var(--color-advanced) 13%, transparent),
+    color-mix(in oklab, var(--color-advanced) 10%, transparent),
     transparent 100%
   );
   animation: ambient-drift-3 79s ease-in-out infinite;
@@ -120,7 +131,7 @@ body {
   height: 38vw;
   background: radial-gradient(
     circle closest-side,
-    color-mix(in oklab, var(--color-mindset) 10%, transparent),
+    color-mix(in oklab, var(--color-mindset) 8%, transparent),
     transparent 100%
   );
   animation: ambient-drift-4 89s ease-in-out infinite;
@@ -133,7 +144,7 @@ body {
   height: 32vw;
   background: radial-gradient(
     circle closest-side,
-    color-mix(in oklab, var(--color-figurative) 9%, transparent),
+    color-mix(in oklab, var(--color-figurative) 7%, transparent),
     transparent 100%
   );
   animation: ambient-drift-5 71s ease-in-out infinite;
@@ -227,10 +238,138 @@ body {
   }
 }
 
-/* Neon call to action. The gradient carries the category palette twice
- * over, at double the button's width — so sliding the background by one
- * button width advances exactly one full palette and the loop is
- * seamless. A blurred copy sits behind it as the glow. */
+/* The spectrum trace idles rather than sitting frozen — the whole wave
+ * swells and settles from its own floor, and the blurred bleed beneath
+ * it drifts on a longer cycle, so the two never move quite together.
+ * The peaks keep their heights; only the breath changes. */
+.eq-wave,
+.eq-wave-slow {
+  transform-origin: 50% 100%;
+  transform-box: fill-box;
+}
+
+.eq-wave {
+  animation: eq-swell 5.5s ease-in-out infinite;
+}
+
+.eq-wave-slow {
+  animation: eq-swell-slow 8.5s ease-in-out infinite;
+}
+
+@keyframes eq-swell {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.955);
+  }
+}
+
+@keyframes eq-swell-slow {
+  0%,
+  100% {
+    transform: scaleY(1) translateY(0);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scaleY(1.05) translateY(2px);
+    opacity: 0.68;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eq-wave,
+  .eq-wave-slow {
+    animation: none;
+  }
+}
+
+/* Each word the coach says arrives with its symbol — a small pop so the
+ * eye catches it, then it simply holds until the next one. */
+.coach-cue {
+  animation: coach-cue-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes coach-cue-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coach-cue {
+    animation: none;
+  }
+}
+
+/* The hero's two-beat headline: the premise, then the punchline it sets
+ * up. Both lines sit in the same grid cell so the block never changes
+ * height, and both are in the DOM from the first paint — the animation
+ * only decides which one is visible, so the copy stays readable to
+ * search engines and assistive tech either way. */
+.hero-line {
+  grid-area: 1 / 1;
+}
+
+/* The two lines trade places forever on one 10s cycle: four seconds
+ * held, a one-second crossfade, four seconds off, and back. The second
+ * line runs the identical animation offset by exactly half the cycle
+ * (a negative delay starts it mid-animation), so one is always arriving
+ * as the other leaves and the two can never be visible at once. */
+.hero-line-first,
+.hero-line-second {
+  animation: hero-line-cycle 10s ease-in-out infinite;
+}
+
+.hero-line-second {
+  animation-delay: -5s;
+}
+
+@keyframes hero-line-cycle {
+  0%,
+  40% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  50%,
+  90% {
+    opacity: 0;
+    transform: translateY(-0.35em);
+  }
+  91% {
+    opacity: 0;
+    transform: translateY(0.35em);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* No motion: drop the overlap and show both lines stacked, so the whole
+ * thought is on screen at once rather than one line hiding the other. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-line-first,
+  .hero-line-second {
+    animation: none;
+  }
+
+  .hero-line {
+    grid-area: auto;
+  }
+}
+
+/* Neon call to action. The whole button wears one colour of the
+ * category palette at a time and slowly dissolves into the next —
+ * no gradient bands, no two colours side by side. One full trip
+ * around the palette takes 56s, so each colour owns about eight
+ * seconds. A blurred copy sits behind it as the glow. */
 .cta-neon-wrap {
   position: relative;
   display: inline-flex;
@@ -240,52 +379,66 @@ body {
 /* A real neon sign is a dark glass face with a bright halo — so the
  * button carries deep versions of the palette (each verified to hold
  * white text above 4.5:1) while the glow behind it stays at full
- * brightness. The cycle is slow enough that colour never appears to
- * flicker; it drifts. */
+ * brightness. The static background-color is the resting state when
+ * animation is off (reduced motion). */
 .cta-neon {
-  background-image: linear-gradient(
-    90deg,
-    #846f05,
-    #854e00,
-    #852716,
-    #7f2075,
-    #10794b,
-    #12717f,
-    #6d0926,
-    #846f05,
-    #854e00,
-    #852716,
-    #7f2075,
-    #10794b,
-    #12717f,
-    #6d0926,
-    #846f05
-  );
-  background-size: 200% 100%;
-  animation: cta-flow 22s linear infinite;
+  background-color: #7f2075;
+  animation: cta-cycle 56s linear infinite;
 }
 
 .cta-neon-glow {
-  background-image: linear-gradient(
-    90deg,
-    var(--color-storytelling),
-    var(--color-figurative),
-    var(--color-acting),
-    var(--color-structure),
-    var(--color-mindset),
-    var(--color-body-language),
-    var(--color-advanced-lift),
-    var(--color-storytelling),
-    var(--color-figurative),
-    var(--color-acting),
-    var(--color-structure),
-    var(--color-mindset),
-    var(--color-body-language),
-    var(--color-advanced-lift),
-    var(--color-storytelling)
-  );
-  background-size: 200% 100%;
-  animation: cta-flow 22s linear infinite;
+  background-color: var(--color-structure);
+  animation: cta-cycle-glow 56s linear infinite;
+}
+
+@keyframes cta-cycle {
+  0%,
+  100% {
+    background-color: #846f05;
+  }
+  14.3% {
+    background-color: #854e00;
+  }
+  28.6% {
+    background-color: #852716;
+  }
+  42.9% {
+    background-color: #7f2075;
+  }
+  57.1% {
+    background-color: #10794b;
+  }
+  71.4% {
+    background-color: #12717f;
+  }
+  85.7% {
+    background-color: #6d0926;
+  }
+}
+
+@keyframes cta-cycle-glow {
+  0%,
+  100% {
+    background-color: var(--color-storytelling);
+  }
+  14.3% {
+    background-color: var(--color-figurative);
+  }
+  28.6% {
+    background-color: var(--color-acting);
+  }
+  42.9% {
+    background-color: var(--color-structure);
+  }
+  57.1% {
+    background-color: var(--color-mindset);
+  }
+  71.4% {
+    background-color: var(--color-body-language);
+  }
+  85.7% {
+    background-color: var(--color-advanced-lift);
+  }
 }
 
 .cta-neon {
@@ -306,7 +459,7 @@ body {
   filter: blur(16px);
   opacity: 0.55;
   animation:
-    cta-flow 22s linear infinite,
+    cta-cycle-glow 56s linear infinite,
     cta-pulse 6s ease-in-out infinite;
 }
 
@@ -322,15 +475,6 @@ body {
 .cta-neon:focus-visible {
   outline: 2px solid var(--color-ink);
   outline-offset: 3px;
-}
-
-@keyframes cta-flow {
-  from {
-    background-position: 0% 50%;
-  }
-  to {
-    background-position: 100% 50%;
-  }
 }
 
 @keyframes cta-pulse {

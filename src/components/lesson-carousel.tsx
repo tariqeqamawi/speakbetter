@@ -37,7 +37,10 @@ export function LessonCarousel({
               className="group relative flex overflow-hidden rounded-xl border border-navy-600 bg-navy-800 transition-colors hover:border-ink-faint"
             >
               {/* still */}
-              <div className="relative aspect-video w-32 shrink-0 bg-navy-950 sm:w-44">
+              {/* A navy gradient behind the still, so a frame that hasn't
+                  loaded — or one with dark edges — reads as part of the
+                  app rather than a black hole in the row. */}
+              <div className="relative aspect-video w-32 shrink-0 bg-gradient-to-br from-navy-700 to-navy-900 sm:w-44">
                 <VideoStill vimeoId={lesson.vimeoId} accent={category} />
                 <span className="absolute inset-0 flex items-center justify-center bg-navy-950/25 opacity-0 transition-opacity group-hover:opacity-100">
                   <PlayIcon className="size-7 text-ink" />

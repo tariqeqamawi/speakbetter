@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useStore } from "@/lib/store";
 import { currentStreak } from "@/data/badges";
 import { BadgeIcon, FlameIcon } from "@/components/icons";
+import { BadgeMedal } from "@/components/badge-medal";
 import { hapticCelebrate, playCelebration } from "@/lib/feedback-fx";
 
 // The gamification layer made visible (master plan §11): milestones are
@@ -40,8 +41,15 @@ export function CelebrationHost() {
         onClick={() => dismissCelebration(current.id)}
         className="celebration-pop flex max-w-sm items-start gap-3 rounded-2xl border border-navy-600 bg-navy-800 p-4 text-left shadow-2xl shadow-navy-950/80"
       >
-        <span className="celebration-bounce text-ink" aria-hidden>
-          <BadgeIcon name={current.icon} className="size-8" />
+        {/* The medal the student just won, at the moment they win it —
+            the same artwork that lands in their trophy case. */}
+        <span className="celebration-bounce" aria-hidden>
+          <BadgeMedal
+            id={current.id}
+            icon={current.icon}
+            earned
+            className="size-14"
+          />
         </span>
         <span className="flex flex-col gap-0.5">
           <span className="spectrum-rule h-0.5 w-12 rounded-full" />

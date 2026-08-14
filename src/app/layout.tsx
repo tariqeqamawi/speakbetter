@@ -47,7 +47,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#070c1a",
+  themeColor: "#060a15",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -64,7 +64,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <StoreProvider>
           <TopBar />
           {/* bottom padding clears the mobile tab bar */}
-          <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-24 pt-8 sm:pb-12">
+          {/* Phones and tablets keep the narrow, readable column; a laptop
+              has room to spare, so the container opens up rather than
+              leaving half the screen as gutter. */}
+          <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-24 pt-8 sm:pb-12 xl:max-w-[96rem] xl:px-8">
             {children}
           </main>
           <BottomTabs />

@@ -1,33 +1,74 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import {
   challengesInPhase,
   storyPhases,
   type Challenge,
+  type PhaseId,
   type StoryPhase,
 } from "@/data/challenges";
 import { categoryById } from "@/data/categories";
 import { useStore } from "@/lib/store";
 import { actionLabel, challengeProgress } from "@/lib/challenge-progress";
-import { CheckIcon } from "@/components/icons";
+import { CheckIcon, ChevronDownIcon, LockIcon } from "@/components/icons";
 import { VideoStill } from "@/components/video-still";
 
 // The STORY journey, one bordered section per phase so the five read as
 // distinct stages rather than one long list. Each phase carries its own
 // color; each challenge leads with a still from its explainer video.
 
+// One phase is open at a time — the one the student is actually on.
+// Five phases of challenges stacked vertically is a wall; a journey
+// should show you where you are, with what's ahead still closed.
 export function StoryJourney() {
+  const { state, ready } = useStore();
+
+  // The current phase is the earliest one with work left in it. Later
+  // phases stay shut until the journey reaches them; earlier ones can be
+  // reopened freely, since finished work is never taken away.
+  const phaseDone = (phase: StoryPhase) =>
+    challengesInPhase(phase.id).every((c) => challengeProgress(c, state).passed);
+  const currentIndex = ready
+    ? Math.max(
+        0,
+        storyPhases.findIndex((p) => !phaseDone(p)) === -1
+          ? storyPhases.length - 1
+          : storyPhases.findIndex((p) => !phaseDone(p)),
+      )
+    : 0;
+
+  const [openId, setOpenId] = useState<PhaseId | null>(null);
+  const open = openId ?? storyPhases[currentIndex].id;
+
   return (
-    <div className="flex flex-col gap-6">
-      {storyPhases.map((phase) => (
-        <PhaseSection key={phase.id} phase={phase} />
+    <div className="flex flex-col gap-3">
+      {storyPhases.map((phase, i) => (
+        <PhaseSection
+          key={phase.id}
+          phase={phase}
+          open={phase.id === open}
+          // Ahead of where they've reached, and not yet unlocked.
+          locked={i > currentIndex}
+          onToggle={() => setOpenId(phase.id === open ? null : phase.id)}
+        />
       ))}
     </div>
   );
 }
 
-function PhaseSection({ phase }: { phase: StoryPhase }) {
+function PhaseSection({
+  phase,
+  open,
+  locked,
+  onToggle,
+}: {
+  phase: StoryPhase;
+  open: boolean;
+  locked: boolean;
+  onToggle: () => void;
+}) {
   const { state, ready } = useStore();
   const items = challengesInPhase(phase.id);
   const done = ready
@@ -36,32 +77,61 @@ function PhaseSection({ phase }: { phase: StoryPhase }) {
 
   return (
     <section
-      className={`flex flex-col gap-4 rounded-2xl border ${phase.borderClass} bg-navy-850/60 p-4 sm:p-5`}
+      className={`flex flex-col overflow-hidden rounded-2xl border ${
+        open ? phase.borderClass : "border-navy-600"
+      } bg-navy-850/60 ${locked ? "opacity-60" : ""}`}
     >
-      <header className="flex items-start gap-3">
+      <button
+        type="button"
+        onClick={locked ? undefined : onToggle}
+        aria-expanded={open}
+        disabled={locked}
+        className={`flex items-start gap-3 p-4 text-left transition-colors sm:p-5 ${
+          locked ? "cursor-not-allowed" : "hover:bg-navy-800/60"
+        }`}
+      >
         <span
-          className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${phase.bgClass} text-lg font-bold text-navy-950`}
+          className={`flex size-10 shrink-0 items-center justify-center rounded-xl text-lg font-bold ${
+            locked
+              ? "bg-navy-700 text-ink-faint"
+              : `${phase.bgClass} text-navy-950`
+          }`}
         >
           {phase.id}
         </span>
         <div className="flex flex-1 flex-col gap-0.5">
-          <h2 className={`text-lg font-semibold ${phase.textClass}`}>
+          <h2
+            className={`text-lg font-semibold ${locked ? "text-ink-faint" : phase.textClass}`}
+          >
             {phase.name}
           </h2>
-          <p className="text-sm text-ink-faint">{phase.tagline}</p>
+          <p className="text-sm text-ink-faint">
+            {locked
+              ? `Finish ${storyPhases[storyPhases.findIndex((p) => p.id === phase.id) - 1]?.name ?? "the phase before"} to open this one.`
+              : phase.tagline}
+          </p>
         </div>
-        <span className="shrink-0 pt-1 text-xs tabular-nums text-ink-faint">
+        <span className="flex shrink-0 items-center gap-2 pt-1 text-xs tabular-nums text-ink-faint">
           {done}/{items.length}
+          {locked ? (
+            <LockIcon className="size-4" />
+          ) : (
+            <ChevronDownIcon
+              className={`size-4 transition-transform ${open ? "rotate-180" : ""}`}
+            />
+          )}
         </span>
-      </header>
+      </button>
 
-      <ul className="flex flex-col gap-3">
+      {open && !locked && (
+      <ul className="flex flex-col gap-3 p-4 pt-0 sm:p-5 sm:pt-0">
         {items.map((challenge) => (
           <li key={challenge.slug}>
             <ChallengeCard challenge={challenge} phase={phase} />
           </li>
         ))}
       </ul>
+      )}
     </section>
   );
 }
