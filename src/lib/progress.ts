@@ -17,6 +17,8 @@ export const XP = {
   challengePassed: 100,
   lessonWatched: 10,
   badge: 50,
+  /** A completed three-quest day — the chest on the Today screen. */
+  dailyChest: 50,
 } as const;
 
 export interface Rank {
@@ -53,7 +55,8 @@ export function standing(state: AppState): RankStanding {
     state.attempts.length * XP.upload +
     passedSlugs.size * XP.challengePassed +
     state.watchedLessons.length * XP.lessonWatched +
-    state.badges.length * XP.badge;
+    state.badges.length * XP.badge +
+    state.questChests.length * XP.dailyChest;
 
   let index = 0;
   for (let i = 0; i < ranks.length; i++) if (xp >= ranks[i].at) index = i;

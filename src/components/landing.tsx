@@ -5,6 +5,13 @@ import { categories } from "@/data/categories";
 import { StoryPreview } from "@/components/story-preview";
 import { LessonGallery } from "@/components/lesson-gallery";
 import { LazyVimeoPlayer } from "@/components/lazy-vimeo-player";
+import { PreviewChip } from "@/components/preview-chip";
+import {
+  FullscreenIcon,
+  PlayFillIcon,
+  SpeedIcon,
+  ZoomPortraitIcon,
+} from "@/components/player-icons";
 import { UnlockButton } from "@/components/unlock-button";
 import { CoachDemo } from "@/components/coach-demo";
 import { SpectrumDemo } from "@/components/spectrum-demo";
@@ -55,6 +62,7 @@ export function Landing() {
           />
         </div>
         <UnlockButton />
+        <PreviewChip />
       </section>
 
       {/* The method, as a side-by-side: every other course vs this one.
@@ -236,6 +244,78 @@ export function Landing() {
             at their craft, and cut down to one or two minutes each. No hour-long
             recordings. No theory you&apos;ll never use. Just the skill, and then
             your turn to try it.
+          </p>
+        </div>
+      </section>
+
+      {/* A mentor in your pocket — the portrait zoom, demonstrated */}
+      <section className="flex flex-col items-center gap-8 rounded-2xl border border-navy-600 bg-navy-800 p-6 sm:flex-row sm:justify-center sm:gap-14 sm:p-10">
+        {/* The phone. Inside it, the same lesson twice: letterboxed the
+            way landscape video normally plays on a phone, then zoomed to
+            portrait the way this player can — cycling so the difference
+            demonstrates itself. */}
+        <div className="relative w-52 shrink-0 rounded-[2.5rem] border-4 border-navy-600 bg-navy-950 p-1.5 shadow-2xl shadow-navy-950">
+          <span className="absolute left-1/2 top-3 z-10 h-1.5 w-16 -translate-x-1/2 rounded-full bg-navy-700" />
+          <div className="relative aspect-[9/19] overflow-hidden rounded-[2rem] bg-navy-950">
+            {/* letterboxed */}
+            <span className="pz-a absolute inset-0 flex items-center">
+              <span className="relative aspect-video w-full">
+                <Image
+                  src="/thumbs/1080612884.jpg"
+                  alt=""
+                  fill
+                  sizes="200px"
+                  className="object-cover"
+                />
+              </span>
+              <span className="absolute inset-x-0 top-6 text-center text-[0.55rem] uppercase tracking-wider text-ink-faint">
+                Landscape on a phone
+              </span>
+            </span>
+            {/* zoomed to portrait */}
+            <span className="pz-b absolute inset-0">
+              <Image
+                src="/thumbs/1080612884.jpg"
+                alt=""
+                fill
+                sizes="200px"
+                className="scale-[1.15] object-cover"
+              />
+              <span className="absolute inset-x-0 top-6 text-center text-[0.55rem] font-semibold uppercase tracking-wider text-body-language">
+                Zoomed to portrait
+              </span>
+            </span>
+
+            {/* the player's own controls, portrait zoom lit */}
+            <span className="absolute inset-x-2 bottom-2 z-10 flex flex-col gap-1.5 rounded-xl border border-navy-600 bg-navy-900/90 p-2">
+              <span className="spectrum-rule h-0.5 w-full rounded-full opacity-70" />
+              <span className="flex items-center justify-between px-1 text-ink-muted">
+                <PlayFillIcon className="size-3.5" />
+                <SpeedIcon className="size-3.5" />
+                <span className="rounded-md bg-navy-700 p-1 text-body-language ring-1 ring-body-language/50">
+                  <ZoomPortraitIcon className="size-3.5" />
+                </span>
+                <FullscreenIcon className="size-3.5" />
+              </span>
+            </span>
+          </div>
+        </div>
+
+        <div className="flex max-w-md flex-col gap-3 text-center sm:text-left">
+          <h2 className="text-2xl font-semibold tracking-tight text-balance">
+            A mentor in your pocket
+          </h2>
+          <p className="text-sm leading-relaxed text-ink-muted">
+            The lessons are filmed in landscape, but life happens in portrait.
+            One tap on the zoom control and the coach fills your phone&apos;s
+            tall screen — close enough to read the hand gestures, the posture,
+            the eye contact that a letterboxed strip would shrink away. A
+            course that teaches physical expression has to make physical
+            expression easy to <em>see</em>, on the device you actually carry.
+          </p>
+          <p className="text-xs text-ink-faint">
+            Works on every lesson and every challenge video, and the whole app
+            installs to your home screen.
           </p>
         </div>
       </section>

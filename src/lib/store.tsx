@@ -58,6 +58,13 @@ export interface AppState {
   /** Days (yyyy-mm-dd) a freeze covered, so a streak survives one miss */
   frozenDays: string[];
   freezesRemaining: number;
+  /** When each lesson was watched (vimeo id → yyyy-mm-dd). The watched
+   *  list predates this, so older entries may be absent — anything that
+   *  reads it must treat missing as "not today". */
+  watchedOn: Record<string, string>;
+  /** Days (yyyy-mm-dd) the daily-quest chest was opened. Each one is a
+   *  completed three-quest day, worth bonus XP. */
+  questChests: string[];
   /** Why they're here, in their own words — asked at onboarding and kept
    *  at the top of their profile. The whole course asks people to keep
    *  going; this is the reason they gave for wanting to. */
@@ -78,12 +85,14 @@ const EMPTY: AppState = {
   badges: [],
   frozenDays: [],
   freezesRemaining: STARTING_FREEZES,
+  watchedOn: {},
+  questChests: [],
   intention: "",
   displayName: "",
   avatar: "",
 };
 
-const STORAGE_KEY = "speak-better-state-v1";
+export const STORAGE_KEY = "speak-better-state-v1";
 
 interface StoreApi {
   state: AppState;
@@ -93,6 +102,8 @@ interface StoreApi {
   setLevel: (level: Level) => void;
   setIntention: (intention: string) => void;
   setProfile: (patch: { displayName?: string; avatar?: string }) => void;
+  /** Opens today's quest chest — idempotent per day. */
+  claimQuestChest: () => void;
   markLessonWatched: (vimeoId: string) => void;
   recordAttempt: (attempt: Attempt) => void;
   dismissCelebration: (badgeId: string) => void;
@@ -248,8 +259,22 @@ function StoreCore({
         applyWithBadges((p) =>
           p.watchedLessons.includes(vimeoId)
             ? p
-            : { ...p, watchedLessons: [...p.watchedLessons, vimeoId] },
+            : {
+                ...p,
+                watchedLessons: [...p.watchedLessons, vimeoId],
+                watchedOn: {
+                  ...p.watchedOn,
+                  [vimeoId]: new Date().toISOString().slice(0, 10),
+                },
+              },
         ),
+      claimQuestChest: () =>
+        applyWithBadges((p) => {
+          const today = new Date().toISOString().slice(0, 10);
+          return p.questChests.includes(today)
+            ? p
+            : { ...p, questChests: [...p.questChests, today] };
+        }),
       recordAttempt: (attempt) =>
         applyWithBadges((p) => ({ ...p, attempts: [...p.attempts, attempt] })),
       dismissCelebration: (badgeId) =>

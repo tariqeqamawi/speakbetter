@@ -30,6 +30,11 @@ export const metadata: Metadata = {
     title: "Speak Better",
     statusBarStyle: "black-translucent",
   },
+  icons: {
+    // iOS reads none of the manifest icons — this link is what puts the
+    // lion on an iPhone home screen.
+    apple: "/apple-touch-icon.png",
+  },
   openGraph: {
     title: "Speak Better",
     description:

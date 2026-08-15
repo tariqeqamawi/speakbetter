@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useStore, type Attempt, type FeedbackNote } from "@/lib/store";
 import type { Challenge } from "@/data/challenges";
 import { lessonByVimeoId } from "@/data/lessons";
@@ -243,6 +243,36 @@ function Feedback({
   const { state } = useStore();
   const canRevealAll = state.level !== "beginner"; // §08/§09: nested reveal
 
+  // The reveal is a sequence, not a page load: bars land one at a time,
+  // the score counts up, the verdict arrives, the notes follow. Same
+  // data throughout — the anticipation is the reward, and it's free.
+  const reduceMotion =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const [barsShown, setBarsShown] = useState(reduceMotion ? 7 : 0);
+  const [shownScore, setShownScore] = useState(reduceMotion ? attempt.score : 0);
+  const barsDone = barsShown >= 7;
+  const scoreDone = shownScore >= attempt.score;
+
+  // One bar every 260ms — enough gap for each landing to register.
+  useEffect(() => {
+    if (barsDone) return;
+    const t = setTimeout(() => setBarsShown(barsShown + 1), barsShown === 0 ? 500 : 260);
+    return () => clearTimeout(t);
+  }, [barsShown, barsDone]);
+
+  // Then the score climbs, fast at first and slowing into the final
+  // number — the last few points take the longest, as they should.
+  useEffect(() => {
+    if (!barsDone || scoreDone) return;
+    const remaining = attempt.score - shownScore;
+    const step = Math.max(1, Math.ceil(remaining / 12));
+    const t = setTimeout(() => setShownScore(Math.min(attempt.score, shownScore + step)), 55);
+    return () => clearTimeout(t);
+  }, [barsDone, scoreDone, shownScore, attempt.score]);
+
+  const settled = barsDone && scoreDone;
+
   const noteLine = (n: FeedbackNote) => {
     const refs = canRevealAll
       ? (n.lessonIds ?? [])
@@ -282,47 +312,71 @@ function Feedback({
       <div className="flex items-center justify-between">
         <div className="flex flex-col">
           <span
-            className={`text-xs font-semibold uppercase tracking-wider ${
-              attempt.passed ? "text-mindset" : "text-storytelling"
+            className={`text-xs font-semibold uppercase tracking-wider transition-colors ${
+              !settled
+                ? "text-ink-faint"
+                : attempt.passed
+                  ? "text-mindset"
+                  : "text-storytelling"
             }`}
           >
-            {attempt.passed ? "Challenge complete" : "Keep going"}
+            {!settled
+              ? "Reading your talk…"
+              : attempt.passed
+                ? "Challenge complete"
+                : "Keep going"}
           </span>
-          <span className="text-3xl font-bold tabular-nums text-ink">
-            {attempt.score}
+          <span
+            className={`text-3xl font-bold tabular-nums text-ink transition-transform duration-300 ${
+              settled ? "" : "opacity-90"
+            }`}
+          >
+            {barsDone ? shownScore : "–"}
             <span className="text-base font-normal text-ink-faint"> / 100</span>
           </span>
         </div>
-        <button
-          type="button"
-          onClick={download}
-          className="rounded-lg border border-navy-600 px-3 py-2 text-xs font-semibold text-ink-muted transition-colors hover:text-ink"
-        >
-          Download feedback
-        </button>
+        {settled && (
+          <button
+            type="button"
+            onClick={download}
+            className="coach-cue rounded-lg border border-navy-600 px-3 py-2 text-xs font-semibold text-ink-muted transition-colors hover:text-ink"
+          >
+            Download feedback
+          </button>
+        )}
       </div>
 
-      <p className="text-sm text-ink-muted">{attempt.summary}</p>
+      {settled && (
+        <p className="coach-cue text-sm text-ink-muted">{attempt.summary}</p>
+      )}
 
       <div>
         <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-ink-faint">
           Your color spectrum
         </h3>
-        <SpectrumBars spectrum={attempt.spectrum} />
+        <SpectrumBars spectrum={attempt.spectrum} revealCount={barsShown} />
       </div>
 
-      <div>
+      {settled && (
+      <div className="coach-cue" style={{ animationDelay: "150ms" }}>
         <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-ink-faint">
           Focus on next
         </h3>
         <ul className="flex flex-col gap-2">
           {attempt.focus.map((note, i) => (
-            <FeedbackNoteRow key={i} note={note} showLessons={canRevealAll} />
+            <FeedbackNoteRow
+              key={i}
+              note={note}
+              showLessons={canRevealAll}
+              className="coach-cue"
+              style={{ animationDelay: `${300 + i * 220}ms` }}
+            />
           ))}
         </ul>
       </div>
+      )}
 
-      {canRevealAll && attempt.fullNotes.length > 0 && (
+      {settled && canRevealAll && attempt.fullNotes.length > 0 && (
         <details className="rounded-lg border border-navy-600">
           <summary className="cursor-pointer select-none px-3 py-2.5 text-sm font-medium text-ink-muted transition-colors hover:text-ink">
             Everything your coach noticed ({attempt.fullNotes.length})
@@ -365,12 +419,16 @@ function catName(id: CategoryId): string {
 function FeedbackNoteRow({
   note,
   showLessons = false,
+  className = "",
+  style,
 }: {
   note: FeedbackNote;
   /** Intermediate/Advanced only (§08): link each observation back to the
    * Skills lesson behind it, so a skill used by instinct — or one still
    * missing — leads straight to its video. */
   showLessons?: boolean;
+  className?: string;
+  style?: React.CSSProperties;
 }) {
   const cat = categoryById.get(note.category);
   const lessons = showLessons
@@ -379,7 +437,7 @@ function FeedbackNoteRow({
         .filter((l) => l !== undefined)
     : [];
   return (
-    <li className="flex items-start gap-2 text-sm text-ink">
+    <li className={`flex items-start gap-2 text-sm text-ink ${className}`} style={style}>
       <span className={`mt-1.5 size-2 shrink-0 rounded-full ${cat?.bgClass ?? ""}`} />
       <span className="flex flex-col gap-1">
         {note.note}

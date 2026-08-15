@@ -223,6 +223,19 @@ export function FlatlineIcon({ className = "size-5" }: IconProps) {
   );
 }
 
+/** A wrapped gift — the unopened daily chest. */
+export function GiftIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="4" y="10.25" width="16" height="9" rx="1.5" />
+      <path d="M3.25 6.75h17.5v3.5H3.25z" />
+      <path d="M12 6.75v12.5" />
+      <path d="M12 6.5C12 4.5 10.75 3.25 9.25 3.25S7 4.4 7 5.5c0 .8.6 1.25 1.5 1.25H12Z" />
+      <path d="M12 6.5c0-2 1.25-3.25 2.75-3.25S17 4.4 17 5.5c0 .8-.6 1.25-1.5 1.25H12Z" />
+    </svg>
+  );
+}
+
 /** A closed padlock — a phase the journey hasn't reached yet. */
 export function LockIcon({ className = "size-5" }: IconProps) {
   return (

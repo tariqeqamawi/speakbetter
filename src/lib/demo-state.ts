@@ -78,4 +78,6 @@ export const demoState: AppState = {
   ],
   frozenDays: [],
   freezesRemaining: 2,
+  watchedOn: {},
+  questChests: [],
 };

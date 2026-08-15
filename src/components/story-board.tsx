@@ -1,27 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { storyPhases, type PhaseId } from "@/data/challenges";
+import type { PhaseId } from "@/data/challenges";
 import { StoryProgress } from "@/components/story-progress";
-import { StoryJourney, useCurrentPhaseIndex } from "@/components/challenge-carousel";
+import { JourneyMap } from "@/components/journey-map";
 
-// The progress bar and the phase list are the same control seen twice:
-// clicking a color in the bar opens that phase below it. Keeping the
-// open phase in one place here is what lets them agree.
+// The progress bar and the map are the same journey seen twice: the bar
+// is the overview, the map is the terrain. Clicking a color in the bar
+// flies the map to that phase.
 
 export function StoryBoard() {
-  const currentIndex = useCurrentPhaseIndex();
-  const [openId, setOpenId] = useState<PhaseId | null>(null);
-  const open = openId ?? storyPhases[currentIndex].id;
+  const [selected, setSelected] = useState<PhaseId | null>(null);
+
+  const flyTo = (id: PhaseId) => {
+    setSelected(id);
+    document
+      .getElementById(`journey-${id}`)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
     <div className="flex flex-col gap-6">
-      <StoryProgress open={open} onOpen={(id) => setOpenId(id)} />
-      <StoryJourney
-        open={open}
-        onOpen={setOpenId}
-        currentIndex={currentIndex}
-      />
+      <StoryProgress open={selected ?? undefined} onOpen={flyTo} />
+      <JourneyMap />
     </div>
   );
 }

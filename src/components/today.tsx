@@ -9,6 +9,7 @@ import { challengeProgress } from "@/lib/challenge-progress";
 import { categoryById } from "@/data/categories";
 import { VideoStill } from "@/components/video-still";
 import { SpectrumStrip } from "@/components/spectrum";
+import { DailyQuests } from "@/components/daily-quests";
 import { LevelIcon, levelMeta } from "@/components/level-icon";
 import { FlameIcon } from "@/components/icons";
 import { CheckIcon, PlayIcon } from "@/components/icons";
@@ -82,6 +83,8 @@ export function Today() {
           </span>
         )}
       </section>
+
+      <DailyQuests />
 
       {/* the one thing to do */}
       {up && (

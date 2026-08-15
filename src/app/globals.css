@@ -329,6 +329,100 @@ body {
   }
 }
 
+/* The pocket-mentor phone cycles its two framings — letterboxed
+ * landscape, then zoomed portrait — so the zoom demonstrates itself.
+ * Same half-offset trick as the hero headline. */
+.pz-a,
+.pz-b {
+  animation: pz-cycle 9s ease-in-out infinite;
+}
+
+.pz-b {
+  animation-delay: -4.5s;
+}
+
+@keyframes pz-cycle {
+  0%,
+  42% {
+    opacity: 1;
+  }
+  50%,
+  92% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pz-a {
+    animation: none;
+    opacity: 0;
+  }
+
+  .pz-b {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* The stretch of trail being walked right now breathes with light. */
+.trail-breathe {
+  animation: trail-breathe 4.5s ease-in-out infinite;
+}
+
+@keyframes trail-breathe {
+  0%,
+  100% {
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trail-breathe {
+    animation: none;
+    opacity: 0.15;
+  }
+}
+
+/* The map's "you are here" node breathes — a ring of its phase color
+ * swelling and fading, the way map markers ask to be pressed. */
+.map-pulse {
+  position: relative;
+}
+
+.map-pulse::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+  border: 2px solid currentColor;
+  animation: map-pulse 2.2s ease-out infinite;
+}
+
+@keyframes map-pulse {
+  0% {
+    opacity: 0.8;
+    transform: scale(0.9);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(1.45);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-pulse::after {
+    animation: none;
+    opacity: 0.5;
+  }
+}
+
 /* The takeaways sheet slides in from the edge it lives on. */
 .panel-in {
   animation: panel-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;

@@ -4,12 +4,21 @@ import { categories, type CategoryId } from "@/data/categories";
 // performance lit up, and how strongly. Reads at a glance — full bars
 // across many colors = a dynamic talk; one or two colors = the gap.
 
-export function SpectrumBars({ spectrum }: { spectrum: Record<CategoryId, number> }) {
+export function SpectrumBars({
+  spectrum,
+  revealCount,
+}: {
+  spectrum: Record<CategoryId, number>;
+  /** When set, only the first N bars have landed — the rest wait at
+   *  zero. Drives the staged reveal; omit for the instant render. */
+  revealCount?: number;
+}) {
   return (
     <div className="flex flex-col gap-2">
-      {categories.map((cat) => {
+      {categories.map((cat, i) => {
         const value = Math.max(0, Math.min(100, spectrum[cat.id] ?? 0));
-        const lit = value >= 40;
+        const shown = revealCount === undefined || i < revealCount;
+        const lit = value >= 40 && shown;
         return (
           <div key={cat.id} className="flex items-center gap-3">
             <span className={`w-40 shrink-0 truncate text-xs sm:w-56 ${lit ? "text-ink" : "text-ink-faint"}`}>
@@ -17,12 +26,12 @@ export function SpectrumBars({ spectrum }: { spectrum: Record<CategoryId, number
             </span>
             <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-navy-700">
               <div
-                className={`h-full rounded-full ${cat.bgClass} ${lit ? "" : "opacity-40"}`}
-                style={{ width: `${value}%` }}
+                className={`h-full rounded-full transition-[width] duration-500 ease-out ${cat.bgClass} ${lit ? "" : "opacity-40"}`}
+                style={{ width: shown ? `${value}%` : "0%" }}
               />
             </div>
             <span className="w-8 shrink-0 text-right text-xs tabular-nums text-ink-faint">
-              {value}
+              {shown ? value : "·"}
             </span>
           </div>
         );

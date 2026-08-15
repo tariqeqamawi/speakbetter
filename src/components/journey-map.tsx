@@ -1,0 +1,335 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  challenges,
+  challengesInPhase,
+  storyPhases,
+  type StoryPhase,
+} from "@/data/challenges";
+import { categoryById, type CategoryId } from "@/data/categories";
+import { challengeProgress } from "@/lib/challenge-progress";
+import { useStore } from "@/lib/store";
+import { VideoStill } from "@/components/video-still";
+import { CheckIcon, LockIcon } from "@/components/icons";
+
+// The STORY journey as terrain: a winding path of 21 nodes, one per
+// challenge, grouped under their phase banners. Each unlocked node
+// carries the still from its own explainer video, so the road is faces
+// and scenes rather than abstract dots; passed nodes wear their phase's
+// color, the next one pulses, and locked territory is fogged — visible,
+// named on hover, but not walkable. Each phase's stretch of the map sits
+// in a wash of its own color, so the journey reads as five territories.
+
+const ROW_H = 108;
+/** The winding: node x-positions cycle through this pattern (percent). */
+const X_CYCLE = [50, 76, 50, 24];
+const PHASE_GAP = 72; // extra room above each phase banner
+
+/** The earliest phase with work left in it. Later phases are locked;
+ *  earlier ones stay open, since finished work is never taken away. */
+export function useCurrentPhaseIndex(): number {
+  const { state, ready } = useStore();
+  if (!ready) return 0;
+  const firstUnfinished = storyPhases.findIndex(
+    (p) =>
+      !challengesInPhase(p.id).every((c) => challengeProgress(c, state).passed),
+  );
+  return firstUnfinished === -1 ? storyPhases.length - 1 : firstUnfinished;
+}
+
+interface Node {
+  slug: string;
+  title: string;
+  vimeoId: string | null;
+  accentId: CategoryId;
+  x: number; // percent
+  y: number; // px
+  phase: StoryPhase;
+  phaseIndex: number;
+  passed: boolean;
+  locked: boolean;
+  isCurrent: boolean;
+}
+
+export function JourneyMap() {
+  const { state, ready } = useStore();
+  const currentIndex = useCurrentPhaseIndex();
+  const inDemo = usePathname().startsWith("/demo");
+
+  // Lay the trail out top to bottom, phase by phase.
+  const nodes: Node[] = [];
+  const banners: { phase: StoryPhase; y: number; locked: boolean }[] = [];
+  let y = 24;
+  let step = 0;
+  let firstUnpassedSeen = false;
+  for (let pi = 0; pi < storyPhases.length; pi++) {
+    const phase = storyPhases[pi];
+    const locked = pi > currentIndex;
+    banners.push({ phase, y, locked });
+    y += PHASE_GAP;
+    for (const challenge of challengesInPhase(phase.id)) {
+      const passed = ready && challengeProgress(challenge, state).passed;
+      const isCurrent = !passed && !locked && !firstUnpassedSeen;
+      if (isCurrent) firstUnpassedSeen = true;
+      nodes.push({
+        slug: challenge.slug,
+        title: challenge.title,
+        vimeoId: challenge.vimeoId,
+        accentId: challenge.targetSkills[0],
+        x: X_CYCLE[step % X_CYCLE.length],
+        y: y + ROW_H / 2,
+        phase,
+        phaseIndex: pi,
+        passed,
+        locked,
+        isCurrent,
+      });
+      y += ROW_H;
+      step++;
+    }
+  }
+  const height = y + 24;
+  const done = nodes.filter((n) => n.passed).length;
+
+  // The colored territory each phase owns, banner to banner.
+  const territories = banners.map((b, i) => ({
+    phase: b.phase,
+    locked: b.locked,
+    top: b.y - 12,
+    height: (banners[i + 1]?.y ?? height) - b.y,
+  }));
+
+  // One trail segment per phase, so each stretch of road wears its
+  // phase's color — dim where the journey hasn't reached.
+  const segments = storyPhases.map((phase, pi) => {
+    const own = nodes.filter((n) => n.phaseIndex === pi);
+    const prev = nodes.filter((n) => n.phaseIndex === pi - 1).at(-1);
+    const pts = (prev ? [prev, ...own] : own).map((n) => ({ x: n.x, y: n.y }));
+    if (pts.length < 2)
+      return { phase, d: "", locked: pi > currentIndex, active: pi === currentIndex };
+    let d = `M ${pts[0].x} ${pts[0].y}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const a = pts[i];
+      const b = pts[i + 1];
+      const midY = (a.y + b.y) / 2;
+      d += ` C ${a.x} ${midY} ${b.x} ${midY} ${b.x} ${b.y}`;
+    }
+    return { phase, d, locked: pi > currentIndex, active: pi === currentIndex };
+  });
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-baseline justify-between">
+        <h2 className="text-sm font-medium uppercase tracking-wider text-ink-faint">
+          The journey
+        </h2>
+        <span className="text-xs tabular-nums text-ink-faint">
+          {done} of {challenges.length} challenges
+        </span>
+      </div>
+
+      <div className="relative mx-auto w-full max-w-2xl" style={{ height }}>
+        {/* Territory washes — five regions, each in its phase's light */}
+        {territories.map(({ phase, locked, top, height: h }) => (
+          <div
+            key={phase.id}
+            aria-hidden
+            className="pointer-events-none absolute -inset-x-8 blur-2xl"
+            style={{
+              top,
+              height: h,
+              opacity: locked ? 0.04 : 0.09,
+              background: `radial-gradient(60% 80% at 50% 35%, var(--color-${phase.bgClass.slice(3)}), transparent 75%)`,
+            }}
+          />
+        ))}
+
+        {/* The trail */}
+        <svg
+          className="absolute inset-0 h-full w-full"
+          viewBox={`0 0 100 ${height}`}
+          preserveAspectRatio="none"
+          aria-hidden
+        >
+          {segments.map(({ phase, d, locked, active }) => (
+            <g key={phase.id}>
+              {/* A breathing under-glow on the stretch being walked now */}
+              {active && (
+                <path
+                  d={d}
+                  fill="none"
+                  stroke={`var(--color-${phase.bgClass.slice(3)})`}
+                  strokeWidth="7"
+                  strokeLinecap="round"
+                  vectorEffect="non-scaling-stroke"
+                  className="trail-breathe"
+                />
+              )}
+              <path
+                d={d}
+                fill="none"
+                stroke={`var(--color-${phase.bgClass.slice(3)})`}
+                strokeWidth="2"
+                strokeLinecap="round"
+                opacity={locked ? 0.12 : active ? 0.55 : 0.4}
+                vectorEffect="non-scaling-stroke"
+              />
+            </g>
+          ))}
+        </svg>
+
+        {/* Phase banners */}
+        {banners.map(({ phase, y: by, locked }) => (
+          <div
+            key={phase.id}
+            id={`journey-${phase.id}`}
+            className="absolute inset-x-0 flex scroll-mt-24 items-center gap-3"
+            style={{ top: by }}
+          >
+            <span
+              className={`flex size-9 shrink-0 items-center justify-center rounded-xl text-base font-bold ${
+                locked
+                  ? "bg-navy-700 text-ink-faint"
+                  : `${phase.bgClass} text-navy-950 shadow-[0_0_18px_-6px_currentColor] ${phase.textClass}`
+              }`}
+            >
+              {phase.id}
+            </span>
+            <span className="flex flex-col">
+              <span
+                className={`text-sm font-semibold ${locked ? "text-ink-faint" : phase.textClass}`}
+              >
+                {phase.name}
+              </span>
+              {locked && (
+                <span className="text-[0.65rem] text-ink-faint">
+                  Locked — the road reaches here after the phase before.
+                </span>
+              )}
+            </span>
+            <span className="h-px flex-1 bg-navy-700/60" />
+          </div>
+        ))}
+
+        {/* The nodes */}
+        {nodes.map((node, i) => {
+          const clickable = !node.locked && !inDemo;
+          const accent = categoryById.get(node.accentId)!;
+          const body = (
+            <>
+              <span
+                className={`relative block overflow-hidden rounded-full border-2 transition-transform duration-200 group-hover:scale-110 ${
+                  node.locked ? "size-12" : "size-16 sm:size-[4.5rem]"
+                } ${
+                  node.passed
+                    ? `border-transparent shadow-[0_0_20px_-4px_currentColor] ${node.phase.textClass}`
+                    : node.locked
+                      ? "border-navy-600 bg-navy-850 opacity-60"
+                      : `border-current bg-navy-850 ${node.phase.textClass} ${
+                          node.isCurrent ? "map-pulse" : ""
+                        }`
+                }`}
+              >
+                {/* The face of the challenge, not an abstract dot */}
+                {node.locked ? (
+                  <span className="flex size-full items-center justify-center text-ink-faint">
+                    <LockIcon className="size-4" />
+                  </span>
+                ) : (
+                  <>
+                    <VideoStill
+                      vimeoId={node.vimeoId}
+                      accent={accent}
+                      sizes="72px"
+                    />
+                    {/* A veil in the phase color, heavier when passed */}
+                    <span
+                      className={`absolute inset-0 ${node.phase.bgClass} ${
+                        node.passed ? "opacity-25" : "opacity-0"
+                      }`}
+                    />
+                  </>
+                )}
+              </span>
+
+              {/* Status jewel on the rim */}
+              {node.passed && (
+                <span
+                  className={`absolute -bottom-0.5 -right-0.5 flex size-6 items-center justify-center rounded-full border-2 border-navy-900 text-navy-950 ${node.phase.bgClass}`}
+                >
+                  <CheckIcon className="size-3.5" />
+                </span>
+              )}
+              {!node.passed && !node.locked && (
+                <span
+                  className={`absolute -bottom-0.5 -right-0.5 flex size-6 items-center justify-center rounded-full border-2 border-navy-900 bg-navy-800 text-[0.65rem] font-bold ${node.phase.textClass}`}
+                >
+                  {i + 1}
+                </span>
+              )}
+
+              {node.isCurrent && (
+                <span
+                  className={`absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-full px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider text-navy-950 ${node.phase.bgClass}`}
+                >
+                  You are here
+                </span>
+              )}
+
+              {/* Hover card: the still, the name, the state */}
+              <span className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2.5 w-52 -translate-x-1/2 overflow-hidden rounded-xl border border-navy-500 bg-navy-950 opacity-0 shadow-2xl shadow-navy-950 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100">
+                <span
+                  className={`relative block aspect-video w-full bg-gradient-to-br from-navy-700 to-navy-900 ${
+                    node.locked ? "opacity-60 grayscale" : ""
+                  }`}
+                >
+                  <VideoStill vimeoId={node.vimeoId} accent={accent} sizes="208px" />
+                  <span
+                    className={`absolute inset-x-0 bottom-0 h-0.5 ${node.phase.bgClass}`}
+                  />
+                </span>
+                <span className="block p-2.5 text-center text-[0.7rem] leading-snug">
+                  <b className="block text-ink">{node.title}</b>
+                  <span className={node.locked ? "text-ink-faint" : node.phase.textClass}>
+                    {node.passed
+                      ? "Passed — practice again any time"
+                      : node.locked
+                        ? "Unlocks with this phase"
+                        : node.isCurrent
+                          ? "Your next challenge"
+                          : "Ready when you are"}
+                  </span>
+                </span>
+              </span>
+            </>
+          );
+          const cls = "group absolute -translate-x-1/2 -translate-y-1/2";
+          const pos = { left: `${node.x}%`, top: node.y };
+          return clickable ? (
+            <Link
+              key={node.slug}
+              href={`/challenges/${node.slug}`}
+              aria-label={node.title}
+              className={cls}
+              style={pos}
+            >
+              {body}
+            </Link>
+          ) : (
+            <div
+              key={node.slug}
+              tabIndex={0}
+              aria-label={node.locked ? `${node.title} — locked` : node.title}
+              className={cls}
+              style={pos}
+            >
+              {body}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
