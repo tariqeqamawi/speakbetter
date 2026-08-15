@@ -183,7 +183,7 @@ export function Landing() {
         </h2>
         <p className="max-w-lg text-center text-ink-muted">
           Nothing hidden behind the checkout — here is the whole library,
-          colour by colour, exactly as you&apos;ll find it inside.
+          color by color, exactly as you&apos;ll find it inside.
         </p>
         <LessonGallery />
       </section>
@@ -192,21 +192,21 @@ export function Landing() {
       <section className="flex flex-col items-center gap-6 rounded-2xl border border-navy-600 bg-navy-800 p-6 text-center sm:p-10">
         <Image
           src="/logo-full.png"
-          alt="The Speak Better lion, its mane in full colour above a soundwave"
+          alt="The Speak Better lion, its mane in full color above a soundwave"
           width={430}
           height={410}
           className="h-40 w-auto sm:h-52"
         />
         <blockquote className="max-w-xl text-xl font-semibold leading-relaxed text-balance sm:text-2xl">
           Fear and falsity ring flat. Step into your full expression, and your
-          true colours roar.
+          true colors roar.
         </blockquote>
         <p className="max-w-lg text-sm leading-relaxed text-ink-muted">
           That&apos;s the whole ethos behind the mark. The lion is the voice
-          that stopped apologising for itself; the mane is every colour of
+          that stopped apologizing for itself; the mane is every color of
           speaking you have in you, all of it showing at once; the wave beneath
-          is the sound it makes in a room. A flat talk is a mane with one colour
-          in it — and you were never one colour.
+          is the sound it makes in a room. A flat talk is a mane with one color
+          in it — and you were never one color.
         </p>
       </section>
 

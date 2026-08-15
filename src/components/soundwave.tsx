@@ -57,12 +57,12 @@ const variants: Record<Variant, VariantSpec> = {
     viewH: 80,
     midY: 40,
     fade: [4, 46, 94, 100],
-    // Clear of the waves' full reach at the centre, so nothing is cut
+    // Clear of the waves' full reach at the center, so nothing is cut
     // where the band is fullest; the taper does its work out toward
     // the points instead.
     lens: 27,
     // Thinner and more transparent than they look: each ribbon is drawn
-    // twice — a blurred halo under a sharper core — so the colour is
+    // twice — a blurred halo under a sharper core — so the color is
     // see-through everywhere and blooms where ribbons cross.
     waves: [
       { period: 104, amplitude: 13, opacity: 0.34, width: 7, className: "soundwave-a" },
@@ -86,12 +86,12 @@ function wavePath(width: number, period: number, amplitude: number, midY: number
 }
 
 /** The tapered silhouette the hero's waves live inside: a lens pointed
- *  at both ends and fullest at the centre. A cubic peaks at three
+ *  at both ends and fullest at the center. A cubic peaks at three
  *  quarters of its control height, so the controls are lifted to hit
  *  the requested half-height exactly. */
 function lensPath(width: number, midY: number, halfHeight: number) {
   const h = halfHeight / 0.75;
-  // Controls pulled toward the centre stretch the taper across a wider
+  // Controls pulled toward the center stretch the taper across a wider
   // span, so the band narrows over the outer quarter at each end rather
   // than pinching only at the very tip.
   const a = width * 0.33;

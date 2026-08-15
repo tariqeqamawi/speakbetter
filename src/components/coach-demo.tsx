@@ -17,7 +17,7 @@ import {
 // The coaching mechanic, played out on the landing page. A visitor
 // otherwise can't see what they're buying until they've paid, onboarded
 // and uploaded — so this runs a sample review end to end: the coach
-// watches, the colours light up, the notes land, and the lion says it
+// watches, the colors light up, the notes land, and the lion says it
 // out loud.
 //
 // Clearly labelled as a sample. Nothing here is presented as real
@@ -144,7 +144,7 @@ export function CoachDemo() {
               <h3 className="font-semibold text-ink">See a review happen</h3>
               <p className="max-w-xs text-sm text-ink-muted">
                 This is what lands after you record a challenge — a score, your
-                colour spectrum, and what to fix next.
+                color spectrum, and what to fix next.
               </p>
             </div>
             <button
@@ -184,7 +184,7 @@ export function CoachDemo() {
 
             <div className="flex flex-col gap-1.5">
               <span className="text-[0.7rem] uppercase tracking-wider text-ink-faint">
-                Your colour spectrum — {lit} of 7 lit up
+                Your color spectrum — {lit} of 7 lit up
               </span>
               {categories.map((cat, i) => {
                 const value = SAMPLE_SPECTRUM[cat.id];

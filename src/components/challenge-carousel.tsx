@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import {
   challengesInPhase,
   storyPhases,
@@ -22,26 +21,15 @@ import { VideoStill } from "@/components/video-still";
 // One phase is open at a time — the one the student is actually on.
 // Five phases of challenges stacked vertically is a wall; a journey
 // should show you where you are, with what's ahead still closed.
-export function StoryJourney() {
-  const { state, ready } = useStore();
-
-  // The current phase is the earliest one with work left in it. Later
-  // phases stay shut until the journey reaches them; earlier ones can be
-  // reopened freely, since finished work is never taken away.
-  const phaseDone = (phase: StoryPhase) =>
-    challengesInPhase(phase.id).every((c) => challengeProgress(c, state).passed);
-  const currentIndex = ready
-    ? Math.max(
-        0,
-        storyPhases.findIndex((p) => !phaseDone(p)) === -1
-          ? storyPhases.length - 1
-          : storyPhases.findIndex((p) => !phaseDone(p)),
-      )
-    : 0;
-
-  const [openId, setOpenId] = useState<PhaseId | null>(null);
-  const open = openId ?? storyPhases[currentIndex].id;
-
+export function StoryJourney({
+  open,
+  onOpen,
+  currentIndex,
+}: {
+  open: PhaseId;
+  onOpen: (id: PhaseId | null) => void;
+  currentIndex: number;
+}) {
   return (
     <div className="flex flex-col gap-3">
       {storyPhases.map((phase, i) => (
@@ -49,13 +37,28 @@ export function StoryJourney() {
           key={phase.id}
           phase={phase}
           open={phase.id === open}
-          // Ahead of where they've reached, and not yet unlocked.
+          // Ahead of where they've reached. A locked phase still opens
+          // and still shows its challenges — greyed and unclickable, so
+          // the road ahead is visible without being walkable.
           locked={i > currentIndex}
-          onToggle={() => setOpenId(phase.id === open ? null : phase.id)}
+          onToggle={() => onOpen(phase.id === open ? null : phase.id)}
         />
       ))}
     </div>
   );
+}
+
+/** The earliest phase with work left in it — where the student actually
+ *  is. Everything after it is locked; everything before stays open to
+ *  revisit, since finished work is never taken away. */
+export function useCurrentPhaseIndex(): number {
+  const { state, ready } = useStore();
+  if (!ready) return 0;
+  const firstUnfinished = storyPhases.findIndex(
+    (p) =>
+      !challengesInPhase(p.id).every((c) => challengeProgress(c, state).passed),
+  );
+  return firstUnfinished === -1 ? storyPhases.length - 1 : firstUnfinished;
 }
 
 function PhaseSection({
@@ -83,12 +86,9 @@ function PhaseSection({
     >
       <button
         type="button"
-        onClick={locked ? undefined : onToggle}
+        onClick={onToggle}
         aria-expanded={open}
-        disabled={locked}
-        className={`flex items-start gap-3 p-4 text-left transition-colors sm:p-5 ${
-          locked ? "cursor-not-allowed" : "hover:bg-navy-800/60"
-        }`}
+        className="flex items-start gap-3 p-4 text-left transition-colors hover:bg-navy-800/60 sm:p-5"
       >
         <span
           className={`flex size-10 shrink-0 items-center justify-center rounded-xl text-lg font-bold ${
@@ -123,14 +123,22 @@ function PhaseSection({
         </span>
       </button>
 
-      {open && !locked && (
-      <ul className="flex flex-col gap-3 p-4 pt-0 sm:p-5 sm:pt-0">
-        {items.map((challenge) => (
-          <li key={challenge.slug}>
-            <ChallengeCard challenge={challenge} phase={phase} />
-          </li>
-        ))}
-      </ul>
+      {open && (
+        <ul className="flex flex-col gap-3 p-4 pt-0 sm:p-5 sm:pt-0">
+          {items.map((challenge, i) => (
+            <li
+              key={challenge.slug}
+              className="challenge-enter"
+              style={{ animationDelay: `${i * 55}ms` }}
+            >
+              <ChallengeCard
+                challenge={challenge}
+                phase={phase}
+                locked={locked}
+              />
+            </li>
+          ))}
+        </ul>
       )}
     </section>
   );
@@ -139,15 +147,44 @@ function PhaseSection({
 function ChallengeCard({
   challenge,
   phase,
+  locked = false,
 }: {
   challenge: Challenge;
   phase: StoryPhase;
+  locked?: boolean;
 }) {
   const { state, ready } = useStore();
   const accent = categoryById.get(challenge.targetSkills[0])!;
   const progress = ready
     ? challengeProgress(challenge, state)
     : { ratio: 0, attempts: 0, passed: false, warmUpWatched: 0, warmUpTotal: 0, action: "start" as const };
+
+  // A challenge in a phase the journey hasn't reached: visible, named,
+  // and plainly out of reach. Seeing what's coming is the point; opening
+  // it early is not.
+  if (locked) {
+    return (
+      <div
+        aria-disabled
+        className="relative flex overflow-hidden rounded-xl border border-dashed border-navy-600 bg-navy-900/40 opacity-70 grayscale"
+      >
+        <div className="relative aspect-video w-full shrink-0 bg-gradient-to-br from-navy-700 to-navy-900 sm:w-64">
+          <VideoStill vimeoId={challenge.vimeoId} accent={accent} />
+          <span className="absolute inset-0 flex items-center justify-center bg-navy-950/60">
+            <LockIcon className="size-6 text-ink-faint" />
+          </span>
+        </div>
+        <div className="flex flex-1 flex-col justify-center gap-1 p-4">
+          <span className="text-sm font-semibold text-ink-muted">
+            {challenge.title}
+          </span>
+          <span className="text-xs text-ink-faint">
+            Unlocks when you finish {phase.name}&apos;s earlier phases.
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Link

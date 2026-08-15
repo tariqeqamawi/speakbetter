@@ -33,15 +33,23 @@ export function VimeoPlayer({
   vimeoId,
   title,
   autoplay = false,
+  onEnded,
 }: {
   vimeoId: string;
   title: string;
   autoplay?: boolean;
+  /** Fires once when playback completes — what "up next" hangs off. */
+  onEnded?: () => void;
 }) {
   const holderRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<Player | null>(null);
   const shellRef = useRef<HTMLDivElement>(null);
   const [fullscreen, setFullscreen] = useState(false);
+  // Ref'd so a new callback doesn't tear down and rebuild the player.
+  const onEndedRef = useRef(onEnded);
+  useEffect(() => {
+    onEndedRef.current = onEnded;
+  }, [onEnded]);
 
   const [frame, setFrame] = useState<Frame>("fit");
   const [playing, setPlaying] = useState(false);
@@ -98,6 +106,7 @@ export function VimeoPlayer({
       setPlaying(false);
       setEnded(true);
       player.setCurrentTime(0).then(() => player.pause()).catch(() => {});
+      onEndedRef.current?.();
     };
     const onTime = (d: { seconds: number; duration: number }) => {
       setProgress(d.duration ? d.seconds / d.duration : 0);

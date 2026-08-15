@@ -44,7 +44,7 @@ export function LevelIcon({
   // The orange and red tints are much darker than the yellow one, and on
   // the navy ground they read as missing rather than dim. A saturation
   // and brightness lift brings all three up to the vivid category
-  // colours they stand for, without three new assets.
+  // colors they stand for, without three new assets.
   return (
     <Image
       src={`/level-${level}.png`}

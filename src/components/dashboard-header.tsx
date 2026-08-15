@@ -49,9 +49,14 @@ export function DashboardHeader() {
     reader.readAsDataURL(file);
   };
 
+  // Not overflow-hidden: the level menu opens downward out of this card,
+  // and clipping the card clipped the menu. Only the top rule needs
+  // clipping, so it gets its own rounded window.
   return (
-    <section className="relative overflow-hidden rounded-2xl border border-navy-600 bg-navy-800 p-5 sm:p-6">
-      <div className="spectrum-rule absolute inset-x-0 top-0 h-1" />
+    <section className="relative rounded-2xl border border-navy-600 bg-navy-800 p-5 sm:p-6">
+      <span className="absolute inset-x-0 top-0 h-1 overflow-hidden rounded-t-2xl">
+        <span className="spectrum-rule block h-full w-full" />
+      </span>
 
       <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
         {/* avatar */}

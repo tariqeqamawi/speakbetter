@@ -8,7 +8,7 @@ import type { CategoryId } from "@/data/categories";
 
 // Every lesson in the course, on the landing page. The library is the
 // bulk of what a buyer gets and it was previously invisible until after
-// payment — so the whole shelf is laid out here, browsable by colour.
+// payment — so the whole shelf is laid out here, browsable by color.
 // Deliberately not playable: this shows what's inside, it doesn't hand
 // the course away.
 
@@ -46,7 +46,7 @@ export function LessonGallery() {
       </div>
 
       {/* A fixed-height scroller: the shelf stays the same size whichever
-          colour is chosen, and the list scrolls inside it rather than
+          color is chosen, and the list scrolls inside it rather than
           pushing the rest of the page down. */}
       <div className="h-[26rem] overflow-y-auto rounded-2xl border border-navy-600 bg-navy-900/40 p-3 sm:h-[24rem]">
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">

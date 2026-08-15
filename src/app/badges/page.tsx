@@ -3,7 +3,7 @@ import { badgeDefs } from "@/data/badges";
 import { BadgeMedal } from "@/components/badge-medal";
 
 // Every badge in the course, shown won. The dashboard's trophy case
-// deliberately hides what you haven't earned behind grey; this page is
+// deliberately hides what you haven't earned behind gray; this page is
 // the opposite — the full set, so the whole collection can be seen at
 // once (and reviewed while it's being designed). Reads from the same
 // badge list, so it can never drift out of date.

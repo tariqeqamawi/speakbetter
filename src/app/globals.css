@@ -285,6 +285,92 @@ body {
   }
 }
 
+/* Challenges arrive rather than appear when a phase opens — staggered
+ * per card, so the list reads as unfolding instead of blinking on. */
+.challenge-enter {
+  animation: challenge-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes challenge-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Cards that lift toward the pointer, and carry their own color as they
+ * do. Used on the skill categories and the lesson rows, which were the
+ * flattest surfaces in the app next to the dashboard. */
+.lift-card {
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms ease,
+    border-color 220ms ease;
+}
+
+.lift-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px -12px currentColor;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .challenge-enter,
+  .lift-card {
+    animation: none;
+    transition: none;
+  }
+
+  .lift-card:hover {
+    transform: none;
+  }
+}
+
+/* The takeaways sheet slides in from the edge it lives on. */
+.panel-in {
+  animation: panel-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes panel-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* The XP receipt pops up beside the lesson title, holds, and drifts off. */
+.xp-pop {
+  animation: xp-pop 2.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes xp-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.8);
+  }
+  12%,
+  80% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel-in,
+  .xp-pop {
+    animation: none;
+  }
+}
+
 /* Each word the coach says arrives with its symbol — a small pop so the
  * eye catches it, then it simply holds until the next one. */
 .coach-cue {
@@ -365,10 +451,10 @@ body {
   }
 }
 
-/* Neon call to action. The whole button wears one colour of the
+/* Neon call to action. The whole button wears one color of the
  * category palette at a time and slowly dissolves into the next —
- * no gradient bands, no two colours side by side. One full trip
- * around the palette takes 56s, so each colour owns about eight
+ * no gradient bands, no two colors side by side. One full trip
+ * around the palette takes 56s, so each color owns about eight
  * seconds. A blurred copy sits behind it as the glow. */
 .cta-neon-wrap {
   position: relative;

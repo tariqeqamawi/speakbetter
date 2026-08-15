@@ -37,7 +37,7 @@ export function SectionBanner({
         sizes="(min-width: 1280px) 700px, 100vw"
         className="object-cover"
       />
-      {/* The card colour climbs back over the image, so type stays
+      {/* The card color climbs back over the image, so type stays
           readable no matter how bright the art gets. */}
       <span className="absolute inset-0 bg-gradient-to-t from-navy-800 via-navy-800/75 to-navy-800/25" />
       <div

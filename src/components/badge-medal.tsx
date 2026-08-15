@@ -3,7 +3,7 @@ import { BadgeIcon } from "@/components/icons";
 
 // A badge's artwork: a generated medallion, clipped to its circle so the
 // black plate it was drawn on never shows as a square tile. Locked ones
-// are the same medal drained of colour and dimmed — you can see exactly
+// are the same medal drained of color and dimmed — you can see exactly
 // what you haven't won yet, which is the whole point of showing it.
 //
 // The line icon stays as the fallback for any badge without art, and is

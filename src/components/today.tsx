@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useStore } from "@/lib/store";
-import { currentStreak, practisedToday } from "@/data/badges";
+import { currentStreak, practicedToday } from "@/data/badges";
 import { nextUp, continueWatching } from "@/lib/next-up";
 import { challenges, storyPhases } from "@/data/challenges";
 import { challengeProgress } from "@/lib/challenge-progress";
@@ -22,7 +22,7 @@ export function Today() {
   if (!ready) return null;
 
   const streak = currentStreak(state);
-  const doneToday = practisedToday(state);
+  const doneToday = practicedToday(state);
   const up = nextUp(state);
   const recent = continueWatching(state);
   const lastAttempt = state.attempts.at(-1);
@@ -35,7 +35,7 @@ export function Today() {
         <div className="flex flex-col gap-1">
           <p className="text-sm text-ink-faint">{greeting()}</p>
           <h1 className="text-3xl font-semibold tracking-tight">
-            {doneToday ? "You've practised today" : "Ready to practise?"}
+            {doneToday ? "You've practiced today" : "Ready to practice?"}
           </h1>
         </div>
         {state.level && meta && (
@@ -69,7 +69,7 @@ export function Today() {
               ? "Today's done. Come back tomorrow to keep it going."
               : streak > 0
                 ? "Record one attempt today to keep it alive."
-                : "Practise on any day and it counts."}
+                : "Practice on any day and it counts."}
           </span>
         </div>
         {state.freezesRemaining > 0 && streak > 1 && (
@@ -129,7 +129,7 @@ export function Today() {
                   ? "Start challenge"
                   : up.action === "resume"
                     ? "Resume challenge"
-                    : "Practise again"}
+                    : "Practice again"}
               </span>
             </div>
           </Link>

@@ -14,7 +14,7 @@ const samples = [
   },
   {
     label: "Advanced feedback",
-    text: "Strong open — you earned attention in the first ten seconds, and the promise paid off cleanly at the end. Five colours lit up. What is missing is figurative language: the middle third went flat and one vivid metaphor would have lifted it. Push for six next time.",
+    text: "Strong open — you earned attention in the first ten seconds, and the promise paid off cleanly at the end. Five colors lit up. What is missing is figurative language: the middle third went flat and one vivid metaphor would have lifted it. Push for six next time.",
   },
   {
     label: "Celebration",

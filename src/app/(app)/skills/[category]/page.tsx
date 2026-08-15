@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { BackLink } from "@/components/back-link";
 import { categories, categoryById, type CategoryId } from "@/data/categories";
 import { lessonsInCategory } from "@/data/lessons";
-import { LessonCarousel } from "@/components/lesson-carousel";
+import { CategoryTheater } from "@/components/category-theater";
 
 export function generateStaticParams() {
   return categories.map((c) => ({ category: c.id }));
@@ -33,7 +33,7 @@ export default async function CategoryPage(props: PageProps<"/skills/[category]"
         </p>
       </header>
 
-      <LessonCarousel lessons={lessons} category={cat} />
+      <CategoryTheater category={cat} lessons={lessons} />
     </div>
   );
 }

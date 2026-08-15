@@ -46,7 +46,7 @@ export function BadgeCollection({ state }: { state: AppState }) {
               key={badge.id}
               // The group/tooltip pair below shows what a locked badge
               // wants from you — a collection you can't read is just a
-              // wall of grey. A few keep their secret on purpose.
+              // wall of gray. A few keep their secret on purpose.
               className={`group relative flex flex-col items-center gap-2 rounded-xl border p-3 text-center transition-colors ${
                 won
                   ? "border-navy-500 bg-navy-700"

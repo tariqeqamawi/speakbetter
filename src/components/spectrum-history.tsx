@@ -8,7 +8,14 @@ import type { Attempt } from "@/lib/store";
 // the widening is visible as a shape rather than asserted as a claim.
 
 export function SpectrumHistory({ attempts }: { attempts: Attempt[] }) {
-  if (attempts.length < 2) return null;
+  if (attempts.length < 2) {
+    return (
+      <p className="py-6 text-center text-sm text-ink-muted">
+        Two attempts and this fills in — it needs a before to show you an
+        after.
+      </p>
+    );
+  }
 
   // Newest last, capped so the chart stays readable.
   const shown = attempts.slice(-14);
@@ -21,20 +28,7 @@ export function SpectrumHistory({ attempts }: { attempts: Attempt[] }) {
 
   return (
     <section className="flex flex-col gap-3">
-      <div className="flex flex-col gap-1">
-        <h2 className="text-sm font-medium uppercase tracking-wider text-ink-faint">
-          Your spectrum over time
-        </h2>
-        <p className="text-sm text-ink-muted">
-          {gain > 0
-            ? `You started lighting up ${first} ${first === 1 ? "color" : "colors"} and now reach ${latest}.`
-            : gain === 0
-              ? `Holding steady at ${latest} of 7 colors. Reach for one you haven't touched.`
-              : `You reached ${first} early on and ${latest} most recently — worth revisiting what changed.`}
-        </p>
-      </div>
-
-      <div className="flex flex-col gap-3 rounded-xl border border-navy-600 bg-navy-800 p-4">
+      <div className="flex flex-col gap-3 rounded-xl bg-navy-950/70 p-4">
         <div className="flex items-end gap-1.5 overflow-x-auto pb-1">
           {shown.map((attempt, i) => (
             <div
@@ -67,6 +61,13 @@ export function SpectrumHistory({ attempts }: { attempts: Attempt[] }) {
           the spectrum reached.
         </p>
       </div>
+      <p className="text-sm text-ink-muted">
+        {gain > 0
+          ? `You started lighting up ${first} ${first === 1 ? "color" : "colors"} and now reach ${latest}.`
+          : gain === 0
+            ? `Holding steady at ${latest} of 7 colors. Reach for one you haven't touched.`
+            : `You reached ${first} early on and ${latest} most recently — worth revisiting what changed.`}
+      </p>
     </section>
   );
 }

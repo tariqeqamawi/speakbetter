@@ -1,7 +1,7 @@
 "use client";
 
 import { useStore } from "@/lib/store";
-import { challenges, storyPhases } from "@/data/challenges";
+import { challenges, storyPhases, type PhaseId } from "@/data/challenges";
 
 // The STORY progress bar (master plan §11): a student should always be
 // able to see, at a glance, how far through the journey they've come.
@@ -20,7 +20,14 @@ export function useChallengeComplete() {
   };
 }
 
-export function StoryProgress() {
+export function StoryProgress({
+  open,
+  onOpen,
+}: {
+  /** When given, each bar becomes a control that opens its phase below. */
+  open?: PhaseId;
+  onOpen?: (id: PhaseId) => void;
+} = {}) {
   const { ready } = useStore();
   const isComplete = useChallengeComplete();
   if (!ready) return null;
@@ -41,14 +48,31 @@ export function StoryProgress() {
           const inPhase = challenges.filter((c) => c.phase === phase.id);
           const doneInPhase = inPhase.filter((c) => isComplete(c.slug)).length;
           const started = doneInPhase > 0;
+          const selected = open === phase.id;
+          const Tag = onOpen ? "button" : "div";
           return (
-            <div key={phase.id} className="flex flex-1 flex-col gap-1">
-              {/* An untouched phase is its own colour, just faded — the
-                  journey is coloured from the start, and completing it
+            <Tag
+              key={phase.id}
+              {...(onOpen
+                ? {
+                    type: "button" as const,
+                    onClick: () => onOpen(phase.id),
+                    "aria-pressed": selected,
+                    title: `${phase.name} — ${doneInPhase} of ${inPhase.length} complete`,
+                  }
+                : {})}
+              className={`group flex flex-1 flex-col gap-1 rounded-lg transition-transform ${
+                onOpen ? "cursor-pointer hover:-translate-y-0.5" : ""
+              } ${selected ? "-translate-y-0.5" : ""}`}
+            >
+              {/* An untouched phase is its own color, just faded — the
+                  journey is colored from the start, and completing it
                   brings each phase up to full strength rather than
-                  colouring in something grey. */}
+                  coloring in something gray. */}
               <div
-                className={`h-2 overflow-hidden rounded-full ${phase.tintClass}`}
+                className={`overflow-hidden rounded-full transition-all ${phase.tintClass} ${
+                  selected ? "h-3" : "h-2 group-hover:h-2.5"
+                }`}
               >
                 <div
                   className={`h-full rounded-full transition-[width] duration-500 ${phase.bgClass} ${phase.textClass} ${
@@ -61,12 +85,13 @@ export function StoryProgress() {
                 />
               </div>
               <span
-                className="text-center text-[0.65rem] font-bold text-ink"
-                title={phase.name}
+                className={`text-center text-[0.65rem] font-bold transition-colors ${
+                  selected ? phase.textClass : "text-ink"
+                }`}
               >
                 {phase.id}
               </span>
-            </div>
+            </Tag>
           );
         })}
       </div>

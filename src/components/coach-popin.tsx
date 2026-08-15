@@ -13,6 +13,21 @@ import { hapticTap } from "@/lib/feedback-fx";
 
 const SEEN_KEY = "speak-better-encouraged-on";
 
+// When the record has nothing new to remark on, the coach still has
+// something warm to say. These claim nothing about performance — they're
+// a stance, not a statistic — so they don't bend the rule that every
+// factual claim is checked against the record first.
+const AFFIRMATIONS = [
+  "You're on your way to transforming your life.",
+  "Speaking is your new superpower.",
+  "We're proud of you for doing this, by the way.",
+  "Every rep you put in here shows up the next time it counts.",
+  "The fact that you keep showing up is the whole secret.",
+  "Your voice is worth hearing. That's why you're here.",
+  "One day soon you'll speak somewhere that matters and feel ready. This is where that starts.",
+  "Most people never practice this. You are.",
+];
+
 export function CoachPopIn() {
   const { state, ready, celebrations } = useStore();
   const [message, setMessage] = useState<string | null>(null);
@@ -40,10 +55,23 @@ export function CoachPopIn() {
     if (window.localStorage.getItem(SEEN_KEY) === today) return;
 
     const context = buildContext(state);
-    if (!context) return; // nothing has happened yet worth remarking on
 
     askedRef.current = true;
     const timer = window.setTimeout(async () => {
+      const show = (text: string) => {
+        window.localStorage.setItem(SEEN_KEY, today);
+        setMessage(text);
+        hapticTap();
+      };
+      const affirmation = () =>
+        AFFIRMATIONS[Math.floor(Math.random() * AFFIRMATIONS.length)];
+
+      // A record-based line when there is one; a warm word when there
+      // isn't. The coach no longer goes silent on quiet days.
+      if (!context) {
+        show(affirmation());
+        return;
+      }
       try {
         const res = await fetch("/api/encouragement", {
           method: "POST",
@@ -51,13 +79,9 @@ export function CoachPopIn() {
           body: JSON.stringify(context),
         });
         const data = (await res.json()) as { message: string | null };
-        if (data.message) {
-          window.localStorage.setItem(SEEN_KEY, today);
-          setMessage(data.message);
-          hapticTap();
-        }
+        show(data.message ?? affirmation());
       } catch {
-        // silence is the right failure mode for encouragement
+        show(affirmation());
       }
     }, 2600); // let the page settle first
 

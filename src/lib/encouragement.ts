@@ -14,16 +14,16 @@ export interface EncouragementContext {
   challengesTotal: number;
   uploads: number;
   streak: number;
-  /** Colours lit in their most recent talk */
+  /** Colors lit in their most recent talk */
   colorsNow: number;
-  /** Colours lit in their earliest talk, for a genuine comparison */
+  /** Colors lit in their earliest talk, for a genuine comparison */
   colorsThen: number;
   /** Score change between first and latest attempt */
   scoreThen: number;
   scoreNow: number;
   /** Most attempts on any single challenge — persistence */
   mostAttemptsOnOne: number;
-  /** Colours never yet reached, so the coach can point somewhere real */
+  /** Colors never yet reached, so the coach can point somewhere real */
   missingColors: string[];
   daysSinceFirst: number;
 }

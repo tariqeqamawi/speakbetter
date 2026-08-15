@@ -37,7 +37,7 @@ export interface SpokenCue {
   /** Passed as a component, not an element, so the same symbol can be
    *  drawn large while it's spoken and smaller in the summary. */
   Icon: ComponentType<{ className?: string }>;
-  /** Text colour class, so the symbol carries its skill's colour. */
+  /** Text color class, so the symbol carries its skill's color. */
   colorClass: string;
   /** Whether it belongs in the summary that stays on screen. Status
    *  beats like "Passed" aren't things to work on, so they drop out. */

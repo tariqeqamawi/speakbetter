@@ -69,9 +69,9 @@ export function standing(state: AppState): RankStanding {
   };
 }
 
-/** The share of each colour across everything they've recorded — their
+/** The share of each color across everything they've recorded — their
  *  speaking signature. A storyteller's chart runs yellow; someone
- *  leaning on one colour sees it immediately. */
+ *  leaning on one color sees it immediately. */
 export function spectrumShare(
   state: AppState,
 ): { id: CategoryId; percent: number }[] {
@@ -104,7 +104,7 @@ export function spectrumShare(
   return out;
 }
 
-/** Days practised, most recent last (yyyy-mm-dd). Freeze-covered days
+/** Days practiced, most recent last (yyyy-mm-dd). Freeze-covered days
  *  count — that's the point of a freeze. */
 export function practiceDays(state: AppState): Set<string> {
   return new Set([

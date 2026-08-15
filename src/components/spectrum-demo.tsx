@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { categories, type CategoryId } from "@/data/categories";
 
-// The colour-spectrum score is the product's one genuinely novel idea,
+// The color-spectrum score is the product's one genuinely novel idea,
 // and until now the landing page only described it. This plays it: a
-// flat talk lighting up two colours, then a dynamic one lighting up
+// flat talk lighting up two colors, then a dynamic one lighting up
 // seven — the difference the course exists to create, shown rather than
 // claimed.
 
@@ -18,7 +18,7 @@ interface Sample {
 
 const FLAT: Sample = {
   label: "Before",
-  caption: "Informative, accurate — and forgettable. Two colours.",
+  caption: "Informative, accurate — and forgettable. Two colors.",
   score: 41,
   spectrum: {
     storytelling: 22,
@@ -95,7 +95,7 @@ export function SpectrumDemo() {
             {showing.label}
           </span>
           <span className="text-xs text-ink-faint">
-            {lit} of 7 colours
+            {lit} of 7 colors
           </span>
         </span>
         <span className="text-2xl font-bold tabular-nums text-ink transition-all duration-500">

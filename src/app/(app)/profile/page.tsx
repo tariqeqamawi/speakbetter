@@ -5,7 +5,6 @@ import { useStore } from "@/lib/store";
 import { challenges, storyPhases } from "@/data/challenges";
 import { categories } from "@/data/categories";
 import { lessons } from "@/data/lessons";
-import { SpectrumHistory } from "@/components/spectrum-history";
 import { SpectrumSignature } from "@/components/spectrum-signature";
 import { StreakCalendar } from "@/components/streak-calendar";
 import { BadgeCollection } from "@/components/badge-collection";
@@ -23,7 +22,7 @@ import { ChallengesIcon, SkillsIcon } from "@/components/icons";
 // It's built as a heads-up display rather than a settings page. Every
 // panel is a view of real work: the rank comes from what they did, the
 // signature from what they recorded, the calendar from the days they
-// showed up. Nothing here flatters a student who hasn't practised.
+// showed up. Nothing here flatters a student who hasn't practiced.
 
 export default function DashboardPage() {
   const { state, ready, attemptsFor } = useStore();
@@ -164,8 +163,6 @@ export default function DashboardPage() {
       </div>
 
       <BadgeCollection state={state} />
-
-      <SpectrumHistory attempts={state.attempts} />
 
       {state.attempts.length > 0 && (
         <section className="flex flex-col gap-3">

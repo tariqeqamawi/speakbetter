@@ -37,7 +37,7 @@ export function StreakCalendar({ state }: { state: AppState }) {
       key,
       inFuture: ts > today,
       isToday: key === todayIso,
-      practised: days.has(key),
+      practiced: days.has(key),
       wasFrozen: frozen.has(key),
       dayOfMonth: new Date(ts).getUTCDate(),
     };
@@ -89,18 +89,18 @@ export function StreakCalendar({ state }: { state: AppState }) {
           {cells.map((cell) => (
             <span
               key={cell.key}
-              title={`${cell.key}${cell.wasFrozen ? " — freeze used" : cell.practised ? " — practised" : ""}`}
+              title={`${cell.key}${cell.wasFrozen ? " — freeze used" : cell.practiced ? " — practiced" : ""}`}
               className={`flex aspect-square items-center justify-center rounded-lg border text-[0.6rem] tabular-nums ${
                 cell.inFuture
                   ? "border-navy-700 text-navy-600"
                   : cell.wasFrozen
                     ? "border-body-language/40 bg-body-language/15 text-body-language"
-                    : cell.practised
+                    : cell.practiced
                       ? "border-mindset/50 bg-mindset/20 text-mindset"
                       : "border-navy-700 bg-navy-900 text-ink-faint"
               } ${cell.isToday ? "ring-1 ring-ink-faint" : ""}`}
             >
-              {cell.practised && !cell.wasFrozen ? (
+              {cell.practiced && !cell.wasFrozen ? (
                 <CheckIcon className="size-3.5" />
               ) : (
                 cell.dayOfMonth
@@ -111,7 +111,7 @@ export function StreakCalendar({ state }: { state: AppState }) {
       </div>
 
       <p className="text-xs text-ink-faint">
-        A green check is a day you practised. Cyan is a day a freeze covered
+        A green check is a day you practiced. Cyan is a day a freeze covered
         for you — one missed day never costs the streak.
       </p>
       </div>

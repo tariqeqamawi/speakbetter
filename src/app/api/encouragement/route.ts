@@ -28,9 +28,9 @@ const LINES: Line[] = [
     when: (c) => c.colorsNow > c.colorsThen && c.uploads >= 2,
     weight: 100,
     say: (c) => [
-      `Look at your range. Your first talk lit up ${c.colorsThen} ${plural(c.colorsThen, "colour")} — your latest reached ${c.colorsNow}. That's you becoming genuinely more dynamic.`,
-      `You're ${c.colorsNow - c.colorsThen} ${plural(c.colorsNow - c.colorsThen, "colour")} wider than when you started. That's not a small thing — that's the whole point of this.`,
-      `${c.colorsThen} ${plural(c.colorsThen, "colour")} then, ${c.colorsNow} now. You're reaching for more of yourself every time you record.`,
+      `Look at your range. Your first talk lit up ${c.colorsThen} ${plural(c.colorsThen, "color")} — your latest reached ${c.colorsNow}. That's you becoming genuinely more dynamic.`,
+      `You're ${c.colorsNow - c.colorsThen} ${plural(c.colorsNow - c.colorsThen, "color")} wider than when you started. That's not a small thing — that's the whole point of this.`,
+      `${c.colorsThen} ${plural(c.colorsThen, "color")} then, ${c.colorsNow} now. You're reaching for more of yourself every time you record.`,
     ],
   },
   {
@@ -46,7 +46,7 @@ const LINES: Line[] = [
     weight: 85,
     say: (c) => [
       `You've gone back at the same challenge ${c.mostAttemptsOnOne} times. Most people never try twice. That persistence is exactly what makes speakers.`,
-      `${c.mostAttemptsOnOne} attempts at one challenge — that's the practising instinct, and it's rarer than talent.`,
+      `${c.mostAttemptsOnOne} attempts at one challenge — that's the practicing instinct, and it's rarer than talent.`,
     ],
   },
   {
@@ -70,7 +70,7 @@ const LINES: Line[] = [
     weight: 50,
     say: (c) => [
       `You're strong across most of the spectrum. ${c.missingColors[0]} is the one you haven't reached yet — try leaning into it next time.`,
-      `One colour left to unlock: ${c.missingColors[0]}. Go looking for it in your next talk.`,
+      `One color left to unlock: ${c.missingColors[0]}. Go looking for it in your next talk.`,
     ],
   },
   {

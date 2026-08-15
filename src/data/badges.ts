@@ -16,7 +16,7 @@ interface BadgeEvalState {
   }[];
   watchedLessons: string[];
   badges: { id: string }[];
-  /** Days a streak freeze covered — they count as practised */
+  /** Days a streak freeze covered — they count as practiced */
   frozenDays?: string[];
 }
 
@@ -41,7 +41,7 @@ export interface EarnedBadge {
   earnedAt: string;
 }
 
-/** Days the student practised — uploads, plus any a freeze covered */
+/** Days the student practiced — uploads, plus any a freeze covered */
 function uploadDays(s: BadgeEvalState): string[] {
   return [
     ...new Set([
@@ -51,8 +51,8 @@ function uploadDays(s: BadgeEvalState): string[] {
   ].sort();
 }
 
-/** Has the student practised today? Drives the daily goal on Today. */
-export function practisedToday(s: BadgeEvalState): boolean {
+/** Has the student practiced today? Drives the daily goal on Today. */
+export function practicedToday(s: BadgeEvalState): boolean {
   return uploadDays(s).includes(new Date().toISOString().slice(0, 10));
 }
 
@@ -147,7 +147,7 @@ export const badgeDefs: BadgeDef[] = [
     title: "On a Roll",
     message: "Three days of practice in a row. Momentum looks good on you.",
     icon: "flame",
-    how: "Practise three days in a row.",
+    how: "Practice three days in a row.",
     earned: (s) => currentStreak(s) >= 3,
   },
   {
@@ -155,7 +155,7 @@ export const badgeDefs: BadgeDef[] = [
     title: "Unstoppable",
     message: "A full week of daily practice. Most people never do this once.",
     icon: "zap",
-    how: "Practise seven days in a row.",
+    how: "Practice seven days in a row.",
     earned: (s) => currentStreak(s) >= 7,
   },
   {
@@ -163,7 +163,7 @@ export const badgeDefs: BadgeDef[] = [
     title: "High Five",
     message: "Five days straight. This is a habit now, not an experiment.",
     icon: "flame",
-    how: "Practise five days in a row.",
+    how: "Practice five days in a row.",
     earned: (s) => currentStreak(s) >= 5,
   },
   {

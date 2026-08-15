@@ -3,7 +3,7 @@
 // leads somewhere — and so nothing here is a floating platitude with no
 // teaching behind it.
 //
-// Keyed by Vimeo id: the title and colour are resolved from the lesson
+// Keyed by Vimeo id: the title and color are resolved from the lesson
 // library at render time, which keeps attribution honest if a lesson is
 // renamed or re-sorted.
 
@@ -103,7 +103,7 @@ export const proTips: ProTip[] = [
   },
   {
     vimeoId: "1081163657",
-    tip: "Don't report the emotion, embody it. Play the moment as it happened rather than summarising how it felt.",
+    tip: "Don't report the emotion, embody it. Play the moment as it happened rather than summarizing how it felt.",
   },
   {
     vimeoId: "1081197526",
