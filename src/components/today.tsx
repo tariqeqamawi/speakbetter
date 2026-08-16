@@ -15,7 +15,7 @@ import { LevelIcon, levelMeta } from "@/components/level-icon";
 import { FlameIcon } from "@/components/icons";
 import { CheckIcon, PlayIcon } from "@/components/icons";
 
-// The daily home. A library of 21 challenges invites browsing; this
+// The daily home. A library of 24 challenges invites browsing; this
 // screen names the one thing to do today, which is what actually
 // produces the repetition the whole method rests on.
 

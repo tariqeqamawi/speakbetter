@@ -467,6 +467,13 @@ body {
   transform: perspective(1400px) rotateX(35deg);
 }
 
+/* Every wrapper between the tilted plane and a .map-pin must carry the
+ * 3D space through, or the browser flattens it and the pins tip over
+ * with the ground - which is exactly how text stops being readable. */
+.map-tilt .map-row {
+  transform-style: preserve-3d;
+}
+
 .map-pin {
   transform-style: preserve-3d;
   transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -481,6 +488,107 @@ body {
   .map-tilt,
   .map-pin {
     transition: none;
+  }
+}
+
+/* The topographic grid that surfaces through each phase's territory,
+ * ripples downward, and sinks away - terrain breathing under the road.
+ * Peak opacity comes from --grid-max so locked land stays fainter. */
+.terrain-grid {
+  opacity: 0;
+  animation: terrain-grid 13s ease-in-out infinite;
+  mask-image: linear-gradient(
+    180deg,
+    transparent,
+    black 15%,
+    black 80%,
+    transparent
+  );
+}
+
+@keyframes terrain-grid {
+  0% {
+    opacity: 0;
+    background-position:
+      0 0,
+      0 0;
+  }
+  20% {
+    opacity: var(--grid-max, 0.24);
+  }
+  50% {
+    opacity: calc(var(--grid-max, 0.24) * 0.55);
+  }
+  75%,
+  100% {
+    opacity: 0;
+    background-position:
+      0 90px,
+      0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .terrain-grid {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+/* A community voice surfacing beside a node: in for a breath, then
+ * gone. Runs once per message; the map remounts each new one. */
+.community-pop {
+  animation: community-pop 3.4s ease-in-out both;
+}
+
+@keyframes community-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  14% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  72% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .community-pop {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+/* Graduation confetti: neon slivers falling the height of the screen,
+ * looping while the overlay is up. */
+.confetti-piece {
+  animation: confetti-fall linear infinite;
+}
+
+@keyframes confetti-fall {
+  0% {
+    opacity: 0;
+    transform: translateY(-6vh) rotate(0deg);
+  }
+  8% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.85;
+    transform: translateY(106vh) rotate(660deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confetti-piece {
+    animation: none;
+    opacity: 0;
   }
 }
 

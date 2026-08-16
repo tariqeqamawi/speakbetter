@@ -1,6 +1,6 @@
 import type { CategoryId } from "./categories";
 
-// The STORY curriculum - master plan §04. Five phases, 21 challenges,
+// The STORY curriculum - master plan §04. Five phases, 24 challenges,
 // each matched to its filmed explainer video and the Skills lessons a
 // student warms up with (the STEP cycle's "Tap Into Tools").
 // `criteria` + `targetSkills` are the structured rubric the AI review
@@ -291,6 +291,21 @@ export const challenges: Challenge[] = [
     relatedLessonIds: ["1081162875", "1081162752", "1081163913"],
   },
   {
+    slug: "set-and-scene",
+    phase: "O",
+    title: "Tell a Story With Set & Scene",
+    vimeoId: "1081955083",
+    brief:
+      "Build the set before the action: establish where we are, what it looks like, what it feels like - then let the story play out on the stage you built.",
+    criteria: [
+      "Establish the setting before the main action starts",
+      "Give the set at least three concrete details",
+      "Return to the setting at least once as the story moves",
+    ],
+    targetSkills: ["storytelling", "figurative"],
+    relatedLessonIds: ["1081031146", "1081163248", "1081294121"],
+  },
+  {
     slug: "twist-third-person",
     phase: "O",
     title: "Add a Twist in Third-Person",
@@ -304,6 +319,21 @@ export const challenges: Challenge[] = [
     ],
     targetSkills: ["storytelling", "structure"],
     relatedLessonIds: ["1081197526", "1081163913", "1081197062"],
+  },
+  {
+    slug: "foreshadowing",
+    phase: "O",
+    title: "Tell a Story Using Foreshadowing & Fulfillment",
+    vimeoId: "1081952336",
+    brief:
+      "Plant it early, pay it off late: tell a story where a small detail dropped at the start returns to complete the ending.",
+    criteria: [
+      "Plant at least one detail early that pays off later",
+      "Land the payoff in the final third",
+      "Don't call attention to the plant when it happens",
+    ],
+    targetSkills: ["storytelling", "structure"],
+    relatedLessonIds: ["1081197526", "1081197062", "1081292518"],
   },
 
   // ── R - Reveal Deeper Truths ────────────────────────────────────────
@@ -414,14 +444,21 @@ export const challenges: Challenge[] = [
     targetSkills: ["structure", "mindset", "figurative"],
     relatedLessonIds: ["1081164747", "1081198886", "1081200223"],
   },
-];
-
-// Filmed challenge videos not yet placed in the STORY curriculum
-// (open question, master plan §18) - surfaced as bonus challenges.
-export const bonusChallenges = [
-  { title: "Story with Set & Scene", vimeoId: "1081955083" },
-  { title: "Tell A Story Using Foreshadowing & Fulfilment", vimeoId: "1081952336" },
-  { title: "Tell A Story With A Mic Drop Moment", vimeoId: "1081949655" },
+  {
+    slug: "mic-drop",
+    phase: "Y",
+    title: "Tell a Story With a Mic Drop Moment",
+    vimeoId: "1081949655",
+    brief:
+      "The final challenge: end on a line so strong the silence after it does the applauding. Build the whole story toward one sentence - then drop it and stop.",
+    criteria: [
+      "Build deliberately toward a single closing line",
+      "Deliver the final line and stop - no trailing words",
+      "Make the ending feel inevitable in hindsight",
+    ],
+    targetSkills: ["acting", "storytelling", "structure"],
+    relatedLessonIds: ["1081197062", "1081162875", "1081164747"],
+  },
 ];
 
 // Section introduction videos (not challenges themselves)
@@ -489,9 +526,17 @@ export const challengeBadges: Record<
     title: "Edge of the Seat",
     message: "The stakes were real and we felt them. That's performance.",
   },
+  "set-and-scene": {
+    title: "Set Designer",
+    message: "You built the set out of words and we were standing on it.",
+  },
   "twist-third-person": {
     title: "Hollywood Worthy",
     message: "You set it up, then turned it over. The twist landed clean.",
+  },
+  "foreshadowing": {
+    title: "Chekhov's Gun",
+    message: "Planted in act one, fired in act three. Textbook.",
   },
   "three-emotions": {
     title: "Heartstrings",
@@ -520,6 +565,10 @@ export const challengeBadges: Record<
   "thirty-second-pitch": {
     title: "Elevator Ready",
     message: "Thirty seconds, whole idea, no filler. Ready for the real one.",
+  },
+  "mic-drop": {
+    title: "Mic Drop",
+    message: "You landed the last line and let the silence do the clapping.",
   },
 };
 

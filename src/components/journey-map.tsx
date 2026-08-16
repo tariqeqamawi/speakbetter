@@ -11,23 +11,28 @@ import {
 } from "@/data/challenges";
 import { categoryById, type CategoryId } from "@/data/categories";
 import { CategoryIcon } from "@/components/category-icons";
+import { communityPosts } from "@/data/community-activity";
 import { challengeProgress } from "@/lib/challenge-progress";
 import { useStore } from "@/lib/store";
 import { VideoStill } from "@/components/video-still";
 import { CheckIcon, LockIcon } from "@/components/icons";
 
-// The STORY journey as terrain: a winding path of 21 nodes, one per
+// The STORY journey as terrain: a winding path of nodes, one per
 // challenge, each named in the open beside its marker so the whole road
-// reads at a glance. Every phase owns a lettered circle with the skills
-// it trains floating in orbit, passed nodes wear their phase's color,
+// reads at a glance. Every phase is a level with its own lettered
+// circle and orbiting skills; passed nodes wear their phase's color,
 // the student's own face marks where they stand, and locked territory
-// is fogged. A 2D/3D toggle tips the whole map over like a navigation
-// app - the ground reclines while the markers stay standing.
+// is fogged - the phase after the next one keeps its challenge names
+// garbled until the road gets near. Community voices surface beside the
+// nodes and fade, a topographic grid breathes through each territory,
+// and a checkered finish line waits at the bottom. A 2D/3D toggle tips
+// the whole map over like a navigation app - the ground reclines while
+// the markers stay standing.
 
 const ROW_H = 108;
 /** The winding: node x-positions cycle through this pattern (percent). */
 const X_CYCLE = [50, 76, 50, 24];
-const PHASE_GAP = 88; // room above each phase circle
+const PHASE_GAP = 132; // room above each phase circle: level rule + circle
 
 /** The earliest phase with work left in it. Later phases are locked;
  *  earlier ones stay open, since finished work is never taken away. */
@@ -70,6 +75,25 @@ const ORBIT: { left: string; top: string }[] = [
   { left: "3.3rem", top: "1.9rem" },
   { left: "-1.4rem", top: "2.1rem" },
 ];
+
+/** Deterministic scramble for names the road hasn't earned yet - the
+ *  same input always garbles the same way, so server and client agree,
+ *  but nothing of the real title survives except its shape. */
+const CIPHER = "kzqvxjmwrbgtlpndshcy";
+function garble(text: string): string {
+  let out = "";
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    const upper = ch >= "A" && ch <= "Z";
+    if (!upper && !(ch >= "a" && ch <= "z")) {
+      out += ch;
+      continue;
+    }
+    const g = CIPHER[(text.charCodeAt(i) * 7 + i * 3) % CIPHER.length];
+    out += upper ? g.toUpperCase() : g;
+  }
+  return out;
+}
 
 export function JourneyMap() {
   const { state, ready } = useStore();
@@ -143,25 +167,50 @@ export function JourneyMap() {
       step++;
     }
   }
-  const height = y + 24;
+  const finishY = y + 48;
+  const height = finishY + 104;
   const done = nodes.filter((n) => n.passed).length;
+  const complete = done === nodes.length;
+  const lastNode = nodes.at(-1);
+
+  // A voice from the community surfaces beside a random node, then
+  // fades - proof the road is being walked, one whisper at a time.
+  const [pop, setPop] = useState<{ node: number; post: number; key: number } | null>(null);
+  const nodeCount = nodes.length;
+  useEffect(() => {
+    let alive = true;
+    let key = 0;
+    let t: number;
+    const spawn = () => {
+      if (!alive) return;
+      setPop({
+        node: Math.floor(Math.random() * nodeCount),
+        post: Math.floor(Math.random() * communityPosts.length),
+        key: key++,
+      });
+      t = window.setTimeout(spawn, 7000 + Math.random() * 6000);
+    };
+    t = window.setTimeout(spawn, 3500);
+    return () => {
+      alive = false;
+      clearTimeout(t);
+    };
+  }, [nodeCount]);
 
   // The colored territory each phase owns, banner to banner.
   const territories = banners.map((b, i) => ({
     phase: b.phase,
     locked: b.locked,
     top: b.y - 12,
-    height: (banners[i + 1]?.y ?? height) - b.y,
+    height: (banners[i + 1]?.y ?? finishY) - b.y,
   }));
 
-  // One trail segment per phase, so each stretch of road wears its
-  // phase's color - dim where the journey hasn't reached.
-  const segments = storyPhases.map((phase, pi) => {
-    const own = nodes.filter((n) => n.phaseIndex === pi);
-    const prev = nodes.filter((n) => n.phaseIndex === pi - 1).at(-1);
-    const pts = (prev ? [prev, ...own] : own).map((n) => ({ x: n.x, y: n.y }));
-    if (pts.length < 2)
-      return { phase, d: "", locked: pi > currentIndex, active: pi === currentIndex };
+  // One trail segment per phase, split where the journey has actually
+  // reached: the road already walked burns bright in its phase's color,
+  // the road ahead is the same color faded - so what's done glows.
+  const curIdx = nodes.findIndex((n) => n.isCurrent);
+  const walkedUpTo = curIdx === -1 ? nodes.length - 1 : curIdx;
+  const curve = (pts: { x: number; y: number }[]): string => {
     let d = `M ${pts[0].x} ${pts[0].y}`;
     for (let i = 0; i < pts.length - 1; i++) {
       const a = pts[i];
@@ -169,7 +218,26 @@ export function JourneyMap() {
       const midY = (a.y + b.y) / 2;
       d += ` C ${a.x} ${midY} ${b.x} ${midY} ${b.x} ${b.y}`;
     }
-    return { phase, d, locked: pi > currentIndex, active: pi === currentIndex };
+    return d;
+  };
+  const indexed = nodes.map((n, gi) => ({ n, gi }));
+  const segments = storyPhases.map((phase, pi) => {
+    const own = indexed.filter(({ n }) => n.phaseIndex === pi);
+    const prev = indexed.filter(({ n }) => n.phaseIndex === pi - 1).at(-1);
+    const pts = (prev ? [prev, ...own] : own).map(({ n, gi }) => ({
+      x: n.x,
+      y: n.y,
+      gi,
+    }));
+    const walked = pts.filter((p) => p.gi <= walkedUpTo);
+    const rest = pts.slice(Math.max(walked.length - 1, 0));
+    return {
+      phase,
+      dWalked: walked.length >= 2 ? curve(walked) : "",
+      dRest: rest.length >= 2 ? curve(rest) : "",
+      locked: pi > currentIndex,
+      active: pi === currentIndex,
+    };
   });
 
   return (
@@ -214,20 +282,37 @@ export function JourneyMap() {
             transformOrigin: view === "3d" ? `50% ${originY}px` : undefined,
           }}
         >
-          {/* Territory washes - five regions, each in its phase's light */}
-          {territories.map(({ phase, locked, top, height: h }) => (
-            <div
-              key={phase.id}
-              aria-hidden
-              className="pointer-events-none absolute -inset-x-10 blur-2xl"
-              style={{
-                top,
-                height: h,
-                opacity: locked ? 0.07 : 0.17,
-                background: `radial-gradient(60% 80% at 50% 35%, var(--color-${phase.bgClass.slice(3)}), transparent 75%)`,
-              }}
-            />
-          ))}
+          {/* Territory washes - five regions, each in its phase's light,
+              with a topographic grid that surfaces, ripples down, and
+              sinks back into the dark */}
+          {territories.map(({ phase, locked, top, height: h }, i) => {
+            const color = `var(--color-${phase.bgClass.slice(3)})`;
+            return (
+              <div key={phase.id} aria-hidden className="contents">
+                <div
+                  className="pointer-events-none absolute -inset-x-10 blur-2xl"
+                  style={{
+                    top,
+                    height: h,
+                    opacity: locked ? 0.07 : 0.17,
+                    background: `radial-gradient(60% 80% at 50% 35%, ${color}, transparent 75%)`,
+                  }}
+                />
+                <div
+                  className="terrain-grid pointer-events-none absolute inset-x-0"
+                  style={
+                    {
+                      top,
+                      height: h,
+                      "--grid-max": locked ? 0.09 : 0.24,
+                      animationDelay: `${i * 2.6}s`,
+                      backgroundImage: `repeating-linear-gradient(180deg, ${color} 0 1px, transparent 1px 30px), repeating-linear-gradient(90deg, ${color} 0 1px, transparent 1px 30px)`,
+                    } as React.CSSProperties
+                  }
+                />
+              </div>
+            );
+          })}
 
           {/* The trail */}
           <svg
@@ -236,82 +321,129 @@ export function JourneyMap() {
             preserveAspectRatio="none"
             aria-hidden
           >
-            {segments.map(({ phase, d, locked, active }) => (
-              <g key={phase.id}>
-                {/* A breathing under-glow on the stretch being walked now */}
-                {active && (
-                  <path
-                    d={d}
-                    fill="none"
-                    stroke={`var(--color-${phase.bgClass.slice(3)})`}
-                    strokeWidth="7"
-                    strokeLinecap="round"
-                    vectorEffect="non-scaling-stroke"
-                    className="trail-breathe"
-                  />
-                )}
-                <path
-                  d={d}
-                  fill="none"
-                  stroke={`var(--color-${phase.bgClass.slice(3)})`}
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  opacity={locked ? 0.12 : active ? 0.55 : 0.4}
-                  vectorEffect="non-scaling-stroke"
-                />
-              </g>
-            ))}
+            {segments.map(({ phase, dWalked, dRest, locked, active }) => {
+              const color = `var(--color-${phase.bgClass.slice(3)})`;
+              return (
+                <g key={phase.id}>
+                  {/* The road already walked: a glow under a bright line */}
+                  {dWalked && (
+                    <>
+                      <path
+                        d={dWalked}
+                        fill="none"
+                        stroke={color}
+                        strokeWidth="8"
+                        strokeLinecap="round"
+                        opacity="0.35"
+                        vectorEffect="non-scaling-stroke"
+                        className={active ? "trail-breathe" : undefined}
+                      />
+                      <path
+                        d={dWalked}
+                        fill="none"
+                        stroke={color}
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        opacity="0.95"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    </>
+                  )}
+                  {/* The road ahead: same color, faded until it's earned */}
+                  {dRest && (
+                    <path
+                      d={dRest}
+                      fill="none"
+                      stroke={color}
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      opacity={locked ? 0.1 : 0.28}
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  )}
+                </g>
+              );
+            })}
+            {/* The last stretch: from the final challenge to the line */}
+            {lastNode && (
+              <path
+                d={`M ${lastNode.x} ${lastNode.y} C ${lastNode.x} ${(lastNode.y + finishY) / 2} 50 ${(lastNode.y + finishY) / 2} 50 ${finishY - 10}`}
+                fill="none"
+                stroke="var(--color-structure)"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeDasharray="5 8"
+                opacity={complete ? 0.7 : 0.25}
+                vectorEffect="non-scaling-stroke"
+              />
+            )}
           </svg>
 
-          {/* Phase circles, their skills in orbit */}
-          {banners.map(({ phase, y: by, locked }) => (
-            <div
-              key={phase.id}
-              id={`journey-${phase.id}`}
-              className="absolute inset-x-0 flex scroll-mt-28 items-center gap-5"
-              style={{ top: by }}
-            >
-              <span className="map-pin relative ml-1 block shrink-0">
+          {/* Level rules + phase circles, their skills in orbit */}
+          {banners.map(({ phase, y: by, locked }, i) => (
+            <div key={phase.id} className="contents">
+              <div
+                id={`journey-${phase.id}`}
+                aria-hidden
+                className="map-row absolute inset-x-0 flex scroll-mt-28 items-center gap-3"
+                style={{ top: by }}
+              >
+                <span className="h-px flex-1 bg-navy-700/70" />
                 <span
-                  className={`flex size-12 items-center justify-center rounded-full text-lg font-bold ${
-                    locked
-                      ? "bg-navy-700 text-ink-faint"
-                      : `${phase.bgClass} text-navy-950 shadow-[0_0_22px_-4px_currentColor] ${phase.textClass}`
+                  className={`map-pin text-[0.65rem] font-bold uppercase tracking-[0.35em] ${
+                    locked ? "text-ink-faint" : phase.textClass
                   }`}
                 >
-                  {phase.id}
+                  Level {i + 1}
                 </span>
-                {/* The skills this phase trains, floating close by */}
-                {!locked &&
-                  phaseSkills(phase).map((skill, i) => {
-                    const cat = categoryById.get(skill)!;
-                    return (
-                      <span
-                        key={skill}
-                        title={cat.name}
-                        className={`float-icon absolute flex size-6 items-center justify-center rounded-full border border-navy-600 bg-navy-850 ${cat.textClass}`}
-                        style={{
-                          ...ORBIT[i],
-                          animationDelay: `${i * 0.9}s`,
-                        }}
-                      >
-                        <CategoryIcon category={skill} className="size-3.5" />
-                      </span>
-                    );
-                  })}
-              </span>
-              <span className="map-pin flex flex-col">
-                <span
-                  className={`text-sm font-semibold ${locked ? "text-ink-faint" : phase.textClass}`}
-                >
-                  {phase.name}
-                </span>
-                {locked && (
-                  <span className="text-[0.65rem] text-ink-faint">
-                    Locked - the road reaches here after the phase before.
+                <span className="h-px flex-1 bg-navy-700/70" />
+              </div>
+              <div
+                className="map-row absolute inset-x-0 flex items-center gap-5"
+                style={{ top: by + 42 }}
+              >
+                <span className="map-pin relative ml-1 block shrink-0">
+                  <span
+                    className={`flex size-12 items-center justify-center rounded-full text-lg font-bold ${
+                      locked
+                        ? "bg-navy-700 text-ink-faint"
+                        : `${phase.bgClass} text-navy-950 shadow-[0_0_22px_-4px_currentColor] ${phase.textClass}`
+                    }`}
+                  >
+                    {phase.id}
                   </span>
-                )}
-              </span>
+                  {/* The skills this phase trains, floating close by */}
+                  {!locked &&
+                    phaseSkills(phase).map((skill, j) => {
+                      const cat = categoryById.get(skill)!;
+                      return (
+                        <span
+                          key={skill}
+                          title={cat.name}
+                          className={`float-icon absolute flex size-6 items-center justify-center rounded-full border border-navy-600 bg-navy-850 ${cat.textClass}`}
+                          style={{
+                            ...ORBIT[j],
+                            animationDelay: `${j * 0.9}s`,
+                          }}
+                        >
+                          <CategoryIcon category={skill} className="size-3.5" />
+                        </span>
+                      );
+                    })}
+                </span>
+                <span className="map-pin flex flex-col">
+                  <span
+                    className={`text-sm font-semibold ${locked ? "text-ink-faint" : phase.textClass}`}
+                  >
+                    {phase.name}
+                  </span>
+                  {locked && (
+                    <span className="text-[0.65rem] text-ink-faint">
+                      Locked - the road reaches here after the phase before.
+                    </span>
+                  )}
+                </span>
+              </div>
             </div>
           ))}
 
@@ -320,6 +452,10 @@ export function JourneyMap() {
             const clickable = !node.locked && !inDemo;
             const accent = categoryById.get(node.accentId)!;
             const labelLeft = node.x >= 60; // the name sits away from the bend
+            // Beyond the next locked phase the road is too far to read:
+            // titles stay garbled until the journey gets nearer.
+            const veiled = node.phaseIndex > currentIndex + 1;
+            const shownTitle = veiled ? garble(node.title) : node.title;
             const body = (
               <span className="map-pin relative block">
                 <span
@@ -380,9 +516,10 @@ export function JourneyMap() {
                   </span>
                 )}
 
-                {/* The challenge, named in the open */}
+                {/* The challenge, named in the open - balanced so a long
+                    title never strands one word alone on its second line */}
                 <span
-                  className={`absolute top-1/2 w-32 -translate-y-1/2 text-[0.68rem] font-medium leading-tight sm:w-44 sm:text-xs ${
+                  className={`absolute top-1/2 w-32 -translate-y-1/2 text-balance text-[0.68rem] font-medium leading-tight sm:w-44 sm:text-xs ${
                     labelLeft
                       ? "right-full mr-3 text-right"
                       : "left-full ml-3 text-left"
@@ -392,9 +529,9 @@ export function JourneyMap() {
                       : node.isCurrent
                         ? "text-ink"
                         : "text-ink-muted"
-                  }`}
+                  } ${veiled ? "blur-[2px] select-none" : ""}`}
                 >
-                  {node.title}
+                  {shownTitle}
                   {node.isCurrent && (
                     <span
                       className={`mt-1 block w-fit rounded-full px-2 py-0.5 text-[0.55rem] font-bold uppercase tracking-wider text-navy-950 ${node.phase.bgClass} ${labelLeft ? "ml-auto" : ""}`}
@@ -417,21 +554,25 @@ export function JourneyMap() {
                     />
                   </span>
                   <span className="block p-2.5 text-center text-[0.7rem] leading-snug">
-                    <b className="block text-ink">{node.title}</b>
+                    <b className={`block text-ink ${veiled ? "blur-[2px] select-none" : ""}`}>
+                      {shownTitle}
+                    </b>
                     <span className={node.locked ? "text-ink-faint" : node.phase.textClass}>
                       {node.passed
                         ? "Passed - practice again any time"
-                        : node.locked
-                          ? "Unlocks with this phase"
-                          : node.isCurrent
-                            ? "Your next challenge"
-                            : "Ready when you are"}
+                        : veiled
+                          ? "Too far ahead to read - keep walking"
+                          : node.locked
+                            ? "Unlocks with this phase"
+                            : node.isCurrent
+                              ? "Your next challenge"
+                              : "Ready when you are"}
                     </span>
                   </span>
                 </span>
               </span>
             );
-            const cls = "group absolute -translate-x-1/2 -translate-y-1/2";
+            const cls = "map-row group absolute -translate-x-1/2 -translate-y-1/2";
             const pos = { left: `${node.x}%`, top: node.y };
             return clickable ? (
               <Link
@@ -447,7 +588,13 @@ export function JourneyMap() {
               <div
                 key={node.slug}
                 tabIndex={0}
-                aria-label={node.locked ? `${node.title} - locked` : node.title}
+                aria-label={
+                  veiled
+                    ? "A challenge still hidden ahead"
+                    : node.locked
+                      ? `${node.title} - locked`
+                      : node.title
+                }
                 className={cls}
                 style={pos}
               >
@@ -455,6 +602,65 @@ export function JourneyMap() {
               </div>
             );
           })}
+
+          {/* A voice from the community, surfacing beside a node */}
+          {pop && nodes[pop.node] && (
+            <div
+              key={pop.key}
+              aria-hidden
+              className="community-pop map-row pointer-events-none absolute z-10"
+              style={{
+                left: `clamp(6.5rem, ${nodes[pop.node].x}%, calc(100% - 6.5rem))`,
+                top: nodes[pop.node].y - 60,
+              }}
+            >
+              <span className="map-pin block max-w-[13rem] -translate-x-1/2 truncate rounded-full border border-navy-600 bg-navy-900/90 px-2.5 py-1 text-[0.62rem] text-ink-muted shadow-lg backdrop-blur">
+                <b className={`font-semibold ${nodes[pop.node].phase.textClass}`}>
+                  {communityPosts[pop.post].name}
+                </b>
+                {": "}
+                {communityPosts[pop.post].text.split(" ").slice(0, 5).join(" ")}
+                {"…"}
+              </span>
+            </div>
+          )}
+
+          {/* The finish line */}
+          <div
+            className="map-row absolute inset-x-0 flex flex-col items-center gap-2.5"
+            style={{ top: finishY }}
+          >
+            <span className="map-pin flex flex-col items-center gap-2.5">
+              <span
+                className={`h-3.5 w-44 rounded-sm sm:w-56 ${complete ? "" : "opacity-50"}`}
+                style={{
+                  backgroundImage:
+                    "repeating-conic-gradient(rgba(233,236,248,0.92) 0% 25%, rgba(8,13,26,0.95) 25% 50%)",
+                  backgroundSize: "14px 14px",
+                }}
+              />
+              <span
+                className={`text-sm font-bold uppercase tracking-[0.35em] ${
+                  complete ? "text-ink" : "text-ink-faint"
+                }`}
+              >
+                Finish
+              </span>
+              {complete ? (
+                <>
+                  <span className="spectrum-rule h-1 w-44 rounded-full" />
+                  <span className="text-[0.7rem] text-ink-muted">
+                    Every challenge passed. Your voice is in the world.
+                  </span>
+                </>
+              ) : (
+                <span className="text-[0.65rem] text-ink-faint">
+                  {nodes.length - done} challenge
+                  {nodes.length - done === 1 ? "" : "s"} between you and the line
+                </span>
+              )}
+            </span>
+          </div>
         </div>
       </div>
     </div>

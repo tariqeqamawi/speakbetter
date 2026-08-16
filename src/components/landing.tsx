@@ -131,7 +131,7 @@ export function Landing() {
               </li>
               <li className="flex items-start gap-3">
                 <CheckIcon className="mt-0.5 size-4 shrink-0 text-structure" />
-                21 real on-camera challenges - you can&apos;t pass without
+                24 real on-camera challenges - you can&apos;t pass without
                 speaking
               </li>
               <li className="flex items-start gap-3">

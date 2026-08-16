@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { PhaseId } from "@/data/challenges";
 import { StoryProgress } from "@/components/story-progress";
 import { JourneyMap } from "@/components/journey-map";
+import { PhaseGraduation } from "@/components/phase-graduation";
 
 // The progress bar and the map are the same journey seen twice: the bar
 // is the overview, the map is the terrain. Clicking a color in the bar
@@ -49,6 +50,7 @@ export function StoryBoard() {
         <StoryProgress open={selected ?? undefined} onOpen={flyTo} />
       </div>
       <JourneyMap />
+      <PhaseGraduation />
     </div>
   );
 }

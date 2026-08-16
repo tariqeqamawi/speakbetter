@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import { bonusChallenges, challengesIntro } from "@/data/challenges";
+import { challengesIntro } from "@/data/challenges";
 import { StoryBoard } from "@/components/story-board";
 import { StreakFlame } from "@/components/celebrations";
 import { ChallengesIcon } from "@/components/icons";
 import { LazyVimeoPlayer } from "@/components/lazy-vimeo-player";
-import { vimeoWatchUrl } from "@/lib/vimeo";
 
 export const metadata: Metadata = {
   title: "Challenges",
@@ -47,26 +46,6 @@ export default function ChallengesPage() {
       </div>
 
       <StoryBoard />
-
-      <section className="flex flex-col gap-3 border-t border-navy-700 pt-6">
-        <h2 className="text-sm font-medium uppercase tracking-wider text-ink-faint">
-          Bonus challenges
-        </h2>
-        <ul className="flex flex-wrap gap-2">
-          {bonusChallenges.map((bonus) => (
-            <li key={bonus.vimeoId}>
-              <a
-                href={vimeoWatchUrl(bonus.vimeoId)}
-                target="_blank"
-                rel="noreferrer"
-                className="flex min-h-11 items-center rounded-lg border border-navy-600 px-4 py-2.5 text-xs text-ink-muted transition-colors hover:text-ink"
-              >
-                {bonus.title}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </section>
     </div>
   );
 }
