@@ -342,3 +342,40 @@ export const takeaways: Record<string, string[]> = {
     "One light decision is most of the difference between amateur and watchable.",
   ],
 };
+
+// Words that carry weight on their own, mined from a lesson's takeaways.
+// The player floats a random few of these around the teacher while the
+// lesson plays - a quiet second channel of reinforcement, so the pool
+// must be real lesson vocabulary, never decoration invented elsewhere.
+const STOPWORDS = new Set([
+  "that", "this", "with", "your", "youre", "yours", "you", "they", "them",
+  "then", "than", "what", "when", "where", "which", "while", "will",
+  "would", "could", "should", "have", "has", "had", "into", "onto",
+  "from", "only", "just", "more", "most", "much", "many", "some", "same",
+  "still", "being", "been", "were", "was", "are", "isnt", "its", "the",
+  "and", "but", "for", "not", "nor", "does", "doesnt", "dont", "about",
+  "over", "under", "again", "rather", "one", "own", "use", "using",
+  "used", "good", "well", "fine", "thing", "things", "keep", "keeps",
+  "make", "makes", "made", "find", "hold", "holding", "holds", "come",
+  "comes", "get", "gets", "need", "needs", "first", "next", "side",
+  "part", "every", "everyone", "everything", "nobody", "anybody",
+  "someone", "something", "anyone", "anything", "there", "their",
+  "these", "those", "because", "before", "after", "never", "always",
+  "without", "between", "through", "long", "runs", "ride", "along",
+  "sounds", "sound", "very", "cant", "youll", "thats", "each", "other",
+  "off", "out", "how", "why", "who", "can", "any", "all", "too", "way",
+]);
+
+export function lessonKeywords(vimeoId: string): string[] {
+  const lines = takeaways[vimeoId];
+  if (!lines) return [];
+  const words = new Set<string>();
+  for (const line of lines) {
+    for (const raw of line.split(/[^a-zA-Z]+/)) {
+      const w = raw.toLowerCase();
+      if (w.length < 4 || STOPWORDS.has(w)) continue;
+      words.add(w[0].toUpperCase() + w.slice(1));
+    }
+  }
+  return [...words];
+}

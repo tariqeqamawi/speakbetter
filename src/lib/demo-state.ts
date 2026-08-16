@@ -51,7 +51,9 @@ export const demoState: AppState = {
   displayName: "Sample Student",
   intention:
     "I want to walk on stage without my hands shaking, and finally say the thing I actually mean.",
-  avatar: "",
+  // A face for the demo student, so avatar-driven touches (the "you are
+  // here" marker on the map, the dashboard banner) show in previews.
+  avatar: "/thumbs/1081030429.jpg",
   attempts,
   watchedLessons: [
     "1081030429",

@@ -66,6 +66,16 @@ html {
   padding-top: env(safe-area-inset-top);
 }
 
+/* The STORY bar rides just under the top banner while the journey map
+ * scrolls, so the five colors stay reachable anywhere on the road.
+ * Plain CSS rather than an arbitrary Tailwind value: env() inside a
+ * generated class name corrupted the dev compiler's cache before. */
+.sticky-under-header {
+  position: sticky;
+  top: calc(3.65rem + env(safe-area-inset-top));
+  z-index: 30;
+}
+
 /* Nothing may widen the page past the viewport - horizontal scroll on a
  * phone is always a bug, never a feature, so it's clipped at the root.
  * (clip, not hidden: it doesn't create a new scroll container.) */
@@ -435,6 +445,94 @@ body {
   .map-pulse::after {
     animation: none;
     opacity: 0.5;
+  }
+}
+
+/* The 3D map view: the ground reclines like a navigation app while the
+ * markers (.map-pin) counter-rotate to stay standing upright on it.
+ * Perspective lives inside the transform so its vanishing point is the
+ * transform origin, which the component keeps pinned to the viewport
+ * center while scrolling. The scene clips the tilted plane so the page
+ * never scrolls sideways. */
+.map-scene {
+  overflow: clip;
+}
+
+.map-tilt {
+  transform-style: preserve-3d;
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.map-3d {
+  transform: perspective(1400px) rotateX(35deg);
+}
+
+.map-pin {
+  transform-style: preserve-3d;
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.map-3d .map-pin {
+  transform: rotateX(-35deg);
+  transform-origin: 50% 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-tilt,
+  .map-pin {
+    transition: none;
+  }
+}
+
+/* The small skill icons drifting around each phase circle on the map. */
+.float-icon {
+  animation: float-icon 5s ease-in-out infinite;
+}
+
+@keyframes float-icon {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .float-icon {
+    animation: none;
+  }
+}
+
+/* A lesson's key word drifting through the player's margins: fades in,
+ * rises slowly, fades away. Runs once per word; the player remounts the
+ * element for each new word. */
+.float-word {
+  animation: float-word 5.5s ease-in-out both;
+}
+
+@keyframes float-word {
+  0% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  18% {
+    opacity: 0.9;
+  }
+  78% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .float-word {
+    animation: none;
+    opacity: 0;
   }
 }
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { badgeDefs } from "@/data/badges";
 import type { AppState } from "@/lib/store";
 import { BadgeMedal } from "@/components/badge-medal";
@@ -9,9 +10,14 @@ import { TrophyIcon } from "@/components/icons";
 // Every badge in the game, not only the ones already won. Seeing the
 // locked ones is the point: an empty slot with a name on it is an
 // invitation, where a hidden one is nothing at all.
+//
+// The tooltip answers to hover on desktop and to a tap on touch - a
+// thumb has no hover, so the tap toggles it and a second tap (or a tap
+// on another badge) puts it away.
 
 export function BadgeCollection({ state }: { state: AppState }) {
   const earned = new Map(state.badges.map((b) => [b.id, b]));
+  const [openId, setOpenId] = useState<string | null>(null);
 
   return (
     <div className="flex flex-col overflow-hidden rounded-2xl border border-navy-600 bg-navy-800">
@@ -47,13 +53,20 @@ export function BadgeCollection({ state }: { state: AppState }) {
               // The group/tooltip pair below shows what a locked badge
               // wants from you - a collection you can't read is just a
               // wall of gray. A few keep their secret on purpose.
-              className={`group relative flex flex-col items-center gap-2 rounded-xl border p-3 text-center transition-colors ${
+              onClick={() =>
+                setOpenId((cur) => (cur === badge.id ? null : badge.id))
+              }
+              className={`group relative flex cursor-pointer flex-col items-center gap-2 rounded-xl border p-3 text-center transition-colors ${
                 won
                   ? "border-navy-500 bg-navy-700"
                   : "border-dashed border-navy-600 bg-navy-900/40 hover:border-ink-faint"
               }`}
             >
-              <span className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 w-44 -translate-x-1/2 rounded-lg border border-navy-500 bg-navy-950 p-2.5 text-left text-[0.7rem] leading-snug text-ink-muted opacity-0 shadow-xl transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+              <span
+                className={`pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 w-44 -translate-x-1/2 rounded-lg border border-navy-500 bg-navy-950 p-2.5 text-left text-[0.7rem] leading-snug text-ink-muted shadow-xl transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 ${
+                  openId === badge.id ? "opacity-100" : "opacity-0"
+                }`}
+              >
                 <b className="block pb-0.5 text-ink">{badge.title}</b>
                 {won
                   ? badge.message

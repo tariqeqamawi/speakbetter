@@ -1,8 +1,10 @@
 "use client";
 
 import Player from "@vimeo/player";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { vimeoEmbedUrl } from "@/lib/vimeo";
+import { categories } from "@/data/categories";
+import { lessonKeywords } from "@/data/takeaways";
 import {
   CaptionsIcon,
   ExitFullscreenIcon,
@@ -28,6 +30,42 @@ import {
 type Frame = "fit" | "portrait";
 
 const SPEEDS = [0.75, 1, 1.25, 1.5, 2];
+
+// The floating key words wear white or one of the spectrum's neons.
+// White appears twice so it comes up more often than any single color.
+const WORD_COLORS = [
+  "#f5f7ff",
+  "#f5f7ff",
+  ...categories.map((c) => `var(--color-${c.id})`),
+];
+
+interface Floater {
+  word: string;
+  color: string;
+  left: number; // percent
+  top: number; // percent
+  key: number;
+}
+
+// screen.orientation.lock/unlock aren't in every TS lib or browser -
+// reach for them loosely and let unsupported platforms fall through.
+function orientationApi():
+  | { lock?: (o: string) => Promise<void>; unlock?: () => void }
+  | undefined {
+  if (typeof screen === "undefined") return undefined;
+  return screen.orientation as unknown as {
+    lock?: (o: string) => Promise<void>;
+    unlock?: () => void;
+  };
+}
+
+/** The screen's rotation away from the device's natural orientation. */
+function screenAngle(): number {
+  if (typeof screen !== "undefined" && screen.orientation)
+    return ((screen.orientation.angle % 360) + 360) % 360;
+  const legacy = (window as unknown as { orientation?: number }).orientation;
+  return typeof legacy === "number" ? ((legacy % 360) + 360) % 360 : 0;
+}
 
 export function VimeoPlayer({
   vimeoId,
@@ -61,6 +99,41 @@ export function VimeoPlayer({
   const [speedOpen, setSpeedOpen] = useState(false);
   const [captionsOn, setCaptionsOn] = useState(false);
   const [captionLang, setCaptionLang] = useState<string | null>(null);
+
+  // ── Floating key ideas ─────────────────────────────────────────────
+  // Single words from this lesson's own takeaways drift through the
+  // margins around the teacher while the video plays - a second channel
+  // of reinforcement. Which word, where, and when is drawn fresh each
+  // time, so no two viewings highlight the same sequence. Only in the
+  // default and fullscreen framings: portrait crops the margins away.
+  const keywords = useMemo(() => lessonKeywords(vimeoId), [vimeoId]);
+  const [floater, setFloater] = useState<Floater | null>(null);
+  const showWords = playing && frame === "fit" && keywords.length > 0;
+
+  useEffect(() => {
+    if (!showWords) return;
+    let alive = true;
+    let key = 0;
+    let timer: number;
+    const spawn = () => {
+      if (!alive) return;
+      const leftSide = Math.random() < 0.5;
+      setFloater({
+        word: keywords[Math.floor(Math.random() * keywords.length)],
+        color: WORD_COLORS[Math.floor(Math.random() * WORD_COLORS.length)],
+        // The gray areas flanking the centered teacher.
+        left: leftSide ? 4 + Math.random() * 13 : 70 + Math.random() * 16,
+        top: 15 + Math.random() * 55,
+        key: key++,
+      });
+      timer = window.setTimeout(spawn, 7000 + Math.random() * 4000);
+    };
+    timer = window.setTimeout(spawn, 2000 + Math.random() * 2500);
+    return () => {
+      alive = false;
+      clearTimeout(timer);
+    };
+  }, [showWords, keywords]);
 
   useEffect(() => {
     if (!holderRef.current) return;
@@ -179,8 +252,22 @@ export function VimeoPlayer({
   // Fullscreen the whole shell, not the iframe - that keeps our own
   // controls on screen. Vimeo's chrome is off, so handing fullscreen to
   // the iframe would leave a video with no controls at all.
+  //
+  // Entering fullscreen also turns the phone sideways for the viewer:
+  // the video is landscape, so the screen locks to landscape rather
+  // than playing letterboxed in a vertical frame. Desktop browsers
+  // refuse the lock and the catch swallows it.
   useEffect(() => {
-    const onChange = () => setFullscreen(document.fullscreenElement === shellRef.current);
+    const onChange = () => {
+      const fs = document.fullscreenElement === shellRef.current;
+      setFullscreen(fs);
+      const orientation = orientationApi();
+      if (fs) orientation?.lock?.("landscape").catch(() => {});
+      else
+        try {
+          orientation?.unlock?.();
+        } catch {}
+    };
     document.addEventListener("fullscreenchange", onChange);
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
@@ -210,14 +297,48 @@ export function VimeoPlayer({
   // portrait off) returns to the page.
   const takeover = fullscreen || frame === "portrait";
 
+  // Portrait is locked vertical: where the platform allows it the
+  // screen orientation is pinned, and everywhere else (iOS) the angle
+  // is tracked so the overlay can counter-rotate below - either way,
+  // turning the phone doesn't turn the video.
+  const [angle, setAngle] = useState(0);
   useEffect(() => {
     if (frame !== "portrait" || fullscreen) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    orientationApi()?.lock?.("portrait").catch(() => {});
+
+    const read = () => setAngle(screenAngle());
+    const t = window.setTimeout(read, 0);
+    window.addEventListener("orientationchange", read);
+    window.addEventListener("resize", read);
     return () => {
       document.body.style.overflow = previous;
+      clearTimeout(t);
+      window.removeEventListener("orientationchange", read);
+      window.removeEventListener("resize", read);
+      try {
+        orientationApi()?.unlock?.();
+      } catch {}
     };
   }, [frame, fullscreen]);
+
+  // When the phone turns anyway, the overlay rotates against it and
+  // swaps its dimensions, staying visually upright relative to the
+  // device - the reorientation is simply ignored.
+  const counterRotate =
+    frame === "portrait" && !fullscreen && (angle === 90 || angle === 270);
+  const shellStyle: React.CSSProperties | undefined = counterRotate
+    ? {
+        width: "100dvh",
+        height: "100dvw",
+        transformOrigin: "top left",
+        transform:
+          angle === 90
+            ? "rotate(-90deg) translateX(-100%)"
+            : "rotate(90deg) translateY(-100%)",
+      }
+    : undefined;
 
   // The holder is scaled inside a masked window; the aspect of that
   // window is what changes between the framings. The SDK gives the
@@ -239,10 +360,15 @@ export function VimeoPlayer({
   return (
     <div
       ref={shellRef}
+      style={shellStyle}
       className={
         takeover
           ? `flex h-full w-full flex-col gap-2 bg-navy-950 p-3 ${
-              fullscreen ? "" : "pt-safe pb-safe fixed inset-0 z-50"
+              fullscreen
+                ? ""
+                : counterRotate
+                  ? "fixed left-0 top-0 z-50"
+                  : "pt-safe pb-safe fixed inset-0 z-50"
             }`
           : "flex flex-col gap-2"
       }
@@ -259,6 +385,24 @@ export function VimeoPlayer({
           ref={holderRef}
           data-title={title}
         />
+
+        {/* A key idea from this lesson, adrift in the margin beside the
+            teacher - remounted by key so each word plays its fade anew */}
+        {showWords && floater && (
+          <span
+            key={floater.key}
+            aria-hidden
+            className="float-word pointer-events-none absolute z-[15] text-xs font-semibold uppercase tracking-[0.18em] sm:text-sm"
+            style={{
+              left: `${floater.left}%`,
+              top: `${floater.top}%`,
+              color: floater.color,
+              textShadow: "0 0 14px currentColor",
+            }}
+          >
+            {floater.word}
+          </span>
+        )}
 
         {/* Ended takeover - an opaque cover so Vimeo's end screen (and its
             "more from" recommendations) can never show. The course's own

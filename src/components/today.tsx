@@ -5,10 +5,11 @@ import { useStore } from "@/lib/store";
 import { currentStreak, practicedToday } from "@/data/badges";
 import { nextUp, continueWatching } from "@/lib/next-up";
 import { challenges, storyPhases } from "@/data/challenges";
+import { categories } from "@/data/categories";
+import { SpectrumWave } from "@/components/spectrum-wave";
 import { challengeProgress } from "@/lib/challenge-progress";
 import { categoryById } from "@/data/categories";
 import { VideoStill } from "@/components/video-still";
-import { SpectrumStrip } from "@/components/spectrum";
 import { DailyQuests } from "@/components/daily-quests";
 import { LevelIcon, levelMeta } from "@/components/level-icon";
 import { FlameIcon } from "@/components/icons";
@@ -163,7 +164,29 @@ export function Today() {
                 {lastAttempt.score}
               </span>
             </span>
-            <SpectrumStrip spectrum={lastAttempt.spectrum} />
+            {/* The same resonance trace the dashboard draws, for one talk */}
+            <span className="relative block overflow-hidden rounded-lg bg-navy-950/70 p-2">
+              <SpectrumWave
+                values={lastAttempt.spectrum}
+                className="h-24 w-full"
+                animate={false}
+              />
+            </span>
+            <span className="flex justify-between px-1">
+              {categories.map((cat) => {
+                const v = lastAttempt.spectrum[cat.id] ?? 0;
+                return (
+                  <span
+                    key={cat.id}
+                    className={`text-[0.65rem] font-bold tabular-nums ${
+                      v >= 40 ? cat.textClass : "text-ink-faint"
+                    }`}
+                  >
+                    {v}
+                  </span>
+                );
+              })}
+            </span>
           </Link>
         </section>
       )}
