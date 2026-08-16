@@ -58,14 +58,14 @@ export function StoryProgress({
                     type: "button" as const,
                     onClick: () => onOpen(phase.id),
                     "aria-pressed": selected,
-                    title: `${phase.name} — ${doneInPhase} of ${inPhase.length} complete`,
+                    title: `${phase.name} - ${doneInPhase} of ${inPhase.length} complete`,
                   }
                 : {})}
               className={`group flex flex-1 flex-col gap-1 rounded-lg transition-transform ${
                 onOpen ? "cursor-pointer hover:-translate-y-0.5" : ""
               } ${selected ? "-translate-y-0.5" : ""}`}
             >
-              {/* An untouched phase is its own color, just faded — the
+              {/* An untouched phase is its own color, just faded - the
                   journey is colored from the start, and completing it
                   brings each phase up to full strength rather than
                   coloring in something gray. */}

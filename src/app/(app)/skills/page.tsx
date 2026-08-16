@@ -17,7 +17,7 @@ export default function SkillsPage() {
           Skills
         </h1>
         <p className="max-w-lg text-ink-muted">
-          Short, focused lessons — one to two minutes each — across the seven
+          Short, focused lessons - one to two minutes each - across the seven
           colors of dynamic speaking. Dip in; don&apos;t binge.
         </p>
       </header>

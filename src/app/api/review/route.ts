@@ -3,13 +3,13 @@ import { challengeBySlug } from "@/data/challenges";
 import { categories, type CategoryId } from "@/data/categories";
 
 // ─────────────────────────────────────────────────────────────────────
-// AI review endpoint — build plan Phase 4.
+// AI review endpoint - build plan Phase 4.
 //
 // INTEGRATION SWAP POINT (master plan §07, stack §19): this is a mock.
 // The real implementation receives the uploaded video, has Gemini watch
 // it against the challenge's criteria + the transcript/video reference
 // layer (§08), then deletes the video (§13). The request/response
-// contract below is the one Gemini's analysis will be mapped into —
+// contract below is the one Gemini's analysis will be mapped into -
 // the client should not need to change.
 // ─────────────────────────────────────────────────────────────────────
 
@@ -26,7 +26,7 @@ interface Note {
   lessonIds?: string[];
 }
 
-/** A canned observation plus the Skills lesson(s) it draws on — the tie
+/** A canned observation plus the Skills lesson(s) it draws on - the tie
  * between coaching and curriculum (§08). Strengths link the lesson
  * teaching the skill the student just used (perhaps by accident);
  * improvements link the lesson that fixes the gap. */
@@ -59,7 +59,7 @@ function hash(s: string): number {
 const strengths: Record<CategoryId, Observation[]> = {
   storytelling: [
     {
-      note: "You dropped into a specific scene instead of summarizing — that's exactly what makes listeners lean in.",
+      note: "You dropped into a specific scene instead of summarizing - that's exactly what makes listeners lean in.",
       lessonIds: ["1081031433"], // Life Scene NOT Life Story
     },
     {
@@ -69,7 +69,7 @@ const strengths: Record<CategoryId, Observation[]> = {
   ],
   figurative: [
     {
-      note: "That comparison was fresh — nobody has heard it before, so it stuck.",
+      note: "That comparison was fresh - nobody has heard it before, so it stuck.",
       lessonIds: ["1081032528"], // Metaphors
     },
     {
@@ -79,7 +79,7 @@ const strengths: Record<CategoryId, Observation[]> = {
   ],
   acting: [
     {
-      note: "Your vocal variety kept the delivery musical — tone shifts arrived right on the story beats.",
+      note: "Your vocal variety kept the delivery musical - tone shifts arrived right on the story beats.",
       lessonIds: ["1080675446"], // Making Your Message a Melody
     },
     {
@@ -89,7 +89,7 @@ const strengths: Record<CategoryId, Observation[]> = {
   ],
   structure: [
     {
-      note: "Strong open — you earned attention in the first ten seconds.",
+      note: "Strong open - you earned attention in the first ten seconds.",
       lessonIds: ["1081198798"], // How To Open Your Talk
     },
     {
@@ -99,7 +99,7 @@ const strengths: Record<CategoryId, Observation[]> = {
   ],
   mindset: [
     {
-      note: "You spoke from conviction — it reads as presence on camera.",
+      note: "You spoke from conviction - it reads as presence on camera.",
       lessonIds: ["1081162517"], // As The Speaker You Have ALL The Power!
     },
     {
@@ -113,7 +113,7 @@ const strengths: Record<CategoryId, Observation[]> = {
       lessonIds: ["1080653314"], // Hand Gestures
     },
     {
-      note: "Open posture, steady eye line — the camera reads you as confident.",
+      note: "Open posture, steady eye line - the camera reads you as confident.",
       lessonIds: ["1081137961"], // Opening Your Posture
     },
   ],
@@ -123,7 +123,7 @@ const strengths: Record<CategoryId, Observation[]> = {
       lessonIds: ["1081162033"], // Powerful Pause vs Awkward Silence
     },
     {
-      note: "Succinct and clean — nothing overstayed its welcome.",
+      note: "Succinct and clean - nothing overstayed its welcome.",
       lessonIds: ["1081200223"], // Staying Succinct: Pro Tip
     },
   ],
@@ -132,7 +132,7 @@ const strengths: Record<CategoryId, Observation[]> = {
 const improvements: Record<CategoryId, Observation[]> = {
   storytelling: [
     {
-      note: "Zoom further into one moment — give us the scene, not the summary.",
+      note: "Zoom further into one moment - give us the scene, not the summary.",
       lessonIds: ["1081031433"], // Life Scene NOT Life Story
     },
     {
@@ -152,7 +152,7 @@ const improvements: Record<CategoryId, Observation[]> = {
   ],
   acting: [
     {
-      note: "A few filler words crept in under pressure — swap them for silent pauses.",
+      note: "A few filler words crept in under pressure - swap them for silent pauses.",
       lessonIds: ["1080629747"], // What Are Filler Words
     },
     {
@@ -162,7 +162,7 @@ const improvements: Record<CategoryId, Observation[]> = {
   ],
   structure: [
     {
-      note: "The ending arrived without warning — plant a promise early so the close pays it off.",
+      note: "The ending arrived without warning - plant a promise early so the close pays it off.",
       lessonIds: ["1081163913"], // Using Promise & Payoff
     },
     {
@@ -172,7 +172,7 @@ const improvements: Record<CategoryId, Observation[]> = {
   ],
   mindset: [
     {
-      note: "There's an apology hiding in your opening posture — begin as if the audience is already on your side.",
+      note: "There's an apology hiding in your opening posture - begin as if the audience is already on your side.",
       lessonIds: ["1081162517"], // As The Speaker You Have ALL The Power!
     },
     {
@@ -182,7 +182,7 @@ const improvements: Record<CategoryId, Observation[]> = {
   ],
   "body-language": [
     {
-      note: "Your hands went quiet during the key moment — that's exactly when they should be painting.",
+      note: "Your hands went quiet during the key moment - that's exactly when they should be painting.",
       lessonIds: ["1080653314"], // Hand Gestures
     },
     {
@@ -221,7 +221,7 @@ export async function POST(request: Request) {
 
   const rand = mulberry32(hash(`${body.challengeSlug}:${body.attemptNumber}`));
 
-  // Scores improve with repetition — the mock rewards exactly the
+  // Scores improve with repetition - the mock rewards exactly the
   // behavior the course is built around.
   const practice = Math.min(body.attemptNumber - 1, 5) * 4;
   const base = 55 + practice + Math.floor(rand() * 18);
@@ -253,7 +253,7 @@ export async function POST(request: Request) {
     toNote(category, pick(rand, improvements[category])),
   );
 
-  // Full notes: everything the AI noticed — strengths + improvements
+  // Full notes: everything the AI noticed - strengths + improvements
   // across the whole spectrum (revealed at Intermediate/Advanced, §09).
   // Strengths carry the lesson behind the skill the student just used,
   // so a skill hit by instinct can be studied on purpose.
@@ -266,12 +266,12 @@ export async function POST(request: Request) {
 
   const litColors = categories.filter((c) => spectrum[c.id] >= 40).length;
   const summary = passed
-    ? `Challenge complete — ${litColors} of 7 colors lit up. ${
+    ? `Challenge complete - ${litColors} of 7 colors lit up. ${
         litColors >= 6
           ? "That's a genuinely full-spectrum talk."
           : "Widen the spectrum next attempt and watch the score climb."
       }`
-    : `Not there yet — but ${litColors} of 7 colors showed up, and every attempt is compounding. Focus on the notes below and go again.`;
+    : `Not there yet - but ${litColors} of 7 colors showed up, and every attempt is compounding. Focus on the notes below and go again.`;
 
   return NextResponse.json({
     passed,

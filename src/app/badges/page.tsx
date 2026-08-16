@@ -4,7 +4,7 @@ import { BadgeMedal } from "@/components/badge-medal";
 
 // Every badge in the course, shown won. The dashboard's trophy case
 // deliberately hides what you haven't earned behind gray; this page is
-// the opposite — the full set, so the whole collection can be seen at
+// the opposite - the full set, so the whole collection can be seen at
 // once (and reviewed while it's being designed). Reads from the same
 // badge list, so it can never drift out of date.
 
@@ -24,7 +24,7 @@ export default function BadgeGalleryPage() {
         </h1>
         <p className="max-w-lg text-ink-muted">
           {badgeDefs.length} of them. Some for showing up, some for streaks,
-          some for a specific thing done well — and one for every challenge on
+          some for a specific thing done well - and one for every challenge on
           the STORY journey.
         </p>
       </header>
@@ -49,7 +49,7 @@ export default function BadgeGalleryPage() {
                 {badge.message}
               </span>
               <span className="text-[0.7rem] leading-snug text-ink-faint">
-                {badge.how ?? "Hidden achievement — no hints for this one."}
+                {badge.how ?? "Hidden achievement - no hints for this one."}
               </span>
             </span>
           </li>

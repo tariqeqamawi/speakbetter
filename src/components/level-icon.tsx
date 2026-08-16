@@ -1,7 +1,7 @@
 import Image from "next/image";
 import type { Level } from "@/lib/store";
 
-// The brand lion, tinted per level — yellow for Beginner through to red
+// The brand lion, tinted per level - yellow for Beginner through to red
 // for Advanced. Once chosen it follows the student everywhere their
 // level is shown, so the mark itself becomes their standing.
 
@@ -13,7 +13,7 @@ export const levelMeta: Record<
     label: "Beginner",
     feeling: "Nervous and shy",
     detail:
-      "Focused feedback — just the two or three things that matter most right now.",
+      "Focused feedback - just the two or three things that matter most right now.",
     accentClass: "text-storytelling",
   },
   intermediate: {
@@ -25,7 +25,7 @@ export const levelMeta: Record<
   },
   advanced: {
     label: "Advanced",
-    feeling: "Very confident — give me a stage",
+    feeling: "Very confident - give me a stage",
     detail:
       "The hardest thresholds. Near full-spectrum talks are the bar.",
     accentClass: "text-acting",

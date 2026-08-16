@@ -9,14 +9,14 @@ import { LevelIcon, levelMeta } from "@/components/level-icon";
 // starting level. Level changes stay manual, in the student's hands.
 //
 // A second question follows it: why they're here at all. The course's
-// whole retention layer asks people to keep going — this is the reason
+// whole retention layer asks people to keep going - this is the reason
 // they gave for wanting to, in their own words, and it sits at the top
 // of their dashboard from then on.
 
 const order: Level[] = ["beginner", "intermediate", "advanced"];
 
 const INTENTION_PROMPT =
-  "Tell us why you're doing this course. What is the fear you're overcoming, or the outcome you're reaching for? Write it succinctly, and with the full emotional weight of what it means to you — so we can remind you to keep going.";
+  "Tell us why you're doing this course. What is the fear you're overcoming, or the outcome you're reaching for? Write it succinctly, and with the full emotional weight of what it means to you - so we can remind you to keep going.";
 
 export default function WelcomePage() {
   const { state, ready, setLevel, setIntention } = useStore();
@@ -49,7 +49,7 @@ export default function WelcomePage() {
         </p>
         <p className="text-xs text-ink-faint">
           {step === "level"
-            ? "This sets your starting level. You can change it any time — it never changes without you."
+            ? "This sets your starting level. You can change it any time - it never changes without you."
             : "Only you ever see this. It lives at the top of your dashboard."}
         </p>
       </header>
@@ -82,7 +82,7 @@ export default function WelcomePage() {
                     <b className={`font-semibold ${meta.accentClass}`}>
                       {meta.label}
                     </b>{" "}
-                    — {meta.detail}
+                    - {meta.detail}
                   </span>
                 </span>
               </button>
@@ -102,7 +102,7 @@ export default function WelcomePage() {
               rows={4}
               maxLength={280}
               autoFocus
-              placeholder="I want to stop shaking when every face in the room turns to me — and say the thing I actually mean."
+              placeholder="I want to stop shaking when every face in the room turns to me - and say the thing I actually mean."
               className="w-full rounded-xl border border-navy-600 bg-navy-900 p-4 text-sm leading-relaxed text-ink placeholder:text-ink-faint focus:border-ink-faint focus:outline-none"
             />
             <span className="self-end text-xs tabular-nums text-ink-faint">

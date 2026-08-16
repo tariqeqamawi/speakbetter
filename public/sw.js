@@ -1,4 +1,4 @@
-// Speak Better service worker — makes the app installable and keeps the
+// Speak Better service worker - makes the app installable and keeps the
 // shell responsive on flaky connections. Deliberately conservative:
 // network-first for pages (content stays fresh), cache-first for
 // hashed static assets and course imagery (immutable in practice), an
@@ -37,7 +37,7 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-/** Course imagery never changes once shipped — serve it like a build asset. */
+/** Course imagery never changes once shipped - serve it like a build asset. */
 function isImmutable(pathname) {
   return (
     pathname.startsWith("/_next/static/") ||
@@ -77,7 +77,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Navigations: network-first, cached copy second, offline page last —
+  // Navigations: network-first, cached copy second, offline page last -
   // a dead connection should never end at a browser error screen.
   if (request.mode === "navigate") {
     event.respondWith(

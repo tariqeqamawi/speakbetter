@@ -1,6 +1,6 @@
 import type { CategoryId } from "./categories";
 
-// The STORY curriculum — master plan §04. Five phases, 21 challenges,
+// The STORY curriculum - master plan §04. Five phases, 21 challenges,
 // each matched to its filmed explainer video and the Skills lessons a
 // student warms up with (the STEP cycle's "Tap Into Tools").
 // `criteria` + `targetSkills` are the structured rubric the AI review
@@ -18,7 +18,7 @@ export interface StoryPhase {
   textClass: string;
   borderClass: string;
   /** The same color as a surface wash. The palette is neon, so a full
-   *  fill would blow out any text on top of it — a low-opacity tint
+   *  fill would blow out any text on top of it - a low-opacity tint
    *  colors the card while white type stays legible on all five. */
   tintClass: string;
 }
@@ -86,14 +86,14 @@ export interface Challenge {
 }
 
 export const challenges: Challenge[] = [
-  // ── S — Start With Awareness ────────────────────────────────────────
+  // ── S - Start With Awareness ────────────────────────────────────────
   {
     slug: "speaking-baseline",
     phase: "S",
     title: "Record Your Speaking Baseline",
     vimeoId: "1081200493",
     brief:
-      "Speak your truth to the camera for up to two minutes — no preparation, no polish. This is your starting point on the map.",
+      "Speak your truth to the camera for up to two minutes - no preparation, no polish. This is your starting point on the map.",
     criteria: [
       "Speak continuously to the camera for at least 60 seconds",
       "Say something true about yourself or your life",
@@ -108,7 +108,7 @@ export const challenges: Challenge[] = [
     title: "Tell a Story Without Any Help",
     vimeoId: "1081200781",
     brief:
-      "Tell any story from your life, exactly as you would today — before learning a single technique. Your future self will thank you for the comparison.",
+      "Tell any story from your life, exactly as you would today - before learning a single technique. Your future self will thank you for the comparison.",
     criteria: [
       "Tell one complete story with a beginning and an end",
       "Keep it under three minutes",
@@ -137,14 +137,14 @@ export const challenges: Challenge[] = [
     ],
   },
 
-  // ── T — Train Your Instrument ───────────────────────────────────────
+  // ── T - Train Your Instrument ───────────────────────────────────────
   {
     slug: "no-filler-words",
     phase: "T",
-    title: "Say What You Love — With No Filler Words",
+    title: "Say What You Love - With No Filler Words",
     vimeoId: "1081280579",
     brief:
-      "Speak about something you're passionate about for two minutes — with zero ums, uhs, likes, or you-knows. Passion first, polish second.",
+      "Speak about something you're passionate about for two minutes - with zero ums, uhs, likes, or you-knows. Passion first, polish second.",
     criteria: [
       "Speak about something you genuinely love",
       "No filler words for the full recording",
@@ -159,7 +159,7 @@ export const challenges: Challenge[] = [
     title: "Avoid Boring Words",
     vimeoId: "1081200895",
     brief:
-      "Describe something you find amazing — without ever saying amazing, beautiful, or exciting. Reach for language that actually paints.",
+      "Describe something you find amazing - without ever saying amazing, beautiful, or exciting. Reach for language that actually paints.",
     criteria: [
       "Describe something impressive without using: amazing, beautiful, exciting",
       "Use at least three vivid, specific alternatives",
@@ -189,7 +189,7 @@ export const challenges: Challenge[] = [
     title: "Tongue Twister Challenge",
     vimeoId: "1081940261",
     brief:
-      "Warm up your articulation on camera: three tongue twisters, each one three times, each round faster — without losing clarity.",
+      "Warm up your articulation on camera: three tongue twisters, each one three times, each round faster - without losing clarity.",
     criteria: [
       "Complete three different tongue twisters",
       "Repeat each at increasing speed",
@@ -207,14 +207,14 @@ export const challenges: Challenge[] = [
       "The self-consciousness breaker: beatbox, hum a rhythm, or flow to a beat on camera. Being willing to look silly is a speaking superpower.",
     criteria: [
       "Keep a rhythm going for at least 30 seconds",
-      "Commit fully — no breaking into apology",
+      "Commit fully - no breaking into apology",
       "Have fun with it (it shows)",
     ],
     targetSkills: ["mindset", "acting"],
     relatedLessonIds: ["1094881996", "1080612884", "1082732774"],
   },
 
-  // ── O — Own Your Stories ────────────────────────────────────────────
+  // ── O - Own Your Stories ────────────────────────────────────────────
   {
     slug: "create-storybook",
     phase: "O",
@@ -236,7 +236,7 @@ export const challenges: Challenge[] = [
     title: "Paint the Scene With Sound",
     vimeoId: "1082010596",
     brief:
-      "Bring a scene to life using sound effects, onomatopoeia, and your voice as the soundtrack — the door creaks, the engine roars, the crowd goes quiet.",
+      "Bring a scene to life using sound effects, onomatopoeia, and your voice as the soundtrack - the door creaks, the engine roars, the crowd goes quiet.",
     criteria: [
       "Use at least three distinct sound effects in one story",
       "Make the sounds carry real information, not decoration",
@@ -251,7 +251,7 @@ export const challenges: Challenge[] = [
     title: "Describe a Place or Person Vividly",
     vimeoId: "1081932833",
     brief:
-      "Describe a landscape or a person using figurative language so vivid the listener can see them — metaphor, simile, and sensory detail doing the work.",
+      "Describe a landscape or a person using figurative language so vivid the listener can see them - metaphor, simile, and sensory detail doing the work.",
     criteria: [
       "Use at least two metaphors or similes",
       "Touch at least two senses beyond sight",
@@ -266,7 +266,7 @@ export const challenges: Challenge[] = [
     title: "Tell a Real-Life Moment From Your Day",
     vimeoId: "1081938254",
     brief:
-      "Narrate one scene from today — not the whole day, one moment — zoomed all the way in. Life scene, not life story.",
+      "Narrate one scene from today - not the whole day, one moment - zoomed all the way in. Life scene, not life story.",
     criteria: [
       "Pick a single moment, not a summary of the day",
       "Narrate it in the present tense",
@@ -281,7 +281,7 @@ export const challenges: Challenge[] = [
     title: "Act Out a High-Stakes Moment",
     vimeoId: "1081956346",
     brief:
-      "Take a moment where everything hung in the balance and act it out — voice, face, body, the works. Don't just say it, be in it.",
+      "Take a moment where everything hung in the balance and act it out - voice, face, body, the works. Don't just say it, be in it.",
     criteria: [
       "Choose a story with genuine stakes",
       "Act out at least one moment physically",
@@ -306,14 +306,14 @@ export const challenges: Challenge[] = [
     relatedLessonIds: ["1081197526", "1081163913", "1081197062"],
   },
 
-  // ── R — Reveal Deeper Truths ────────────────────────────────────────
+  // ── R - Reveal Deeper Truths ────────────────────────────────────────
   {
     slug: "three-emotions",
     phase: "R",
     title: "Trigger 3 Emotions in 1 Story",
     vimeoId: "1081948719",
     brief:
-      "Tell one story that moves through three different emotions — and takes the listener through them with you.",
+      "Tell one story that moves through three different emotions - and takes the listener through them with you.",
     criteria: [
       "Move through three clearly different emotions",
       "Embody each one in voice and body, not just words",
@@ -328,10 +328,10 @@ export const challenges: Challenge[] = [
     title: "Tell Someone Else's Story",
     vimeoId: "1081932244",
     brief:
-      "Step into someone else's shoes and tell their story with the same care you'd give your own — empathy as a speaking skill.",
+      "Step into someone else's shoes and tell their story with the same care you'd give your own - empathy as a speaking skill.",
     criteria: [
       "Tell a real story that happened to someone else",
-      "Honor their perspective — no editorializing over them",
+      "Honor their perspective - no editorializing over them",
       "Make the listener feel why the story matters",
     ],
     targetSkills: ["storytelling", "mindset"],
@@ -343,7 +343,7 @@ export const challenges: Challenge[] = [
     title: "Bring a Story to Life With Multiple Characters",
     vimeoId: "1081947627",
     brief:
-      "A story with at least three characters, each distinct — different voices, postures, energy. You are the whole cast.",
+      "A story with at least three characters, each distinct - different voices, postures, energy. You are the whole cast.",
     criteria: [
       "Give at least three characters distinct voices or physicality",
       "Keep it obvious who's speaking without saying 'he said'",
@@ -358,7 +358,7 @@ export const challenges: Challenge[] = [
     title: "Share a Story You've Healed",
     vimeoId: "1081936936",
     brief:
-      "Tell a story from a hard chapter you've come through — from the far side of it. Vulnerability, delivered with strength.",
+      "Tell a story from a hard chapter you've come through - from the far side of it. Vulnerability, delivered with strength.",
     criteria: [
       "Choose something genuinely difficult that you've processed",
       "Speak from perspective, not from inside the wound",
@@ -368,7 +368,7 @@ export const challenges: Challenge[] = [
     relatedLessonIds: ["1081029881", "1081030261", "1081292414"],
   },
 
-  // ── Y — Your Voice in the World ─────────────────────────────────────
+  // ── Y - Your Voice in the World ─────────────────────────────────────
   {
     slug: "explain-with-analogies",
     phase: "Y",
@@ -405,7 +405,7 @@ export const challenges: Challenge[] = [
     title: "Pitch Your Idea in 30 Seconds",
     vimeoId: "1081950736",
     brief:
-      "The elevator pitch: your idea, product, or mission in thirty seconds — clear, warm, and impossible to forget.",
+      "The elevator pitch: your idea, product, or mission in thirty seconds - clear, warm, and impossible to forget.",
     criteria: [
       "Complete the pitch in 30 seconds or less",
       "State the problem, the idea, and the invitation",
@@ -417,7 +417,7 @@ export const challenges: Challenge[] = [
 ];
 
 // Filmed challenge videos not yet placed in the STORY curriculum
-// (open question, master plan §18) — surfaced as bonus challenges.
+// (open question, master plan §18) - surfaced as bonus challenges.
 export const bonusChallenges = [
   { title: "Story with Set & Scene", vimeoId: "1081955083" },
   { title: "Tell A Story Using Foreshadowing & Fulfilment", vimeoId: "1081952336" },
@@ -431,7 +431,7 @@ export const challengesIntro = [
 ];
 
 /** The badge each challenge awards when it's passed. Named the way an
- *  achievement should be — a small joke or a title you'd want, never a
+ *  achievement should be - a small joke or a title you'd want, never a
  *  restatement of the task. Keyed by slug; every challenge has one. */
 export const challengeBadges: Record<
   string,
@@ -443,7 +443,7 @@ export const challengeBadges: Record<
   },
   "story-without-help": {
     title: "No Net",
-    message: "No notes, no prep, no safety net — and you still told a story.",
+    message: "No notes, no prep, no safety net - and you still told a story.",
   },
   "mindset-toolbox": {
     title: "Head First",
@@ -455,7 +455,7 @@ export const challengeBadges: Record<
   },
   "avoid-boring-words": {
     title: "Thesaurus Rex",
-    message: "Amazing, beautiful, exciting — banned, and you didn't miss them.",
+    message: "Amazing, beautiful, exciting - banned, and you didn't miss them.",
   },
   "voice-melody": {
     title: "Hitmaker",

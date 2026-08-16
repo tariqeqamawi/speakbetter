@@ -1,4 +1,4 @@
-// Navigation icons — a matched set drawn on a 24×24 grid, stroke-only
+// Navigation icons - a matched set drawn on a 24×24 grid, stroke-only
 // with round caps and joins, so they sit quietly in the interface and
 // take their color from whatever they're placed on.
 
@@ -14,7 +14,7 @@ const base = {
   "aria-hidden": true,
 };
 
-/** Two figures side by side — other students. */
+/** Two figures side by side - other students. */
 export function CommunityIcon({ className = "size-5" }: IconProps) {
   return (
     <svg {...base} className={className}>
@@ -26,7 +26,7 @@ export function CommunityIcon({ className = "size-5" }: IconProps) {
   );
 }
 
-/** A target — each challenge is a task with a clear goal. */
+/** A target - each challenge is a task with a clear goal. */
 export function ChallengesIcon({ className = "size-5" }: IconProps) {
   return (
     <svg {...base} className={className}>
@@ -37,7 +37,7 @@ export function ChallengesIcon({ className = "size-5" }: IconProps) {
   );
 }
 
-/** Stacked layers — the library of short lessons. */
+/** Stacked layers - the library of short lessons. */
 export function SkillsIcon({ className = "size-5" }: IconProps) {
   return (
     <svg {...base} className={className}>
@@ -48,7 +48,7 @@ export function SkillsIcon({ className = "size-5" }: IconProps) {
   );
 }
 
-/** A single figure — the student's own corner of the app. */
+/** A single figure - the student's own corner of the app. */
 export function ProfileIcon({ className = "size-5" }: IconProps) {
   return (
     <svg {...base} className={className}>
@@ -81,7 +81,7 @@ export function VideoIcon({ className = "size-5" }: IconProps) {
   );
 }
 
-/** Nested arcs — the color spectrum, drawn rather than colored in. */
+/** Nested arcs - the color spectrum, drawn rather than colored in. */
 export function SpectrumIcon({ className = "size-5" }: IconProps) {
   return (
     <svg {...base} className={className}>
@@ -181,7 +181,7 @@ export function CheckIcon({ className = "size-5" }: IconProps) {
   );
 }
 
-/** An open hand — gesture, the thing hands do while you speak. */
+/** An open hand - gesture, the thing hands do while you speak. */
 export function HandIcon({ className = "size-5" }: IconProps) {
   return (
     <svg {...base} className={className}>
@@ -193,7 +193,7 @@ export function HandIcon({ className = "size-5" }: IconProps) {
   );
 }
 
-/** An eye — eye contact, and being watched by the coach. */
+/** An eye - eye contact, and being watched by the coach. */
 export function EyeIcon({ className = "size-5" }: IconProps) {
   return (
     <svg {...base} className={className}>
@@ -203,7 +203,7 @@ export function EyeIcon({ className = "size-5" }: IconProps) {
   );
 }
 
-/** A brush — painting the picture with words. */
+/** A brush - painting the picture with words. */
 export function BrushIcon({ className = "size-5" }: IconProps) {
   return (
     <svg {...base} className={className}>
@@ -213,7 +213,7 @@ export function BrushIcon({ className = "size-5" }: IconProps) {
   );
 }
 
-/** A line that goes flat — delivery losing its shape. */
+/** A line that goes flat - delivery losing its shape. */
 export function FlatlineIcon({ className = "size-5" }: IconProps) {
   return (
     <svg {...base} className={className}>
@@ -223,7 +223,7 @@ export function FlatlineIcon({ className = "size-5" }: IconProps) {
   );
 }
 
-/** A wrapped gift — the unopened daily chest. */
+/** A wrapped gift - the unopened daily chest. */
 export function GiftIcon({ className = "size-5" }: IconProps) {
   return (
     <svg {...base} className={className}>
@@ -236,7 +236,7 @@ export function GiftIcon({ className = "size-5" }: IconProps) {
   );
 }
 
-/** A closed padlock — a phase the journey hasn't reached yet. */
+/** A closed padlock - a phase the journey hasn't reached yet. */
 export function LockIcon({ className = "size-5" }: IconProps) {
   return (
     <svg {...base} className={className}>

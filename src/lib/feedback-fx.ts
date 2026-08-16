@@ -1,6 +1,6 @@
 // A speaking course that stays silent when you achieve something is
 // missing a beat. The chime is synthesised with the Web Audio API rather
-// than shipped as a file — no asset, no download, and it can be tuned in
+// than shipped as a file - no asset, no download, and it can be tuned in
 // code. Haptics ride along where the device supports them.
 
 let ctx: AudioContext | null = null;
@@ -18,7 +18,7 @@ function audio(): AudioContext | null {
   return ctx;
 }
 
-/** A short rising three-note figure — warm, not a game-show sting. */
+/** A short rising three-note figure - warm, not a game-show sting. */
 export function playCelebration() {
   if (typeof window === "undefined") return;
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -37,7 +37,7 @@ export function playCelebration() {
     const gain = ac.createGain();
     osc.type = "sine";
     osc.frequency.setValueAtTime(freq, at);
-    // quick attack, gentle tail — keeps it from feeling sharp
+    // quick attack, gentle tail - keeps it from feeling sharp
     gain.gain.setValueAtTime(0.0001, at);
     gain.gain.exponentialRampToValueAtTime(0.12, at + 0.02);
     gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.45);

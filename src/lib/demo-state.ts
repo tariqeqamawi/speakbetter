@@ -2,7 +2,7 @@ import type { AppState, Attempt } from "@/lib/store";
 import type { CategoryId } from "@/data/categories";
 
 // A worked-in student, for looking at the dashboard with something in
-// it. Served only on /demo, from an ephemeral store — it never touches
+// it. Served only on /demo, from an ephemeral store - it never touches
 // anyone's real progress, and nothing here is presented as real.
 
 const day = (back: number) =>

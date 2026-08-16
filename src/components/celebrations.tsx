@@ -9,7 +9,7 @@ import { hapticCelebrate, playCelebration } from "@/lib/feedback-fx";
 
 // The gamification layer made visible (master plan §11): milestones are
 // felt, not just read. One celebration shows at a time; each dismisses
-// itself, or on tap. Applies identically at every level — never gated.
+// itself, or on tap. Applies identically at every level - never gated.
 
 export function CelebrationHost() {
   const { celebrations, dismissCelebration } = useStore();
@@ -41,7 +41,7 @@ export function CelebrationHost() {
         onClick={() => dismissCelebration(current.id)}
         className="celebration-pop flex max-w-sm items-start gap-3 rounded-2xl border border-navy-600 bg-navy-800 p-4 text-left shadow-2xl shadow-navy-950/80"
       >
-        {/* The medal the student just won, at the moment they win it —
+        {/* The medal the student just won, at the moment they win it -
             the same artwork that lands in their trophy case. */}
         <span className="celebration-bounce" aria-hidden>
           <BadgeMedal

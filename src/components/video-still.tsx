@@ -6,7 +6,7 @@ import type { Category } from "@/data/categories";
 import { PlayIcon } from "@/components/icons";
 
 // A frame captured from the middle of a video, where the coach is
-// actually teaching — Vimeo's own thumbnails come from the opening
+// actually teaching - Vimeo's own thumbnails come from the opening
 // title card. Falls back to the category color if a frame is missing.
 
 export function VideoStill({

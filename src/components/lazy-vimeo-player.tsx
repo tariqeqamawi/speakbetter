@@ -6,7 +6,7 @@ import { VimeoPlayer } from "@/components/vimeo-player";
 import { PlayFillIcon } from "@/components/player-icons";
 
 // A facade for the Vimeo player. The real embed pulls ~1.4 MB of player
-// script the moment it mounts — far too much to spend on a visitor who
+// script the moment it mounts - far too much to spend on a visitor who
 // may never press play. Until they do, this is just a poster and a
 // button; the click swaps in the real player and starts it.
 

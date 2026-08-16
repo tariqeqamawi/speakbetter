@@ -16,7 +16,7 @@ import { PlayFillIcon } from "@/components/player-icons";
 
 // A category as a theater: whichever lesson is selected plays full
 // width, and every other lesson in the color waits in a carousel below.
-// Picking from the rail swaps the stage in place — browsing and watching
+// Picking from the rail swaps the stage in place - browsing and watching
 // are one motion, not a page apart.
 //
 // The gamification here is feedback-loop work, not slot-machine work:
@@ -59,7 +59,7 @@ export function CategoryTheater({
   };
 
   // The +XP receipt: the moment the featured lesson tips into "watched",
-  // say so, right where it happened — the dashboard number should never
+  // say so, right where it happened - the dashboard number should never
   // be the first place a student learns their work counted.
   const wasWatched = useRef(false);
   useEffect(() => {
@@ -78,7 +78,7 @@ export function CategoryTheater({
   }, [state.watchedLessons, featured.vimeoId]);
 
   // Up-next countdown, cancellable. All state changes happen inside the
-  // timer's callback — the effect itself only arms the clock.
+  // timer's callback - the effect itself only arms the clock.
   useEffect(() => {
     if (upNextIn === null) return;
     const t = setTimeout(() => {
@@ -297,8 +297,8 @@ export function CategoryTheater({
           />
           <aside
             role="dialog"
-            aria-label={`Key takeaways — ${featured.title}`}
-            className="panel-in fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col gap-5 overflow-y-auto border-l border-navy-600 bg-navy-850 p-6 shadow-2xl shadow-navy-950"
+            aria-label={`Key takeaways - ${featured.title}`}
+            className="panel-in pt-safe fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col gap-5 overflow-y-auto border-l border-navy-600 bg-navy-850 p-6 shadow-2xl shadow-navy-950"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex flex-col gap-1">
@@ -339,7 +339,7 @@ export function CategoryTheater({
             </ul>
 
             <p className="text-xs leading-relaxed text-ink-faint">
-              Written from this lesson&apos;s own transcript — the thing to
+              Written from this lesson&apos;s own transcript - the thing to
               carry into your next challenge.
             </p>
 

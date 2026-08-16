@@ -5,7 +5,7 @@ import { currentStreak } from "@/data/badges";
 import type { AppState } from "@/lib/store";
 
 // Everything the coach is allowed to say something about. Each figure is
-// measured from the student's own record — the coach never congratulates
+// measured from the student's own record - the coach never congratulates
 // anyone on something that didn't happen.
 
 export interface EncouragementContext {
@@ -21,7 +21,7 @@ export interface EncouragementContext {
   /** Score change between first and latest attempt */
   scoreThen: number;
   scoreNow: number;
-  /** Most attempts on any single challenge — persistence */
+  /** Most attempts on any single challenge - persistence */
   mostAttemptsOnOne: number;
   /** Colors never yet reached, so the coach can point somewhere real */
   missingColors: string[];

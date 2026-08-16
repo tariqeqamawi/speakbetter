@@ -12,7 +12,7 @@ import { CheckIcon, CircleIcon, PlayIcon } from "@/components/icons";
 // The practice loop (master plan §06, steps 3–7; build plan Phase 4).
 //
 // Video handling honors §13: the file is read locally for duration and
-// playback via an object URL — in this stub it never leaves the device
+// playback via an object URL - in this stub it never leaves the device
 // at all. The real integration uploads it temporarily for Gemini's
 // review, then deletes it; the feedback record is what persists.
 
@@ -46,20 +46,20 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
     probe.onloadedmetadata = () => {
       const durationSec = Math.round(probe.duration);
       if (!Number.isFinite(probe.duration) || durationSec <= 0) {
-        setStage({ kind: "error", message: "Couldn't read that video — try a different file." });
+        setStage({ kind: "error", message: "Couldn't read that video - try a different file." });
         return;
       }
       if (durationSec > MAX_SECONDS) {
         setStage({
           kind: "error",
-          message: `That's ${fmt(durationSec)} — challenge videos are three minutes max (two is the sweet spot). Trim it or record a tighter take.`,
+          message: `That's ${fmt(durationSec)} - challenge videos are three minutes max (two is the sweet spot). Trim it or record a tighter take.`,
         });
         return;
       }
       setStage({ kind: "selected", file, url, durationSec });
     };
     probe.onerror = () =>
-      setStage({ kind: "error", message: "Couldn't read that video — try a different file." });
+      setStage({ kind: "error", message: "Couldn't read that video - try a different file." });
     probe.src = url;
   };
 
@@ -78,7 +78,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
       });
       if (!res.ok) {
         const err = (await res.json().catch(() => null)) as { error?: string } | null;
-        setStage({ kind: "error", message: err?.error ?? "Review failed — try again." });
+        setStage({ kind: "error", message: err?.error ?? "Review failed - try again." });
         return;
       }
       const result = (await res.json()) as Omit<Attempt, "id" | "challengeSlug" | "at" | "durationSec">;
@@ -97,7 +97,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
       recordAttempt(attempt);
       setStage({ kind: "reviewed", url, attempt });
     } catch {
-      setStage({ kind: "error", message: "Review failed — check your connection and try again." });
+      setStage({ kind: "error", message: "Review failed - check your connection and try again." });
     }
   };
 
@@ -119,8 +119,8 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
       {stage.kind === "idle" && (
         <div className="flex flex-col items-start gap-3 rounded-xl border border-navy-600 bg-navy-800 p-5">
           <p className="text-sm text-ink-muted">
-            Record yourself on your phone — selfie mode, two minutes ideal,
-            three max — then upload it here for your AI review.
+            Record yourself on your phone - selfie mode, two minutes ideal,
+            three max - then upload it here for your AI review.
           </p>
           <input
             ref={inputRef}
@@ -138,8 +138,8 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
             {attempts.length > 0 ? "Record another attempt" : "Upload your video"}
           </button>
           <p className="text-xs text-ink-faint">
-            Your video is reviewed, never stored — the feedback is what&apos;s
-            kept. (AI review stub — Gemini arrives with service integration.)
+            Your video is reviewed, never stored - the feedback is what&apos;s
+            kept. (AI review stub - Gemini arrives with service integration.)
           </p>
         </div>
       )}
@@ -162,7 +162,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
           <video src={stage.url} controls playsInline className="w-full rounded-lg bg-navy-950" />
           <div className="flex items-center justify-between">
             <span className="text-xs text-ink-faint">
-              {fmt(stage.durationSec)} — looks good
+              {fmt(stage.durationSec)} - looks good
             </span>
             <div className="flex gap-2">
               <button
@@ -245,7 +245,7 @@ function Feedback({
 
   // The reveal is a sequence, not a page load: bars land one at a time,
   // the score counts up, the verdict arrives, the notes follow. Same
-  // data throughout — the anticipation is the reward, and it's free.
+  // data throughout - the anticipation is the reward, and it's free.
   const reduceMotion =
     typeof window !== "undefined" &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -254,7 +254,7 @@ function Feedback({
   const barsDone = barsShown >= 7;
   const scoreDone = shownScore >= attempt.score;
 
-  // One bar every 260ms — enough gap for each landing to register.
+  // One bar every 260ms - enough gap for each landing to register.
   useEffect(() => {
     if (barsDone) return;
     const t = setTimeout(() => setBarsShown(barsShown + 1), barsShown === 0 ? 500 : 260);
@@ -262,7 +262,7 @@ function Feedback({
   }, [barsShown, barsDone]);
 
   // Then the score climbs, fast at first and slowing into the final
-  // number — the last few points take the longest, as they should.
+  // number - the last few points take the longest, as they should.
   useEffect(() => {
     if (!barsDone || scoreDone) return;
     const remaining = attempt.score - shownScore;
@@ -286,7 +286,7 @@ function Feedback({
 
   const download = () => {
     const lines = [
-      `Speak Better — Feedback`,
+      `Speak Better - Feedback`,
       `Challenge: ${challengeTitle}`,
       `Date: ${new Date(attempt.at).toLocaleString()}`,
       `Score: ${attempt.score} / 100 (${attempt.passed ? "passed" : "not passed"})`,
@@ -396,7 +396,7 @@ function Feedback({
         <div className="px-3 pb-3">
           <video src={videoUrl} controls playsInline className="w-full rounded-lg bg-navy-950" />
           <p className="mt-2 text-xs text-ink-faint">
-            Played from your device — the app doesn&apos;t keep your video.
+            Played from your device - the app doesn&apos;t keep your video.
           </p>
         </div>
       </details>
@@ -424,8 +424,8 @@ function FeedbackNoteRow({
 }: {
   note: FeedbackNote;
   /** Intermediate/Advanced only (§08): link each observation back to the
-   * Skills lesson behind it, so a skill used by instinct — or one still
-   * missing — leads straight to its video. */
+   * Skills lesson behind it, so a skill used by instinct - or one still
+   * missing - leads straight to its video. */
   showLessons?: boolean;
   className?: string;
   style?: React.CSSProperties;
@@ -473,7 +473,7 @@ function PassiveProgress({ challenge }: { challenge: Challenge }) {
       </h2>
       <p className="text-sm text-ink-muted">
         {done
-          ? "Toolbox complete — every mindset lesson watched. That foundation carries the whole journey."
+          ? "Toolbox complete - every mindset lesson watched. That foundation carries the whole journey."
           : `${watched.length} of ${challenge.relatedLessonIds.length} lessons watched. Open each lesson above to complete this challenge.`}
       </p>
       {!done && (

@@ -14,7 +14,7 @@ import {
 } from "@/components/icons";
 
 // Three slots and a chest. The chest opens itself the moment the third
-// slot fills — earned rewards shouldn't need collecting — and the +XP
+// slot fills - earned rewards shouldn't need collecting - and the +XP
 // lands with sound and motion, because a reward that arrives silently
 // barely arrives at all.
 
@@ -86,7 +86,7 @@ export function DailyQuests() {
       </ul>
 
       {/* The chest: closed while the set is open, sprung once it's done.
-          Claimed days show the receipt, not the prize — no re-earning. */}
+          Claimed days show the receipt, not the prize - no re-earning. */}
       <div
         className={`flex items-center gap-3 rounded-lg border p-3 ${
           claimed
@@ -115,7 +115,7 @@ export function DailyQuests() {
           </span>
         ) : (
           <span className="text-sm text-ink-muted">
-            Complete all three to open the chest —{" "}
+            Complete all three to open the chest -{" "}
             <b className="font-semibold text-ink">+{XP.dailyChest} XP</b>
           </span>
         )}

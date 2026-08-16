@@ -18,9 +18,9 @@ import { SpectrumDemo } from "@/components/spectrum-demo";
 
 // The landing page (master plan §15): promo video as centerpiece,
 // pay-to-unlock, straight into the app. Promo video choice is an open
-// question in §18 — the intro video stands in until decided.
+// question in §18 - the intro video stands in until decided.
 // Served to visitors at "/", and to anyone at "/landing" (the preview
-// route backed by an ephemeral store — see StoreProvider).
+// route backed by an ephemeral store - see StoreProvider).
 
 export function Landing() {
   return (
@@ -53,11 +53,11 @@ export function Landing() {
           challenges, and feedback in full color.
         </p>
         <div className="w-full max-w-2xl">
-          {/* Facade poster is a library still of the same instructor — the
+          {/* Facade poster is a library still of the same instructor - the
               intro video itself is unlisted, so Vimeo offers no poster. */}
           <LazyVimeoPlayer
             vimeoId="1080326796"
-            title="Speak Better — Intro"
+            title="Speak Better - Intro"
             poster="/thumbs/1080612884.jpg"
           />
         </div>
@@ -66,7 +66,7 @@ export function Landing() {
       </section>
 
       {/* The method, as a side-by-side: every other course vs this one.
-          The left card is deliberately drained of color — the palette
+          The left card is deliberately drained of color - the palette
           belongs to the right card only, so the difference is felt
           before it's read. */}
       <section className="flex flex-col gap-6">
@@ -95,7 +95,7 @@ export function Landing() {
               </li>
               <li className="flex items-start gap-3">
                 <XIcon className="mt-0.5 size-4 shrink-0" />
-                No rehearsal built in — you never actually speak
+                No rehearsal built in - you never actually speak
               </li>
               <li className="flex items-start gap-3">
                 <XIcon className="mt-0.5 size-4 shrink-0" />
@@ -131,12 +131,12 @@ export function Landing() {
               </li>
               <li className="flex items-start gap-3">
                 <CheckIcon className="mt-0.5 size-4 shrink-0 text-structure" />
-                21 real on-camera challenges — you can&apos;t pass without
+                21 real on-camera challenges - you can&apos;t pass without
                 speaking
               </li>
               <li className="flex items-start gap-3">
                 <CheckIcon className="mt-0.5 size-4 shrink-0 text-body-language" />
-                An AI coach watches every attempt — gestures, eye contact,
+                An AI coach watches every attempt - gestures, eye contact,
                 story
               </li>
               <li className="flex items-start gap-3">
@@ -154,7 +154,7 @@ export function Landing() {
           Watch your coach at work
         </h2>
         <p className="max-w-lg text-center text-ink-muted">
-          Record a challenge and this is what comes back — in seconds, on every
+          Record a challenge and this is what comes back - in seconds, on every
           attempt, for as many attempts as you want.
         </p>
         <CoachDemo />
@@ -167,7 +167,7 @@ export function Landing() {
         </h2>
         <p className="max-w-lg text-center text-ink-muted">
           Every skill belongs to one of seven colors. The more colors your talk
-          lights up, the more dynamic a speaker you&apos;re becoming — this is
+          lights up, the more dynamic a speaker you&apos;re becoming - this is
           the same speaker, before and after.
         </p>
         <SpectrumDemo />
@@ -190,7 +190,7 @@ export function Landing() {
           Every lesson in the course
         </h2>
         <p className="max-w-lg text-center text-ink-muted">
-          Nothing hidden behind the checkout — here is the whole library,
+          Nothing hidden behind the checkout - here is the whole library,
           color by color, exactly as you&apos;ll find it inside.
         </p>
         <LessonGallery />
@@ -214,14 +214,14 @@ export function Landing() {
           that stopped apologizing for itself; the mane is every color of
           speaking you have in you, all of it showing at once; the wave beneath
           is the sound it makes in a room. A flat talk is a mane with one color
-          in it — and you were never one color.
+          in it - and you were never one color.
         </p>
       </section>
 
       {/* Who's teaching */}
       <section className="flex flex-col gap-5 rounded-2xl border border-navy-600 bg-navy-800 p-6 sm:flex-row sm:items-center sm:gap-8 sm:p-8">
         <div className="relative aspect-video w-full shrink-0 overflow-hidden rounded-xl bg-navy-950 sm:w-64">
-          {/* A mid-gesture still from the library — the intro video (1080326796)
+          {/* A mid-gesture still from the library - the intro video (1080326796)
               has no captured still; its embed won't play headlessly. */}
           <Image
             src="/thumbs/1080612884.jpg"
@@ -239,7 +239,7 @@ export function Landing() {
             A decade of watching the best, distilled
           </h2>
           <p className="text-sm leading-relaxed text-ink-muted">
-            Every lesson here is a tool of the trade — the things nobody taught
+            Every lesson here is a tool of the trade - the things nobody taught
             me, picked up over more than a decade of studying the best speakers
             at their craft, and cut down to one or two minutes each. No hour-long
             recordings. No theory you&apos;ll never use. Just the skill, and then
@@ -248,11 +248,11 @@ export function Landing() {
         </div>
       </section>
 
-      {/* A mentor in your pocket — the portrait zoom, demonstrated */}
+      {/* A mentor in your pocket - the portrait zoom, demonstrated */}
       <section className="flex flex-col items-center gap-8 rounded-2xl border border-navy-600 bg-navy-800 p-6 sm:flex-row sm:justify-center sm:gap-14 sm:p-10">
         {/* The phone. Inside it, the same lesson twice: letterboxed the
             way landscape video normally plays on a phone, then zoomed to
-            portrait the way this player can — cycling so the difference
+            portrait the way this player can - cycling so the difference
             demonstrates itself. */}
         <div className="relative w-52 shrink-0 rounded-[2.5rem] border-4 border-navy-600 bg-navy-950 p-1.5 shadow-2xl shadow-navy-950">
           <span className="absolute left-1/2 top-3 z-10 h-1.5 w-16 -translate-x-1/2 rounded-full bg-navy-700" />
@@ -308,7 +308,7 @@ export function Landing() {
           <p className="text-sm leading-relaxed text-ink-muted">
             The lessons are filmed in landscape, but life happens in portrait.
             One tap on the zoom control and the coach fills your phone&apos;s
-            tall screen — close enough to read the hand gestures, the posture,
+            tall screen - close enough to read the hand gestures, the posture,
             the eye contact that a letterboxed strip would shrink away. A
             course that teaches physical expression has to make physical
             expression easy to <em>see</em>, on the device you actually carry.
@@ -344,7 +344,7 @@ export function Landing() {
         </p>
         <UnlockButton />
         <p className="text-xs text-ink-faint">
-          Checkout stub — Stripe payment arrives with service integration.
+          Checkout stub - Stripe payment arrives with service integration.
         </p>
       </section>
     </div>

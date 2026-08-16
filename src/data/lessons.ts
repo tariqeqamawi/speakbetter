@@ -1,6 +1,6 @@
 import type { CategoryId } from "./categories";
 
-// The Skills library — every lesson video, sorted into its color category.
+// The Skills library - every lesson video, sorted into its color category.
 // Vimeo ids come from the course's actual video library. The category sort
 // is a strong first pass awaiting Tariq's review (build plan, Phase 1);
 // vocal-delivery lessons are nested under "acting" pending that review.
@@ -19,10 +19,10 @@ export const lessons: Lesson[] = [
   { vimeoId: "1081031433", title: "Life Scene NOT Life Story", category: "storytelling" },
   { vimeoId: "1081031495", title: "Facts Tell, Stories Sell", category: "storytelling" },
   { vimeoId: "1081031584", title: "Story Time: The Almost Snowboarder", category: "storytelling" },
-  { vimeoId: "1081031902", title: "Story Time: The Almost Snowboarder — Debrief", category: "storytelling" },
+  { vimeoId: "1081031902", title: "Story Time: The Almost Snowboarder - Debrief", category: "storytelling" },
   { vimeoId: "1081289259", title: "Your StoryBook: How to Find YOUR Stories", category: "storytelling" },
-  { vimeoId: "1081290890", title: "How To Create Your Story Book — Step 1", category: "storytelling" },
-  { vimeoId: "1081292518", title: "How To Create Your Story Book — Step 2", category: "storytelling" },
+  { vimeoId: "1081290890", title: "How To Create Your Story Book - Step 1", category: "storytelling" },
+  { vimeoId: "1081292518", title: "How To Create Your Story Book - Step 2", category: "storytelling" },
   { vimeoId: "1081292414", title: "Add The Moral or Message", category: "storytelling" },
   { vimeoId: "1081294121", title: "Give The Setting Then Dive Into The Scene", category: "storytelling" },
   { vimeoId: "1081198327", title: "The Client In The Hero's Journey", category: "storytelling" },
@@ -42,7 +42,7 @@ export const lessons: Lesson[] = [
   { vimeoId: "1080654991", title: "Alliteration", category: "figurative" },
   { vimeoId: "1081164442", title: "Using Rhyme", category: "figurative" },
 
-  // ── Acting skills for speakers (red) — includes vocal delivery ──────
+  // ── Acting skills for speakers (red) - includes vocal delivery ──────
   { vimeoId: "1081162752", title: "Acting Tip For Speakers: Don't Just Say It, Imagine It", category: "acting" },
   { vimeoId: "1081162875", title: "Don't Just Speak It, Act Out The Scene", category: "acting" },
   { vimeoId: "1081163248", title: "Narrate The Scene To Zoom Into Moments", category: "acting" },
@@ -61,7 +61,7 @@ export const lessons: Lesson[] = [
   { vimeoId: "1080624037", title: "Inform, Inspire, Invite, Empower, Entertain, Educate", category: "structure" },
   { vimeoId: "1080648113", title: "Say Things in Triplets", category: "structure" },
   { vimeoId: "1080660643", title: "Repetition and Emphasis", category: "structure" },
-  { vimeoId: "1080677865", title: "Repetition for Emphasis — Expanded", category: "structure" },
+  { vimeoId: "1080677865", title: "Repetition for Emphasis - Expanded", category: "structure" },
   { vimeoId: "1080662335", title: "Rhetorical Questions", category: "structure" },
   { vimeoId: "1081163913", title: "Using Promise & Payoff", category: "structure" },
   { vimeoId: "1081197526", title: "Open Loops", category: "structure" },
@@ -100,7 +100,7 @@ export const lessons: Lesson[] = [
   { vimeoId: "1081161658", title: "How To Use Slides Like A Pro", category: "advanced" },
   { vimeoId: "1081161815", title: "How To Build Mic Drop Moments", category: "advanced" },
   { vimeoId: "1081162283", title: "Going Live On Socials", category: "advanced" },
-  { vimeoId: "1081164747", title: "Don't Sell — Invite & Recommend", category: "advanced" },
+  { vimeoId: "1081164747", title: "Don't Sell - Invite & Recommend", category: "advanced" },
   { vimeoId: "1081198604", title: "How To Memorize Your Talks", category: "advanced" },
   { vimeoId: "1081165164", title: "Memorized Inserts", category: "advanced" },
   { vimeoId: "1081200223", title: "Staying Succinct: Pro Tip", category: "advanced" },

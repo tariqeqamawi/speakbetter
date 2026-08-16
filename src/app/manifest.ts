@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
-// The installable identity. PNG icons carry the install prompt — iOS
-// ignores SVG icons entirely — with the SVGs kept as a sharp "any"
+// The installable identity. PNG icons carry the install prompt - iOS
+// ignores SVG icons entirely - with the SVGs kept as a sharp "any"
 // fallback for browsers that prefer them. Colors match the darkened
 // navy ramp in globals.css.
 

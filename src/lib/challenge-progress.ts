@@ -2,8 +2,8 @@ import type { Challenge } from "@/data/challenges";
 import type { AppState } from "@/lib/store";
 
 // How far through a challenge a student is. A challenge isn't one action
-// but a short sequence — warm up on the related skills, record an
-// attempt, then pass it — so progress is weighted across those three
+// but a short sequence - warm up on the related skills, record an
+// attempt, then pass it - so progress is weighted across those three
 // rather than being all-or-nothing.
 
 const WARM_UP_WEIGHT = 0.35;

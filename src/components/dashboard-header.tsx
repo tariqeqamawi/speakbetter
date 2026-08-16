@@ -9,8 +9,8 @@ import { ProTip } from "@/components/pro-tip";
 
 const levelOrder: Level[] = ["beginner", "intermediate", "advanced"];
 
-// The heads-up display: who they are, what rank they've reached, and —
-// held above all of it — the reason they gave for starting. Everything
+// The heads-up display: who they are, what rank they've reached, and -
+// held above all of it - the reason they gave for starting. Everything
 // else on this page counts what they did; this says why.
 
 const MAX_DIM = 256;
@@ -68,7 +68,7 @@ export function DashboardHeader() {
             aria-label="Change your picture"
           >
             {state.avatar ? (
-              // A data URL from the student's own device — next/image would
+              // A data URL from the student's own device - next/image would
               // only add an optimizer hop for something already sized.
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -120,7 +120,7 @@ export function DashboardHeader() {
                 {state.displayName || "Add your name"}
               </button>
             )}
-            {/* Standing, worn plainly — and changed from here. The level
+            {/* Standing, worn plainly - and changed from here. The level
                 is the student's own call (§09), so the insignia beside
                 their name is the control, not a read-out of one kept
                 somewhere else. */}
@@ -204,7 +204,7 @@ export function DashboardHeader() {
           <span className="text-[0.7rem] text-ink-faint">
             {rank.next
               ? `${rank.toNext.toLocaleString()} XP to ${rank.next.name}`
-              : "Top rank reached — nothing above this one."}
+              : "Top rank reached - nothing above this one."}
           </span>
         </div>
       </div>
@@ -260,7 +260,7 @@ export function DashboardHeader() {
               </span>
             ) : (
               <span className="text-sm text-ink-faint transition-colors group-hover:text-ink-muted">
-                You haven&apos;t written your reason yet — tap to add it.
+                You haven&apos;t written your reason yet - tap to add it.
               </span>
             )}
           </button>

@@ -3,22 +3,22 @@
 import { useState } from "react";
 import { TalkingLion } from "@/components/talking-lion";
 
-// Prototype route — not part of the student experience. Exists so the
+// Prototype route - not part of the student experience. Exists so the
 // talking-coach idea can be judged before any voice or vector work is
 // commissioned.
 
 const samples = [
   {
     label: "Beginner feedback",
-    text: "Nice work — you finished that one. Two things for next time. Your hands went quiet right at the key moment, and that is exactly when they should be painting the picture. And try one pause before your best line. Watch the Hand Gestures lesson, then go again.",
+    text: "Nice work - you finished that one. Two things for next time. Your hands went quiet right at the key moment, and that is exactly when they should be painting the picture. And try one pause before your best line. Watch the Hand Gestures lesson, then go again.",
   },
   {
     label: "Advanced feedback",
-    text: "Strong open — you earned attention in the first ten seconds, and the promise paid off cleanly at the end. Five colors lit up. What is missing is figurative language: the middle third went flat and one vivid metaphor would have lifted it. Push for six next time.",
+    text: "Strong open - you earned attention in the first ten seconds, and the promise paid off cleanly at the end. Five colors lit up. What is missing is figurative language: the middle third went flat and one vivid metaphor would have lifted it. Push for six next time.",
   },
   {
     label: "Celebration",
-    text: "You are a practicing machine! That is five attempts at the same challenge. Most people never try twice. Go you — you are getting so much better.",
+    text: "You are a practicing machine! That is five attempts at the same challenge. Most people never try twice. Go you - you are getting so much better.",
   },
 ];
 
@@ -29,12 +29,12 @@ export default function CoachPrototypePage() {
     <div className="mx-auto flex max-w-2xl flex-col gap-8 py-8">
       <header className="flex flex-col gap-2">
         <p className="text-xs font-medium uppercase tracking-wider text-ink-faint">
-          Prototype — not in the student app
+          Prototype - not in the student app
         </p>
         <h1 className="text-3xl font-semibold tracking-tight">The talking coach</h1>
         <p className="text-ink-muted">
           The brand lion, split into head and hinged jaw. Because it&apos;s drawn
-          in profile, jaw rotation alone reads as speech — no phoneme mouth
+          in profile, jaw rotation alone reads as speech - no phoneme mouth
           shapes required. Pick a sample or write your own, then listen.
         </p>
       </header>
@@ -71,13 +71,13 @@ export default function CoachPrototypePage() {
         <h2 className="mb-2 font-semibold text-ink">What you&apos;re hearing</h2>
         <p className="mb-2">
           The voice is your browser&apos;s built-in speech synthesis, used only
-          because it needs no account to try. It is not the intended voice — a
+          because it needs no account to try. It is not the intended voice - a
           real TTS voice would be chosen and kept consistent.
         </p>
         <p>
           Its audio also can&apos;t be measured, so here the jaw is driven by an
           envelope pumped on each word. With a real voice file the jaw is driven
-          by actual amplitude, which tracks far more closely — that path is
+          by actual amplitude, which tracks far more closely - that path is
           already built into the component.
         </p>
       </section>

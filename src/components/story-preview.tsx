@@ -5,7 +5,7 @@ import { useState } from "react";
 import { challengesInPhase, storyPhases, type PhaseId } from "@/data/challenges";
 
 // The STORY journey on the landing page, opened up. A visitor shouldn't
-// have to buy the course to find out what's in it — hovering (or tapping,
+// have to buy the course to find out what's in it - hovering (or tapping,
 // or tabbing to) a letter shows every challenge in that phase, with the
 // still from its own explainer video.
 

@@ -7,7 +7,7 @@ import { categoryById } from "@/data/categories";
 import { ZapIcon } from "@/components/icons";
 
 // One idea from the library, sitting next to the student's reason for
-// being here — the why beside a what to do about it. It changes every
+// being here - the why beside a what to do about it. It changes every
 // few minutes so the dashboard is never quite the same twice, and names
 // the lesson it came from so a tip that lands leads somewhere.
 

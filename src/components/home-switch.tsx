@@ -14,7 +14,7 @@ export function HomeSwitch({ landing }: { landing: ReactNode }) {
   const { state, ready } = useStore();
   const router = useRouter();
 
-  // Paid but never onboarded — they still owe us a level.
+  // Paid but never onboarded - they still owe us a level.
   useEffect(() => {
     if (ready && state.unlocked && !state.level) router.replace("/welcome");
   }, [ready, state.unlocked, state.level, router]);

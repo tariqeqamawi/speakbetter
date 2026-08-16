@@ -89,7 +89,7 @@ export function StreakCalendar({ state }: { state: AppState }) {
           {cells.map((cell) => (
             <span
               key={cell.key}
-              title={`${cell.key}${cell.wasFrozen ? " — freeze used" : cell.practiced ? " — practiced" : ""}`}
+              title={`${cell.key}${cell.wasFrozen ? " - freeze used" : cell.practiced ? " - practiced" : ""}`}
               className={`flex aspect-square items-center justify-center rounded-lg border text-[0.6rem] tabular-nums ${
                 cell.inFuture
                   ? "border-navy-700 text-navy-600"
@@ -112,7 +112,7 @@ export function StreakCalendar({ state }: { state: AppState }) {
 
       <p className="text-xs text-ink-faint">
         A green check is a day you practiced. Cyan is a day a freeze covered
-        for you — one missed day never costs the streak.
+        for you - one missed day never costs the streak.
       </p>
       </div>
     </div>

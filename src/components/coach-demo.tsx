@@ -16,7 +16,7 @@ import {
 
 // The coaching mechanic, played out on the landing page. A visitor
 // otherwise can't see what they're buying until they've paid, onboarded
-// and uploaded — so this runs a sample review end to end: the coach
+// and uploaded - so this runs a sample review end to end: the coach
 // watches, the colors light up, the notes land, and the lion says it
 // out loud.
 //
@@ -33,13 +33,13 @@ const SAMPLE_SPECTRUM: Record<CategoryId, number> = {
   advanced: 44,
 };
 
-// Each note names the real lesson behind it — the same tie between
+// Each note names the real lesson behind it - the same tie between
 // coaching and curriculum a student gets after buying (§08). Shown as
 // text, not links: the lessons live past the paywall.
 const SAMPLE_NOTES: { category: CategoryId; note: string; lesson: string }[] = [
   {
     category: "body-language",
-    note: "Your hands went quiet at the key moment — that's exactly when they should be painting the picture.",
+    note: "Your hands went quiet at the key moment - that's exactly when they should be painting the picture.",
     lesson: "Hand Gestures: Express Visually What You Say Verbally",
   },
   {
@@ -56,7 +56,7 @@ const SAMPLE_NOTES: { category: CategoryId; note: string; lesson: string }[] = [
 
 // What the coach is talking about, moment by moment. The times were read
 // off the clip's own speech segments, so each symbol lands on the word
-// being spoken — the student hears "hands" and sees a hand.
+// being spoken - the student hears "hands" and sees a hand.
 const CUES: SpokenCue[] = [
   {
     at: 0.95,
@@ -104,7 +104,7 @@ const CUES: SpokenCue[] = [
 ];
 
 const SPOKEN =
-  "Nice work — that passed. Two things for next time. Your hands went quiet at the key moment, and that is exactly when they should be painting the picture. And the middle third went flat: one vivid comparison would lift it. Strong instinct dropping straight into the scene, though. Keep doing that.";
+  "Nice work - that passed. Two things for next time. Your hands went quiet at the key moment, and that is exactly when they should be painting the picture. And the middle third went flat: one vivid comparison would lift it. Strong instinct dropping straight into the scene, though. Keep doing that.";
 
 type Stage = "idle" | "watching" | "scored";
 
@@ -130,7 +130,7 @@ export function CoachDemo() {
           cues={CUES}
         />
         <p className="text-center text-xs text-ink-faint">
-          A sample review, spoken aloud by the coach — each skill named as
+          A sample review, spoken aloud by the coach - each skill named as
           it comes up.
         </p>
       </div>
@@ -143,7 +143,7 @@ export function CoachDemo() {
             <div className="flex flex-col gap-1">
               <h3 className="font-semibold text-ink">See a review happen</h3>
               <p className="max-w-xs text-sm text-ink-muted">
-                This is what lands after you record a challenge — a score, your
+                This is what lands after you record a challenge - a score, your
                 color spectrum, and what to fix next.
               </p>
             </div>
@@ -184,7 +184,7 @@ export function CoachDemo() {
 
             <div className="flex flex-col gap-1.5">
               <span className="text-[0.7rem] uppercase tracking-wider text-ink-faint">
-                Your color spectrum — {lit} of 7 lit up
+                Your color spectrum - {lit} of 7 lit up
               </span>
               {categories.map((cat, i) => {
                 const value = SAMPLE_SPECTRUM[cat.id];
@@ -242,7 +242,7 @@ export function CoachDemo() {
                 style={{ animationDelay: `${700 + SAMPLE_NOTES.length * 260 + 200}ms` }}
               >
                 Every note links straight to the one- or two-minute lesson that
-                teaches it — feedback is never a dead end.
+                teaches it - feedback is never a dead end.
               </span>
             </div>
 

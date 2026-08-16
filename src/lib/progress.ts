@@ -5,7 +5,7 @@ import { badgeDefs } from "@/data/badges";
 
 // The dashboard's numbers, derived from the record rather than stored.
 //
-// Every figure here is earned by something the student actually did —
+// Every figure here is earned by something the student actually did -
 // the same rule the coach lives under (§14): nothing is congratulated
 // that didn't happen. Ranks and XP make progress legible at a glance,
 // but they are a view of the work, never a substitute for it.
@@ -17,7 +17,7 @@ export const XP = {
   challengePassed: 100,
   lessonWatched: 10,
   badge: 50,
-  /** A completed three-quest day — the chest on the Today screen. */
+  /** A completed three-quest day - the chest on the Today screen. */
   dailyChest: 50,
 } as const;
 
@@ -26,7 +26,7 @@ export interface Rank {
   at: number; // XP required to hold this rank
 }
 
-/** Named for the journey, not for arbitrary tiers — each one is a thing
+/** Named for the journey, not for arbitrary tiers - each one is a thing
  *  a speaker becomes. */
 export const ranks: Rank[] = [
   { name: "First Words", at: 0 },
@@ -72,7 +72,7 @@ export function standing(state: AppState): RankStanding {
   };
 }
 
-/** The share of each color across everything they've recorded — their
+/** The share of each color across everything they've recorded - their
  *  speaking signature. A storyteller's chart runs yellow; someone
  *  leaning on one color sees it immediately. */
 export function spectrumShare(
@@ -108,7 +108,7 @@ export function spectrumShare(
 }
 
 /** Days practiced, most recent last (yyyy-mm-dd). Freeze-covered days
- *  count — that's the point of a freeze. */
+ *  count - that's the point of a freeze. */
 export function practiceDays(state: AppState): Set<string> {
   return new Set([
     ...state.attempts.map((a) => a.at.slice(0, 10)),

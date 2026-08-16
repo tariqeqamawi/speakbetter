@@ -1,7 +1,7 @@
 import type { CategoryId } from "./categories";
 import { challengeBadges, challenges, storyPhases } from "./challenges";
 
-// Gamification layer — master plan §11. Badges recognize effort as much
+// Gamification layer - master plan §11. Badges recognize effort as much
 // as achievement, and apply identically at every level (never gated).
 
 // Structural view of the app state (kept local to avoid an import cycle
@@ -16,7 +16,7 @@ interface BadgeEvalState {
   }[];
   watchedLessons: string[];
   badges: { id: string }[];
-  /** Days a streak freeze covered — they count as practiced */
+  /** Days a streak freeze covered - they count as practiced */
   frozenDays?: string[];
 }
 
@@ -24,10 +24,10 @@ export interface BadgeDef {
   id: string;
   title: string;
   message: string;
-  /** Line-icon name — the fallback, and what celebrations use inline. */
+  /** Line-icon name - the fallback, and what celebrations use inline. */
   icon: string;
   /** What to do to win it, shown on hover before it's earned. Left off
-   *  deliberately on a few, which show as hidden achievements — a
+   *  deliberately on a few, which show as hidden achievements - a
    *  collection with nothing unknown in it stops being worth exploring. */
   how?: string;
   earned: (s: BadgeEvalState) => boolean;
@@ -41,7 +41,7 @@ export interface EarnedBadge {
   earnedAt: string;
 }
 
-/** Days the student practiced — uploads, plus any a freeze covered */
+/** Days the student practiced - uploads, plus any a freeze covered */
 function uploadDays(s: BadgeEvalState): string[] {
   return [
     ...new Set([
@@ -89,7 +89,7 @@ export const badgeDefs: BadgeDef[] = [
   {
     id: "first-upload",
     title: "First Words",
-    message: "Well done — you just uploaded your first video.",
+    message: "Well done - you just uploaded your first video.",
     icon: "film",
     how: "Upload your first challenge video.",
     earned: (s) => s.attempts.length >= 1,
@@ -114,7 +114,7 @@ export const badgeDefs: BadgeDef[] = [
     id: "practicing-machine",
     title: "Practicing Machine",
     message:
-      "You are a practicing machine. You've already tried the same challenge five times. Go you — you're getting so much better.",
+      "You are a practicing machine. You've already tried the same challenge five times. Go you - you're getting so much better.",
     icon: "repeat",
     earned: (s) => {
       const counts = new Map<string, number>();
@@ -176,13 +176,13 @@ export const badgeDefs: BadgeDef[] = [
     earned: (s) =>
       s.attempts.reduce((sum, a) => sum + (a.durationSec ?? 0), 0) >= 600,
   },
-  // Skill badges — earned off what the coach actually saw in a talk, so
+  // Skill badges - earned off what the coach actually saw in a talk, so
   // each one is evidence of a specific thing done well, not participation.
   {
     id: "handy",
     title: "Handy",
     message:
-      "Your hands did the talking too — gesture that strong is rare, and it reads on camera.",
+      "Your hands did the talking too - gesture that strong is rare, and it reads on camera.",
     icon: "spectrum",
     how: "Score 70 or higher on body language in a single talk.",
     earned: (s) => s.attempts.some((a) => (a.spectrum["body-language"] ?? 0) >= 70),
@@ -200,7 +200,7 @@ export const badgeDefs: BadgeDef[] = [
   {
     id: "storyteller",
     title: "Storyteller",
-    message: "That was a story, properly told — scene, not summary.",
+    message: "That was a story, properly told - scene, not summary.",
     icon: "film",
     how: "Score 75 or higher on storytelling in a single talk.",
     earned: (s) => s.attempts.some((a) => (a.spectrum.storytelling ?? 0) >= 75),
@@ -227,7 +227,7 @@ export const badgeDefs: BadgeDef[] = [
     id: "sensational",
     title: "Sensational",
     message:
-      "Figurative, sensory, vivid — your listener saw it, not just heard it.",
+      "Figurative, sensory, vivid - your listener saw it, not just heard it.",
     icon: "trending-up",
     how: "Score 75 or higher on figurative language in a single talk.",
     earned: (s) => s.attempts.some((a) => (a.spectrum.figurative ?? 0) >= 75),
@@ -249,7 +249,7 @@ export const badgeDefs: BadgeDef[] = [
     return {
       id: `challenge-${challenge.slug}`,
       title: meta?.title ?? challenge.title,
-      message: meta?.message ?? `${challenge.title} — passed.`,
+      message: meta?.message ?? `${challenge.title} - passed.`,
       icon: "medal",
       how: challenge.passive
         ? `Watch every lesson in "${challenge.title}".`
@@ -264,7 +264,7 @@ export const badgeDefs: BadgeDef[] = [
   }),
   ...storyPhases.map((phase) => ({
     id: `phase-${phase.id}`,
-    title: `${phase.name} — Complete`,
+    title: `${phase.name} - Complete`,
     message: `You've completed every challenge in ${phase.name}. On to the next phase of the journey.`,
     icon: "medal",
     how: `Complete every challenge in ${phase.name}.`,
@@ -274,7 +274,7 @@ export const badgeDefs: BadgeDef[] = [
     id: "journey-complete",
     title: "The Whole STORY",
     message:
-      "All five phases complete. You can now produce a dynamic, full-spectrum talk on demand — because you've done it, with feedback, dozens of times.",
+      "All five phases complete. You can now produce a dynamic, full-spectrum talk on demand - because you've done it, with feedback, dozens of times.",
     icon: "trophy",
     earned: (s) => storyPhases.every((p) => phaseComplete(s, p.id)),
   },

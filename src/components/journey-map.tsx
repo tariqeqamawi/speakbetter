@@ -18,7 +18,7 @@ import { CheckIcon, LockIcon } from "@/components/icons";
 // challenge, grouped under their phase banners. Each unlocked node
 // carries the still from its own explainer video, so the road is faces
 // and scenes rather than abstract dots; passed nodes wear their phase's
-// color, the next one pulses, and locked territory is fogged — visible,
+// color, the next one pulses, and locked territory is fogged - visible,
 // named on hover, but not walkable. Each phase's stretch of the map sits
 // in a wash of its own color, so the journey reads as five territories.
 
@@ -102,7 +102,7 @@ export function JourneyMap() {
   }));
 
   // One trail segment per phase, so each stretch of road wears its
-  // phase's color — dim where the journey hasn't reached.
+  // phase's color - dim where the journey hasn't reached.
   const segments = storyPhases.map((phase, pi) => {
     const own = nodes.filter((n) => n.phaseIndex === pi);
     const prev = nodes.filter((n) => n.phaseIndex === pi - 1).at(-1);
@@ -131,7 +131,7 @@ export function JourneyMap() {
       </div>
 
       <div className="relative mx-auto w-full max-w-2xl" style={{ height }}>
-        {/* Territory washes — five regions, each in its phase's light */}
+        {/* Territory washes - five regions, each in its phase's light */}
         {territories.map(({ phase, locked, top, height: h }) => (
           <div
             key={phase.id}
@@ -205,7 +205,7 @@ export function JourneyMap() {
               </span>
               {locked && (
                 <span className="text-[0.65rem] text-ink-faint">
-                  Locked — the road reaches here after the phase before.
+                  Locked - the road reaches here after the phase before.
                 </span>
               )}
             </span>
@@ -294,7 +294,7 @@ export function JourneyMap() {
                   <b className="block text-ink">{node.title}</b>
                   <span className={node.locked ? "text-ink-faint" : node.phase.textClass}>
                     {node.passed
-                      ? "Passed — practice again any time"
+                      ? "Passed - practice again any time"
                       : node.locked
                         ? "Unlocks with this phase"
                         : node.isCurrent
@@ -321,7 +321,7 @@ export function JourneyMap() {
             <div
               key={node.slug}
               tabIndex={0}
-              aria-label={node.locked ? `${node.title} — locked` : node.title}
+              aria-label={node.locked ? `${node.title} - locked` : node.title}
               className={cls}
               style={pos}
             >

@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
   },
   icons: {
-    // iOS reads none of the manifest icons — this link is what puts the
+    // iOS reads none of the manifest icons - this link is what puts the
     // lion on an iPhone home screen.
     apple: "/apple-touch-icon.png",
   },

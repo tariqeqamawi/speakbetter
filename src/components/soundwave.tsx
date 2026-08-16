@@ -21,7 +21,7 @@ interface VariantSpec {
   viewH: number;
   midY: number;
   waves: WaveSpec[];
-  /** Edge fade stops — the header has to clear the logo and nav links. */
+  /** Edge fade stops - the header has to clear the logo and nav links. */
   fade: [number, number, number, number];
   /** Half-height of the lens the waves are clipped to, or 0 for none.
    *  In the brand mark the wave is a cluster of wide ribbons that swell
@@ -32,11 +32,11 @@ interface VariantSpec {
 }
 
 const variants: Record<Variant, VariantSpec> = {
-  // Rides low in the header band, beneath the wordmark and navigation —
+  // Rides low in the header band, beneath the wordmark and navigation -
   // mirroring the mark, where the wave sits under the lion.
   // Rides low in the header band, beneath the wordmark and navigation.
   // It spans the whole page rather than sitting under the mark, so it
-  // stays a thin scrolling line — no lens, no ribbon weight.
+  // stays a thin scrolling line - no lens, no ribbon weight.
   header: {
     viewH: 44,
     midY: 33,
@@ -50,10 +50,10 @@ const variants: Record<Variant, VariantSpec> = {
   },
   // The hero carries it at full strength, directly under the lion, so
   // the brand mark reads as one living thing. Wide, translucent ribbons
-  // inside a tapered lens — the wave as the logo draws it.
+  // inside a tapered lens - the wave as the logo draws it.
   hero: {
     // Tall enough to hold the crests, the troughs, and the halo around
-    // them — a shorter box clipped the tops off the waves.
+    // them - a shorter box clipped the tops off the waves.
     viewH: 80,
     midY: 40,
     fade: [4, 46, 94, 100],
@@ -62,7 +62,7 @@ const variants: Record<Variant, VariantSpec> = {
     // the points instead.
     lens: 27,
     // Thinner and more transparent than they look: each ribbon is drawn
-    // twice — a blurred halo under a sharper core — so the color is
+    // twice - a blurred halo under a sharper core - so the color is
     // see-through everywhere and blooms where ribbons cross.
     waves: [
       { period: 104, amplitude: 13, opacity: 0.34, width: 7, className: "soundwave-a" },

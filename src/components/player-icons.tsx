@@ -30,7 +30,7 @@ export function PauseFillIcon({ className = "size-6" }: IconProps) {
   );
 }
 
-/** Captions — a frame with subtitle lines. */
+/** Captions - a frame with subtitle lines. */
 export function CaptionsIcon({ className = "size-5" }: IconProps) {
   return (
     <svg {...base} className={className}>
@@ -40,7 +40,7 @@ export function CaptionsIcon({ className = "size-5" }: IconProps) {
   );
 }
 
-/** Playback speed — a gauge needle. */
+/** Playback speed - a gauge needle. */
 export function SpeedIcon({ className = "size-5" }: IconProps) {
   return (
     <svg {...base} className={className}>
@@ -51,7 +51,7 @@ export function SpeedIcon({ className = "size-5" }: IconProps) {
   );
 }
 
-/** Landscape zoom — push in, keeping the wide frame. */
+/** Landscape zoom - push in, keeping the wide frame. */
 export function ZoomLandscapeIcon({ className = "size-5" }: IconProps) {
   return (
     <svg {...base} className={className}>
@@ -61,7 +61,7 @@ export function ZoomLandscapeIcon({ className = "size-5" }: IconProps) {
   );
 }
 
-/** Portrait zoom — crop to a tall frame. */
+/** Portrait zoom - crop to a tall frame. */
 export function ZoomPortraitIcon({ className = "size-5" }: IconProps) {
   return (
     <svg {...base} className={className}>
@@ -71,7 +71,7 @@ export function ZoomPortraitIcon({ className = "size-5" }: IconProps) {
   );
 }
 
-/** Return to the default framing — a plain, unzoomed frame. */
+/** Return to the default framing - a plain, unzoomed frame. */
 export function ResetFrameIcon({ className = "size-5" }: IconProps) {
   return (
     <svg {...base} className={className}>
@@ -80,7 +80,7 @@ export function ResetFrameIcon({ className = "size-5" }: IconProps) {
   );
 }
 
-/** Enter fullscreen — corners pushing outward. */
+/** Enter fullscreen - corners pushing outward. */
 export function FullscreenIcon({ className = "size-5" }: IconProps) {
   return (
     <svg {...base} className={className}>
@@ -89,7 +89,7 @@ export function FullscreenIcon({ className = "size-5" }: IconProps) {
   );
 }
 
-/** Leave fullscreen — corners pulling inward. */
+/** Leave fullscreen - corners pulling inward. */
 export function ExitFullscreenIcon({ className = "size-5" }: IconProps) {
   return (
     <svg {...base} className={className}>

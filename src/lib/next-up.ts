@@ -27,7 +27,7 @@ export function nextUp(state: AppState): NextUp | null {
       challenge: inFlight.c,
       reason:
         inFlight.p.attempts > 0
-          ? "You've attempted this — one more go could pass it."
+          ? "You've attempted this - one more go could pass it."
           : "You warmed up for this but haven't recorded yet.",
       ratio: inFlight.p.ratio,
       action: "resume",
@@ -50,7 +50,7 @@ export function nextUp(state: AppState): NextUp | null {
     };
   }
 
-  // 3. Everything passed — send them back to raise a score.
+  // 3. Everything passed - send them back to raise a score.
   const weakest = challenges
     .map((c) => ({
       c,

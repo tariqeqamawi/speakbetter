@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 // The shell every /demo page sits in: a note saying what this is, and a
 // way to move between the previews. The store serves these routes an
 // ephemeral, pre-populated state (see lib/demo-state), so the pages look
-// worked-in without anyone having to unlock or upload anything — and
+// worked-in without anyone having to unlock or upload anything - and
 // nothing here can touch real progress.
 
 const tabs = [
@@ -20,7 +20,7 @@ export function DemoFrame({ children }: { children: ReactNode }) {
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 rounded-xl border border-navy-600 bg-navy-800 px-4 py-3">
         <p className="text-xs text-ink-muted">
-          Preview — sample data, shown so the pages have something in them.
+          Preview - sample data, shown so the pages have something in them.
           Nothing here is yours, and nothing you click changes your progress.
         </p>
         <nav className="flex flex-wrap gap-2">

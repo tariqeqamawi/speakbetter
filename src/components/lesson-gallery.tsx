@@ -8,7 +8,7 @@ import type { CategoryId } from "@/data/categories";
 
 // Every lesson in the course, on the landing page. The library is the
 // bulk of what a buyer gets and it was previously invisible until after
-// payment — so the whole shelf is laid out here, browsable by color.
+// payment - so the whole shelf is laid out here, browsable by color.
 // Deliberately not playable: this shows what's inside, it doesn't hand
 // the course away.
 
@@ -77,7 +77,7 @@ export function LessonGallery() {
       </div>
 
       <p className="text-center text-xs text-ink-faint">
-        {shown.length} of {lessons.length} lessons — every one is one to two
+        {shown.length} of {lessons.length} lessons - every one is one to two
         minutes. Watching unlocks with the course.
       </p>
     </div>

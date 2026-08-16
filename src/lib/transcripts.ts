@@ -1,5 +1,5 @@
 // Server-only access to lesson transcripts (master plan §08).
-// The JSON is large (~550 KB) — import it only from server components
+// The JSON is large (~550 KB) - import it only from server components
 // so it never enters the client bundle. This is the AI coach's future
 // reference layer; for now it powers the transcript panel on lesson pages.
 

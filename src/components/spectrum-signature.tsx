@@ -12,7 +12,7 @@ import type { AppState } from "@/lib/store";
 // The student's speaking signature, drawn the way a resonance trace is:
 // one continuous wave whose peaks sit over the colors they belong to,
 // bleeding into each other where they meet. Speaking isn't seven
-// separate meters — the colors run together in a talk, and the graph
+// separate meters - the colors run together in a talk, and the graph
 // should say so. The hard numbers underneath are what make it readable.
 
 /** Below this share, a color is a trace rather than a presence. */
@@ -29,7 +29,7 @@ interface Pt {
   y: number;
 }
 
-/** A Catmull-Rom spline through the points, emitted as cubic beziers —
+/** A Catmull-Rom spline through the points, emitted as cubic beziers -
  *  the curve passes through every peak instead of merely approaching it,
  *  so a channel's height still reads as its true value. */
 function smooth(points: Pt[]): string {
@@ -87,7 +87,7 @@ export function SpectrumSignature({ state }: { state: AppState }) {
         <div className="flex flex-1 flex-col gap-3 p-5">
           <div className="spectrum-rule h-2 w-full rounded-full opacity-25" />
           <p className="text-sm text-ink-muted">
-            Record your first challenge and the trace comes alive — the exact
+            Record your first challenge and the trace comes alive - the exact
             mix of colors your speaking carries.
           </p>
         </div>
@@ -104,7 +104,7 @@ export function SpectrumSignature({ state }: { state: AppState }) {
         accentClass="text-body-language"
         large
         right={
-          // Now and over time are the same question asked twice — they
+          // Now and over time are the same question asked twice - they
           // belong in one readout, not two sections apart.
           <span className="flex rounded-lg border border-navy-600 bg-navy-900/80 p-0.5">
             {(["now", "over time"] as const).map((t) => (
@@ -221,7 +221,7 @@ export function SpectrumSignature({ state }: { state: AppState }) {
           </svg>
 
           {/* The hard numbers. The curve is the feel; this is the fact. */}
-          {/* Each channel names itself on hover — seven colors is a
+          {/* Each channel names itself on hover - seven colors is a
               vocabulary, and a readout you can't name is just decoration. */}
           <ul className="relative mt-1 flex items-start justify-between gap-1">
             {categories.map((cat) => {
@@ -259,7 +259,7 @@ export function SpectrumSignature({ state }: { state: AppState }) {
           <b className={categoryById.get(top.id)?.textClass}>
             {categoryById.get(top.id)?.name.toLowerCase()}
           </b>{" "}
-          — {top.percent}% of everything you&apos;ve recorded.
+          - {top.percent}% of everything you&apos;ve recorded.
         </p>
 
         {/* A color scraping 1% isn't "present" in any way a listener would
@@ -269,8 +269,8 @@ export function SpectrumSignature({ state }: { state: AppState }) {
             ? `Quietest channels: ${quiet
                 .map((s) => categoryById.get(s.id)?.name.toLowerCase())
                 .slice(0, 3)
-                .join(", ")} — reach for those next.`
-            : "Every channel is carrying real weight — that's a full-spectrum speaker."}
+                .join(", ")} - reach for those next.`
+            : "Every channel is carrying real weight - that's a full-spectrum speaker."}
         </p>
       </div>
     </div>

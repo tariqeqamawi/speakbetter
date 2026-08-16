@@ -6,7 +6,7 @@ import { categories, type CategoryId } from "@/data/categories";
 // The color-spectrum score is the product's one genuinely novel idea,
 // and until now the landing page only described it. This plays it: a
 // flat talk lighting up two colors, then a dynamic one lighting up
-// seven — the difference the course exists to create, shown rather than
+// seven - the difference the course exists to create, shown rather than
 // claimed.
 
 interface Sample {
@@ -18,7 +18,7 @@ interface Sample {
 
 const FLAT: Sample = {
   label: "Before",
-  caption: "Informative, accurate — and forgettable. Two colors.",
+  caption: "Informative, accurate - and forgettable. Two colors.",
   score: 41,
   spectrum: {
     storytelling: 22,
@@ -33,7 +33,7 @@ const FLAT: Sample = {
 
 const DYNAMIC: Sample = {
   label: "After",
-  caption: "Same speaker, same topic — now reaching across all seven.",
+  caption: "Same speaker, same topic - now reaching across all seven.",
   score: 88,
   spectrum: {
     storytelling: 91,
@@ -65,7 +65,7 @@ export function SpectrumDemo() {
 
   useEffect(() => {
     if (!live) return;
-    // Without motion, settle straight on the "after" — the point of the
+    // Without motion, settle straight on the "after" - the point of the
     // demo is the widened spectrum, not the cycling.
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       const once = setTimeout(() => setShowing(DYNAMIC), 0);

@@ -6,7 +6,7 @@ import { challengeBySlug } from "@/data/challenges";
 
 // What a student does after a lesson depends on why they opened it.
 // Arriving from a challenge's warm-up (?from=<slug>) means the lesson
-// was a detour — so send them back to the challenge rather than deeper
+// was a detour - so send them back to the challenge rather than deeper
 // into the library.
 
 export function LessonFooterNav({

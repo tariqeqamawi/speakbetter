@@ -2,7 +2,7 @@ import type { AppState } from "@/lib/store";
 import { categories } from "@/data/categories";
 
 // The daily quest card on Today: three slots, one chest. Two of three
-// filled is the state the design aims for — set completion is the
+// filled is the state the design aims for - set completion is the
 // gentlest engagement lever there is, and every slot is real practice.
 //
 // Quests are derived from the record, never stored, so they can't drift
@@ -36,7 +36,7 @@ export function dailyQuests(state: AppState): Quest[] {
     {
       id: "watch",
       label: "Watch a lesson",
-      detail: "One to two minutes — pick any color.",
+      detail: "One to two minutes - pick any color.",
       done: watchedToday >= 1,
     },
     {

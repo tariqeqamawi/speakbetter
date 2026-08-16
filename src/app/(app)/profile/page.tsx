@@ -17,7 +17,7 @@ import { ChallengesIcon, SkillsIcon } from "@/components/icons";
 
 // The student's dashboard: where they stand, what they've earned, what
 // they're made of, and the only place the level is changed (master plan
-// §09 — movement between levels is always manual).
+// §09 - movement between levels is always manual).
 //
 // It's built as a heads-up display rather than a settings page. Every
 // panel is a view of real work: the rank comes from what they did, the
@@ -37,7 +37,7 @@ export default function DashboardPage() {
     <div className="flex flex-col gap-6 py-6">
       <DashboardHeader />
 
-      {/* Challenges and lessons, each with their own breakdown — one
+      {/* Challenges and lessons, each with their own breakdown - one
           half of the row each, so they fill the width rather than
           huddling on the left of it. */}
       <div className="grid gap-4 lg:grid-cols-2">

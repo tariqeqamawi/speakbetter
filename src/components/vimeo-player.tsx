@@ -15,14 +15,14 @@ import {
 } from "@/components/player-icons";
 
 // Vimeo's own chrome is switched off (controls=0) and replaced with our
-// own, driven through the player SDK — so playback looks like part of
+// own, driven through the player SDK - so playback looks like part of
 // the app rather than a borrowed widget.
 //
 // Framing (master plan §14): course videos are landscape, but most
 // students watch on a phone held in portrait, where the speaker plays
 // small. One control crops all the way to portrait so they fill a tall
 // screen and body language stays readable. (A second, gentler "zoom in
-// but stay wide" mode was dropped — it earned its place in the bar less
+// but stay wide" mode was dropped - it earned its place in the bar less
 // than it cost in clutter.)
 
 type Frame = "fit" | "portrait";
@@ -38,7 +38,7 @@ export function VimeoPlayer({
   vimeoId: string;
   title: string;
   autoplay?: boolean;
-  /** Fires once when playback completes — what "up next" hangs off. */
+  /** Fires once when playback completes - what "up next" hangs off. */
   onEnded?: () => void;
 }) {
   const holderRef = useRef<HTMLDivElement>(null);
@@ -100,7 +100,7 @@ export function VimeoPlayer({
     // The course must end where the course is: Vimeo's own end screen can
     // surface "more from" recommendations the moment playback finishes.
     // Seeking back to the start dismisses it inside the iframe, and the
-    // opaque ended overlay (below) covers the frame while that happens —
+    // opaque ended overlay (below) covers the frame while that happens -
     // so no Vimeo UI is ever seen, only our own replay state.
     const onEnd = () => {
       setPlaying(false);
@@ -176,7 +176,7 @@ export function VimeoPlayer({
   const setFrameMode = (mode: Frame) =>
     setFrame((current) => (current === mode ? "fit" : mode));
 
-  // Fullscreen the whole shell, not the iframe — that keeps our own
+  // Fullscreen the whole shell, not the iframe - that keeps our own
   // controls on screen. Vimeo's chrome is off, so handing fullscreen to
   // the iframe would leave a video with no controls at all.
   useEffect(() => {
@@ -203,19 +203,33 @@ export function VimeoPlayer({
     }
   }, []);
 
+  // Portrait zoom is a takeover, not an inline crop: choosing it fills
+  // the whole screen with the speaker. Done with a fixed overlay rather
+  // than the Fullscreen API, so it works identically on iPhones, where
+  // element fullscreen doesn't exist. Reset framing (or toggling
+  // portrait off) returns to the page.
+  const takeover = fullscreen || frame === "portrait";
+
+  useEffect(() => {
+    if (frame !== "portrait" || fullscreen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [frame, fullscreen]);
+
   // The holder is scaled inside a masked window; the aspect of that
-  // window is what changes between the three framings. The SDK gives the
+  // window is what changes between the framings. The SDK gives the
   // iframe fixed pixel dimensions, so it has to be stretched explicitly.
-  const windowClass = fullscreen
+  const windowClass = takeover
     ? frame === "portrait"
-      ? "mx-auto h-full max-h-full w-auto aspect-[9/16]"
+      ? "mx-auto h-full max-h-full min-h-0 w-auto aspect-[9/16]"
       : "min-h-0 w-full flex-1"
-    : frame === "portrait"
-      ? "mx-auto aspect-[9/16] w-full max-w-sm"
-      : "aspect-video w-full";
+    : "aspect-video w-full";
 
   // In portrait the holder keeps the video's own 16:9 and is sized by
-  // height, so it overflows the tall window sideways and gets cropped —
+  // height, so it overflows the tall window sideways and gets cropped -
   // the speaker stays centered and fills the screen.
   const holderClass =
     frame === "portrait"
@@ -226,17 +240,19 @@ export function VimeoPlayer({
     <div
       ref={shellRef}
       className={
-        fullscreen
-          ? "flex h-full w-full flex-col gap-2 bg-navy-950 p-3"
+        takeover
+          ? `flex h-full w-full flex-col gap-2 bg-navy-950 p-3 ${
+              fullscreen ? "" : "pt-safe pb-safe fixed inset-0 z-50"
+            }`
           : "flex flex-col gap-2"
       }
     >
       <div
         className={`relative overflow-hidden bg-navy-950 ${
-          fullscreen ? "" : "rounded-xl"
+          takeover ? "" : "rounded-xl"
         } ${windowClass}`}
       >
-        {/* the iframe the SDK mounts into — it arrives with fixed pixel
+        {/* the iframe the SDK mounts into - it arrives with fixed pixel
             dimensions, so it's stretched to the holder here */}
         <div
           className={`${holderClass} [&>iframe]:absolute [&>iframe]:inset-0 [&>iframe]:size-full`}
@@ -244,7 +260,7 @@ export function VimeoPlayer({
           data-title={title}
         />
 
-        {/* Ended takeover — an opaque cover so Vimeo's end screen (and its
+        {/* Ended takeover - an opaque cover so Vimeo's end screen (and its
             "more from" recommendations) can never show. The course's own
             replay state is all a student sees. */}
         {ended && (

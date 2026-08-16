@@ -63,7 +63,7 @@ export function Today() {
           <span className="text-sm font-semibold text-ink">
             {streak > 0
               ? `${streak}-day streak`
-              : "Start a streak — one video is all it takes"}
+              : "Start a streak - one video is all it takes"}
           </span>
           <span className="text-xs text-ink-faint">
             {doneToday
@@ -75,7 +75,7 @@ export function Today() {
         </div>
         {state.freezesRemaining > 0 && streak > 1 && (
           <span
-            title={`${state.freezesRemaining} streak freezes left — each covers one missed day`}
+            title={`${state.freezesRemaining} streak freezes left - each covers one missed day`}
             className="shrink-0 rounded-full border border-navy-600 px-2.5 py-1 text-[0.65rem] font-medium text-ink-faint"
           >
             {state.freezesRemaining} freeze

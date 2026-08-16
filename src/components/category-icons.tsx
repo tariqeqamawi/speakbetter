@@ -16,7 +16,7 @@ const base = {
   "aria-hidden": true,
 };
 
-/** An open book — stories. */
+/** An open book - stories. */
 function StorytellingIcon({ className = "size-6" }: IconProps) {
   return (
     <svg {...base} className={className}>
@@ -26,7 +26,7 @@ function StorytellingIcon({ className = "size-6" }: IconProps) {
   );
 }
 
-/** Quote marks — language that stands for something else. */
+/** Quote marks - language that stands for something else. */
 function FigurativeIcon({ className = "size-6" }: IconProps) {
   return (
     <svg {...base} className={className}>
@@ -36,7 +36,7 @@ function FigurativeIcon({ className = "size-6" }: IconProps) {
   );
 }
 
-/** Theatre masks, simplified to one — acting. */
+/** Theatre masks, simplified to one - acting. */
 function ActingIcon({ className = "size-6" }: IconProps) {
   return (
     <svg {...base} className={className}>
@@ -47,7 +47,7 @@ function ActingIcon({ className = "size-6" }: IconProps) {
   );
 }
 
-/** Stacked blocks — the architecture of a talk. */
+/** Stacked blocks - the architecture of a talk. */
 function StructureIcon({ className = "size-6" }: IconProps) {
   return (
     <svg {...base} className={className}>
@@ -58,7 +58,7 @@ function StructureIcon({ className = "size-6" }: IconProps) {
   );
 }
 
-/** A head with a spark inside — the inner game. */
+/** A head with a spark inside - the inner game. */
 function MindsetIcon({ className = "size-6" }: IconProps) {
   return (
     <svg {...base} className={className}>
@@ -69,7 +69,7 @@ function MindsetIcon({ className = "size-6" }: IconProps) {
   );
 }
 
-/** A figure with arms out — physical expression. */
+/** A figure with arms out - physical expression. */
 function BodyLanguageIcon({ className = "size-6" }: IconProps) {
   return (
     <svg {...base} className={className}>
@@ -81,7 +81,7 @@ function BodyLanguageIcon({ className = "size-6" }: IconProps) {
   );
 }
 
-/** A star with a spark — the professional's extras. */
+/** A star with a spark - the professional's extras. */
 function AdvancedIcon({ className = "size-6" }: IconProps) {
   return (
     <svg {...base} className={className}>

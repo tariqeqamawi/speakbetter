@@ -31,7 +31,7 @@ export default function ChallengesPage() {
       </header>
 
 
-      {/* The two orientation videos play here rather than on Vimeo —
+      {/* The two orientation videos play here rather than on Vimeo -
           a student should never have to leave the course to start it. */}
       <div className="grid gap-4 sm:grid-cols-2">
         {challengesIntro.map((v) => (

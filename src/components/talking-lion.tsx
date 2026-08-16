@@ -15,19 +15,19 @@ import {
 // and rotated the jaw. From flat artwork the seam never fully hid and
 // six degrees of travel read as a twitch, not speech. So the mark now
 // responds the way a soundwave does: the whole lion pulses with the
-// audio — a gentle scale, a bloom of light behind the mane, and a bar
+// audio - a gentle scale, a bloom of light behind the mane, and a bar
 // meter underneath, all driven by the same live amplitude.
 //
 // Two drive modes:
-//   audioSrc  — real amplitude off an AnalyserNode. The production
+//   audioSrc  - real amplitude off an AnalyserNode. The production
 //               path; works with any TTS that returns an audio file.
-//   text      — the browser's own speech synthesis, whose audio cannot
+//   text      - the browser's own speech synthesis, whose audio cannot
 //               be tapped for amplitude, so the pulse is driven by an
 //               envelope pumped on each word boundary. Fallback only.
 
 const BAR_COUNT = 24;
 
-/** A word the coach says, and the symbol for it — shown while it's being
+/** A word the coach says, and the symbol for it - shown while it's being
  *  spoken, then held afterwards as a summary. Times are in seconds
  *  against the audio clip. */
 export interface SpokenCue {
@@ -123,7 +123,7 @@ export function TalkingLion({
       smoothedRef.current += (target - smoothedRef.current) * 0.35;
       setLevel(smoothedRef.current);
 
-      // Which word is being said right now — the same clock the audio
+      // Which word is being said right now - the same clock the audio
       // plays on, so the symbol can't drift out of sync with the voice.
       if (cuesRef.current.length) {
         const t = audioRef.current?.currentTime ?? 0;
@@ -134,8 +134,8 @@ export function TalkingLion({
       }
 
       analyser.getByteFrequencyData(freq);
-      // Nearly all voice energy sits below ~4 kHz — a sixth of the bins
-      // at a 48 kHz sample rate — so the meter only samples that band,
+      // Nearly all voice energy sits below ~4 kHz - a sixth of the bins
+      // at a 48 kHz sample rate - so the meter only samples that band,
       // slightly log-spaced so the highs don't sit permanently dark.
       const usable = Math.floor(freq.length / 6);
       paintBars((i) => {
@@ -209,7 +209,7 @@ export function TalkingLion({
     window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(text);
     utter.rate = 0.98;
-    utter.pitch = 0.85; // a shade lower — it's a lion
+    utter.pitch = 0.85; // a shade lower - it's a lion
     utter.onboundary = () => {
       envelopeRef.current = 1; // pump the envelope at each word
     };
@@ -280,7 +280,7 @@ export function TalkingLion({
             )}
 
             {/* Once the coach has finished, every skill they raised stays
-                on screen together — the whole of what to work on, in one
+                on screen together - the whole of what to work on, in one
                 look, instead of six moments the listener has to hold in
                 their head. */}
             {!activeCue && finished && summaryCues.length > 0 && (
@@ -299,7 +299,7 @@ export function TalkingLion({
           </div>
         )}
 
-        {/* Amplitude bars — the soundwave under the lion, live */}
+        {/* Amplitude bars - the soundwave under the lion, live */}
         <div
           ref={barsRef}
           aria-hidden
@@ -335,7 +335,7 @@ export function TalkingLion({
 
       {!supported && (
         <p className="text-xs text-ink-faint">
-          This browser has no speech synthesis — try Chrome or Safari.
+          This browser has no speech synthesis - try Chrome or Safari.
         </p>
       )}
     </div>

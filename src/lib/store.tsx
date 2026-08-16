@@ -30,7 +30,7 @@ export type Level = "beginner" | "intermediate" | "advanced";
 export interface FeedbackNote {
   category: CategoryId;
   note: string;
-  /** Lessons behind this observation — the skill used or the skill to
+  /** Lessons behind this observation - the skill used or the skill to
    * learn. Rendered as links into Skills at Intermediate/Advanced (§08),
    * so a skill stumbled into by chance can be studied on purpose. */
   lessonIds?: string[];
@@ -59,13 +59,13 @@ export interface AppState {
   frozenDays: string[];
   freezesRemaining: number;
   /** When each lesson was watched (vimeo id → yyyy-mm-dd). The watched
-   *  list predates this, so older entries may be absent — anything that
+   *  list predates this, so older entries may be absent - anything that
    *  reads it must treat missing as "not today". */
   watchedOn: Record<string, string>;
   /** Days (yyyy-mm-dd) the daily-quest chest was opened. Each one is a
    *  completed three-quest day, worth bonus XP. */
   questChests: string[];
-  /** Why they're here, in their own words — asked at onboarding and kept
+  /** Why they're here, in their own words - asked at onboarding and kept
    *  at the top of their profile. The whole course asks people to keep
    *  going; this is the reason they gave for wanting to. */
   intention: string;
@@ -102,7 +102,7 @@ interface StoreApi {
   setLevel: (level: Level) => void;
   setIntention: (intention: string) => void;
   setProfile: (patch: { displayName?: string; avatar?: string }) => void;
-  /** Opens today's quest chest — idempotent per day. */
+  /** Opens today's quest chest - idempotent per day. */
   claimQuestChest: () => void;
   markLessonWatched: (vimeoId: string) => void;
   recordAttempt: (attempt: Attempt) => void;
@@ -130,7 +130,7 @@ function applyStreakFreeze(state: AppState): AppState {
 
   const yesterday = new Date(Date.parse(today) - DAY).toISOString().slice(0, 10);
   const dayBefore = new Date(Date.parse(today) - DAY * 2).toISOString().slice(0, 10);
-  // Yesterday missed, but the day before was active — exactly the gap a
+  // Yesterday missed, but the day before was active - exactly the gap a
   // freeze exists to cover.
   if (!active.has(yesterday) && active.has(dayBefore)) {
     return {
@@ -189,7 +189,7 @@ function StoreCore({
   // (not a useState initializer) so server and first client render agree;
   // the synchronous setState here is the sync-from-external-store idiom.
   useEffect(() => {
-    // An ephemeral store (the /landing preview) skips hydration entirely —
+    // An ephemeral store (the /landing preview) skips hydration entirely -
     // it always starts from EMPTY and never touches localStorage.
     if (!ephemeral) {
       try {
@@ -209,7 +209,7 @@ function StoreCore({
           }
         }
       } catch {
-        // corrupt state — start fresh rather than crash
+        // corrupt state - start fresh rather than crash
       }
     }
     setReady(true);
@@ -222,7 +222,7 @@ function StoreCore({
       try {
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       } catch {
-        // storage full/unavailable — state still lives in memory
+        // storage full/unavailable - state still lives in memory
       }
     },
     [ephemeral],

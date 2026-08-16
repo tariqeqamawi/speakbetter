@@ -34,7 +34,7 @@ export default async function ChallengePage(props: PageProps<"/challenges/[slug]
       <header className="flex flex-col gap-2">
         <BackLink href="/challenges">Challenges</BackLink>
         <p className="text-xs font-medium uppercase tracking-wider text-ink-faint">
-          {phase.id} — {phase.name}
+          {phase.id} - {phase.name}
         </p>
         <h1 className="text-2xl font-semibold tracking-tight text-balance">
           {challenge.title}
@@ -68,7 +68,7 @@ export default async function ChallengePage(props: PageProps<"/challenges/[slug]
       {warmUp.length > 0 && (
         <section className="flex flex-col gap-2">
           <h2 className="text-sm font-medium uppercase tracking-wider text-ink-faint">
-            Warm up — a few minutes of skills
+            Warm up - a few minutes of skills
           </h2>
           <ul className="flex flex-col gap-2">
             {warmUp.map((lesson) => {

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 // A door from the landing preview into the populated app. Only rendered
-// on /landing — the preview surface — never on the real sales page at
+// on /landing - the preview surface - never on the real sales page at
 // "/", where a visitor should meet the purchase flow, not a shortcut
 // around it. /try overwrites this browser's saved progress with the
 // sample student, so the door says so.

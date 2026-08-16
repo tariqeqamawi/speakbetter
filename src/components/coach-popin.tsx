@@ -7,15 +7,15 @@ import { buildContext } from "@/lib/encouragement";
 import { hapticTap } from "@/lib/feedback-fx";
 
 // The coach, dropping in unprompted to say something true about how the
-// student is doing. Deliberately rationed — at most once a day, only
+// student is doing. Deliberately rationed - at most once a day, only
 // after there's something real to comment on, and never while a badge
 // celebration is already on screen.
 
 const SEEN_KEY = "speak-better-encouraged-on";
 
 // When the record has nothing new to remark on, the coach still has
-// something warm to say. These claim nothing about performance — they're
-// a stance, not a statistic — so they don't bend the rule that every
+// something warm to say. These claim nothing about performance - they're
+// a stance, not a statistic - so they don't bend the rule that every
 // factual claim is checked against the record first.
 const AFFIRMATIONS = [
   "You're on your way to transforming your life.",

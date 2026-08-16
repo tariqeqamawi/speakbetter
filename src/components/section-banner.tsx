@@ -4,7 +4,7 @@ import type { ComponentType, ReactNode } from "react";
 // A wide plate at the top of a dashboard panel: the section's image,
 // faded into the card so it reads as part of the surface rather than a
 // picture stuck on it, with the section's own icon and title sitting on
-// the bottom edge — the same stroke-only symbol family used everywhere
+// the bottom edge - the same stroke-only symbol family used everywhere
 // else in the course.
 
 export function SectionBanner({

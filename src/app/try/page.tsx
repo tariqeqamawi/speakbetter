@@ -5,7 +5,7 @@ import { STORAGE_KEY } from "@/lib/store";
 import { demoState } from "@/lib/demo-state";
 
 // Seeds the sample student into this browser's real storage, then drops
-// into the app proper — so the whole thing (Today, dashboard, the map)
+// into the app proper - so the whole thing (Today, dashboard, the map)
 // can be walked through populated instead of empty. Replaces whatever
 // progress the browser held, which is why nothing links here except the
 // preview surfaces.

@@ -7,8 +7,8 @@ import { useStore } from "@/lib/store";
 // The pay-to-unlock flow (master plan §15).
 // INTEGRATION SWAP POINT (stack §19): this button becomes a Stripe
 // Checkout redirect; the webhook that confirms payment calls the same
-// unlock path this stub calls directly. The post-payment journey —
-// straight into onboarding — is already the real one.
+// unlock path this stub calls directly. The post-payment journey -
+// straight into onboarding - is already the real one.
 
 export function UnlockButton({ className = "" }: { className?: string }) {
   const { unlock } = useStore();
@@ -35,7 +35,7 @@ export function RedirectIfUnlocked() {
   const { state, ready } = useStore();
   const router = useRouter();
 
-  // Returning student — skip the landing page entirely.
+  // Returning student - skip the landing page entirely.
   useEffect(() => {
     if (ready && state.unlocked) {
       router.replace(state.level ? "/challenges" : "/welcome");

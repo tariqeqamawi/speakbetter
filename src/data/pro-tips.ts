@@ -1,6 +1,6 @@
 // Pro tips, each one an idea taken from a lesson in the library and put
 // in a sentence. The lesson is named alongside it, so a tip that lands
-// leads somewhere — and so nothing here is a floating platitude with no
+// leads somewhere - and so nothing here is a floating platitude with no
 // teaching behind it.
 //
 // Keyed by Vimeo id: the title and color are resolved from the lesson
@@ -15,7 +15,7 @@ export interface ProTip {
 export const proTips: ProTip[] = [
   {
     vimeoId: "1081031433",
-    tip: "Tell a scene, not a life story. Nobody needs the years of build-up — drop us into the one moment that mattered.",
+    tip: "Tell a scene, not a life story. Nobody needs the years of build-up - drop us into the one moment that mattered.",
   },
   {
     vimeoId: "1081162033",
@@ -27,7 +27,7 @@ export const proTips: ProTip[] = [
   },
   {
     vimeoId: "1081032528",
-    tip: "A metaphor says a thing *is* the other thing — no 'like', no 'as'. The directness is what gives it force.",
+    tip: "A metaphor says a thing *is* the other thing - no 'like', no 'as'. The directness is what gives it force.",
   },
   {
     vimeoId: "1081163913",
@@ -39,7 +39,7 @@ export const proTips: ProTip[] = [
   },
   {
     vimeoId: "1081162517",
-    tip: "In that room, you have the power. They came to hear you — start as though that's already settled.",
+    tip: "In that room, you have the power. They came to hear you - start as though that's already settled.",
   },
   {
     vimeoId: "1081200223",
@@ -71,7 +71,7 @@ export const proTips: ProTip[] = [
   },
   {
     vimeoId: "1081032662",
-    tip: "A simile buys you distance — 'like' and 'as' let you compare without claiming. Use it when a metaphor would overreach.",
+    tip: "A simile buys you distance - 'like' and 'as' let you compare without claiming. Use it when a metaphor would overreach.",
   },
   {
     vimeoId: "1081032892",
@@ -79,7 +79,7 @@ export const proTips: ProTip[] = [
   },
   {
     vimeoId: "1081706536",
-    tip: "Hyperbole is honest exaggeration — stretch it far enough that nobody mistakes it for a fact.",
+    tip: "Hyperbole is honest exaggeration - stretch it far enough that nobody mistakes it for a fact.",
   },
   {
     vimeoId: "1081707157",
@@ -87,7 +87,7 @@ export const proTips: ProTip[] = [
   },
   {
     vimeoId: "1081031042",
-    tip: "Don't tell the story — relive it. If you can see it again while you speak, they'll see it for the first time.",
+    tip: "Don't tell the story - relive it. If you can see it again while you speak, they'll see it for the first time.",
   },
   {
     vimeoId: "1081031146",
@@ -111,7 +111,7 @@ export const proTips: ProTip[] = [
   },
   {
     vimeoId: "1081198798",
-    tip: "Earn attention in the first ten seconds. No throat-clearing, no housekeeping — start where it's interesting.",
+    tip: "Earn attention in the first ten seconds. No throat-clearing, no housekeeping - start where it's interesting.",
   },
   {
     vimeoId: "1080679081",
@@ -123,6 +123,6 @@ export const proTips: ProTip[] = [
   },
   {
     vimeoId: "1081032404",
-    tip: "One cultural reference can replace a whole paragraph of description — as long as the room shares it.",
+    tip: "One cultural reference can replace a whole paragraph of description - as long as the room shares it.",
   },
 ];

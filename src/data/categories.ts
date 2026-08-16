@@ -1,4 +1,4 @@
-// The seven color-coded skill categories — master plan §03.
+// The seven color-coded skill categories - master plan §03.
 // Category colors are defined once in globals.css; the class strings here
 // must stay literal so Tailwind's scanner picks them up.
 
@@ -26,7 +26,7 @@ export const categories: Category[] = [
     id: "storytelling",
     name: "Storytelling techniques",
     colorName: "Neon yellow",
-    blurb: "Relive experiences instead of reporting them — scenes, morals, and stories that sell.",
+    blurb: "Relive experiences instead of reporting them - scenes, morals, and stories that sell.",
     bgClass: "bg-storytelling",
     textClass: "text-storytelling",
     borderClass: "border-storytelling",
@@ -35,7 +35,7 @@ export const categories: Category[] = [
     id: "figurative",
     name: "Figurative language",
     colorName: "Bright orange",
-    blurb: "Metaphor, simile, hyperbole, analogy — language that paints instead of describes.",
+    blurb: "Metaphor, simile, hyperbole, analogy - language that paints instead of describes.",
     bgClass: "bg-figurative",
     textClass: "text-figurative",
     borderClass: "border-figurative",
@@ -44,7 +44,7 @@ export const categories: Category[] = [
     id: "acting",
     name: "Acting skills for speakers",
     colorName: "Bright red",
-    blurb: "Voice, character, emotion, and scene work — deliver the experience, don't just say it.",
+    blurb: "Voice, character, emotion, and scene work - deliver the experience, don't just say it.",
     bgClass: "bg-acting",
     textClass: "text-acting",
     borderClass: "border-acting",
@@ -53,7 +53,7 @@ export const categories: Category[] = [
     id: "structure",
     name: "Structure & framing",
     colorName: "Magenta",
-    blurb: "Openings, frameworks, open loops, and payoffs — the architecture of a talk.",
+    blurb: "Openings, frameworks, open loops, and payoffs - the architecture of a talk.",
     bgClass: "bg-structure",
     textClass: "text-structure",
     borderClass: "border-structure",
@@ -62,7 +62,7 @@ export const categories: Category[] = [
     id: "mindset",
     name: "Speaker's mindset & psychology",
     colorName: "Neon green",
-    blurb: "Fear, confidence, and conviction — the inner game that everything else stands on.",
+    blurb: "Fear, confidence, and conviction - the inner game that everything else stands on.",
     bgClass: "bg-mindset",
     textClass: "text-mindset",
     borderClass: "border-mindset",
@@ -71,7 +71,7 @@ export const categories: Category[] = [
     id: "body-language",
     name: "Body language & physical expression",
     colorName: "Bright cyan",
-    blurb: "Gestures, posture, movement — expressing visually what you say verbally.",
+    blurb: "Gestures, posture, movement - expressing visually what you say verbally.",
     bgClass: "bg-body-language",
     textClass: "text-body-language",
     borderClass: "border-body-language",
@@ -80,7 +80,7 @@ export const categories: Category[] = [
     id: "advanced",
     name: "Advanced tips & tricks",
     colorName: "Deep crimson",
-    blurb: "Slides, mic drops, going live, memorization — the professional's toolkit.",
+    blurb: "Slides, mic drops, going live, memorization - the professional's toolkit.",
     bgClass: "bg-advanced",
     textClass: "text-advanced",
     borderClass: "border-advanced",

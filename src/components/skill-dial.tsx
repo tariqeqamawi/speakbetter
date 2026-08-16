@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { categories, type CategoryId } from "@/data/categories";
 import { lessonsInCategory } from "@/data/lessons";
 import { CategoryIcon } from "@/components/category-icons";
@@ -12,7 +12,7 @@ import { useStore } from "@/lib/store";
 // The seven colors as a dial: a ring of arcs with a node per category,
 // the hovered one swelling while the center names what you're looking
 // at. The grid it replaces treated the categories as a list; this treats
-// them as what they are — one wheel of color with the brand at its hub.
+// them as what they are - one wheel of color with the brand at its hub.
 // Click (or tap, where there is no hover) opens the category.
 
 const NODE_ANGLE = 360 / categories.length;
@@ -34,7 +34,7 @@ function arcPath(startDeg: number, endDeg: number, r: number): string {
   return `M ${a.x} ${a.y} A ${r} ${r} 0 ${large} 1 ${b.x} ${b.y}`;
 }
 
-/** Inside the /demo preview, category links stay inside the preview —
+/** Inside the /demo preview, category links stay inside the preview -
  *  the real routes are gated and would bounce a visitor to the sales
  *  page mid-browse. */
 function useSkillsPrefix(): string {
@@ -46,6 +46,62 @@ export function SkillDial() {
   const prefix = useSkillsPrefix();
   const { state } = useStore();
   const [hovered, setHovered] = useState<CategoryId | null>(null);
+  const dialRef = useRef<HTMLDivElement>(null);
+
+  // On touch, the dial works like a real dial: press a color and it
+  // lights, slide the thumb and the highlight follows, release over a
+  // color and only then does it open. Native listeners because React
+  // registers touchmove as passive, and the slide has to preventDefault
+  // or the page scrolls under the thumb.
+  useEffect(() => {
+    const dial = dialRef.current;
+    if (!dial) return;
+    let dialing = false;
+
+    const catUnder = (t: Touch): CategoryId | null => {
+      const el = document.elementFromPoint(t.clientX, t.clientY);
+      const node = el?.closest<HTMLElement>("[data-dial-node]");
+      return (node?.dataset.dialNode as CategoryId) ?? null;
+    };
+
+    const onStart = (e: TouchEvent) => {
+      const cat = catUnder(e.touches[0]);
+      if (!cat) return; // a touch off the nodes scrolls the page normally
+      dialing = true;
+      setHovered(cat);
+      e.preventDefault();
+    };
+    const onMove = (e: TouchEvent) => {
+      if (!dialing) return;
+      e.preventDefault();
+      setHovered(catUnder(e.touches[0]));
+    };
+    const onEnd = (e: TouchEvent) => {
+      if (!dialing) return;
+      dialing = false;
+      e.preventDefault();
+      // Where the thumb lifted decides - read straight off the touch,
+      // not from state, which may not have settled yet.
+      const cat = catUnder(e.changedTouches[0]);
+      setHovered(null);
+      if (cat) router.push(`${prefix}/skills/${cat}`);
+    };
+    const onCancel = () => {
+      dialing = false;
+      setHovered(null);
+    };
+
+    dial.addEventListener("touchstart", onStart, { passive: false });
+    dial.addEventListener("touchmove", onMove, { passive: false });
+    dial.addEventListener("touchend", onEnd, { passive: false });
+    dial.addEventListener("touchcancel", onCancel);
+    return () => {
+      dial.removeEventListener("touchstart", onStart);
+      dial.removeEventListener("touchmove", onMove);
+      dial.removeEventListener("touchend", onEnd);
+      dial.removeEventListener("touchcancel", onCancel);
+    };
+  }, [router, prefix]);
 
   const active = hovered ? categories.find((c) => c.id === hovered) : null;
   const activeLessons = active ? lessonsInCategory(active.id) : [];
@@ -58,9 +114,12 @@ export function SkillDial() {
   );
 
   return (
-    <div className="relative mx-auto aspect-square w-full max-w-xl select-none">
+    <div
+      ref={dialRef}
+      className="relative mx-auto aspect-square w-full max-w-xl select-none touch-pan-y"
+    >
       {/* The ring: one arc per category, faint until its node is hovered.
-          Decorative — the nodes carry the interaction. */}
+          Decorative - the nodes carry the interaction. */}
       <svg
         viewBox="0 0 100 100"
         className="absolute inset-0 h-full w-full"
@@ -91,7 +150,7 @@ export function SkillDial() {
           active ? `border-current ${active.textClass}` : "border-navy-600"
         }`}
       >
-        {/* The lion holds the center whatever the pointer does — it's
+        {/* The lion holds the center whatever the pointer does - it's
             the brand's hub, not a slot the categories take turns in.
             The words beneath it are what change. */}
         <Image
@@ -137,7 +196,8 @@ export function SkillDial() {
           <button
             key={cat.id}
             type="button"
-            aria-label={`${cat.name} — open lessons`}
+            data-dial-node={cat.id}
+            aria-label={`${cat.name} - open lessons`}
             onMouseEnter={() => setHovered(cat.id)}
             onMouseLeave={() => setHovered(null)}
             onFocus={() => setHovered(cat.id)}
@@ -161,7 +221,7 @@ export function SkillDial() {
   );
 }
 
-/** The same seven doors as a plain row — for touch screens, where the
+/** The same seven doors as a plain row - for touch screens, where the
  *  dial's hover preview doesn't exist, and for anyone who'd rather read
  *  a list than work a wheel. */
 export function CategoryChips() {

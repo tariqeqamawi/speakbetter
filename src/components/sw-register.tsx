@@ -9,7 +9,7 @@ export function ServiceWorkerRegister() {
       "serviceWorker" in navigator
     ) {
       navigator.serviceWorker.register("/sw.js").catch(() => {
-        // Not fatal — the app simply runs without offline support.
+        // Not fatal - the app simply runs without offline support.
       });
     }
   }, []);

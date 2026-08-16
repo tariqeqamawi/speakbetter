@@ -1,7 +1,7 @@
 import { categories, type CategoryId } from "@/data/categories";
 
 // The color-spectrum breakdown (master plan §05): which categories a
-// performance lit up, and how strongly. Reads at a glance — full bars
+// performance lit up, and how strongly. Reads at a glance - full bars
 // across many colors = a dynamic talk; one or two colors = the gap.
 
 export function SpectrumBars({
@@ -9,7 +9,7 @@ export function SpectrumBars({
   revealCount,
 }: {
   spectrum: Record<CategoryId, number>;
-  /** When set, only the first N bars have landed — the rest wait at
+  /** When set, only the first N bars have landed - the rest wait at
    *  zero. Drives the staged reveal; omit for the instant render. */
   revealCount?: number;
 }) {

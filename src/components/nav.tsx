@@ -24,7 +24,7 @@ const destinations = [
 
 export function TopBar() {
   return (
-    <header className="sticky top-0 z-20 bg-navy-900/85 backdrop-blur">
+    <header className="pt-safe sticky top-0 z-20 bg-navy-900/85 backdrop-blur">
       <div className="spectrum-rule h-0.5" />
       {/* The soundwave lives in the band between the two rules */}
       <div className="relative border-b border-navy-700/80">
@@ -61,7 +61,7 @@ function LevelBadge() {
   return (
     <Link
       href="/profile"
-      title={`${meta.label} — change your level`}
+      title={`${meta.label} - change your level`}
       className="flex min-h-11 items-center gap-1.5 rounded-full border border-navy-600 px-2.5 py-1 transition-colors hover:border-ink-faint"
     >
       <LevelIcon level={state.level} className="h-6 w-auto" />

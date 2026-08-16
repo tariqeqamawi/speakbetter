@@ -11,7 +11,7 @@ export function SpectrumHistory({ attempts }: { attempts: Attempt[] }) {
   if (attempts.length < 2) {
     return (
       <p className="py-6 text-center text-sm text-ink-muted">
-        Two attempts and this fills in — it needs a before to show you an
+        Two attempts and this fills in - it needs a before to show you an
         after.
       </p>
     );
@@ -34,7 +34,7 @@ export function SpectrumHistory({ attempts }: { attempts: Attempt[] }) {
             <div
               key={attempt.id}
               className="flex min-w-6 flex-1 flex-col items-center gap-1.5"
-              title={`Attempt ${i + 1} — ${colorsLit(attempt)} of 7 colors, scored ${attempt.score}`}
+              title={`Attempt ${i + 1} - ${colorsLit(attempt)} of 7 colors, scored ${attempt.score}`}
             >
               {/* one stacked bar per attempt, a segment per lit color */}
               <div className="flex h-28 w-full flex-col-reverse justify-start gap-px overflow-hidden rounded-md bg-navy-700">
@@ -66,7 +66,7 @@ export function SpectrumHistory({ attempts }: { attempts: Attempt[] }) {
           ? `You started lighting up ${first} ${first === 1 ? "color" : "colors"} and now reach ${latest}.`
           : gain === 0
             ? `Holding steady at ${latest} of 7 colors. Reach for one you haven't touched.`
-            : `You reached ${first} early on and ${latest} most recently — worth revisiting what changed.`}
+            : `You reached ${first} early on and ${latest} most recently - worth revisiting what changed.`}
       </p>
     </section>
   );

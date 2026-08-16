@@ -45,7 +45,7 @@ export function BadgeCollection({ state }: { state: AppState }) {
             <li
               key={badge.id}
               // The group/tooltip pair below shows what a locked badge
-              // wants from you — a collection you can't read is just a
+              // wants from you - a collection you can't read is just a
               // wall of gray. A few keep their secret on purpose.
               className={`group relative flex flex-col items-center gap-2 rounded-xl border p-3 text-center transition-colors ${
                 won
@@ -57,7 +57,7 @@ export function BadgeCollection({ state }: { state: AppState }) {
                 <b className="block pb-0.5 text-ink">{badge.title}</b>
                 {won
                   ? badge.message
-                  : (badge.how ?? "Hidden achievement — you'll know it when you get it.")}
+                  : (badge.how ?? "Hidden achievement - you'll know it when you get it.")}
               </span>
               <BadgeMedal
                 id={badge.id}

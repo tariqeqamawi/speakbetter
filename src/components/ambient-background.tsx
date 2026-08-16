@@ -1,5 +1,5 @@
 // Slow-drifting spotlights behind the whole app (master plan §14).
-// Pure CSS — no client JS, no scroll listeners; the motion lives in
+// Pure CSS - no client JS, no scroll listeners; the motion lives in
 // globals.css so it costs nothing to render on the server.
 
 export function AmbientBackground() {
