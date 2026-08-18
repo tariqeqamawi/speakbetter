@@ -48,6 +48,43 @@ export function playCelebration() {
   });
 }
 
+/**
+ * The smaller sibling of the celebration: two notes for finishing a
+ * lesson, where a badge gets three.
+ *
+ * Finishing a lesson happens a hundred times over a course and earning a
+ * badge happens rarely, so this one has to be something a student is
+ * happy to hear again - quieter, shorter, and resolving upward without
+ * the triad's sense of arrival. It rides on the video the student just
+ * chose to play, so it never arrives out of a silent page.
+ */
+export function playXpChime() {
+  if (typeof window === "undefined") return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  const ac = audio();
+  if (!ac) return;
+  void ac.resume().catch(() => {});
+
+  const notes = [783.99, 1174.66]; // G5 up to D6 - a rising fifth
+  const now = ac.currentTime;
+
+  notes.forEach((freq, i) => {
+    const at = now + i * 0.07;
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(freq, at);
+    gain.gain.setValueAtTime(0.0001, at);
+    gain.gain.exponentialRampToValueAtTime(0.075, at + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.38);
+    osc.connect(gain);
+    gain.connect(ac.destination);
+    osc.start(at);
+    osc.stop(at + 0.42);
+  });
+}
+
 /** A short double tap. Android honours this; iOS Safari ignores it. */
 export function hapticCelebrate() {
   if (typeof navigator === "undefined") return;

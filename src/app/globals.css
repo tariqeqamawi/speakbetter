@@ -681,10 +681,54 @@ body {
   }
 }
 
+/* The reward for finishing a lesson, rising off the player and away.
+   Slower and taller than .xp-pop, which is a receipt printed in place -
+   this one is meant to be watched leaving. */
+.xp-float {
+  animation: xp-float 2.8s cubic-bezier(0.16, 0.9, 0.3, 1) both;
+}
+
+@keyframes xp-float {
+  0% {
+    opacity: 0;
+    transform: translateY(24px) scale(0.7);
+  }
+  14% {
+    opacity: 1;
+    transform: translateY(0) scale(1.06);
+  }
+  26% {
+    transform: translateY(-6px) scale(1);
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-120px) scale(0.92);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .panel-in,
   .xp-pop {
     animation: none;
+  }
+
+  /* Still says what was earned - it just stops travelling to say it. */
+  .xp-float {
+    animation: xp-still 2.8s linear both;
+  }
+}
+
+@keyframes xp-still {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  10%,
+  80% {
+    opacity: 1;
   }
 }
 

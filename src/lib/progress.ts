@@ -25,12 +25,11 @@ const lessonSeconds = lengths as Record<string, number>;
 /**
  * What watching a lesson is worth.
  *
- * Scaled by how long the lesson runs, so a two and a half minute lesson
- * isn't worth the same as a thirty second one and each has a number of
- * its own to show for it - a lesson reads as a small thing to complete
- * rather than as one identical unit in a list of 121. Rounded to fives
- * because a reward of 17 looks like a rounding error rather than a
- * decision.
+ * Scaled by how long the lesson runs, and deliberately not rounded to a
+ * tidy grid: 8, 11, 12, 14 reads as this lesson's own number, where a
+ * course of 10s and 15s reads as a tariff applied to a list. Across the
+ * 121 lessons it lands on 14 distinct values between 8 and 22, so two
+ * lessons side by side rarely pay the same.
  *
  * The floor matters more than the ceiling: the shortest lesson in the
  * course still has something to teach, and the spread stays narrow
@@ -39,7 +38,7 @@ const lessonSeconds = lengths as Record<string, number>;
 export function lessonXp(vimeoId: string): number {
   const seconds = lessonSeconds[vimeoId];
   if (!seconds) return 10;
-  return Math.min(30, Math.max(10, Math.round(seconds / 30) * 5));
+  return Math.min(22, Math.max(8, Math.round(4 + seconds / 9)));
 }
 
 /**

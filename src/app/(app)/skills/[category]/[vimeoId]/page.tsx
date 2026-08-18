@@ -3,8 +3,7 @@ import { BackLink } from "@/components/back-link";
 import { categoryById, type CategoryId } from "@/data/categories";
 import { lessons, lessonByVimeoId } from "@/data/lessons";
 import { getTranscript } from "@/lib/transcripts";
-import { VimeoPlayer } from "@/components/vimeo-player";
-import { LessonWatched } from "@/components/lesson-watched";
+import { LessonPlayer } from "@/components/lesson-player";
 import { XpBadge } from "@/components/xp-badge";
 import { lessonXp } from "@/lib/progress";
 import { LessonFooterNav } from "@/components/lesson-footer-nav";
@@ -50,8 +49,7 @@ export default async function LessonPage(props: PageProps<"/skills/[category]/[v
         </div>
       </header>
 
-      <VimeoPlayer vimeoId={lesson.vimeoId} title={lesson.title} />
-      <LessonWatched vimeoId={lesson.vimeoId} />
+      <LessonPlayer vimeoId={lesson.vimeoId} title={lesson.title} />
 
       {transcript && (
         <details className="group rounded-xl border border-navy-600 bg-navy-800">

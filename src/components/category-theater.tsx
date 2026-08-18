@@ -39,6 +39,11 @@ export function CategoryTheater({
   const [panelOpen, setPanelOpen] = useState(false);
   const [upNext, setUpNext] = useState(false);
   const [xpFlash, setXpFlash] = useState(false);
+  // What the featured lesson pays when it finishes - fixed the moment
+  // it's selected, since it gets marked watched partway through and a
+  // rewatch should play out in silence. See lesson-player.tsx.
+  const [rewardFor, setRewardFor] = useState<string | null>(null);
+  const [reward, setReward] = useState<number | undefined>(undefined);
   const stageRef = useRef<HTMLDivElement>(null);
   // The full lesson page (transcript and all) has no preview twin, so
   // inside /demo the link would dead-end past the gate. Hide it there.
@@ -50,6 +55,16 @@ export function CategoryTheater({
   const watched = (id: string) => ready && state.watchedLessons.includes(id);
   const watchedCount = lessons.filter((l) => watched(l.vimeoId)).length;
   const points = takeaways[featured.vimeoId] ?? [];
+
+  // Settled during render, before the video can reach its end.
+  if (ready && rewardFor !== featured.vimeoId) {
+    setRewardFor(featured.vimeoId);
+    setReward(
+      state.watchedLessons.includes(featured.vimeoId)
+        ? undefined
+        : lessonXp(featured.vimeoId),
+    );
+  }
 
   const select = (id: string, autoplay = false) => {
     setUpNext(false);
@@ -169,6 +184,7 @@ export function CategoryTheater({
           vimeoId={featured.vimeoId}
           title={featured.title}
           autoplay={autoplayNext}
+          xp={reward}
           onEnded={() => {
             if (next) setUpNext(true);
           }}

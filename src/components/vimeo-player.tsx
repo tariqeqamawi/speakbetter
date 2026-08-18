@@ -7,6 +7,8 @@ import { vimeoEmbedUrl } from "@/lib/vimeo";
 import { categories } from "@/data/categories";
 import { lessonCues, type LessonCue } from "@/lib/lesson-cues";
 import { cueIcons } from "./cue-icons";
+import { XpBadge } from "./xp-badge";
+import { hapticTap, playXpChime } from "@/lib/feedback-fx";
 import {
   CaptionsIcon,
   ExitFullscreenIcon,
@@ -119,12 +121,21 @@ export function VimeoPlayer({
   title,
   autoplay = false,
   onEnded,
+  xp,
 }: {
   vimeoId: string;
   title: string;
   autoplay?: boolean;
   /** Fires once when playback completes - what "up next" hangs off. */
   onEnded?: () => void;
+  /**
+   * XP to send up the screen when the video finishes, with a chime.
+   * Omit it and nothing is shown - which is what a rewatch, a challenge
+   * explainer, or a landing page demo should do, since none of them
+   * earns anything and a reward for nothing is a lie told with a
+   * animation.
+   */
+  xp?: number;
 }) {
   const holderRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<Player | null>(null);
@@ -135,6 +146,10 @@ export function VimeoPlayer({
   useEffect(() => {
     onEndedRef.current = onEnded;
   }, [onEnded]);
+  const xpRef = useRef(xp);
+  useEffect(() => {
+    xpRef.current = xp;
+  }, [xp]);
 
   const [frame, setFrame] = useState<Frame>("fit");
   const [playing, setPlaying] = useState(false);
@@ -144,6 +159,8 @@ export function VimeoPlayer({
   const [duration, setDuration] = useState(0);
   const [speed, setSpeed] = useState(1);
   const [speedOpen, setSpeedOpen] = useState(false);
+  // Bumped on each finish so the badge remounts and replays its rise.
+  const [rewardKey, setRewardKey] = useState(0);
   const [captionsOn, setCaptionsOn] = useState(false);
   const [captionLang, setCaptionLang] = useState<string | null>(null);
 
@@ -269,6 +286,11 @@ export function VimeoPlayer({
       setEnded(true);
       player.setCurrentTime(0).then(() => player.pause()).catch(() => {});
       onEndedRef.current?.();
+      if (xpRef.current !== undefined) {
+        setRewardKey((n) => n + 1);
+        playXpChime();
+        hapticTap();
+      }
     };
     const onTime = (d: { seconds: number; duration: number }) => {
       setProgress(d.duration ? d.seconds / d.duration : 0);
@@ -494,6 +516,24 @@ export function VimeoPlayer({
           >
             <CueMark floater={floater} />
           </span>
+        )}
+
+        {/* What the lesson just paid, rising off the player and away.
+            Above the ended takeover, because the takeover is the thing
+            it's rising off. */}
+        {xp !== undefined && rewardKey > 0 && (
+          <div
+            key={rewardKey}
+            role="status"
+            aria-live="polite"
+            className="xp-float pointer-events-none absolute inset-x-0 top-1/2 z-30 flex justify-center"
+          >
+            <XpBadge
+              xp={xp}
+              size="md"
+              className="border border-mindset/40 bg-navy-950/90 text-mindset shadow-[0_0_26px_-6px_currentColor]"
+            />
+          </div>
         )}
 
         {/* Ended takeover - an opaque cover so Vimeo's end screen (and its
