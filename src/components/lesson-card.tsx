@@ -15,10 +15,16 @@ import type { Category } from "@/data/categories";
 //
 // PRINTED DECK
 // ------------
-// This is drawn to poker-card proportions (63 x 88 mm, the ratio a deck
-// box and a card sleeve are already built for) so the same component
-// can be laid out for print without redrawing. Three things follow from
-// that and are honored here:
+// This is drawn to oracle-deck proportions - 89 x 127 mm, 3.5 x 5 in -
+// not the poker size a playing deck uses. An oracle card is a card you
+// read rather than a card you play: it's held one at a time, it carries
+// text, and it's meant to sit face up on a table. That's the right
+// object for a lesson, and it's what every print house means by "oracle"
+// or "large tarot" stock. Being 41% wider than a poker card also lifts
+// the printed body text from about 6pt to about 9pt, which is the
+// difference between a card you squint at and one you read.
+//
+// Three things follow from designing for the press and are honored here:
 //
 //   - Nothing meaningful sits within about 4mm of an edge, because a
 //     guillotine wanders and a printed card gets trimmed through its
@@ -30,10 +36,11 @@ import type { Category } from "@/data/categories";
 //
 // Every measurement on the card - type, padding, the mark's well - is
 // expressed in cqw, a share of the card's own width. One artwork then
-// holds at any size: the 320px preview on this page and the 63mm card
-// coming off a guillotine are the same drawing, not two that have to be
-// kept in agreement. Fixed pixel type looked right on screen and
-// overflowed the cut card, which is how this was found.
+// holds at any size: the preview on this page and the 89mm card coming
+// off a guillotine are the same drawing, not two that have to be kept in
+// agreement. Fixed pixel type looked right on screen and overflowed the
+// cut card, which is how this was found - and it's why resizing the
+// whole deck from poker to oracle stock was a one-line change.
 //
 // The one thing print will argue with is the palette: these are neon
 // screen colors and several sit outside CMYK's gamut, so a press will
@@ -71,7 +78,7 @@ export function LessonCard({
       onClick={() => setFlipped((f) => !f)}
       aria-pressed={flipped}
       aria-label={`${data.title} - ${flipped ? "showing the key points, tap to turn over" : "tap to turn over"}`}
-      className={`card-3d group aspect-[63/88] w-full max-w-xs cursor-pointer ${className}`}
+      className={`card-3d group aspect-[89/127] w-full max-w-xs cursor-pointer ${className}`}
     >
       <span className={`card-3d-inner ${flipped ? "is-flipped" : ""}`}>
         {/* ── Face: the section's color, and the mark ───────────────── */}

@@ -741,8 +741,8 @@ body {
 
 /* ── The deck, on paper ──────────────────────────────────────────────
    Printing this page gives the real thing at real size: each card at
-   63 x 88 mm with its faces side by side, so a proof can be cut out and
-   held before anyone pays for a press run. */
+   89 x 127 mm - oracle-deck stock - with its faces one above the other,
+   so a proof can be cut out and held before anyone pays for a run. */
 @media print {
   .deck-print-hide {
     display: none !important;
@@ -758,15 +758,15 @@ body {
 
   .deck-sheet {
     display: grid;
-    grid-template-columns: repeat(2, 63mm);
+    grid-template-columns: repeat(2, 89mm);
     gap: 6mm;
   }
 
-  /* The card is no longer one 63x88 box with two faces behind each
+  /* The card is no longer one 89x127 box with two faces behind each
      other - on paper it's a column holding both faces at cut size, so
      the height is whatever two cards and their gap come to. */
   .deck-sheet .card-3d {
-    width: 63mm;
+    width: 89mm;
     height: auto;
     aspect-ratio: auto;
     max-width: none;
@@ -788,8 +788,8 @@ body {
   .deck-sheet .card-face {
     position: relative;
     inset: auto;
-    width: 63mm;
-    height: 88mm;
+    width: 89mm;
+    height: 127mm;
     backface-visibility: visible;
     -webkit-backface-visibility: visible;
     box-shadow: none;

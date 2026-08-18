@@ -10,7 +10,7 @@ import type { LessonCue } from "@/lib/lesson-cues";
 // The deck: every lesson in the library as a card, colored by its
 // section. A card is the lesson at a glance for when there's no time to
 // watch the video, and it's what the course becomes off the screen -
-// these are drawn to poker proportions so the same artwork can go to a
+// these are drawn at oracle-deck size so the same artwork can go to a
 // press as a physical deck a student orders alongside the course.
 //
 // Print this page to see them at real size, faces side by side.
@@ -67,10 +67,10 @@ export default function CardsPrototypePage() {
         <h1 className="text-2xl font-semibold text-ink">The deck</h1>
         <p className="max-w-2xl text-sm text-ink-muted">
           Every lesson as a card, colored by its section. Tap one to turn it
-          over. Drawn to poker proportions - 63 × 88 mm, what a sleeve and a
-          deck box are already built for - so the same artwork can go to a
-          press as a physical deck. Print this page to see them at real size
-          with both faces laid out flat.
+          over. Drawn at oracle-deck size - 89 × 127 mm, 3.5 × 5 in - the
+          stock a deck you read is printed on, rather than the smaller poker
+          size a deck you play with uses. Print this page to see them at real
+          size with both faces laid out flat.
         </p>
         <p className="max-w-2xl text-xs text-ink-faint">
           {covered} of {lessons.length} lessons have key points written, so
