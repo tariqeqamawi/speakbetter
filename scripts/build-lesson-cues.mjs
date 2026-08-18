@@ -1,87 +1,61 @@
-// Builds the floating key ideas the player drifts beside the teacher.
+// The cue engine: what Speak Better puts on screen beside the teacher,
+// and when.
 //
-// The old pool was single words mined from the hand-written takeaways and
-// spawned at random - so a lesson on the pause could float "SNOWBOARD"
-// while the teacher was saying something else entirely. These cues are
-// timed instead: each one is a phrase the teacher is actually saying at
-// that second, lifted from the lesson's own Whisper transcript segments.
+// The rule it works to is simple to state and most of the difficulty is
+// in honoring it: every time the teacher makes a point, the thing he is
+// making a point *about* appears on screen - as the words themselves, as
+// a single-color icon, or as an image where an image illustrates it
+// better than words could. Between the points, nothing appears.
 //
-// What makes a phrase worth floating is that it is *distinctive to this
-// lesson*. "Audience" appears in nearly every transcript and teaches
-// nothing on screen; "power pose" appears in one, and naming it while
-// it's spoken reinforces the idea. That's TF-IDF over the 121-transcript
-// corpus, boosted where the phrase also shows up in the lesson's title or
-// its hand-written takeaways - the two places the lesson's key ideas are
-// already stated.
+// It runs in four passes, each in its own module so the reasoning can be
+// argued with a piece at a time:
 //
-// Run: npm run build:cues
-// Output: src/data/lesson-cues.json (checked in; the player loads it lazily)
+//   1. BEATS      cues/beats.mjs finds the moments a point is landed,
+//                 from the rhetoric the teacher uses to land it.
+//   2. CANDIDATES every phrase the beat could put on screen, scored for
+//                 how distinctive it is to this lesson (TF-IDF across all
+//                 121 transcripts) and how showable it is (cues/lexicon).
+//   3. NOVELTY    an idea floats once per lesson and rarely across the
+//                 course, so no two moments show the same thing twice.
+//   4. FORM       words, icon, or image - whichever carries the idea.
+//
+// Why this replaced the first attempt: that one ranked a lesson's whole
+// vocabulary and floated the top of it on a timer, which on "How To
+// Receive A Standing Ovation" produced STANDING OVATION, then OVATION,
+// then OVATION again - the title restated three times while the teacher
+// moved through emotional journey, grief and sorrow, triumph, and a wild
+// roller coaster of emotion, none of which reached the screen.
+//
+// Run:     npm run build:cues
+// Inspect: npm run build:cues -- --inspect 1081161473
+// Output:  src/data/lesson-cues.json (checked in; loaded lazily)
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { GLUE, ICONS, STOP, iconFor, vividness } from "./cues/lexicon.mjs";
+import { scoreBeats, sentencesOf, slotsOf } from "./cues/beats.mjs";
+import { IMAGES, imageFor } from "./cues/images.mjs";
+
+// Phrases the interface can draw by name, whether or not the artwork for
+// them has been made yet - a concept someone has already picked out.
+const KNOWN = new Set([...Object.keys(ICONS), ...Object.keys(IMAGES)]);
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const transcripts = JSON.parse(
   readFileSync(join(ROOT, "src/data/transcripts.json"), "utf8"),
 );
 
-// ── Tuning ───────────────────────────────────────────────────────────
-const WINDOW_SECONDS = 9; // shortest stretch of speech that can carry a cue
-const MIN_GAP = 7.5; // seconds of quiet between cues
-const REPEAT_COOLDOWN = 75; // don't float the same phrase again within this
-const MAX_USES = 3; // ...or more than this many times in one lesson
-const KEY_IDEAS = 14; // the lesson's floatable vocabulary, ranked
-const SCORE_FLOOR = 5.5; // below this a phrase isn't distinctive enough
-const RELATIVE_FLOOR = 0.34; // ...nor below this share of the lesson's best
-const ECHO_GAP = 30; // seconds before a word may reappear inside another
+// -- Tuning -----------------------------------------------------------
+const BEAT_EVERY = 10; // aim for a point on screen about this often
+const BEAT_FLOOR = 1.2; // below this a sentence isn't making a point
+const MIN_GAP = 7; // seconds between cues, however strong the beats
 const LEAD = 0.25; // appear a beat before the words land
 
-// Words that carry no idea on their own. Kept deliberately broad: a cue
-// that says nothing costs more than a window with no cue at all.
-const STOP = new Set(
-  [
-    "a about above across actually after again against ago all almost alone",
-    "along already also although always am among an and another any anybody",
-    "anyone anything anyway are around as at away back backwards be became",
-    "because become becomes been before began begin behind being below best",
-    "better between beyond big both bring brings brought but by call called",
-    "came can cannot cant come comes coming could couldnt did didnt different",
-    "do does doesnt doing done dont down during each either else enough",
-    "especially even ever every everybody everyone everything exactly example",
-    "far felt few find finds first five for found four from front full further",
-    "gave get gets getting give given gives go goes going gone good got great",
-    "had half happen happened happens has have havent having he hear heard help",
-    "her here hers herself high him himself his hold holding holds how however",
-    "i if im in indeed inside instead into is isnt it its itself ive just keep",
-    "keeping keeps kind knew know known knows last later least leave left less",
-    "let lets like liked likes little long look looked looking looks lot lots",
-    "made make makes making many may maybe me mean means meant might mine more",
-    "most move moving much must my myself near need needs never new next nice",
-    "no nobody none nor not nothing now number of off often oh okay old on once",
-    "one only onto or other others our ours out over own part parts people",
-    "perhaps place put quite rather real really right said same saw say saying",
-    "says second see seeing seem seems seen set several shall she should",
-    "shouldnt show showing shows side simply since six small so some somebody",
-    "someone something sometimes soon sort stand start started starts still",
-    "stop such sure take taken takes taking talk talked talking talks tell",
-    "telling tells ten than that thats the their theirs them themselves then",
-    "there therefore these they thing things think thinking third this those",
-    "though thought three through throughout thus time times to today together",
-    "too took toward towards true try trying turn turned turns two under until",
-    "up upon us use used uses using usually very want wanted wants was wasnt",
-    "watch watching way ways we well went were what whatever when whenever",
-    "where whether which while who whole whom whose why will with within",
-    "without wont word words work working works would wouldnt yeah year years",
-    "yes yet you youll young your youre yours yourself youve",
-  ]
-    .join(" ")
-    .split(/\s+/),
-);
+const REUSE_DECAY = 0.55; // how hard a course-wide repeat is penalized
+const GLYPH_SHARE = 0.45; // at most this fraction of a lesson's cues draw
 
-// Glue that may sit inside a phrase without counting as one of its words -
-// "call to action" and "point of view" read as single ideas.
-const GLUE = new Set(["to", "of", "the", "in", "on", "for"]);
+// -- Words ------------------------------------------------------------
 
 /** Lowercased word tokens; apostrophes kept so "hero's" survives whole. */
 function tokenize(text) {
@@ -98,12 +72,31 @@ function tokenize(text) {
 // rare, distinctive vocabulary. Judge them by their stem.
 const isContent = (w) => {
   const stem = w.includes("'") ? w.slice(0, w.indexOf("'")) : w;
-  return w.length >= 4 && !STOP.has(w) && !STOP.has(stem) && !GLUE.has(w);
+  // Three letters, not four: "eye" is half the body-language vocabulary
+  // of the course and was invisible to the engine that wanted four.
+  return w.length >= 3 && !STOP.has(w) && !STOP.has(stem) && !GLUE.has(w);
 };
 
 /**
+ * Crude but sufficient: "stories" and "story", "pausing" and "pause" are
+ * the same idea, and floating one after the other reads as a stutter.
+ * This is what stops a lesson repeating itself in different clothes.
+ */
+function stem(word) {
+  let w = word.includes("'") ? word.slice(0, word.indexOf("'")) : word;
+  if (w.endsWith("ies") && w.length > 4) return w.slice(0, -3) + "y";
+  for (const suffix of ["ing", "ed", "es", "s"]) {
+    if (w.endsWith(suffix) && w.length - suffix.length >= 4)
+      return w.slice(0, -suffix.length);
+  }
+  return w;
+}
+
+/**
  * Every phrase a stretch of speech could offer: one content word, two
- * adjacent content words, or two joined by glue.
+ * adjacent ones, or two joined by glue - including the doubled glue of
+ * "the depths of your pain", which is one picture and would otherwise
+ * come apart into "depths" and "pain".
  */
 function phrasesFrom(tokens) {
   const out = [];
@@ -113,15 +106,46 @@ function phrasesFrom(tokens) {
     out.push(a);
     const b = tokens[i + 1];
     if (b && isContent(b)) out.push(a + " " + b);
+    if (!b || !GLUE.has(b)) continue;
     const c = tokens[i + 2];
-    if (b && GLUE.has(b) && c && isContent(c)) out.push(a + " " + b + " " + c);
+    if (c && isContent(c)) out.push(a + " " + b + " " + c);
+    else if (c && GLUE.has(c) && tokens[i + 3] && isContent(tokens[i + 3]))
+      out.push(a + " " + b + " " + c + " " + tokens[i + 3]);
   }
   return out;
 }
 
-// ── Proper nouns ─────────────────────────────────────────────────────
+// Function words stay lowercase in a title; "your" is a real word and
+// keeps its capital. Only matters where cues are read as text - the
+// player renders them uppercase.
+const MINOR = new Set(["to", "of", "the", "in", "on", "for", "a"]);
+
+/**
+ * Phrases from a whole stretch of speech, clause by clause.
+ *
+ * Splitting on punctuation first is what stops a phrase forming across a
+ * boundary where the teacher drew breath: "...commanding authority. Learn
+ * how to..." offered up AUTHORITY LEARN, two words that never belonged
+ * to each other and read as a transcription error on screen.
+ */
+function phrasesOfText(text) {
+  const out = [];
+  for (const clause of text.split(/[,.;:!?]+/))
+    if (clause.trim()) out.push(...phrasesFrom(tokenize(clause)));
+  return out;
+}
+
+/** Title-cased for the data file. */
+function present(phrase) {
+  return phrase
+    .split(" ")
+    .map((w, i) => (i > 0 && MINOR.has(w) ? w : w[0].toUpperCase() + w.slice(1)))
+    .join(" ");
+}
+
+// -- Proper nouns -----------------------------------------------------
 // Names and brands are the most "distinctive" words in any transcript and
-// the least useful on screen - a lesson floating "BRENE" teaches nothing.
+// the least useful on screen - a lesson floating BRENE teaches nothing.
 // A word capitalized mid-sentence more often than not is one of those.
 const capMid = new Map();
 const seenLower = new Map();
@@ -144,11 +168,14 @@ const properNouns = new Set(
   ),
 );
 
-// ── Corpus statistics ────────────────────────────────────────────────
+// -- Corpus statistics ------------------------------------------------
+// How distinctive a phrase is to the lesson saying it. "Audience" turns
+// up in nearly every transcript and names nothing in particular;
+// "roller coaster" turns up in one, and naming it as it's spoken is the
+// lesson's own image handed back to the viewer.
 const docs = transcripts.map((entry) => {
-  const tokens = tokenize(entry.text ?? "");
   const tf = new Map();
-  for (const p of phrasesFrom(tokens)) tf.set(p, (tf.get(p) ?? 0) + 1);
+  for (const p of phrasesOfText(entry.text ?? "")) tf.set(p, (tf.get(p) ?? 0) + 1);
   return {
     id: entry.id,
     title: entry.title ?? "",
@@ -160,95 +187,84 @@ const docs = transcripts.map((entry) => {
 const df = new Map();
 for (const d of docs)
   for (const p of d.tf.keys()) df.set(p, (df.get(p) ?? 0) + 1);
-
 const N = docs.length;
 
-// Takeaways are the lesson's key ideas already written down by hand -
-// read straight out of the TS module so the two can never drift apart.
-const takeawaySrc = readFileSync(join(ROOT, "src/data/takeaways.ts"), "utf8");
-const takeawayText = new Map();
-for (const m of takeawaySrc.matchAll(/"(\d{9,})":\s*\[([\s\S]*?)\n\s*\],/g))
-  takeawayText.set(m[1], m[2]);
+// -- Candidates -------------------------------------------------------
 
 /**
- * The vocabulary this lesson is allowed to float: its own key ideas,
- * ranked. Anything outside this list never reaches the screen, which is
- * what keeps a story lesson from floating the props in the story - the
- * teacher says "free lettuce" exactly once in the course, so rarity alone
- * makes it look distinctive, and it teaches nothing.
+ * What this beat could put on screen, best first.
+ *
+ * Nothing is filtered by a course-wide vocabulary list the way the first
+ * engine did it: the beat has already established that a point is being
+ * made here, so the question is no longer "is this phrase important to
+ * the course" but "which of the words he is saying right now carries the
+ * point". That difference is why the emotional language of a lesson now
+ * reaches the screen at all.
  */
-function keyIdeasFor(doc) {
-  const titleTokens = new Set(tokenize(doc.title));
-  const takeTokens = new Set(tokenize(takeawayText.get(doc.id) ?? ""));
+function candidatesFor(doc, beat, ledger) {
   const scored = [];
-  for (const [phrase, tf] of doc.tf) {
+  const seen = new Set();
+
+  for (const phrase of phrasesOfText(beat.text)) {
+    if (seen.has(phrase)) continue;
+    seen.add(phrase);
+
     const words = phrase.split(" ").filter((w) => !GLUE.has(w));
     if (words.some((w) => properNouns.has(w))) continue;
     // "Metaphor a metaphor" - the speaker restating, not a phrase.
     if (new Set(words).size !== words.length) continue;
 
+    const vivid = Math.max(...words.map(vividness));
     const documentFreq = df.get(phrase) ?? 1;
-    // Said in the lesson's title or its written takeaways, this is one of
-    // the ideas the lesson is *about*, stated twice over.
-    const inTitle = words.every((w) => titleTokens.has(w));
-    const named = inTitle || words.every((w) => takeTokens.has(w));
-    // A phrase this rare is either the lesson's signature idea ("power
-    // pose", said nowhere else in the course) or a passing detail. What
-    // separates them is whether the lesson names it anywhere else.
-    if (documentFreq < 3 && !named) continue;
+    // Said once in the whole course and picturing nothing: a passing
+    // detail that only looks distinctive because it is rare.
+    if (documentFreq === 1 && vivid === 1 && words.length === 1) continue;
 
     const idf = Math.log(N / documentFreq);
-    let score = (1 + Math.log(tf)) * idf;
-    if (words.length > 1) score *= 1.45; // two words name an idea; one hints
-    if (inTitle) score *= 2.3;
-    else if (named) score *= 1.7;
-    if (score >= SCORE_FLOOR) scored.push([phrase, score]);
+    let score = (1 + Math.log(doc.tf.get(phrase) ?? 1)) * (0.6 + idf) * vivid;
+    // Two words name an idea, one only gestures at it: "emotional
+    // journey" is the point, "journey" could be anything. Glued phrases
+    // earn less than clean pairs - "coaster of emotion" is a longer way
+    // of saying what "roller coaster" already says.
+    const glued = phrase.split(" ").length - words.length;
+    if (words.length >= 2) score *= glued ? 1.32 : 1.5;
+    // The shape of a word says something about whether it names the
+    // point or merely describes getting to it. A gerund is a process
+    // ("maintaining eye" instead of EYE CONTACT) and an adverb is a
+    // manner ("verbally") - neither is the thing being spoken about,
+    // unless the course happens to teach it as one.
+    // Length floors and the KNOWN exemption keep the rule off words that
+    // only look the part: "holy" is not an adverb and "standing ovation"
+    // is not a process, it is the name of the thing.
+    if (!KNOWN.has(phrase))
+      for (const w of words) {
+        if (vividness(w) > 1) continue;
+        if (w.length >= 6 && w.endsWith("ing")) score *= 0.72;
+        else if (w.length >= 6 && w.endsWith("ly")) score *= 0.7;
+      }
+    // A concept the design system knows by name is one someone has
+    // already judged worth showing, and it has a drawing waiting for it.
+    // Deliberately a lighter thumb than the bonus for naming an idea in
+    // full: "grief" is drawable and "the depths of your pain" is the
+    // sentence the teacher actually built.
+    if (KNOWN.has(phrase)) score *= 1.2;
+    // The stronger the beat, the more the phrase inside it is worth.
+    score *= 1 + beat.emphasis / 8;
+    // Shown in other lessons already - the course shouldn't keep putting
+    // the same handful of ideas on screen. Counted by stem rather than by
+    // exact wording, because penalizing only the phrase pushes the engine
+    // toward a clumsier way of saying the very thing it was avoiding:
+    // "roller coaster" gets spent, so "coaster of emotion" walks in.
+    const reuse = Math.max(...words.map((w) => ledger.get(stem(w)) ?? 0));
+    score /= 1 + REUSE_DECAY * reuse;
+
+    scored.push({ phrase, score, vivid, df: documentFreq });
   }
-  scored.sort((a, b) => b[1] - a[1]);
-  // A relative floor as well as an absolute one, because lessons differ in
-  // how much distinctive vocabulary they have at all. The story lessons
-  // are narrative end to end - their best phrase should still float, but
-  // the long tail beneath it ("eight", "amazing") is just the story being
-  // told, and a lesson with nothing to say on screen should say nothing.
-  const best = scored[0]?.[1] ?? 0;
-  return new Map(
-    scored
-      .filter(([, s]) => s >= best * RELATIVE_FLOOR)
-      .slice(0, KEY_IDEAS),
-  );
+
+  return scored.sort((a, b) => b.score - a.score);
 }
 
-/** Title-cased for the data file; the player renders it uppercase anyway. */
-function present(phrase) {
-  return phrase
-    .split(" ")
-    .map((w, i) => (i > 0 && GLUE.has(w) ? w : w[0].toUpperCase() + w.slice(1)))
-    .join(" ");
-}
-
-// ── Windowing ────────────────────────────────────────────────────────
-// Whisper's segments are clause-sized. Grouped into ~9s windows each one
-// holds a complete thought, and whatever phrase in it scores highest is
-// what the teacher is making a point of right then.
-function windowsOf(segments) {
-  const out = [];
-  let current = null;
-  for (const seg of segments) {
-    if (!current) current = { start: seg.start, end: seg.end, text: seg.text };
-    else {
-      current.end = seg.end;
-      current.text += " " + seg.text;
-    }
-    if (current.end - current.start >= WINDOW_SECONDS) {
-      out.push(current);
-      current = null;
-    }
-  }
-  if (current && current.end - current.start > 3) out.push(current);
-  return out;
-}
-
-/** The second inside the window at which the phrase is actually spoken. */
+/** The second inside the beat at which the phrase is actually spoken. */
 function spokenAt(segments, phrase, from, to) {
   const words = phrase.split(" ");
   for (const seg of segments) {
@@ -260,72 +276,218 @@ function spokenAt(segments, phrase, from, to) {
   return null;
 }
 
-// `node scripts/build-lesson-cues.mjs --ideas <id>` prints a lesson's
-// ranked vocabulary with scores - how the tuning above gets checked.
-const inspectId = process.argv.includes("--ideas")
-  ? process.argv[process.argv.indexOf("--ideas") + 1]
+// -- Build ------------------------------------------------------------
+
+const inspectId = process.argv.includes("--inspect")
+  ? process.argv[process.argv.indexOf("--inspect") + 1]
   : null;
 
+/** How many times each idea, by stem, has already reached the screen. */
+const ledger = new Map();
 const cues = {};
 let totalCues = 0;
 let covered = 0;
+let glyphs = 0;
+let images = 0;
 
 for (const doc of docs) {
   if (!doc.segments.length) continue;
-  const ideas = keyIdeasFor(doc);
-  if (inspectId && doc.id === inspectId) {
-    console.log(doc.title);
-    for (const [p, sc] of ideas) console.log("  " + sc.toFixed(1) + "  " + p);
-  }
-  const lastUsed = new Map();
-  const wordSeen = new Map();
-  const uses = new Map();
+
+  const slots = slotsOf(scoreBeats(sentencesOf(doc.segments)), {
+    every: BEAT_EVERY,
+    floor: BEAT_FLOOR,
+  });
+
+  const spent = new Set(); // stems this lesson has already shown
   const list = [];
-  let lastCueAt = -Infinity;
+  let lastAt = -Infinity;
 
-  for (const win of windowsOf(doc.segments)) {
-    if (win.start - lastCueAt < MIN_GAP) continue;
-    const spoken = [...new Set(phrasesFrom(tokenize(win.text)))].filter((p) =>
-      ideas.has(p),
-    );
-    // Freshness is per phrase and per word: floating "POWER POSE" and then
-    // "POSE" a beat later reads as a stutter, not a second idea.
-    const fresh = (p) =>
-      (uses.get(p) ?? 0) < MAX_USES &&
-      win.start - (lastUsed.get(p) ?? -Infinity) >= REPEAT_COOLDOWN &&
-      p
-        .split(" ")
-        .every((w) => win.start - (wordSeen.get(w) ?? -Infinity) >= ECHO_GAP);
+  if (inspectId === doc.id) console.log("\n" + doc.title + "\n");
 
-    const candidates = spoken
-      .filter(fresh)
-      .sort((a, b) => ideas.get(b) - ideas.get(a));
+  for (const slot of slots) {
+   // The points in this stretch, strongest first: the first one that can
+   // actually be said is the one shown, and the rest of the stretch is
+   // then left alone.
+   for (const beat of slot) {
+    const ranked = candidatesFor(doc, beat, ledger);
 
-    for (const shortest of candidates) {
-      // "Awkward silence" says the idea; "awkward" only gestures at it -
-      // so when the window offers both, the fuller phrasing wins.
-      const phrase =
-        candidates.find(
-          (p) => p !== shortest && (p + " ").includes(shortest + " "),
-        ) ?? shortest;
-      const at = spokenAt(doc.segments, phrase, win.start, win.end);
-      if (at === null) continue;
-      const t = Math.max(0, at - LEAD);
-      if (t - lastCueAt < MIN_GAP) continue;
-      list.push({ t: Math.round(t * 10) / 10, w: present(phrase) });
-      lastUsed.set(phrase, win.start);
-      for (const w of phrase.split(" ")) wordSeen.set(w, win.start);
-      uses.set(phrase, (uses.get(phrase) ?? 0) + 1);
-      lastCueAt = t;
-      break;
+    if (inspectId === doc.id)
+      console.log(
+        beat.start.toFixed(1).padStart(6) +
+          "  [" +
+          beat.emphasis.toFixed(1) +
+          " " +
+          beat.moves.join(",") +
+          "]  " +
+          beat.text.slice(0, 92) +
+          "\n        considered: " +
+          ranked
+            .slice(0, 5)
+            .map((c) => c.phrase + " " + c.score.toFixed(1))
+            .join(" | "),
+      );
+
+    // A long sentence can land more than one point - the teacher stacking
+    // "the depths of your pain" into "your triumph and elation" is two
+    // pictures in one breath, and showing only the first wastes the
+    // second. Short beats stay at one.
+    const room = Math.max(1, Math.round((beat.end - beat.start) / BEAT_EVERY));
+    let taken = 0;
+
+    const fresh = (c) => !c.phrase.split(" ").some((w) => spent.has(stem(w)));
+
+    for (const top of ranked) {
+      if (taken >= room) break;
+      if (!fresh(top)) continue;
+
+      // Two ways a neighbouring candidate can be the better way of saying
+      // the same thing, and in both the winner on raw score is the worse
+      // cue:
+      //
+      //   "Standing ovation" says the idea, "ovation" only points at it -
+      //   and taking the shorter one spends the idea, so the fuller
+      //   phrasing can never appear later in the lesson either.
+      //
+      //   "Maintain eye" is a rarer sequence of words than EYE CONTACT
+      //   and so scores higher, but eye contact is the thing the course
+      //   teaches and the thing the icon set can draw.
+      const words = (c) => c.phrase.split(" ").filter((w) => !GLUE.has(w));
+      const candidate =
+        ranked.find(
+          (o) =>
+            o !== top &&
+            fresh(o) &&
+            (" " + o.phrase + " ").includes(" " + top.phrase + " ") &&
+            o.score >= top.score * 0.7,
+        ) ??
+        ranked.find(
+          (o) =>
+            o !== top &&
+            fresh(o) &&
+            KNOWN.has(o.phrase) &&
+            !KNOWN.has(top.phrase) &&
+            words(o).some((w) => words(top).includes(w)) &&
+            o.score >= top.score * 0.6,
+        ) ??
+        top;
+
+      const at = spokenAt(
+        doc.segments,
+        candidate.phrase,
+        Math.max(beat.start, lastAt),
+        beat.end + 1,
+      );
+      const t = Math.max(0, (at ?? beat.start) - LEAD);
+      if (t - lastAt < MIN_GAP) continue;
+
+      // What form it takes is decided once the lesson is complete - see
+      // assignForms below. The phrase rides along until then.
+      const cue = { t: Math.round(t * 10) / 10, w: present(candidate.phrase) };
+      cue.phrase = candidate.phrase;
+
+      list.push(cue);
+      for (const w of candidate.phrase.split(" ")) {
+        if (GLUE.has(w)) continue;
+        spent.add(stem(w));
+        ledger.set(stem(w), (ledger.get(stem(w)) ?? 0) + 1);
+      }
+      lastAt = t;
+      taken++;
+
+      if (inspectId === doc.id)
+        console.log(
+          "        " +
+            t.toFixed(1).padStart(6) +
+            "  " +
+            cue.w +
+            "",
+        );
     }
+
+    if (inspectId === doc.id && !taken) console.log("        (nothing fresh)");
+    if (taken) break;
+   }
   }
 
   if (list.length) {
+    assignForms(list);
     cues[doc.id] = list;
     totalCues += list.length;
+    glyphs += list.filter((c) => c.icon || c.img).length;
+    images += list.filter((c) => c.img).length;
     covered++;
+    if (inspectId === doc.id)
+      for (const c of list)
+        console.log(
+          "  = " +
+            String(c.t).padStart(6) +
+            "  " +
+            c.w +
+            (c.img ? "  [image " + c.img + "]" : c.icon ? "  [" + c.icon + "]" : ""),
+        );
   }
+}
+
+/**
+ * Which of a lesson's cues are drawn rather than written.
+ *
+ * Decided across the finished lesson rather than cue by cue, because the
+ * cue-by-cue version handed the drawing to whichever idea happened to
+ * come first: on the standing ovation lesson "grief" took the heart and
+ * the rule against two drawings running then denied "roller coaster" the
+ * one thing in the lesson that most wanted a picture.
+ *
+ * So the whole list is ranked by how well a drawing would serve it, and
+ * the strongest few are drawn, subject to three limits - a lesson stays
+ * mostly words, no two drawings run back to back, and no drawing repeats
+ * within a lesson, since the same heart twice reads as a stutter exactly
+ * the way a repeated word does.
+ */
+function assignForms(list) {
+  const drawable = list
+    .map((cue, index) => {
+      const image = imageFor(cue.phrase, ROOT);
+      const icon = iconFor(cue.phrase);
+      // An image beats an icon; a concept named in full ("roller
+      // coaster") beats a bare one ("grief"), which in turn beats one
+      // merely recognized from a single word inside a longer phrase.
+      const named = Boolean(ICONS[cue.phrase] || IMAGES[cue.phrase]);
+      const rank = image
+        ? 4
+        : named && cue.phrase.includes(" ")
+          ? 3
+          : named
+            ? 2
+            : icon
+              ? 1
+              : 0;
+      return { index, image, icon, rank };
+    })
+    .filter((d) => d.rank > 0)
+    .sort((a, b) => b.rank - a.rank || a.index - b.index);
+
+  const budget = Math.floor(list.length * GLYPH_SHARE);
+  const used = new Set();
+  let drawn = 0;
+
+  for (const d of drawable) {
+    if (drawn >= budget) break;
+    const neighbours = [list[d.index - 1], list[d.index + 1]];
+    if (neighbours.some((n) => n && (n.icon || n.img))) continue;
+    if (d.image) {
+      if (used.has(d.image)) continue;
+      list[d.index].img = d.image;
+      used.add(d.image);
+    } else {
+      if (used.has(d.icon)) continue;
+      list[d.index].icon = d.icon;
+      used.add(d.icon);
+    }
+    drawn++;
+  }
+
+  // The phrase was only ever scaffolding for this decision.
+  for (const cue of list) delete cue.phrase;
 }
 
 writeFileSync(
@@ -333,13 +495,20 @@ writeFileSync(
   JSON.stringify(cues) + "\n",
 );
 
-console.log(
-  covered +
-    "/" +
-    docs.length +
-    " videos, " +
-    totalCues +
-    " cues, " +
-    (JSON.stringify(cues).length / 1024).toFixed(1) +
-    " KB",
-);
+if (!inspectId)
+  console.log(
+    covered +
+      "/" +
+      docs.length +
+      " videos, " +
+      totalCues +
+      " cues (" +
+      glyphs +
+      " drawn, of which " +
+      images +
+      " images), " +
+      (JSON.stringify(cues).length / 1024).toFixed(1) +
+      " KB",
+  );
+
+

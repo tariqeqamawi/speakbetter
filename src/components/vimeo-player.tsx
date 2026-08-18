@@ -1,10 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import Player from "@vimeo/player";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { vimeoEmbedUrl } from "@/lib/vimeo";
 import { categories } from "@/data/categories";
 import { lessonCues, type LessonCue } from "@/lib/lesson-cues";
+import { cueIcons } from "./cue-icons";
 import {
   CaptionsIcon,
   ExitFullscreenIcon,
@@ -49,10 +51,47 @@ interface Floater {
       shouldn't outlive a switch to the next video. */
   lesson: string;
   word: string;
+  /** A drawing to show in place of the words, when the cue has one. */
+  icon?: string;
+  img?: string;
   color: string;
   left: number; // percent
   top: number; // percent
   key: number;
+}
+
+/**
+ * One cue, as the viewer sees it.
+ *
+ * A drawn cue keeps its words underneath rather than replacing them: the
+ * drawing is what catches the eye at the edge of vision, and the phrase
+ * is what makes it teach - a lone icon for "filler words" is a puzzle,
+ * and the course isn't in the business of setting puzzles.
+ *
+ * The drawing inherits the cue's color from the span above it, which is
+ * why every icon is stroke-only and single-color. An illustration is a
+ * picture in its own right and keeps its own.
+ */
+function CueMark({ floater }: { floater: Floater }) {
+  const Icon = floater.icon ? cueIcons[floater.icon] : undefined;
+  if (!floater.img && !Icon) return <>{floater.word}</>;
+
+  return (
+    <span className="flex flex-col items-center gap-1.5">
+      {floater.img ? (
+        <Image
+          src={floater.img}
+          alt=""
+          width={72}
+          height={72}
+          className="size-10 opacity-90 drop-shadow-[0_0_12px_rgba(0,0,0,0.55)] sm:size-14"
+        />
+      ) : (
+        Icon?.({ className: "size-8 sm:size-10" })
+      )}
+      <span>{floater.word}</span>
+    </span>
+  );
 }
 
 // screen.orientation.lock/unlock aren't in every TS lib or browser -
@@ -170,6 +209,8 @@ export function VimeoPlayer({
     setFloater({
       lesson: cueLessonRef.current,
       word: due.w,
+      icon: due.icon,
+      img: due.img,
       color: WORD_COLORS[Math.floor(Math.random() * WORD_COLORS.length)],
       // The gray areas flanking the centered teacher.
       left: leftSide ? 4 + Math.random() * 13 : 70 + Math.random() * 16,
@@ -436,7 +477,9 @@ export function VimeoPlayer({
         />
 
         {/* The idea the teacher is on right now, adrift in the margin
-            beside them - remounted by key so each cue fades in anew */}
+            beside them - remounted by key so each cue fades in anew.
+            Some ideas arrive as a drawing rather than as words; either
+            way it's one idea, in one color, in the same place. */}
         {showWords && floater?.lesson === vimeoId && (
           <span
             key={floater.key}
@@ -446,10 +489,10 @@ export function VimeoPlayer({
               left: `${floater.left}%`,
               top: `${floater.top}%`,
               color: floater.color,
-              textShadow: "0 0 14px currentColor",
+              textShadow: floater.img ? undefined : "0 0 14px currentColor",
             }}
           >
-            {floater.word}
+            <CueMark floater={floater} />
           </span>
         )}
 
