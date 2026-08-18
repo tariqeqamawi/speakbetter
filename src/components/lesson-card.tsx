@@ -31,8 +31,10 @@ import type { Category } from "@/data/categories";
 //     bleed. The faces keep their own quiet margin.
 //   - The two faces are independent artwork. A physical card doesn't
 //     fade between sides; it's one image front, one image back.
-//   - The corner index repeats the category so a card is identifiable
-//     fanned out in a hand, the way a playing card's rank is.
+//   - The corner code repeats the section so a card is placeable in a
+//     fanned hand, the way a playing card's rank is - but it stops at
+//     the section. Which lesson a card is stays on the face that shows
+//     the lesson.
 //
 // Every measurement on the card - type, padding, the mark's well - is
 // expressed in cqw, a share of the card's own width. One artwork then
@@ -42,10 +44,12 @@ import type { Category } from "@/data/categories";
 // cut card, which is how this was found - and it's why resizing the
 // whole deck from poker to oracle stock was a one-line change.
 //
-// The one thing print will argue with is the palette: these are neon
-// screen colors and several sit outside CMYK's gamut, so a press will
-// render them duller than they look here. That's a decision for whoever
-// specs the print run - spot inks hold them, four-color won't.
+// The palette is settled: spot inks and neon stock for any real run, so
+// these colors print as they look here rather than as the dull CMYK
+// approximation four-color would give. That's the more expensive answer
+// and the right one - the seven colors are how the whole course is
+// organised, and a deck that gets them wrong is a deck that lies about
+// which section a card came from.
 
 export interface LessonCardData {
   category: Category;
@@ -87,16 +91,19 @@ export function LessonCard({
           className="card-face flex flex-col items-center justify-between overflow-hidden p-[6.2cqw]"
           style={{ background: color }}
         >
-          {/* Corner index - what identifies the card in a fanned hand */}
+          {/* Face down, a card gives away its section and nothing else.
+              Both corners carry the same short code rather than one of
+              them carrying a card number, because a number would make
+              each card identifiable while it's still turned over - and a
+              deck whose backs can be told apart isn't a deck. The color
+              does the work; the code names the color. */}
           <span className="flex w-full items-start justify-between text-navy-950">
-            <span className="text-[3cqw] font-bold uppercase tracking-[0.18em]">
-              {category.name.split(" ")[0]}
+            <span className="text-[3cqw] font-bold uppercase tracking-[0.22em]">
+              {category.code}
             </span>
-            {data.index && data.total && (
-              <span className="text-[3cqw] font-bold tabular-nums opacity-70">
-                {String(data.index).padStart(2, "0")}/{data.total}
-              </span>
-            )}
+            <span className="text-[3cqw] font-bold uppercase tracking-[0.22em] opacity-45">
+              {category.code}
+            </span>
           </span>
 
           {/* The mark, in its own navy well */}
