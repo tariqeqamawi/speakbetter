@@ -13,6 +13,8 @@ import { categoryById, type CategoryId } from "@/data/categories";
 import { CategoryIcon } from "@/components/category-icons";
 import { communityPosts } from "@/data/community-activity";
 import { challengeProgress } from "@/lib/challenge-progress";
+import { challengeXp } from "@/lib/progress";
+import { XpBadge } from "@/components/xp-badge";
 import { useStore } from "@/lib/store";
 import { VideoStill } from "@/components/video-still";
 import { CheckIcon, LockIcon } from "@/components/icons";
@@ -48,6 +50,7 @@ export function useCurrentPhaseIndex(): number {
 
 interface Node {
   slug: string;
+  xp: number;
   title: string;
   vimeoId: string | null;
   accentId: CategoryId;
@@ -154,6 +157,7 @@ export function JourneyMap() {
         slug: challenge.slug,
         title: challenge.title,
         vimeoId: challenge.vimeoId,
+        xp: challengeXp(challenge),
         accentId: challenge.targetSkills[0],
         x: X_CYCLE[step % X_CYCLE.length],
         y: y + ROW_H / 2,
@@ -532,13 +536,29 @@ export function JourneyMap() {
                   } ${veiled ? "blur-[2px] select-none" : ""}`}
                 >
                   {shownTitle}
-                  {node.isCurrent && (
-                    <span
-                      className={`mt-1 block w-fit rounded-full px-2 py-0.5 text-[0.55rem] font-bold uppercase tracking-wider text-navy-950 ${node.phase.bgClass} ${labelLeft ? "ml-auto" : ""}`}
-                    >
-                      You are here
-                    </span>
-                  )}
+                  {/* What it pays, and where you are - on one line so a
+                      node never grows a third stacked label. A challenge
+                      is worth several lessons, which is the point of
+                      showing the number here at all. */}
+                  <span
+                    className={`mt-1 flex items-center gap-1.5 ${labelLeft ? "justify-end" : ""}`}
+                  >
+                    {node.isCurrent && (
+                      <span
+                        className={`w-fit rounded-full px-2 py-0.5 text-[0.55rem] font-bold uppercase tracking-wider text-navy-950 ${node.phase.bgClass}`}
+                      >
+                        You are here
+                      </span>
+                    )}
+                    {!veiled && !node.passed && (
+                      <XpBadge
+                        xp={node.xp}
+                        className={
+                          node.locked ? "text-ink-faint/70" : node.phase.textClass
+                        }
+                      />
+                    )}
+                  </span>
                 </span>
 
                 {/* Hover card: the still, the name, the state */}

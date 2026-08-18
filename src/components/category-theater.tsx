@@ -6,7 +6,8 @@ import { useEffect, useRef, useState } from "react";
 import type { Category } from "@/data/categories";
 import type { Lesson } from "@/data/lessons";
 import { takeaways } from "@/data/takeaways";
-import { XP } from "@/lib/progress";
+import { lessonXp } from "@/lib/progress";
+import { XpBadge } from "@/components/xp-badge";
 import { useStore } from "@/lib/store";
 import { VimeoPlayer } from "@/components/vimeo-player";
 import { LessonWatched } from "@/components/lesson-watched";
@@ -24,7 +25,6 @@ import { PlayFillIcon } from "@/components/player-icons";
 // lesson counts, an up-next handoff that keeps a session rolling, and
 // takeaways one tap away so a lesson ends with something to keep.
 
-const UP_NEXT_SECONDS = 5;
 
 export function CategoryTheater({
   category,
@@ -37,7 +37,7 @@ export function CategoryTheater({
   const [featuredId, setFeaturedId] = useState(lessons[0].vimeoId);
   const [autoplayNext, setAutoplayNext] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
-  const [upNextIn, setUpNextIn] = useState<number | null>(null);
+  const [upNext, setUpNext] = useState(false);
   const [xpFlash, setXpFlash] = useState(false);
   const stageRef = useRef<HTMLDivElement>(null);
   // The full lesson page (transcript and all) has no preview twin, so
@@ -52,7 +52,7 @@ export function CategoryTheater({
   const points = takeaways[featured.vimeoId] ?? [];
 
   const select = (id: string, autoplay = false) => {
-    setUpNextIn(null);
+    setUpNext(false);
     setAutoplayNext(autoplay);
     setFeaturedId(id);
     stageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -76,22 +76,6 @@ export function CategoryTheater({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.watchedLessons, featured.vimeoId]);
-
-  // Up-next countdown, cancellable. All state changes happen inside the
-  // timer's callback - the effect itself only arms the clock.
-  useEffect(() => {
-    if (upNextIn === null) return;
-    const t = setTimeout(() => {
-      if (upNextIn <= 1) {
-        if (next) select(next.vimeoId, true);
-        else setUpNextIn(null);
-      } else {
-        setUpNextIn(upNextIn - 1);
-      }
-    }, 1000);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [upNextIn]);
 
   // Close the panel with Escape, like any sheet should.
   useEffect(() => {
@@ -154,7 +138,7 @@ export function CategoryTheater({
           {xpFlash && (
             <span className="xp-pop flex items-center gap-1 rounded-full bg-mindset/15 px-2.5 py-1 text-xs font-bold text-mindset">
               <ZapIcon className="size-3.5" />
-              +{XP.lessonWatched} XP
+              +{lessonXp(featured.vimeoId)} XP
             </span>
           )}
 
@@ -186,30 +170,36 @@ export function CategoryTheater({
           title={featured.title}
           autoplay={autoplayNext}
           onEnded={() => {
-            if (next) setUpNextIn(UP_NEXT_SECONDS);
+            if (next) setUpNext(true);
           }}
         />
         <LessonWatched key={`w-${featured.vimeoId}`} vimeoId={featured.vimeoId} />
 
-        {/* Up next: a rolling session, with an exit. */}
-        {upNextIn !== null && next && (
+        {/* Up next: offered, never taken. The lesson that just finished
+            used to roll into the next one on a five second countdown,
+            which decides for the student what they came here to decide -
+            and in the challenges section, where only the lessons that
+            serve the challenge are worth watching, it would carry them
+            somewhere they never asked to go. So the next lesson waits
+            behind a button, and the XP it's worth is on the button. */}
+        {upNext && next && (
           <div className="coach-cue flex items-center gap-3 self-center rounded-full border border-navy-600 bg-navy-900/90 py-2 pl-4 pr-2">
             <span className="text-sm text-ink-muted">
-              Up next:{" "}
-              <b className="font-semibold text-ink">{next.title}</b>
-              <span className="tabular-nums text-ink-faint"> · {upNextIn}s</span>
+              Up next: <b className="font-semibold text-ink">{next.title}</b>
             </span>
             <button
               type="button"
               onClick={() => select(next.vimeoId, true)}
-              className={`min-h-9 rounded-full px-3 py-1.5 text-xs font-bold text-navy-950 ${category.bgClass}`}
+              className={`flex min-h-9 items-center gap-1 rounded-full px-3 py-1.5 text-xs font-bold text-navy-950 ${category.bgClass}`}
             >
-              Play now
+              Play
+              <ZapIcon className="size-3.5" />
+              {lessonXp(next.vimeoId)}
             </button>
             <button
               type="button"
-              onClick={() => setUpNextIn(null)}
-              aria-label="Cancel autoplay"
+              onClick={() => setUpNext(false)}
+              aria-label="Dismiss"
               className="flex min-h-9 items-center px-1.5 text-ink-faint transition-colors hover:text-ink"
             >
               <XIcon className="size-4" />
@@ -266,6 +256,14 @@ export function CategoryTheater({
                       <span className="absolute right-2 top-2 flex size-5 items-center justify-center rounded-full bg-navy-950/85 text-mindset">
                         <CheckIcon className="size-3" />
                       </span>
+                    )}
+                    {/* What this one is worth, before it's watched -
+                        each lesson its own small thing to complete. */}
+                    {!watched(lesson.vimeoId) && (
+                      <XpBadge
+                        xp={lessonXp(lesson.vimeoId)}
+                        className="absolute right-2 top-2 bg-navy-950/85"
+                      />
                     )}
                     <span
                       className={`absolute inset-x-0 bottom-0 h-0.5 ${category.bgClass} ${current ? "" : "opacity-40"}`}

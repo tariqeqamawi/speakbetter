@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "build:cues": "node scripts/build-lesson-cues.mjs",
+    "build:lengths": "node scripts/build-lesson-lengths.mjs",
     "start": "next start",
     "lint": "eslint"
   },

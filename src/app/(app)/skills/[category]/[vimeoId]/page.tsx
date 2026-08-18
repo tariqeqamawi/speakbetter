@@ -5,6 +5,8 @@ import { lessons, lessonByVimeoId } from "@/data/lessons";
 import { getTranscript } from "@/lib/transcripts";
 import { VimeoPlayer } from "@/components/vimeo-player";
 import { LessonWatched } from "@/components/lesson-watched";
+import { XpBadge } from "@/components/xp-badge";
+import { lessonXp } from "@/lib/progress";
 import { LessonFooterNav } from "@/components/lesson-footer-nav";
 import { Suspense } from "react";
 
@@ -34,9 +36,18 @@ export default async function LessonPage(props: PageProps<"/skills/[category]/[v
       <header className="flex flex-col gap-2">
         <BackLink href={`/skills/${cat.id}`}>{cat.name}</BackLink>
         <div className={`h-1 w-14 rounded-full ${cat.bgClass}`} />
-        <h1 className="text-2xl font-semibold tracking-tight text-balance">
-          {lesson.title}
-        </h1>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+          <h1 className="text-2xl font-semibold tracking-tight text-balance">
+            {lesson.title}
+          </h1>
+          {/* Longer lessons are worth more, so the number is the
+              lesson's own rather than a constant repeated 121 times. */}
+          <XpBadge
+            xp={lessonXp(lesson.vimeoId)}
+            size="md"
+            className={`border border-navy-600 ${cat.textClass}`}
+          />
+        </div>
       </header>
 
       <VimeoPlayer vimeoId={lesson.vimeoId} title={lesson.title} />

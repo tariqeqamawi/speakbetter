@@ -5,6 +5,8 @@ import { challengeBySlug, challenges, storyPhases } from "@/data/challenges";
 import { lessonByVimeoId } from "@/data/lessons";
 import { categoryById } from "@/data/categories";
 import { CategoryChip } from "@/components/category-chip";
+import { XpBadge } from "@/components/xp-badge";
+import { challengeXp } from "@/lib/progress";
 import { VimeoPlayer } from "@/components/vimeo-player";
 import { PracticePanel } from "@/components/practice-panel";
 import { CircleIcon } from "@/components/icons";
@@ -36,9 +38,18 @@ export default async function ChallengePage(props: PageProps<"/challenges/[slug]
         <p className="text-xs font-medium uppercase tracking-wider text-ink-faint">
           {phase.id} - {phase.name}
         </p>
-        <h1 className="text-2xl font-semibold tracking-tight text-balance">
-          {challenge.title}
-        </h1>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+          <h1 className="text-2xl font-semibold tracking-tight text-balance">
+            {challenge.title}
+          </h1>
+          {/* Several times what a lesson pays: a lesson is watched, a
+              challenge is performed, recorded and judged. */}
+          <XpBadge
+            xp={challengeXp(challenge)}
+            size="md"
+            className={`border border-navy-600 ${phase.textClass}`}
+          />
+        </div>
         <p className="max-w-lg text-ink-muted">{challenge.brief}</p>
         <div className="mt-1 flex flex-wrap gap-1.5">
           {challenge.targetSkills.map((skill) => (

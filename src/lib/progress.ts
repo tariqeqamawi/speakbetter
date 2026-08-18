@@ -1,7 +1,8 @@
 import type { AppState } from "@/lib/store";
 import { categories, type CategoryId } from "@/data/categories";
-import { challenges } from "@/data/challenges";
+import { challenges, type Challenge, type PhaseId } from "@/data/challenges";
 import { badgeDefs } from "@/data/badges";
+import lengths from "@/data/lesson-lengths.json";
 
 // The dashboard's numbers, derived from the record rather than stored.
 //
@@ -14,12 +15,55 @@ import { badgeDefs } from "@/data/badges";
  *  all is worth something, because that's the habit being built. */
 export const XP = {
   upload: 25,
-  challengePassed: 100,
-  lessonWatched: 10,
   badge: 50,
   /** A completed three-quest day - the chest on the Today screen. */
   dailyChest: 50,
 } as const;
+
+const lessonSeconds = lengths as Record<string, number>;
+
+/**
+ * What watching a lesson is worth.
+ *
+ * Scaled by how long the lesson runs, so a two and a half minute lesson
+ * isn't worth the same as a thirty second one and each has a number of
+ * its own to show for it - a lesson reads as a small thing to complete
+ * rather than as one identical unit in a list of 121. Rounded to fives
+ * because a reward of 17 looks like a rounding error rather than a
+ * decision.
+ *
+ * The floor matters more than the ceiling: the shortest lesson in the
+ * course still has something to teach, and the spread stays narrow
+ * enough that nobody is steered toward long lessons over useful ones.
+ */
+export function lessonXp(vimeoId: string): number {
+  const seconds = lessonSeconds[vimeoId];
+  if (!seconds) return 10;
+  return Math.min(30, Math.max(10, Math.round(seconds / 30) * 5));
+}
+
+/**
+ * What passing a challenge is worth - an order of magnitude above a
+ * lesson, because a lesson is watched and a challenge is performed,
+ * recorded, and judged.
+ *
+ * It climbs through the STORY phases: the same effort late in the
+ * journey is being asked of someone doing harder things with it.
+ */
+const PHASE_XP: Record<PhaseId, number> = {
+  S: 100,
+  T: 125,
+  O: 150,
+  R: 175,
+  Y: 200,
+};
+
+export function challengeXp(challenge: Challenge): number {
+  // The passive item is watched rather than recorded, so it's paid
+  // closer to a lesson than to a performance.
+  if (challenge.passive) return 50;
+  return PHASE_XP[challenge.phase];
+}
 
 export interface Rank {
   name: string;
@@ -51,10 +95,19 @@ export function standing(state: AppState): RankStanding {
   const passedSlugs = new Set(
     state.attempts.filter((a) => a.passed).map((a) => a.challengeSlug),
   );
+  // Summed item by item rather than by multiplying counts, because a
+  // lesson and a challenge are each worth what they are individually.
+  const challengeTotal = challenges
+    .filter((c) => passedSlugs.has(c.slug))
+    .reduce((sum, c) => sum + challengeXp(c), 0);
+  const lessonTotal = state.watchedLessons.reduce(
+    (sum, id) => sum + lessonXp(id),
+    0,
+  );
   const xp =
     state.attempts.length * XP.upload +
-    passedSlugs.size * XP.challengePassed +
-    state.watchedLessons.length * XP.lessonWatched +
+    challengeTotal +
+    lessonTotal +
     state.badges.length * XP.badge +
     state.questChests.length * XP.dailyChest;
 
