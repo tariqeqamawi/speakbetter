@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { LessonCard, type LessonCardData } from "@/components/lesson-card";
 import { CategoryIcon } from "@/components/category-icons";
 import { categories, type CategoryId } from "@/data/categories";
-import { rulesCard } from "@/data/deck";
+import { rulesCard, deckUnlocked, UNLOCK_LESSONS } from "@/data/deck";
 import { hapticTap, playXpChime } from "@/lib/feedback-fx";
 import { useStore } from "@/lib/store";
 import { ChevronDownIcon, LockIcon, RepeatIcon } from "@/components/icons";
@@ -43,7 +43,6 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
   const [shakeOn, setShakeOn] = useState(false);
   const dialRef = useRef<HTMLDivElement>(null);
 
-  const earned = (id: string) => !ready || state.watchedLessons.includes(id);
   const inSection = useCallback(
     (id: CategoryId) => cards.filter((c) => c.categoryId === id),
     [cards],
@@ -51,9 +50,7 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
 
   // ── Pull a card at random ──────────────────────────────────────────
   const pullRandom = useCallback(() => {
-    const pool = cards.filter((c) => state.watchedLessons.includes(c.vimeoId));
-    const from = pool.length ? pool : cards;
-    const card = from[Math.floor(Math.random() * from.length)];
+    const card = cards[Math.floor(Math.random() * cards.length)];
     const list = cards.filter((c) => c.categoryId === card.categoryId);
     setView({
       mode: "reader",
@@ -62,7 +59,7 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
     });
     hapticTap();
     playXpChime();
-  }, [cards, state.watchedLessons]);
+  }, [cards]);
 
   // ── Shake to shuffle ───────────────────────────────────────────────
   // iOS requires permission, asked for on a tap; everywhere else the
@@ -149,13 +146,56 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
     };
   }, [view.mode]);
 
+  // The deck opens whole, once - see deckUnlocked. Until then the tab
+  // shows what opens it rather than a wall of face-down cards, because a
+  // student who can't use the thing shouldn't have to guess why.
+  if (ready && !deckUnlocked(state)) {
+    const watched = state.watchedLessons.length;
+    return (
+      <div className="flex flex-col items-center gap-5 rounded-2xl border border-navy-600 bg-navy-900/50 px-6 py-10 text-center">
+        <span className="flex size-14 items-center justify-center rounded-full border border-navy-600 text-ink-faint">
+          <LockIcon className="size-6" />
+        </span>
+        <div className="flex max-w-sm flex-col gap-2">
+          <h2 className="text-lg font-semibold text-ink">
+            The deck opens soon
+          </h2>
+          <p className="text-sm text-ink-muted">
+            {cards.length} cards, one per skill. It opens all at once - pass
+            one challenge, or watch {UNLOCK_LESSONS} lessons, and the whole
+            deck is yours.
+          </p>
+        </div>
+        <div className="flex w-full max-w-xs flex-col gap-1.5">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-navy-800">
+            <div
+              className="h-full rounded-full bg-storytelling transition-[width] duration-500"
+              style={{
+                width: `${Math.min(100, (watched / UNLOCK_LESSONS) * 100)}%`,
+              }}
+            />
+          </div>
+          <span className="text-xs tabular-nums text-ink-faint">
+            {Math.min(watched, UNLOCK_LESSONS)} of {UNLOCK_LESSONS} lessons
+            watched
+          </span>
+        </div>
+        <Link
+          href="/skills"
+          className="rounded-lg bg-ink px-4 py-2 text-sm font-bold text-navy-950"
+        >
+          Watch a lesson
+        </Link>
+      </div>
+    );
+  }
+
   if (view.mode === "reader") {
     const list = inSection(view.category);
     return (
       <Reader
         cards={list}
         index={Math.min(view.index, list.length - 1)}
-        earned={earned}
         onIndex={(index) => setView({ ...view, index })}
         onBack={() => setView({ mode: "dial" })}
         onShuffle={pullRandom}
@@ -165,9 +205,6 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
 
   const active = hovered ? categories.find((c) => c.id === hovered) : null;
   const activeCards = active ? inSection(active.id) : [];
-  const activeEarned = activeCards.filter((c) =>
-    ready ? state.watchedLessons.includes(c.vimeoId) : false,
-  ).length;
 
   return (
     <div className="flex flex-col gap-6">
@@ -190,7 +227,6 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
               </span>
               <span className="text-xs text-ink-muted">
                 {activeCards.length} cards
-                {activeEarned > 0 && ` · ${activeEarned} earned`}
               </span>
             </>
           ) : (
@@ -283,14 +319,12 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
 function Reader({
   cards,
   index,
-  earned,
   onIndex,
   onBack,
   onShuffle,
 }: {
   cards: DeckCard[];
   index: number;
-  earned: (vimeoId: string) => boolean;
   onIndex: (index: number) => void;
   onBack: () => void;
   onShuffle: () => void;
@@ -371,20 +405,8 @@ function Reader({
           go(dx < 0 ? 1 : -1);
         }}
       >
-        <LessonCard
-          key={card.vimeoId}
-          data={card}
-          locked={!earned(card.vimeoId)}
-          className="max-w-none"
-        />
+        <LessonCard key={card.vimeoId} data={card} className="max-w-none" />
       </div>
-
-      {!earned(card.vimeoId) && (
-        <p className="flex items-center gap-1.5 text-xs text-ink-faint">
-          <LockIcon className="size-3.5" />
-          Watch the lesson and this card is yours
-        </p>
-      )}
 
       {/* Where you are in the color */}
       <div className="flex items-center gap-3">

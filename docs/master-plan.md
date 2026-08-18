@@ -406,20 +406,22 @@ It's also why the deck can't be curated thin. A hand is only as good as the choi
 
 **The colored face.** The section's color edge to edge, the lion mark in a navy well, the section name, and the section's short code (§03) in both corners. It carries no card number and no lesson title — **face down a card gives away its color and its section and nothing else; a deck whose backs can be told apart isn't a deck.**
 
-**The lesson face.** A navy gradient: the mark and section across the top, the lesson title, its key points as bullets, and the lesson's own motif drawn large and faint behind them — the same glyph the player floats during that video (§03), so the card and the lesson read as one thing.
+**The lesson face.** A navy gradient, and across the top a lit plate: the lesson's own motif drawn as a neon tube in the section's color, glow bleeding into the dark and a reflection beneath it — the same glyph the player floats during that video (§03), and the same neon as the dashboard's section banners, drawn rather than photographed. Drawn, because vector stays sharp at print size and runs as one ink; a photographic neon is thousands of colors and cannot be a spot color.
+
+Under it, the mark and section, the lesson title, and then the card teaches rather than reminds — the key points beside a video are enough when the lesson is playing two feet away, but a card is held by somebody who may not have watched it this week, or at all. So it carries the shape a skill lesson actually has: **what** the thing is, **how** you use it, and **like this** — the teacher's own lines, lifted from that lesson's transcript and trimmed, never paraphrased and never invented. Invented examples are the fastest way to make a card feel written by a machine, and they teach a worse line than the one he already gave.
 
 **Print.** Spot inks on neon stock for any real run. These seven colors sit outside CMYK's gamut and four-color printing returns them dull; they are how the entire course is organized, and a deck that misreports which section a card came from is worse than no deck at all.
 
 #### The digital deck
 
-The digital deck lives inside Skills as the **Cards** tab (§03), and carries **every lesson in the library** — all 81, each with its key points already written. Two screens, one gesture each:
+The digital deck lives inside Skills as the **Cards** tab (§03), and carries **every skill lesson in the library** — 79 cards. The two section introductions are the only lessons left out: an introduction frames a section rather than handing you a move you can make, and a card you can't act on wastes a pull. Every card in the deck is a skill. Two screens, one gesture each:
 
 - **The dial** is the closed deck seen from above: seven face-down cards, one per color, each showing its section's icon. It's worked with the same press-slide-release as the Skills dial — hold a thumb down, slide until the color you want lifts, let go — so the hand already knows it.
 - **The reader** is one card filling the screen. A flick left brings the next card in that color; a flick back off the first card leaves the section, and an *All colors* button does the same for anyone not flicking. Tap the card to turn it over.
 
 **Shaking the phone shuffles the deck and pulls a card at random** — the one thing a physical deck does that a list of links never will, and the honest answer to not knowing what to work on today. A button does the same job on a laptop, and asks for motion permission where the platform requires it.
 
-Cards are earned: a card turns over once its lesson has been watched, and an unearned card stays face down with its lesson not rendered at all rather than merely hidden. The deck therefore doubles as a visible record of what a student has actually learned. **Which cards a student has earned follows from lessons watched; which cards they pull is still never logged** — see below.
+**The deck opens whole, once.** Not card by card as each lesson is watched: the deck is a tool, and a tool handed over one piece at a time is useless — the mechanic is pull one card of every color, which needs every color to be there. But handed over on day one it's 79 cards of vocabulary for skills nobody has met yet, which is its own kind of useless. So it opens at the point a student has enough context for it to mean something: **one challenge passed, or ten lessons watched**, whichever comes first. Two routes because they're two kinds of student — one dives in and performs, the other reads the room first. Until then the tab shows what opens it and how close they are, rather than a wall of face-down cards a student has to guess the rules of.
 
 The deck ships with one card that isn't a lesson: the instruction card, explaining the pull-one-of-each-color mechanic. A deck explains itself in the hand, not in a manual.
 
@@ -439,7 +441,7 @@ Most of the questions raised during this plan's development have been resolved a
 - The exact final count of skill categories — seven or fewer — once all ~80 lessons are sorted and it's clear whether every skill nests cleanly into an existing color.
 - The exact form of the first-attempt-vs-latest-attempt comparison in Community — side-by-side playback, a before/after spectrum chart, or something else.
 - Whether in-app playback of a student's own video stays hosted in-app, or falls back to referencing the video on their phone — pending cost analysis.
-- Whether the printed deck ships all 81 cards or a curated subset. The digital deck carries every lesson with key points; a physical run may be cut for cost, and that cut is a separate decision from the one made here.
+- Whether the printed deck ships all 79 cards or a curated subset. The digital deck carries every skill lesson; a physical run may be cut for cost, and that cut is a separate decision from the one made here.
 - Whether IMAGE is the right short code for Figurative language — it names what the section teaches (imagery) but could be misread as photography.
 - Which promotional video the landing page centers on, and whether the book and card deck get their own cross-sell moment there too, or stay upsells inside the course and the book itself.
 - Where the three unplaced challenge videos land in the STORY curriculum — Set & Scene, Foreshadowing & Fulfilment, and Mic Drop Moment — as additions to the O or Y phases, or as bonus challenges.

@@ -6,6 +6,7 @@ import { categories } from "@/data/categories";
 import { deckLessonIds } from "@/data/deck";
 import { lessons } from "@/data/lessons";
 import { takeaways } from "@/data/takeaways";
+import { contentFor } from "@/data/card-content";
 import cueTable from "@/data/lesson-cues.json";
 import type { LessonCue } from "@/lib/lesson-cues";
 
@@ -35,6 +36,7 @@ const cards: DeckCard[] = deckLessonIds.flatMap((vimeoId) => {
       section: category.name,
       title: lesson.title,
       points,
+      ...contentFor(vimeoId),
       icon: motif(vimeoId),
       index: siblings.findIndex((l) => l.vimeoId === vimeoId) + 1,
       total: siblings.length,

@@ -128,16 +128,17 @@ Each phase lists what it builds, which master plan sections it delivers, and wha
 *The third leg of the trinity arrives in-app.*
 
 **Builds:**
-- The digital deck inside Skills as the Cards tab: 81 cards, one per lesson, each in its section's color (§16) — *built*
+- The digital deck inside Skills as the Cards tab: 79 cards, one per skill lesson, each in its section's color — the two section introductions left out, because a card you can't act on wastes a pull (§16) — *built*
 - The dial of seven face-down cards, worked with the same press-slide-release as the Skills dial; the full-screen reader, flick left for the next card in that color (§16) — *built*
 - Shake the phone to shuffle and pull at random, with a button doing the same on a laptop (§16) — *built*
-- Cards earned by watching their lesson; an unearned card stays face down with its lesson not rendered at all (§16) — *built*
+- The deck opens whole and once — one challenge passed or ten lessons watched — rather than card by card; until then the tab shows what opens it and how close the student is (§16) — *built*
+- The card face that teaches rather than reminds: a neon plate carrying the lesson's motif, then what it is, how you use it, and the teacher's own lines lifted from the transcript (§16) — *built, all 79*
 - The instruction card explaining the pull-one-of-each-color mechanic (§16) — *built*
 - Deliberately untracked: which cards a student pulls is never logged or linked to challenge performance (§16)
 
 **Shippable when:** a student can pull cards on their phone as fast as flipping a physical deck.
 
-**Still open:** whether the printed deck ships all 81 cards or a curated subset, and the press specification — oracle stock at 89 × 127 mm, spot inks on neon (§16).
+**Still open:** whether the printed deck ships all 79 cards or a curated subset, and the press specification — oracle stock at 89 × 127 mm, spot inks on neon (§16).
 
 ---
 
@@ -147,7 +148,7 @@ These run in parallel as content/product work and never block an app phase:
 
 - **The book** — *How To Be a Powerful Unforgettable Speaker*: written from the transcript library, half story half skills, standalone product with upsell into course + deck (§16)
 - **The physical card deck** — printed and sold as its own product, same categories and colors (§16)
-- **Card copywriting** — the succinct explanations + examples, shared between the physical and digital decks, needed before Phase 7
+- **Card copywriting** — the succinct explanations + examples, shared between the physical and digital decks — *written, all 79: `src/data/card-content.ts`*
 
 ---
 

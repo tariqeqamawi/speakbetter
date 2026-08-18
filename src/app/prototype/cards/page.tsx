@@ -1,7 +1,9 @@
 import { LessonCard, type LessonCardData } from "@/components/lesson-card";
 import { categories } from "@/data/categories";
+import { deckLessonIds } from "@/data/deck";
 import { lessons } from "@/data/lessons";
 import { takeaways } from "@/data/takeaways";
+import { contentFor } from "@/data/card-content";
 import cueTable from "@/data/lesson-cues.json";
 import type { LessonCue } from "@/lib/lesson-cues";
 
@@ -36,30 +38,42 @@ function cardFor(vimeoId: string): LessonCardData | null {
     section: category.name,
     title: lesson.title,
     points,
+    ...contentFor(vimeoId),
     icon: motif(vimeoId),
     index: siblings.findIndex((l) => l.vimeoId === vimeoId) + 1,
     total: siblings.length,
   };
 }
 
-/** The first lesson in each section that has key points written for it. */
+/** Every card in the deck, in the order the course teaches them. */
+function wholeDeck(): LessonCardData[] {
+  return deckLessonIds.map(cardFor).filter((c) => c !== null);
+}
+
+/** The first card of each section, so the color system reads at a glance. */
 function samplePerCategory(): LessonCardData[] {
-  const out: LessonCardData[] = [];
-  for (const category of categories) {
-    const found = lessons
-      .filter((l) => l.category === category.id)
-      .map((l) => cardFor(l.vimeoId))
-      .find(Boolean);
-    if (found) out.push(found);
-  }
-  return out;
+  const deck = wholeDeck();
+  return categories
+    .map((category) => deck.find((c) => c.category.id === category.id))
+    .filter((c) => c !== undefined);
+}
+
+/** How much type a card is carrying - the thing that overflows it. */
+function weight(card: LessonCardData): number {
+  const body = card.what
+    ? [card.what, card.how, ...(card.like ?? []).slice(0, 3)]
+    : card.points;
+  return card.title.length + body.join(" ").length;
 }
 
 export default function CardsPrototypePage() {
   // The card Tariq described: a storytelling card, so yellow.
   const hero = cardFor("1081031042") ?? samplePerCategory()[0];
   const deck = samplePerCategory();
-  const covered = lessons.filter((l) => takeaways[l.vimeoId]).length;
+  // The three cards carrying the most type. If the layout holds here it
+  // holds everywhere, so this is the bench worth judging.
+  const heaviest = [...wholeDeck()].sort((a, b) => weight(b) - weight(a)).slice(0, 3);
+  const written = wholeDeck().filter((c) => c.what).length;
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-10 py-8">
@@ -73,8 +87,9 @@ export default function CardsPrototypePage() {
           size with both faces laid out flat.
         </p>
         <p className="max-w-2xl text-xs text-ink-faint">
-          {covered} of {lessons.length} lessons have key points written, so
-          that many can be carded today.
+          {deckLessonIds.length} cards, one per skill lesson - {written} of
+          them written out in full: what it is, how to use it, and his own
+          lines. The rest fall back to their key takeaways.
         </p>
       </header>
 
@@ -84,6 +99,18 @@ export default function CardsPrototypePage() {
           <LessonCard data={hero} />
         </div>
         <p className="text-xs text-ink-faint">Tap the card</p>
+      </section>
+
+      {/* Worst case for the layout: the cards with the most words on them */}
+      <section className="deck-print-hide flex flex-col gap-4">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-faint">
+          The longest cards
+        </h2>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+          {heaviest.map((card) => (
+            <LessonCard key={card.title} data={card} className="max-w-none" />
+          ))}
+        </div>
       </section>
 
       {/* One card per section, so the color system reads at a glance */}
