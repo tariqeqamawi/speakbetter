@@ -681,6 +681,124 @@ body {
   }
 }
 
+/* ── The lesson deck ─────────────────────────────────────────────────
+   A card turns over rather than cross-fading, because a card is a
+   physical object and the whole point of the deck is that it could be
+   one. The two faces are stacked and the container rotates; each face
+   hides its own back so nothing shows through mid-turn. */
+.card-3d {
+  perspective: 1600px;
+  /* Everything inside sizes off the card's width - see lesson-card.tsx */
+  container-type: inline-size;
+}
+
+.card-3d-inner {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  transition: transform 620ms cubic-bezier(0.22, 1, 0.36, 1);
+  transform-style: preserve-3d;
+}
+
+.card-3d-inner.is-flipped {
+  transform: rotateY(180deg);
+}
+
+/* A hint of the turn on hover - enough to read as "this moves". */
+@media (hover: hover) {
+  .card-3d:hover .card-3d-inner:not(.is-flipped) {
+    transform: rotateY(-9deg) translateZ(6px);
+  }
+}
+
+.card-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 1rem;
+  /* The die-cut edge a printed card would have, and the shadow it would
+     cast lying on a table. */
+  box-shadow:
+    0 18px 40px -18px rgba(3, 7, 18, 0.9),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.card-face-back {
+  transform: rotateY(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-3d-inner {
+    transition: none;
+  }
+
+  .card-3d:hover .card-3d-inner:not(.is-flipped) {
+    transform: none;
+  }
+}
+
+/* ── The deck, on paper ──────────────────────────────────────────────
+   Printing this page gives the real thing at real size: each card at
+   63 x 88 mm with its faces side by side, so a proof can be cut out and
+   held before anyone pays for a press run. */
+@media print {
+  .deck-print-hide {
+    display: none !important;
+  }
+
+  /* A press sheet is the cards and nothing else - no site chrome, no
+     ambient wash behind them, no page background to soak ink. */
+  body > nav,
+  body > header,
+  .ambient-bg {
+    display: none !important;
+  }
+
+  .deck-sheet {
+    display: grid;
+    grid-template-columns: repeat(2, 63mm);
+    gap: 6mm;
+  }
+
+  /* The card is no longer one 63x88 box with two faces behind each
+     other - on paper it's a column holding both faces at cut size, so
+     the height is whatever two cards and their gap come to. */
+  .deck-sheet .card-3d {
+    width: 63mm;
+    height: auto;
+    aspect-ratio: auto;
+    max-width: none;
+    break-inside: avoid;
+    perspective: none;
+  }
+
+  .deck-sheet .card-3d-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 4mm;
+    height: auto;
+    transform: none !important;
+  }
+
+  /* Relative, not static: each face has to stay the containing block for
+     the motif drawn inside it, or the glyph escapes the card and prints
+     across the sheet. */
+  .deck-sheet .card-face {
+    position: relative;
+    inset: auto;
+    width: 63mm;
+    height: 88mm;
+    backface-visibility: visible;
+    -webkit-backface-visibility: visible;
+    box-shadow: none;
+    transform: none !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
+
 /* The reward for finishing a lesson, rising off the player and away.
    Slower and taller than .xp-pop, which is a receipt printed in place -
    this one is meant to be watched leaving. */
