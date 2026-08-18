@@ -37,6 +37,16 @@ export function ChallengesIcon({ className = "size-5" }: IconProps) {
   );
 }
 
+/** Two cards, one behind the other - the deck. */
+export function DeckIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="9" y="3.4" width="10.6" height="14.4" rx="2" transform="rotate(9 14.3 10.6)" />
+      <rect x="4.4" y="5.6" width="10.6" height="14.4" rx="2" />
+    </svg>
+  );
+}
+
 /** Stacked layers - the library of short lessons. */
 export function SkillsIcon({ className = "size-5" }: IconProps) {
   return (

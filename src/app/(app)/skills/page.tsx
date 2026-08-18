@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SkillsIcon } from "@/components/icons";
 import { SkillDial } from "@/components/skill-dial";
+import { SectionTabs } from "@/components/section-tabs";
 
 export const metadata: Metadata = {
   title: "Skills",
@@ -22,6 +23,7 @@ export default function SkillsPage() {
         </p>
       </header>
 
+      <SectionTabs />
       <SkillDial />
     </div>
   );

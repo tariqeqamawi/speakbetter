@@ -62,34 +62,52 @@ export interface LessonCardData {
   /** Position in its section, printed as the card's index: 3 of 15. */
   index?: number;
   total?: number;
+  /** Overrides for the one card that isn't a lesson - see rulesCard. */
+  code?: string;
+  color?: string;
+  background?: string;
 }
 
 export function LessonCard({
   data,
+  locked = false,
   className = "",
 }: {
   data: LessonCardData;
+  /**
+   * A card whose lesson hasn't been watched yet. It shows its color and
+   * its section, exactly as any card does face down, and it will not
+   * turn over - its lesson isn't rendered at all rather than hidden,
+   * because a card you could read by opening the inspector isn't earned.
+   */
+  locked?: boolean;
   className?: string;
 }) {
   const [flipped, setFlipped] = useState(false);
   const { category } = data;
   const Icon = data.icon ? cueIcons[data.icon] : undefined;
-  const color = `var(--color-${category.id})`;
+  const color = data.color ?? `var(--color-${category.id})`;
+  const code = data.code ?? category.code;
+  const showBack = flipped && !locked;
 
   return (
     <button
       type="button"
-      onClick={() => setFlipped((f) => !f)}
-      aria-pressed={flipped}
-      aria-label={`${data.title} - ${flipped ? "showing the key points, tap to turn over" : "tap to turn over"}`}
-      className={`card-3d group aspect-[89/127] w-full max-w-xs cursor-pointer ${className}`}
+      onClick={() => !locked && setFlipped((f) => !f)}
+      aria-pressed={showBack}
+      aria-label={
+        locked
+          ? `A ${category.name} card, not yet earned - watch its lesson to turn it over`
+          : `${data.title} - ${flipped ? "showing the key points, tap to turn over" : "tap to turn over"}`
+      }
+      className={`card-3d group aspect-[89/127] w-full max-w-xs ${locked ? "cursor-default" : "cursor-pointer"} ${className}`}
     >
-      <span className={`card-3d-inner ${flipped ? "is-flipped" : ""}`}>
+      <span className={`card-3d-inner ${showBack ? "is-flipped" : ""}`}>
         {/* ── Face: the section's color, and the mark ───────────────── */}
         <span
-          aria-hidden={flipped}
+          aria-hidden={showBack}
           className="card-face flex flex-col items-center justify-between overflow-hidden p-[6.2cqw]"
-          style={{ background: color }}
+          style={{ background: data.background ?? color }}
         >
           {/* Face down, a card gives away its section and nothing else.
               Both corners carry the same short code rather than one of
@@ -99,10 +117,10 @@ export function LessonCard({
               does the work; the code names the color. */}
           <span className="flex w-full items-start justify-between text-navy-950">
             <span className="text-[3cqw] font-bold uppercase tracking-[0.22em]">
-              {category.code}
+              {code}
             </span>
             <span className="text-[3cqw] font-bold uppercase tracking-[0.22em] opacity-45">
-              {category.code}
+              {code}
             </span>
           </span>
 
@@ -127,7 +145,9 @@ export function LessonCard({
           </span>
         </span>
 
-        {/* ── Face: the lesson itself ───────────────────────────────── */}
+        {/* ── Face: the lesson itself ─────────────────────────────────
+            Absent entirely while the card is locked. */}
+        {!locked && (
         <span
           aria-hidden={!flipped}
           className="card-face card-face-back flex flex-col gap-[2.5cqw] overflow-hidden bg-gradient-to-b from-navy-800 via-navy-900 to-navy-950 p-[6.2cqw]"
@@ -213,6 +233,7 @@ export function LessonCard({
             )}
           </span>
         </span>
+        )}
       </span>
     </button>
   );
