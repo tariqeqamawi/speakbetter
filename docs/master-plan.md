@@ -2,7 +2,7 @@
 
 *A speaking course built on practice, not playback — and a way to see, in color, how dynamic a speaker someone is becoming.*
 
-> Draft v2 · Prepared 2026-08-07 · English-first plan, paired with a chosen stack.
+> Draft v2 · Prepared 2026-08-07 · revised 2026-08-17 with the on-screen cue engine (§03), the XP model and the finish moment (§11), and the card deck as built (§16).
 > The live formatted version of this plan is published as an artifact; this file is the repo's canonical copy.
 
 ---
@@ -67,6 +67,36 @@ The palette is deliberately neon and highly saturated — these colors are meant
 Seven is the working set, and it's treated as a ceiling rather than a target — categories are deliberately held to seven or fewer, growing only if a skill genuinely doesn't nest into any existing color as Skills is built out. What matters structurally is that every lesson belongs to exactly one category, and every category has one color, consistently across the course, the book, and the card deck.
 
 Students aren't expected to work through Skills front to back like a syllabus. It's meant to be dipped into — a student heading into a specific challenge is pointed to the handful of lessons most relevant to it, watches those in a few minutes, and goes straight into attempting the challenge.
+
+Each color also carries a **short code** — the deck's shorthand, used anywhere a full category name won't fit, and printed in the corner of every card (§16):
+
+| Code | Category |
+|---|---|
+| STORY | Storytelling techniques |
+| IMAGE | Figurative language |
+| ACT | Acting skills for speakers |
+| FRAME | Structure & framing |
+| MIND | Speaker's mindset & psychology |
+| BODY | Body language & physical expression |
+| PRO | Advanced tips & tricks |
+
+### Two ways through the library — Skills and Cards
+
+Skills is one section with two tabs. **Skills** is the video library: the seven colors as a dial, press a color and let go, and its lessons open. **Cards** is the same library in the hand — every lesson that has key points written for it becomes a card in its section's color (§16). Watching the lesson and holding the card are two modes of the same material, so they sit as two tabs of one section rather than as two destinations in the navigation.
+
+### The lesson player — what appears beside the teacher
+
+A lesson is one to two minutes of a person talking to camera, and the margins either side of him are dead space. The player uses them as a second channel of teaching: **each time the teacher lands a point, the thing he is making a point *about* appears in the margin** — as the words themselves, or as a single-color stroke icon where a drawing says it faster than reading would.
+
+What appears is neither hand-written nor random. A build step reads each lesson's own transcript and finds the beats where a point is being landed — from the rhetoric used to land it ("I promise you", "remember", "it's not about *what* you say, it's about *how*", "if you… then…") and from passages that make their point by painting rather than announcing, which is how the most vivid teaching in the course actually reads. It then shows whichever phrase inside that beat is most distinctive to that lesson and most worth picturing.
+
+Three rules keep a second channel from becoming noise:
+
+- **An idea appears once per lesson**, counted by word stem, so OVATION can never follow STANDING OVATION.
+- **An idea rarely repeats across the course**, so the lessons don't all surface the same handful of words.
+- **A moment with nothing worth showing shows nothing.** Silence beats a word that isn't a point.
+
+Around 600 cues across the 121 videos — the 81 Skills lessons plus the challenge explainers and intros — roughly one every sixteen seconds. Because they're generated from the transcripts rather than maintained by hand, the whole course can be re-cut by rerunning one script, and every lesson's cues can be reviewed on one page without watching a single video.
 
 ## 04 · Pillar two — Challenges, on the STORY journey
 
@@ -226,6 +256,33 @@ A progress bar across the full STORY journey — every challenge, through all fi
 
 This layer applies equally to every student, at every level. Unlike the deeper skill-and-color feedback reserved for Intermediate and Advanced (§08), positive reinforcement isn't gated — a Beginner celebrates their first upload exactly as loudly as an Advanced student closing out the final phase.
 
+### XP — what each thing is worth, said before it's done
+
+Every action worth doing carries a number, and the number is shown *before* the action as well as after: on unwatched lesson cards, in the lesson and challenge headers, on the up-next button, and on each node of the STORY map. A student can see what something is worth while deciding whether to start it.
+
+| Action | Worth |
+|---|---|
+| Watching a lesson | 8–22 XP, scaled by the lesson's length |
+| Passing a challenge | 100–200 XP, rising through the five STORY phases |
+| The one passive challenge item | 50 XP |
+| Uploading an attempt | 25 XP |
+| Earning a badge | 50 XP |
+| Completing a three-quest day | 50 XP |
+
+Lesson XP is deliberately not rounded to a tidy grid. A two-and-a-half minute lesson pays 22 and a thirty-second one pays 8, landing on fourteen distinct values across the library — **8, 11, 12, 14 reads as this lesson's own number; a course of 10s and 15s reads as a tariff applied to a list.** Each lesson becomes a small thing to complete rather than one identical unit among a hundred and twenty-one.
+
+Challenges pay an order of magnitude more, because a lesson is watched while a challenge is performed, recorded, and judged — and they climb through the phases, since the same effort late in the journey is being asked of someone doing harder things with it.
+
+### The moment a lesson finishes
+
+When a lesson ends, the XP it paid rises off the player and out of frame over about three seconds, carried by a two-note chime — the smaller sibling of the badge celebration, which gets three. It's quieter and shorter on purpose: finishing a lesson happens a hundred times across a course and earning a badge happens rarely, so this has to be a sound a student still likes on the hundredth hearing.
+
+It fires only when the XP is genuinely being earned. A lesson already watched plays through in silence — **you don't earn it twice, and the course doesn't pretend you did**, the same rule the coach lives under (§14).
+
+### Nothing plays itself
+
+A finished lesson never rolls into the next one. The next lesson is offered — named, with its XP on the button — and waits to be chosen. This matters most inside Challenges, where only the lessons serving that challenge are worth watching, and an autoplay would carry a student somewhere they never asked to go.
+
 ## 12 · Community
 
 Students should be able to see how they're progressing relative to other students. Rankings and peer scores are visible by default — a way to stay motivated and to see that becoming a full-spectrum, dynamic speaker is achievable and visibly happening for others too — but each student can choose to hide their own score from others if they'd rather keep it private.
@@ -333,9 +390,38 @@ The card deck carries the same skills and the same color-coded categories as the
 
 It exists in two forms: a physical, printed deck sold as its own product, and a digital version living inside the app itself, inside Skills — so a student can pull a card on their phone as quickly as flipping through the physical one.
 
-The deck is built to be pulled from, not read cover to cover. A student preparing for a real, upcoming talk can pull cards from different colored sections on purpose — a story technique here, a piece of figurative language there, a physical-expression cue for the opening — and deliberately build a talk that reaches across categories instead of leaning on just one or two.
+#### The mechanic — one card of each color
+
+The deck is built to be pulled from, not read cover to cover. A student preparing for a real, upcoming talk **pulls one card of every color**: a yellow one for the story they'll tell, orange for the language they'll paint it in, red for how they'll perform it, magenta for the shape they'll build, green for what they'll bring to it, cyan for what their body will do, crimson for the finish. Seven cards on the table and they hold the ingredients for a talk that moves — not one technique used well, but a range, which is the whole argument of the course.
+
+And when they want one idea and nothing else, they reach for a color: yellow for a storytelling skill, cyan for body language. **The color is the index.** That is why every card is its section's color edge to edge, and why a card face down gives away its color and nothing more.
 
 **Pulling cards from different colors is the color-spectrum score (§05) worked backwards: instead of finding out afterward which colors were missing, a student uses the deck beforehand to make sure the talk touches many of them from the start.**
+
+It's also why the deck can't be curated thin. A hand is only as good as the choice behind each card, so the depth of each color is what makes pulling from it feel like a decision rather than a draw.
+
+#### The card
+
+**Format.** Oracle-deck size — 89 × 127 mm (3.5 × 5 in) — not the smaller poker size a playing deck uses. These are cards you *read*: held one at a time, carrying text, meant to sit face up on a table while a talk is being built. The larger stock is also what lifts the printed body text from roughly 6pt to roughly 9pt.
+
+**The colored face.** The section's color edge to edge, the lion mark in a navy well, the section name, and the section's short code (§03) in both corners. It carries no card number and no lesson title — **face down a card gives away its color and its section and nothing else; a deck whose backs can be told apart isn't a deck.**
+
+**The lesson face.** A navy gradient: the mark and section across the top, the lesson title, its key points as bullets, and the lesson's own motif drawn large and faint behind them — the same glyph the player floats during that video (§03), so the card and the lesson read as one thing.
+
+**Print.** Spot inks on neon stock for any real run. These seven colors sit outside CMYK's gamut and four-color printing returns them dull; they are how the entire course is organized, and a deck that misreports which section a card came from is worse than no deck at all.
+
+#### The digital deck
+
+The digital deck lives inside Skills as the **Cards** tab (§03), and carries **every lesson in the library** — all 81, each with its key points already written. Two screens, one gesture each:
+
+- **The dial** is the closed deck seen from above: seven face-down cards, one per color, each showing its section's icon. It's worked with the same press-slide-release as the Skills dial — hold a thumb down, slide until the color you want lifts, let go — so the hand already knows it.
+- **The reader** is one card filling the screen. A flick left brings the next card in that color; a flick back off the first card leaves the section, and an *All colors* button does the same for anyone not flicking. Tap the card to turn it over.
+
+**Shaking the phone shuffles the deck and pulls a card at random** — the one thing a physical deck does that a list of links never will, and the honest answer to not knowing what to work on today. A button does the same job on a laptop, and asks for motion permission where the platform requires it.
+
+Cards are earned: a card turns over once its lesson has been watched, and an unearned card stays face down with its lesson not rendered at all rather than merely hidden. The deck therefore doubles as a visible record of what a student has actually learned. **Which cards a student has earned follows from lessons watched; which cards they pull is still never logged** — see below.
+
+The deck ships with one card that isn't a lesson: the instruction card, explaining the pull-one-of-each-color mechanic. A deck explains itself in the hand, not in a manual.
 
 Where the course scores a talk after it's given and the book teaches the reasoning behind each skill, the deck is the fastest of the three — built for the few minutes before speaking, not for study. And unlike everything else in the system, deck use stays deliberately untracked: pulling a card, physical or digital, is never logged or connected back to challenge performance.
 
@@ -353,7 +439,8 @@ Most of the questions raised during this plan's development have been resolved a
 - The exact final count of skill categories — seven or fewer — once all ~80 lessons are sorted and it's clear whether every skill nests cleanly into an existing color.
 - The exact form of the first-attempt-vs-latest-attempt comparison in Community — side-by-side playback, a before/after spectrum chart, or something else.
 - Whether in-app playback of a student's own video stays hosted in-app, or falls back to referencing the video on their phone — pending cost analysis.
-- How many cards sit within each color category, across both the physical and digital deck.
+- Whether the printed deck ships all 81 cards or a curated subset. The digital deck carries every lesson with key points; a physical run may be cut for cost, and that cut is a separate decision from the one made here.
+- Whether IMAGE is the right short code for Figurative language — it names what the section teaches (imagery) but could be misread as photography.
 - Which promotional video the landing page centers on, and whether the book and card deck get their own cross-sell moment there too, or stay upsells inside the course and the book itself.
 - Where the three unplaced challenge videos land in the STORY curriculum — Set & Scene, Foreshadowing & Fulfilment, and Mic Drop Moment — as additions to the O or Y phases, or as bonus challenges.
 
