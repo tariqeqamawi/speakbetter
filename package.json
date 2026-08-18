@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:cues": "node scripts/build-lesson-cues.mjs",
     "start": "next start",
     "lint": "eslint"
   },

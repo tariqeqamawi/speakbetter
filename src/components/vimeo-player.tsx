@@ -1,10 +1,10 @@
 "use client";
 
 import Player from "@vimeo/player";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { vimeoEmbedUrl } from "@/lib/vimeo";
 import { categories } from "@/data/categories";
-import { lessonKeywords } from "@/data/takeaways";
+import { lessonCues, type LessonCue } from "@/lib/lesson-cues";
 import {
   CaptionsIcon,
   ExitFullscreenIcon,
@@ -31,6 +31,11 @@ type Frame = "fit" | "portrait";
 
 const SPEEDS = [0.75, 1, 1.25, 1.5, 2];
 
+// A cue is worth showing while the teacher is still on the thought that
+// earned it. Seek past that and the moment has gone - cues are missed,
+// never queued up to fire late.
+const CUE_GRACE = 2.5; // seconds
+
 // The floating key words wear white or one of the spectrum's neons.
 // White appears twice so it comes up more often than any single color.
 const WORD_COLORS = [
@@ -40,6 +45,9 @@ const WORD_COLORS = [
 ];
 
 interface Floater {
+  /** The lesson it was drawn for - a leftover from the previous one
+      shouldn't outlive a switch to the next video. */
+  lesson: string;
   word: string;
   color: string;
   left: number; // percent
@@ -101,39 +109,74 @@ export function VimeoPlayer({
   const [captionLang, setCaptionLang] = useState<string | null>(null);
 
   // ── Floating key ideas ─────────────────────────────────────────────
-  // Single words from this lesson's own takeaways drift through the
-  // margins around the teacher while the video plays - a second channel
-  // of reinforcement. Which word, where, and when is drawn fresh each
-  // time, so no two viewings highlight the same sequence. Only in the
-  // default and fullscreen framings: portrait crops the margins away.
-  const keywords = useMemo(() => lessonKeywords(vimeoId), [vimeoId]);
+  // A key phrase drifts through the margins around the teacher while the
+  // video plays - a second channel of reinforcement. Each one is timed to
+  // the second the teacher says it, so the words on screen and the words
+  // in the room are the same idea. (They used to be single words drawn at
+  // random from the lesson's takeaways, which meant a lesson on the pause
+  // could float "SNOWBOARD" while the teacher was mid-sentence on
+  // something else.) A lesson with no cue at that moment floats nothing.
+  // Only in the default and fullscreen framings: portrait crops the
+  // margins away.
+  const cuesRef = useRef<LessonCue[]>([]);
+  const cueLessonRef = useRef(vimeoId);
+  const nextCueRef = useRef(0);
+  const floaterKeyRef = useRef(0);
   const [floater, setFloater] = useState<Floater | null>(null);
-  const showWords = playing && frame === "fit" && keywords.length > 0;
+  const showWords = playing && frame === "fit";
+
+  // Which framing we're in, read from inside the player's timeupdate -
+  // ref'd so changing it doesn't tear down and rebuild the player.
+  const framedRef = useRef(true);
+  useEffect(() => {
+    framedRef.current = frame === "fit";
+  }, [frame]);
 
   useEffect(() => {
-    if (!showWords) return;
     let alive = true;
-    let key = 0;
-    let timer: number;
-    const spawn = () => {
-      if (!alive) return;
-      const leftSide = Math.random() < 0.5;
-      setFloater({
-        word: keywords[Math.floor(Math.random() * keywords.length)],
-        color: WORD_COLORS[Math.floor(Math.random() * WORD_COLORS.length)],
-        // The gray areas flanking the centered teacher.
-        left: leftSide ? 4 + Math.random() * 13 : 70 + Math.random() * 16,
-        top: 15 + Math.random() * 55,
-        key: key++,
-      });
-      timer = window.setTimeout(spawn, 7000 + Math.random() * 4000);
-    };
-    timer = window.setTimeout(spawn, 2000 + Math.random() * 2500);
+    cuesRef.current = [];
+    cueLessonRef.current = vimeoId;
+    nextCueRef.current = 0;
+    lessonCues(vimeoId)
+      .then((list) => {
+        if (alive) cuesRef.current = list;
+      })
+      .catch(() => {});
     return () => {
       alive = false;
-      clearTimeout(timer);
     };
-  }, [showWords, keywords]);
+  }, [vimeoId]);
+
+  // Driven by playback position rather than a timer, and stable across
+  // renders so the player effect below never rebuilds over it.
+  const cueAt = useCallback((seconds: number) => {
+    const list = cuesRef.current;
+    if (!list.length) return;
+    // A seek backwards (or a replay) hands the earlier cues back.
+    if (nextCueRef.current > 0 && seconds < list[nextCueRef.current - 1].t)
+      nextCueRef.current = 0;
+
+    let due: LessonCue | null = null;
+    while (
+      nextCueRef.current < list.length &&
+      list[nextCueRef.current].t <= seconds
+    ) {
+      due = list[nextCueRef.current];
+      nextCueRef.current++;
+    }
+    if (!due || seconds - due.t > CUE_GRACE || !framedRef.current) return;
+
+    const leftSide = Math.random() < 0.5;
+    setFloater({
+      lesson: cueLessonRef.current,
+      word: due.w,
+      color: WORD_COLORS[Math.floor(Math.random() * WORD_COLORS.length)],
+      // The gray areas flanking the centered teacher.
+      left: leftSide ? 4 + Math.random() * 13 : 70 + Math.random() * 16,
+      top: 15 + Math.random() * 55,
+      key: floaterKeyRef.current++,
+    });
+  }, []);
 
   useEffect(() => {
     if (!holderRef.current) return;
@@ -169,7 +212,12 @@ export function VimeoPlayer({
       setPlaying(true);
       setEnded(false);
     };
-    const onPause = () => setPlaying(false);
+    // Clearing the floater on pause keeps a cue from replaying its fade
+    // on resume, seconds after the words it belongs to were spoken.
+    const onPause = () => {
+      setPlaying(false);
+      setFloater(null);
+    };
     // The course must end where the course is: Vimeo's own end screen can
     // surface "more from" recommendations the moment playback finishes.
     // Seeking back to the start dismisses it inside the iframe, and the
@@ -184,6 +232,7 @@ export function VimeoPlayer({
     const onTime = (d: { seconds: number; duration: number }) => {
       setProgress(d.duration ? d.seconds / d.duration : 0);
       if (d.duration) setDuration(d.duration);
+      cueAt(d.seconds);
     };
     player.on("play", onPlay);
     player.on("pause", onPause);
@@ -198,7 +247,7 @@ export function VimeoPlayer({
       player.destroy().catch(() => {});
       playerRef.current = null;
     };
-  }, [vimeoId, autoplay]);
+  }, [vimeoId, autoplay, cueAt]);
 
   const togglePlay = useCallback(() => {
     const p = playerRef.current;
@@ -386,9 +435,9 @@ export function VimeoPlayer({
           data-title={title}
         />
 
-        {/* A key idea from this lesson, adrift in the margin beside the
-            teacher - remounted by key so each word plays its fade anew */}
-        {showWords && floater && (
+        {/* The idea the teacher is on right now, adrift in the margin
+            beside them - remounted by key so each cue fades in anew */}
+        {showWords && floater?.lesson === vimeoId && (
           <span
             key={floater.key}
             aria-hidden
