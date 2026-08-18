@@ -616,8 +616,10 @@ body {
 /* A lesson's key word drifting through the player's margins: fades in,
  * rises slowly, fades away. Runs once per word; the player remounts the
  * element for each new word. */
+/* Shortened from 5.5s so cues can sit closer together: the player shows
+   one at a time, so a cue's welcome is exactly as long as its fade. */
 .float-word {
-  animation: float-word 5.5s ease-in-out both;
+  animation: float-word 4s ease-in-out both;
 }
 
 @keyframes float-word {

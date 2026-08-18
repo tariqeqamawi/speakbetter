@@ -48,8 +48,17 @@ const transcripts = JSON.parse(
 
 // -- Tuning -----------------------------------------------------------
 const BEAT_EVERY = 10; // aim for a point on screen about this often
-const BEAT_FLOOR = 1.2; // below this a sentence isn't making a point
-const MIN_GAP = 7; // seconds between cues, however strong the beats
+const BEAT_FLOOR = 0.7; // below this a sentence isn't making a point
+// A cue's fade runs 4s (see .float-word) and the player shows one at a
+// time, so cues closer than that would cut each other off mid-sentence.
+const MIN_GAP = 4.2;
+// With the beat floor this low, more stretches of a lesson offer a point
+// - so the bar moves to the phrase instead. A beat whose best candidate
+// is this weak shows nothing, which is what keeps a denser screen from
+// becoming a noisier one.
+const CUE_FLOOR = 2;
+// A point worth lifting whole even when its words are all stopwords.
+const VERBATIM_EMPHASIS = 2.5;
 const LEAD = 0.25; // appear a beat before the words land
 
 const REUSE_DECAY = 0.55; // how hard a course-wide repeat is penalized
@@ -264,6 +273,42 @@ function candidatesFor(doc, beat, ledger) {
   return scored.sort((a, b) => b.score - a.score);
 }
 
+// -- Points made entirely out of small words -------------------------
+//
+// "It's not about what you say. It's about how you say it." is the line
+// the standing ovation lesson is built to land, and there is not one
+// content word in it - every word is a stopword, so no amount of ranking
+// vocabulary will ever put it on screen. Same for "is it luck or
+// chance?". These are the moments a viewer most wants in writing and the
+// ones a word-scoring engine is structurally blind to.
+//
+// So a strongly marked beat that offers no showable phrase gets one last
+// chance: lift the clause itself, whole, if it's short enough to read at
+// a glance. Deliberately a narrow list of shapes - a general "quote the
+// sentence" rule would fill the screen with prose.
+const VERBATIM = [
+  // "It's about how you say it and how you make people feel" -> the
+  // first half of the answer, not the whole run-on.
+  /\bit'?s about (?:the )?([a-z' ]{6,30}?)(?: and | or |[,.!?]|$)/i,
+  // "...is it luck or chance?" -> what the question actually offers.
+  /\bis it ([a-z' ]{5,26})\?/i,
+  // "What matters is how you make them feel."
+  /\bwhat matters is ([a-z' ]{5,26})[.!?]/i,
+];
+
+function verbatimCue(beat) {
+  if (beat.emphasis < VERBATIM_EMPHASIS) return null;
+  for (const pattern of VERBATIM) {
+    const found = beat.text.match(pattern);
+    if (!found) continue;
+    const phrase = found[1].trim().replace(/\s+/g, " ");
+    const words = phrase.split(" ");
+    if (words.length < 2 || words.length > 5 || phrase.length > 24) continue;
+    return phrase.toLowerCase();
+  }
+  return null;
+}
+
 /** The second inside the beat at which the phrase is actually spoken. */
 function spokenAt(segments, phrase, from, to) {
   const words = phrase.split(" ");
@@ -299,15 +344,18 @@ for (const doc of docs) {
   });
 
   const spent = new Set(); // stems this lesson has already shown
+  const said = new Set(); // lines lifted whole, so none is lifted twice
   const list = [];
   let lastAt = -Infinity;
 
   if (inspectId === doc.id) console.log("\n" + doc.title + "\n");
 
   for (const slot of slots) {
-   // The points in this stretch, strongest first: the first one that can
-   // actually be said is the one shown, and the rest of the stretch is
-   // then left alone.
+   // The points in this stretch, strongest first. Every one of them gets
+   // a turn rather than just the winner - a stretch holding three real
+   // points should show three things, and the spacing rule below is what
+   // stops that becoming a stream. The ordering still matters: when the
+   // stretch only has room for one, the strongest point takes it.
    for (const beat of slot) {
     const ranked = candidatesFor(doc, beat, ledger);
 
@@ -331,13 +379,14 @@ for (const doc of docs) {
     // "the depths of your pain" into "your triumph and elation" is two
     // pictures in one breath, and showing only the first wastes the
     // second. Short beats stay at one.
-    const room = Math.max(1, Math.round((beat.end - beat.start) / BEAT_EVERY));
+    const room = Math.max(1, Math.round((beat.end - beat.start) / 5));
     let taken = 0;
 
     const fresh = (c) => !c.phrase.split(" ").some((w) => spent.has(stem(w)));
 
     for (const top of ranked) {
       if (taken >= room) break;
+      if (top.score < CUE_FLOOR) break; // ranked, so the rest are weaker
       if (!fresh(top)) continue;
 
       // Two ways a neighbouring candidate can be the better way of saying
@@ -404,8 +453,22 @@ for (const doc of docs) {
         );
     }
 
+    // Nothing showable in a beat that was clearly making a point: lift
+    // the line itself if it's short enough to read.
+    if (!taken) {
+      const quoted = verbatimCue(beat);
+      const t = Math.max(0, beat.start - LEAD);
+      if (quoted && !said.has(quoted) && t - lastAt >= MIN_GAP) {
+        list.push({ t: Math.round(t * 10) / 10, w: present(quoted), phrase: quoted });
+        said.add(quoted);
+        lastAt = t;
+        taken++;
+        if (inspectId === doc.id)
+          console.log("        " + t.toFixed(1).padStart(6) + "  " + present(quoted) + "  [verbatim]");
+      }
+    }
+
     if (inspectId === doc.id && !taken) console.log("        (nothing fresh)");
-    if (taken) break;
    }
   }
 
