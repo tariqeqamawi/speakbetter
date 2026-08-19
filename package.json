@@ -7,6 +7,8 @@
     "build": "next build",
     "build:cues": "node scripts/build-lesson-cues.mjs",
     "build:lengths": "node scripts/build-lesson-lengths.mjs",
+    "build:pwa-icons": "node scripts/build-pwa-icons.mjs",
+    "build:pwa-screenshots": "node scripts/build-pwa-screenshots.mjs",
     "start": "next start",
     "lint": "eslint"
   },

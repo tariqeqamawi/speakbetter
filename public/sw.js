@@ -5,11 +5,13 @@
 // offline page when a navigation can't be served at all, and nothing
 // touches video or API traffic.
 
-const CACHE = "speak-better-v2";
+const CACHE = "speak-better-v4";
 const OFFLINE_URL = "/offline.html";
 
 // The bones of the app, cached at install so first-launch offline still
-// shows something coherent.
+// shows something coherent. Bump CACHE whenever a release changes what a
+// returning student should see - activate below drops every older cache,
+// which is what pushes an installed copy forward.
 const PRECACHE = [
   OFFLINE_URL,
   "/logo-mark.png",
@@ -28,12 +30,19 @@ self.addEventListener("install", (event) => {
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches
-      .keys()
-      .then((keys) =>
-        Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))),
-      )
-      .then(() => self.clients.claim()),
+    (async () => {
+      // A page waiting on the network gets the response the browser
+      // already started fetching, instead of waiting for this worker to
+      // boot first.
+      if (self.registration.navigationPreload) {
+        await self.registration.navigationPreload.enable().catch(() => {});
+      }
+      const keys = await caches.keys();
+      await Promise.all(
+        keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)),
+      );
+      await self.clients.claim();
+    })(),
   );
 });
 
@@ -51,6 +60,34 @@ function isImmutable(pathname) {
   );
 }
 
+/**
+ * A React flight payload, not a page.
+ *
+ * Every in-app link fetches the destination twice over an install's
+ * lifetime: once as a document, once as flight text for a client-side
+ * navigation - and both arrive at the same URL, separated only by a
+ * request header. The cache keys on the URL alone, so storing the flight
+ * copy would overwrite the page copy, and an offline student tapping
+ * Skills would get a screenful of serialized React instead of the
+ * screen. Flight traffic is served from the network and never stored.
+ */
+function isFlight(request, url) {
+  return (
+    request.headers.has("RSC") ||
+    request.headers.has("Next-Router-Prefetch") ||
+    url.searchParams.has("_rsc")
+  );
+}
+
+/** Put a copy in the cache, but only if it's the whole response. */
+function keep(request, response) {
+  // A 206 can't be cached, and an opaque cross-origin response would
+  // occupy the cache without ever being readable.
+  if (!response.ok || response.type === "opaque") return;
+  const copy = response.clone();
+  caches.open(CACHE).then((c) => c.put(request, copy));
+}
+
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET") return;
@@ -58,6 +95,7 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return; // Vimeo etc. untouched
   if (url.pathname.startsWith("/api/")) return; // reviews stay live
+  if (isFlight(request, url)) return; // client-side navigation payloads
 
   // Immutable assets: cache-first.
   if (isImmutable(url.pathname)) {
@@ -66,10 +104,7 @@ self.addEventListener("fetch", (event) => {
         (hit) =>
           hit ??
           fetch(request).then((res) => {
-            if (res.ok) {
-              const copy = res.clone();
-              caches.open(CACHE).then((c) => c.put(request, copy));
-            }
+            keep(request, res);
             return res;
           }),
       ),
@@ -81,20 +116,19 @@ self.addEventListener("fetch", (event) => {
   // a dead connection should never end at a browser error screen.
   if (request.mode === "navigate") {
     event.respondWith(
-      fetch(request)
-        .then((res) => {
-          if (res.ok) {
-            const copy = res.clone();
-            caches.open(CACHE).then((c) => c.put(request, copy));
-          }
+      (async () => {
+        try {
+          const preloaded = await event.preloadResponse;
+          const res = preloaded || (await fetch(request));
+          keep(request, res);
           return res;
-        })
-        .catch(() =>
-          caches
-            .match(request)
-            .then((hit) => hit ?? caches.match(OFFLINE_URL))
-            .then((hit) => hit ?? Response.error()),
-        ),
+        } catch {
+          const cached = await caches.match(request, { ignoreSearch: true });
+          return (
+            cached ?? (await caches.match(OFFLINE_URL)) ?? Response.error()
+          );
+        }
+      })(),
     );
     return;
   }
@@ -103,10 +137,7 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(request)
       .then((res) => {
-        if (res.ok) {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(request, copy));
-        }
+        keep(request, res);
         return res;
       })
       .catch(() => caches.match(request).then((hit) => hit ?? Response.error())),
