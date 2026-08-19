@@ -1,54 +1,13 @@
-import { LessonCard, type LessonCardData } from "@/components/lesson-card";
+import {
+  LessonCard,
+  type FaceTreatment,
+  type LessonCardData,
+} from "@/components/lesson-card";
 import { categories } from "@/data/categories";
-import { deckLessonIds } from "@/data/deck";
-import { lessons } from "@/data/lessons";
-import { takeaways } from "@/data/takeaways";
-import { contentFor } from "@/data/card-content";
-import cueTable from "@/data/lesson-cues.json";
-import type { LessonCue } from "@/lib/lesson-cues";
+import { cardFor, deckLessonIds, wholeDeck } from "@/data/deck";
 
-// Prototype route - not part of the student experience.
-//
-// The deck: every lesson in the library as a card, colored by its
-// section. A card is the lesson at a glance for when there's no time to
-// watch the video, and it's what the course becomes off the screen -
-// these are drawn at oracle-deck size so the same artwork can go to a
-// press as a physical deck a student orders alongside the course.
-//
-// Print this page to see them at real size, faces side by side.
-
-export const metadata = { title: "The deck" };
-
-const cues = cueTable as Record<string, LessonCue[]>;
-
-/** The lesson's own motif - the glyph the player floats during it. */
-function motif(vimeoId: string): string | undefined {
-  return cues[vimeoId]?.find((c) => c.icon)?.icon;
-}
-
-function cardFor(vimeoId: string): LessonCardData | null {
-  const lesson = lessons.find((l) => l.vimeoId === vimeoId);
-  const points = takeaways[vimeoId];
-  const category = categories.find((c) => c.id === lesson?.category);
-  if (!lesson || !points || !category) return null;
-
-  const siblings = lessons.filter((l) => l.category === category.id);
-  return {
-    category,
-    section: category.name,
-    title: lesson.title,
-    points,
-    ...contentFor(vimeoId),
-    icon: motif(vimeoId),
-    index: siblings.findIndex((l) => l.vimeoId === vimeoId) + 1,
-    total: siblings.length,
-  };
-}
-
-/** Every card in the deck, in the order the course teaches them. */
-function wholeDeck(): LessonCardData[] {
-  return deckLessonIds.map(cardFor).filter((c) => c !== null);
-}
+// The design bench for the deck. Every card is built by the same
+// cardFor() the app uses, so what's judged here is what ships.
 
 /** The first card of each section, so the color system reads at a glance. */
 function samplePerCategory(): LessonCardData[] {
@@ -65,6 +24,29 @@ function weight(card: LessonCardData): number {
     : card.points;
   return card.title.length + body.join(" ").length;
 }
+
+const FACES: { id: FaceTreatment; label: string; note: string }[] = [
+  {
+    id: "flat",
+    label: "Flat - what ships today",
+    note: "One solid hit of spot ink. The most saturated a neon can be on paper.",
+  },
+  {
+    id: "vignette",
+    label: "Vignette",
+    note: "Lit from above, falling off at the edges. A graduated screen in print.",
+  },
+  {
+    id: "linear",
+    label: "Linear",
+    note: "Light at the head, deeper at the foot. The longest ramp, so the most banding risk.",
+  },
+  {
+    id: "engraved",
+    label: "Engraved rings",
+    note: "Texture at full ink rather than tone - the one pattern a single spot color prints cleanly.",
+  },
+];
 
 export default function CardsPrototypePage() {
   // The card Tariq described: a storytelling card, so yellow.
@@ -87,9 +69,8 @@ export default function CardsPrototypePage() {
           size with both faces laid out flat.
         </p>
         <p className="max-w-2xl text-xs text-ink-faint">
-          {deckLessonIds.length} cards, one per skill lesson - {written} of
-          them written out in full: what it is, how to use it, and his own
-          lines. The rest fall back to their key takeaways.
+          {deckLessonIds.length} cards, one per skill lesson, all {written}{" "}
+          written out in full: what it is, how to use it, and his own lines.
         </p>
       </header>
 
@@ -99,6 +80,29 @@ export default function CardsPrototypePage() {
           <LessonCard data={hero} />
         </div>
         <p className="text-xs text-ink-faint">Tap the card</p>
+      </section>
+
+      {/* The open question: does the colored face stay one flat block? */}
+      <section className="deck-print-hide flex flex-col gap-4">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-faint">
+          The face: flat or graded
+        </h2>
+        <p className="max-w-2xl text-xs text-ink-faint">
+          The same card four ways. Flat and engraved both print in one solid
+          spot ink; vignette and linear are screened tints, which is where
+          fluorescent inks on uncoated stock get unreliable.
+        </p>
+        <div className="grid grid-cols-2 gap-5 lg:grid-cols-4">
+          {FACES.map(({ id, label, note }) => (
+            <div key={id} className="flex flex-col gap-2">
+              <LessonCard data={hero} face={id} className="max-w-none" />
+              <span className="text-xs font-semibold text-ink">{label}</span>
+              <span className="text-[11px] leading-snug text-ink-faint">
+                {note}
+              </span>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* Worst case for the layout: the cards with the most words on them */}

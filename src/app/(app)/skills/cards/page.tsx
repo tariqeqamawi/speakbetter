@@ -1,48 +1,12 @@
 import type { Metadata } from "next";
-import { CardDeck, type DeckCard } from "@/components/card-deck";
+import { CardDeck } from "@/components/card-deck";
 import { SectionTabs } from "@/components/section-tabs";
 import { DeckIcon } from "@/components/icons";
-import { categories } from "@/data/categories";
-import { deckLessonIds } from "@/data/deck";
-import { lessons } from "@/data/lessons";
-import { takeaways } from "@/data/takeaways";
-import { contentFor } from "@/data/card-content";
-import cueTable from "@/data/lesson-cues.json";
-import type { LessonCue } from "@/lib/lesson-cues";
+import { wholeDeck } from "@/data/deck";
 
 export const metadata: Metadata = { title: "Cards" };
 
-const cues = cueTable as Record<string, LessonCue[]>;
-
-/** The lesson's own motif - the glyph the player floats during it. */
-function motif(vimeoId: string): string | undefined {
-  return cues[vimeoId]?.find((c) => c.icon)?.icon;
-}
-
-const cards: DeckCard[] = deckLessonIds.flatMap((vimeoId) => {
-  const lesson = lessons.find((l) => l.vimeoId === vimeoId);
-  const points = takeaways[vimeoId];
-  const category = categories.find((c) => c.id === lesson?.category);
-  if (!lesson || !points || !category) return [];
-
-  const siblings = lessons.filter(
-    (l) => l.category === category.id && takeaways[l.vimeoId],
-  );
-  return [
-    {
-      vimeoId,
-      categoryId: category.id,
-      category,
-      section: category.name,
-      title: lesson.title,
-      points,
-      ...contentFor(vimeoId),
-      icon: motif(vimeoId),
-      index: siblings.findIndex((l) => l.vimeoId === vimeoId) + 1,
-      total: siblings.length,
-    },
-  ];
-});
+const cards = wholeDeck();
 
 export default function CardsPage() {
   return (

@@ -131,7 +131,7 @@ Each phase lists what it builds, which master plan sections it delivers, and wha
 - The digital deck inside Skills as the Cards tab: 79 cards, one per skill lesson, each in its section's color — the two section introductions left out, because a card you can't act on wastes a pull (§16) — *built*
 - The dial of seven face-down cards, worked with the same press-slide-release as the Skills dial; the full-screen reader, flick left for the next card in that color (§16) — *built*
 - Shake the phone to shuffle and pull at random, with a button doing the same on a laptop (§16) — *built*
-- The deck opens whole and once — one challenge passed or ten lessons watched — rather than card by card; until then the tab shows what opens it and how close the student is (§16) — *built*
+- The whole deck open from the first minute — no per-card earning and no milestone gate, because pull-one-of-every-color needs every color to be there (§16) — *built*
 - The card face that teaches rather than reminds: a neon plate carrying the lesson's motif, then what it is, how you use it, and the teacher's own lines lifted from the transcript (§16) — *built, all 79*
 - The instruction card explaining the pull-one-of-each-color mechanic (§16) — *built*
 - Deliberately untracked: which cards a student pulls is never logged or linked to challenge performance (§16)

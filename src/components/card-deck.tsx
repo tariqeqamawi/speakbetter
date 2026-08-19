@@ -2,13 +2,12 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { LessonCard, type LessonCardData } from "@/components/lesson-card";
+import { LessonCard } from "@/components/lesson-card";
 import { CategoryIcon } from "@/components/category-icons";
 import { categories, type CategoryId } from "@/data/categories";
-import { rulesCard, deckUnlocked, UNLOCK_LESSONS } from "@/data/deck";
+import { rulesCard, type DeckCardData } from "@/data/deck";
 import { hapticTap, playXpChime } from "@/lib/feedback-fx";
-import { useStore } from "@/lib/store";
-import { ChevronDownIcon, LockIcon, RepeatIcon } from "@/components/icons";
+import { ChevronDownIcon, RepeatIcon } from "@/components/icons";
 
 // The deck, worked the way a deck is worked.
 //
@@ -23,10 +22,8 @@ import { ChevronDownIcon, LockIcon, RepeatIcon } from "@/components/icons";
 // a physical deck does that a list of links never will. It's also the
 // honest answer to "I don't know what to work on today".
 
-export interface DeckCard extends LessonCardData {
-  vimeoId: string;
-  categoryId: CategoryId;
-}
+/** A card as the deck deals it - see cardFor() in data/deck.ts. */
+export type DeckCard = DeckCardData;
 
 type View =
   | { mode: "dial" }
@@ -37,7 +34,6 @@ const SHAKE_FORCE = 24;
 const SHAKE_COOLDOWN = 900;
 
 export function CardDeck({ cards }: { cards: DeckCard[] }) {
-  const { state, ready } = useStore();
   const [view, setView] = useState<View>({ mode: "dial" });
   const [hovered, setHovered] = useState<CategoryId | null>(null);
   const [shakeOn, setShakeOn] = useState(false);
@@ -145,50 +141,6 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
       dial.removeEventListener("touchcancel", onCancel);
     };
   }, [view.mode]);
-
-  // The deck opens whole, once - see deckUnlocked. Until then the tab
-  // shows what opens it rather than a wall of face-down cards, because a
-  // student who can't use the thing shouldn't have to guess why.
-  if (ready && !deckUnlocked(state)) {
-    const watched = state.watchedLessons.length;
-    return (
-      <div className="flex flex-col items-center gap-5 rounded-2xl border border-navy-600 bg-navy-900/50 px-6 py-10 text-center">
-        <span className="flex size-14 items-center justify-center rounded-full border border-navy-600 text-ink-faint">
-          <LockIcon className="size-6" />
-        </span>
-        <div className="flex max-w-sm flex-col gap-2">
-          <h2 className="text-lg font-semibold text-ink">
-            The deck opens soon
-          </h2>
-          <p className="text-sm text-ink-muted">
-            {cards.length} cards, one per skill. It opens all at once - pass
-            one challenge, or watch {UNLOCK_LESSONS} lessons, and the whole
-            deck is yours.
-          </p>
-        </div>
-        <div className="flex w-full max-w-xs flex-col gap-1.5">
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-navy-800">
-            <div
-              className="h-full rounded-full bg-storytelling transition-[width] duration-500"
-              style={{
-                width: `${Math.min(100, (watched / UNLOCK_LESSONS) * 100)}%`,
-              }}
-            />
-          </div>
-          <span className="text-xs tabular-nums text-ink-faint">
-            {Math.min(watched, UNLOCK_LESSONS)} of {UNLOCK_LESSONS} lessons
-            watched
-          </span>
-        </div>
-        <Link
-          href="/skills"
-          className="rounded-lg bg-ink px-4 py-2 text-sm font-bold text-navy-950"
-        >
-          Watch a lesson
-        </Link>
-      </div>
-    );
-  }
 
   if (view.mode === "reader") {
     const list = inSection(view.category);

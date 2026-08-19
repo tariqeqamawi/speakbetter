@@ -157,22 +157,65 @@ function Block({
   );
 }
 
+/**
+ * How the colored face is filled.
+ *
+ * This is a print decision as much as a screen one. The deck is going to
+ * a press in spot inks on neon stock, and a spot ink prints either solid
+ * or as a screened tint - a gradient is a graduated halftone. Fluorescent
+ * pigments are the worst inks to screen: they're less opaque than process
+ * inks, so a 70% tint doesn't read as "slightly deeper neon", it reads as
+ * the stock showing through, and long soft ramps band. Flat is what you
+ * pay for spot neon to get.
+ *
+ * So the two that hold up in one solid ink are "flat" and "engraved" -
+ * engraved being a line pattern at full strength rather than a tone.
+ * "vignette" and "linear" are the honest screen answers, kept here to be
+ * judged side by side at /prototype/cards.
+ */
+export type FaceTreatment = "flat" | "vignette" | "linear" | "engraved";
+
+/** The fill laid over the face's flat color. Nothing, for "flat". */
+function FaceWash({ treatment }: { treatment: FaceTreatment }) {
+  if (treatment === "flat") return null;
+
+  const navy = "var(--color-navy-950)";
+  const background =
+    treatment === "vignette"
+      ? `radial-gradient(78% 62% at 50% 38%, color-mix(in oklab, white 16%, transparent), transparent 55%), radial-gradient(100% 85% at 50% 55%, transparent 40%, color-mix(in oklab, ${navy} 26%, transparent))`
+      : treatment === "linear"
+        ? `linear-gradient(to bottom, color-mix(in oklab, white 14%, transparent), transparent 38%, color-mix(in oklab, ${navy} 24%, transparent))`
+        : // Concentric rings around the well, at full ink rather than a
+          // tone - the one texture that survives a single spot color.
+          `repeating-radial-gradient(circle at 50% 50%, transparent 0 5.6cqw, color-mix(in oklab, ${navy} 16%, transparent) 5.6cqw 5.8cqw)`;
+
+  return (
+    <span
+      aria-hidden
+      className="pointer-events-none absolute inset-0"
+      style={{ background }}
+    />
+  );
+}
+
 export function LessonCard({
   data,
-  locked = false,
+  startFlipped = false,
+  face = "flat",
   className = "",
 }: {
   data: LessonCardData;
   /**
-   * A card whose lesson hasn't been watched yet. It shows its color and
-   * its section, exactly as any card does face down, and it will not
-   * turn over - its lesson isn't rendered at all rather than hidden,
-   * because a card you could read by opening the inspector isn't earned.
+   * Open lesson-side up. The deck deals cards face down, because that's
+   * what a deck does - but a card called up beside its own lesson is
+   * being read, not pulled, and should already be the right way round.
    */
-  locked?: boolean;
+  startFlipped?: boolean;
+  /** How the colored face is filled - see FaceTreatment. */
+  face?: FaceTreatment;
   className?: string;
 }) {
-  const [flipped, setFlipped] = useState(false);
+  const [flipped, setFlipped] = useState(startFlipped);
   const { category } = data;
   // The lesson's own motif where it has one, the section's icon where it
   // doesn't - every card gets a lit plate, none goes dark.
@@ -184,19 +227,15 @@ export function LessonCard({
     ));
   const color = data.color ?? `var(--color-${category.id})`;
   const code = data.code ?? category.code;
-  const showBack = flipped && !locked;
+  const showBack = flipped;
 
   return (
     <button
       type="button"
-      onClick={() => !locked && setFlipped((f) => !f)}
+      onClick={() => setFlipped((f) => !f)}
       aria-pressed={showBack}
-      aria-label={
-        locked
-          ? `A ${category.name} card, not yet earned - watch its lesson to turn it over`
-          : `${data.title} - ${flipped ? "showing the key points, tap to turn over" : "tap to turn over"}`
-      }
-      className={`card-3d group aspect-[89/127] w-full max-w-xs ${locked ? "cursor-default" : "cursor-pointer"} ${className}`}
+      aria-label={`${data.title} - ${flipped ? "showing the lesson, tap to turn over" : "tap to turn over"}`}
+      className={`card-3d group aspect-[89/127] w-full max-w-xs cursor-pointer ${className}`}
     >
       <span className={`card-3d-inner ${showBack ? "is-flipped" : ""}`}>
         {/* ── Face: the section's color, and the mark ───────────────── */}
@@ -205,13 +244,15 @@ export function LessonCard({
           className="card-face flex flex-col items-center justify-between overflow-hidden p-[6.2cqw]"
           style={{ background: data.background ?? color }}
         >
+          <FaceWash treatment={face} />
+
           {/* Face down, a card gives away its section and nothing else.
               Both corners carry the same short code rather than one of
               them carrying a card number, because a number would make
               each card identifiable while it's still turned over - and a
               deck whose backs can be told apart isn't a deck. The color
               does the work; the code names the color. */}
-          <span className="flex w-full items-start justify-between text-navy-950">
+          <span className="relative flex w-full items-start justify-between text-navy-950">
             <span className="text-[3cqw] font-bold uppercase tracking-[0.22em]">
               {code}
             </span>
@@ -231,7 +272,7 @@ export function LessonCard({
             />
           </span>
 
-          <span className="flex w-full flex-col items-center gap-[1.2cqw] text-navy-950">
+          <span className="relative flex w-full flex-col items-center gap-[1.2cqw] text-navy-950">
             <span className="text-center text-[4.4cqw] font-bold leading-tight text-balance">
               {data.section}
             </span>
@@ -241,9 +282,7 @@ export function LessonCard({
           </span>
         </span>
 
-        {/* ── Face: the lesson itself ─────────────────────────────────
-            Absent entirely while the card is locked. */}
-        {!locked && (
+        {/* ── Face: the lesson itself ───────────────────────────── */}
         <span
           aria-hidden={!flipped}
           className="card-face card-face-back flex flex-col gap-[2.2cqw] overflow-hidden bg-gradient-to-b from-navy-800 via-navy-900 to-navy-950 p-[5.6cqw] text-left"
@@ -344,7 +383,6 @@ export function LessonCard({
             )}
           </span>
         </span>
-        )}
       </span>
     </button>
   );

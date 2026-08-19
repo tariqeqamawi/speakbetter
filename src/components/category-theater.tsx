@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { Category } from "@/data/categories";
 import type { Lesson } from "@/data/lessons";
-import { takeaways } from "@/data/takeaways";
 import { lessonXp } from "@/lib/progress";
 import { XpBadge } from "@/components/xp-badge";
 import { useStore } from "@/lib/store";
@@ -13,6 +12,7 @@ import { VimeoPlayer } from "@/components/vimeo-player";
 import { LessonWatched } from "@/components/lesson-watched";
 import { VideoStill } from "@/components/video-still";
 import { CheckIcon, XIcon, ZapIcon } from "@/components/icons";
+import { LessonCardButton } from "@/components/lesson-card-button";
 import { PlayFillIcon } from "@/components/player-icons";
 
 // A category as a theater: whichever lesson is selected plays full
@@ -23,7 +23,8 @@ import { PlayFillIcon } from "@/components/player-icons";
 // The gamification here is feedback-loop work, not slot-machine work:
 // a progress ring that visibly closes, an XP receipt the moment a
 // lesson counts, an up-next handoff that keeps a session rolling, and
-// takeaways one tap away so a lesson ends with something to keep.
+// the lesson's own card one tap away so a lesson ends with something to
+// keep - the card says what the takeaways used to and says it better.
 
 
 export function CategoryTheater({
@@ -36,7 +37,6 @@ export function CategoryTheater({
   const { state, ready } = useStore();
   const [featuredId, setFeaturedId] = useState(lessons[0].vimeoId);
   const [autoplayNext, setAutoplayNext] = useState(false);
-  const [panelOpen, setPanelOpen] = useState(false);
   const [upNext, setUpNext] = useState(false);
   const [xpFlash, setXpFlash] = useState(false);
   // What the featured lesson pays when it finishes - fixed the moment
@@ -54,7 +54,6 @@ export function CategoryTheater({
   const next = lessons[index + 1];
   const watched = (id: string) => ready && state.watchedLessons.includes(id);
   const watchedCount = lessons.filter((l) => watched(l.vimeoId)).length;
-  const points = takeaways[featured.vimeoId] ?? [];
 
   // Settled during render, before the video can reach its end.
   if (ready && rewardFor !== featured.vimeoId) {
@@ -91,14 +90,6 @@ export function CategoryTheater({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.watchedLessons, featured.vimeoId]);
-
-  // Close the panel with Escape, like any sheet should.
-  useEffect(() => {
-    if (!panelOpen) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setPanelOpen(false);
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [panelOpen]);
 
   return (
     <div className="relative flex flex-col gap-5">
@@ -158,15 +149,7 @@ export function CategoryTheater({
           )}
 
           <span className="ml-auto flex items-center gap-3">
-            {points.length > 0 && (
-              <button
-                type="button"
-                onClick={() => setPanelOpen(true)}
-                className={`flex min-h-9 items-center gap-1.5 rounded-lg border border-navy-600 px-3 py-1.5 text-xs font-semibold transition-colors hover:border-current ${category.textClass}`}
-              >
-                Key takeaways
-              </button>
-            )}
+            <LessonCardButton vimeoId={featured.vimeoId} />
             {!inDemo && (
               <Link
                 href={`/skills/${category.id}/${featured.vimeoId}`}
@@ -299,80 +282,6 @@ export function CategoryTheater({
           })}
         </ul>
       </div>
-
-      {/* The takeaways sheet */}
-      {panelOpen && (
-        <>
-          <button
-            type="button"
-            aria-label="Close takeaways"
-            onClick={() => setPanelOpen(false)}
-            className="fixed inset-0 z-40 bg-navy-950/60 backdrop-blur-[2px]"
-          />
-          <aside
-            role="dialog"
-            aria-label={`Key takeaways - ${featured.title}`}
-            className="panel-in pt-safe fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col gap-5 overflow-y-auto border-l border-navy-600 bg-navy-850 p-6 shadow-2xl shadow-navy-950"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex flex-col gap-1">
-                <span
-                  className={`text-[0.65rem] font-semibold uppercase tracking-wider ${category.textClass}`}
-                >
-                  Key takeaways
-                </span>
-                <h3 className="text-lg font-semibold leading-snug text-ink">
-                  {featured.title}
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setPanelOpen(false)}
-                aria-label="Close"
-                className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-navy-600 text-ink-muted transition-colors hover:text-ink"
-              >
-                <XIcon className="size-4" />
-              </button>
-            </div>
-
-            <ul className="flex flex-col gap-3">
-              {points.map((point, i) => (
-                <li
-                  key={i}
-                  className="coach-cue flex items-start gap-3 rounded-xl border border-navy-600 bg-navy-800 p-4"
-                  style={{ animationDelay: `${i * 120}ms` }}
-                >
-                  <span
-                    className={`mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-navy-950 ${category.bgClass}`}
-                  >
-                    {i + 1}
-                  </span>
-                  <p className="text-sm leading-relaxed text-ink-muted">{point}</p>
-                </li>
-              ))}
-            </ul>
-
-            <p className="text-xs leading-relaxed text-ink-faint">
-              Written from this lesson&apos;s own transcript - the thing to
-              carry into your next challenge.
-            </p>
-
-            {next && (
-              <button
-                type="button"
-                onClick={() => {
-                  setPanelOpen(false);
-                  select(next.vimeoId, true);
-                }}
-                className={`mt-auto flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-navy-950 ${category.bgClass}`}
-              >
-                <PlayFillIcon className="size-4" />
-                Next: {next.title}
-              </button>
-            )}
-          </aside>
-        </>
-      )}
     </div>
   );
 }

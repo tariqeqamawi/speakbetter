@@ -421,7 +421,7 @@ The digital deck lives inside Skills as the **Cards** tab (§03), and carries **
 
 **Shaking the phone shuffles the deck and pulls a card at random** — the one thing a physical deck does that a list of links never will, and the honest answer to not knowing what to work on today. A button does the same job on a laptop, and asks for motion permission where the platform requires it.
 
-**The deck opens whole, once.** Not card by card as each lesson is watched: the deck is a tool, and a tool handed over one piece at a time is useless — the mechanic is pull one card of every color, which needs every color to be there. But handed over on day one it's 79 cards of vocabulary for skills nobody has met yet, which is its own kind of useless. So it opens at the point a student has enough context for it to mean something: **one challenge passed, or ten lessons watched**, whichever comes first. Two routes because they're two kinds of student — one dives in and performs, the other reads the room first. Until then the tab shows what opens it and how close they are, rather than a wall of face-down cards a student has to guess the rules of.
+**The whole deck is open from the first minute.** Not card by card as each lesson is watched, and not behind a milestone: the deck is a tool, and a tool handed over one piece at a time is useless — the mechanic is pull one card of every color, which needs every color to be there. Nothing about it is a reward to be earned, and a student who opens the tab on day one gets all 79. **Which cards a student pulls is never logged** — see below.
 
 The deck ships with one card that isn't a lesson: the instruction card, explaining the pull-one-of-each-color mechanic. A deck explains itself in the hand, not in a manual.
 

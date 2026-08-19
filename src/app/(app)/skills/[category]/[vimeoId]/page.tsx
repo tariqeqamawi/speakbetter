@@ -7,6 +7,7 @@ import { LessonPlayer } from "@/components/lesson-player";
 import { XpBadge } from "@/components/xp-badge";
 import { lessonXp } from "@/lib/progress";
 import { LessonFooterNav } from "@/components/lesson-footer-nav";
+import { LessonCardButton } from "@/components/lesson-card-button";
 import { Suspense } from "react";
 
 export function generateStaticParams() {
@@ -46,6 +47,9 @@ export default async function LessonPage(props: PageProps<"/skills/[category]/[v
             size="md"
             className={`border border-navy-600 ${cat.textClass}`}
           />
+          <span className="ml-auto">
+            <LessonCardButton vimeoId={lesson.vimeoId} />
+          </span>
         </div>
       </header>
 
