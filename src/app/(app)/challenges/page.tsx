@@ -3,7 +3,7 @@ import { challengesIntro } from "@/data/challenges";
 import { StoryBoard } from "@/components/story-board";
 import { StreakFlame } from "@/components/celebrations";
 import { ChallengesIcon } from "@/components/icons";
-import { LazyVimeoPlayer } from "@/components/lazy-vimeo-player";
+import { IntroTabs } from "@/components/intro-tabs";
 
 export const metadata: Metadata = {
   title: "Challenges",
@@ -31,19 +31,9 @@ export default function ChallengesPage() {
 
 
       {/* The two orientation videos play here rather than on Vimeo -
-          a student should never have to leave the course to start it. */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        {challengesIntro.map((v) => (
-          <section key={v.vimeoId} className="flex flex-col gap-2">
-            <h2 className="text-sm font-semibold text-ink">{v.title}</h2>
-            <LazyVimeoPlayer
-              vimeoId={v.vimeoId}
-              title={v.title}
-              poster={`/thumbs/${v.vimeoId}.jpg`}
-            />
-          </section>
-        ))}
-      </div>
+          a student should never have to leave the course to start it.
+          One frame, two tabs: the second is a tap away, not a scroll. */}
+      <IntroTabs videos={challengesIntro} />
 
       <StoryBoard />
     </div>

@@ -461,10 +461,16 @@ export const challenges: Challenge[] = [
   },
 ];
 
-// Section introduction videos (not challenges themselves)
+// Section introduction videos (not challenges themselves). `short` is
+// what the tab says on a phone, where the full title wouldn't fit two
+// across.
 export const challengesIntro = [
-  { title: "Welcome To The Challenges!", vimeoId: "1081200318" },
-  { title: "How To Use The Skills In Your Challenges", vimeoId: "1081200420" },
+  { title: "Welcome To The Challenges!", short: "Welcome", vimeoId: "1081200318" },
+  {
+    title: "How To Use The Skills In Your Challenges",
+    short: "Using the skills",
+    vimeoId: "1081200420",
+  },
 ];
 
 /** The badge each challenge awards when it's passed. Named the way an
