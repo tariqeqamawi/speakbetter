@@ -17,19 +17,23 @@ import { challengeXp } from "@/lib/progress";
 import { XpBadge } from "@/components/xp-badge";
 import { useStore } from "@/lib/store";
 import { VideoStill } from "@/components/video-still";
-import { CheckIcon, LockIcon } from "@/components/icons";
+import { CheckIcon, LockIcon, ProfileIcon } from "@/components/icons";
 
 // The STORY journey as terrain: a winding path of nodes, one per
 // challenge, each named in the open beside its marker so the whole road
 // reads at a glance. Every phase is a level with its own lettered
 // circle and orbiting skills; passed nodes wear their phase's color,
-// the student's own face marks where they stand, and locked territory
-// is fogged - the phase after the next one keeps its challenge names
+// the student's own face stands on the challenge they're at, and locked
+// territory is fogged - the phase after the next one keeps its names
 // garbled until the road gets near. Community voices surface beside the
 // nodes and fade, a topographic grid breathes through each territory,
-// and a checkered finish line waits at the bottom. A 2D/3D toggle tips
-// the whole map over like a navigation app - the ground reclines while
-// the markers stay standing.
+// and a checkered finish line waits at the bottom.
+//
+// The map is always reclined, the way a navigation app is: the ground
+// tips away while the markers counter-rotate and stay standing on it.
+// There was a 2D/3D toggle here; flat was the weaker of the two views
+// and a control that offers a worse version of the same thing is a
+// question the student shouldn't have to answer.
 
 const ROW_H = 108;
 /** The winding: node x-positions cycle through this pattern (percent). */
@@ -102,7 +106,6 @@ export function JourneyMap() {
   const { state, ready } = useStore();
   const currentIndex = useCurrentPhaseIndex();
   const inDemo = usePathname().startsWith("/demo");
-  const [view, setView] = useState<"2d" | "3d">("2d");
 
   // The map is far taller than the screen, so a fixed tilt origin would
   // throw most of it beyond the horizon. Instead the origin rides the
@@ -112,7 +115,6 @@ export function JourneyMap() {
   const tiltRef = useRef<HTMLDivElement>(null);
   const [originY, setOriginY] = useState(0);
   useEffect(() => {
-    if (view !== "3d") return;
     const el = tiltRef.current;
     if (!el) return;
     const update = () => {
@@ -136,7 +138,7 @@ export function JourneyMap() {
       window.removeEventListener("scroll", update);
       window.removeEventListener("resize", update);
     };
-  }, [view]);
+  }, []);
 
   // Lay the trail out top to bottom, phase by phase.
   const nodes: Node[] = [];
@@ -250,41 +252,16 @@ export function JourneyMap() {
         <h2 className="text-sm font-medium uppercase tracking-wider text-ink-faint">
           The journey
         </h2>
-        <div className="flex items-center gap-3">
-          {/* Google-Maps-style tilt: same map, reclined. */}
-          <span className="flex rounded-lg border border-navy-600 bg-navy-900/80 p-0.5">
-            {(["2d", "3d"] as const).map((v) => (
-              <button
-                key={v}
-                type="button"
-                onClick={() => setView(v)}
-                aria-pressed={view === v}
-                className={`rounded-md px-2.5 py-1 text-[0.7rem] font-bold uppercase transition-colors ${
-                  view === v
-                    ? "bg-navy-700 text-ink"
-                    : "text-ink-faint hover:text-ink-muted"
-                }`}
-              >
-                {v}
-              </button>
-            ))}
-          </span>
-          <span className="text-xs tabular-nums text-ink-faint">
-            {done} of {challenges.length}
-          </span>
-        </div>
+        <span className="text-xs tabular-nums text-ink-faint">
+          {done} of {challenges.length}
+        </span>
       </div>
 
-      <div className={view === "3d" ? "map-scene" : undefined}>
+      <div className="map-scene">
         <div
           ref={tiltRef}
-          className={`map-tilt relative mx-auto w-full max-w-2xl ${
-            view === "3d" ? "map-3d" : ""
-          }`}
-          style={{
-            height,
-            transformOrigin: view === "3d" ? `50% ${originY}px` : undefined,
-          }}
+          className="map-tilt map-3d relative mx-auto w-full max-w-2xl"
+          style={{ height, transformOrigin: `50% ${originY}px` }}
         >
           {/* Territory washes - five regions, each in its phase's light,
               with a topographic grid that surfaces, ripples down, and
@@ -479,14 +456,6 @@ export function JourneyMap() {
                     <span className="flex size-full items-center justify-center text-ink-faint">
                       <LockIcon className="size-4" />
                     </span>
-                  ) : node.isCurrent && state.avatar ? (
-                    // The student stands at this node - literally.
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={state.avatar}
-                      alt=""
-                      className="size-full object-cover"
-                    />
                   ) : (
                     <>
                       <VideoStill
@@ -503,6 +472,46 @@ export function JourneyMap() {
                     </>
                   )}
                 </span>
+
+                {/* The student, standing on the challenge they're at.
+                    It's the only marker on the map that moves: pass a
+                    challenge and it walks down to the next one, which is
+                    the whole reason the journey is drawn as a road.
+                    Their own face where they've given one, a figure
+                    where they haven't - the marker has to be there
+                    either way, or the road has nobody on it.
+
+                    It stands above the node rather than replacing its
+                    picture: the node is which challenge this is, and
+                    covering that to say "you are here" costs more than
+                    it tells. */}
+                {node.isCurrent && (
+                  <span
+                    className={`absolute -top-11 left-1/2 z-30 flex -translate-x-1/2 flex-col items-center ${node.phase.textClass}`}
+                  >
+                    <span className="block size-9 overflow-hidden rounded-full border-2 border-current bg-navy-850 shadow-[0_0_20px_-2px_currentColor] sm:size-10">
+                      {state.avatar ? (
+                        // A data URL from the student's own device -
+                        // next/image would only add an optimizer hop.
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={state.avatar}
+                          alt=""
+                          className="size-full object-cover"
+                        />
+                      ) : (
+                        <span className="flex size-full items-center justify-center">
+                          <ProfileIcon className="size-5 text-ink-muted" />
+                        </span>
+                      )}
+                    </span>
+                    {/* The pin's point, resting on the node below */}
+                    <span
+                      aria-hidden
+                      className="-mt-px size-0 border-x-[5px] border-t-[7px] border-x-transparent border-t-current"
+                    />
+                  </span>
+                )}
 
                 {/* Status jewel on the rim */}
                 {node.passed && (
