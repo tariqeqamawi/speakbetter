@@ -8,20 +8,25 @@ import { categoryById, type CategoryId } from "@/data/categories";
 import Link from "next/link";
 import { SpectrumBars, SpectrumStrip } from "@/components/spectrum";
 import { CheckIcon, CircleIcon, PlayIcon } from "@/components/icons";
+import { RecordingsShelf } from "@/components/recordings-shelf";
+import { capturePoster, keepVideo } from "@/lib/attempt-videos";
 
 // The practice loop (master plan §06, steps 3–7; build plan Phase 4).
 //
 // Video handling honors §13: the file is read locally for duration and
 // playback via an object URL - in this stub it never leaves the device
 // at all. The real integration uploads it temporarily for Gemini's
-// review, then deletes it; the feedback record is what persists.
+// review, then deletes it; the feedback record is what persists - and
+// the video itself is kept on the student's own device, the last three
+// per challenge, so they can watch back what they submitted (see
+// lib/attempt-videos.ts and the shelf above the upload box).
 
 const MAX_SECONDS = 183; // 3 minutes, with a few seconds of grace
 
 type Stage =
   | { kind: "idle" }
   | { kind: "selected"; file: File; url: string; durationSec: number }
-  | { kind: "reviewing"; url: string; durationSec: number }
+  | { kind: "reviewing"; file: File; url: string; durationSec: number }
   | { kind: "reviewed"; url: string; attempt: Attempt }
   | { kind: "error"; message: string };
 
@@ -29,6 +34,8 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
   const { state, ready, recordAttempt, attemptsFor, bestAttempt, latestAttempt } =
     useStore();
   const [stage, setStage] = useState<Stage>({ kind: "idle" });
+  // Bumped once a new recording is on the device, so the shelf re-reads.
+  const [shelfKey, setShelfKey] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
   if (!ready) return null;
@@ -63,8 +70,11 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
     probe.src = url;
   };
 
-  const submit = async (url: string, durationSec: number) => {
-    setStage({ kind: "reviewing", url, durationSec });
+  const submit = async (file: File, url: string, durationSec: number) => {
+    setStage({ kind: "reviewing", file, url, durationSec });
+    // A frame for the shelf, taken while the coach is watching - the
+    // wait is there anyway.
+    const poster = capturePoster(url, durationSec);
     try {
       const res = await fetch("/api/review", {
         method: "POST",
@@ -96,6 +106,22 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
       };
       recordAttempt(attempt);
       setStage({ kind: "reviewed", url, attempt });
+      // The feedback is recorded; now the video, on this device only.
+      // If the browser won't keep it, nothing is lost but the replay.
+      keepVideo(
+        {
+          id: attempt.id,
+          challengeSlug: challenge.slug,
+          at: attempt.at,
+          durationSec,
+          size: file.size,
+          type: file.type,
+          poster: await poster,
+        },
+        file,
+      ).then((kept) => {
+        if (kept) setShelfKey((k) => k + 1);
+      });
     } catch {
       setStage({ kind: "error", message: "Review failed - check your connection and try again." });
     }
@@ -114,6 +140,14 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
             <AttemptCard label="Most recent" attempt={latest} />
           )}
         </div>
+      )}
+
+      {stage.kind === "idle" && (
+        <RecordingsShelf
+          challengeSlug={challenge.slug}
+          attempts={attempts}
+          refreshKey={shelfKey}
+        />
       )}
 
       {stage.kind === "idle" && (
@@ -138,8 +172,10 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
             {attempts.length > 0 ? "Record another attempt" : "Upload your video"}
           </button>
           <p className="text-xs text-ink-faint">
-            Your video is reviewed, never stored - the feedback is what&apos;s
-            kept. (AI review stub - Gemini arrives with service integration.)
+            Your video is reviewed, never stored by us - the feedback is
+            what&apos;s kept, and your last three recordings stay on this
+            device so you can watch them back. (AI review stub - Gemini
+            arrives with service integration.)
           </p>
         </div>
       )}
@@ -174,7 +210,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
               </button>
               <button
                 type="button"
-                onClick={() => submit(stage.url, stage.durationSec)}
+                onClick={() => submit(stage.file, stage.url, stage.durationSec)}
                 className="rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-navy-900 transition-opacity hover:opacity-90"
               >
                 Submit for review
@@ -396,7 +432,8 @@ function Feedback({
         <div className="px-3 pb-3">
           <video src={videoUrl} controls playsInline className="w-full rounded-lg bg-navy-950" />
           <p className="mt-2 text-xs text-ink-faint">
-            Played from your device - the app doesn&apos;t keep your video.
+            Played from your device - the app keeps no copy. It stays on
+            this phone with your last three recordings for this challenge.
           </p>
         </div>
       </details>

@@ -86,8 +86,9 @@ Each phase lists what it builds, which master plan sections it delivers, and wha
 - Feedback screen: score first, spectrum chart, then coaching notes — with the level-dependent shape from §08/§09: two-or-three focus skills for everyone; the click-through "everything the AI noticed" reveal for Intermediate and Advanced only
 - Retry flow: best attempt and most recent attempt both tracked and visible; feedback records kept permanently, videos deleted after review (§06 step 7, §13)
 - Downloadable feedback (§13)
+- The recordings shelf: a student's last three videos for each challenge, kept on their own device and played from it — the app hosts nothing (§13) — *built*
 
-**Deliberately excluded, per §13:** annotated video playback, attempt-to-attempt delivery comparison. The video playback question (in-app vs. from the student's phone) gets its cost answer here — it's an open question in §18.
+**Deliberately excluded, per §13:** annotated video playback, attempt-to-attempt delivery comparison. The video playback question is answered: from the student's own device, never from storage of ours.
 
 **Shippable when:** a student can complete the full loop — watch, warm up, record, upload, get scored in color, retry — end to end. This is the moment Speak Better becomes what the master plan describes.
 
