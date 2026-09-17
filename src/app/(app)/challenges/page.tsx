@@ -4,6 +4,7 @@ import { StoryBoard } from "@/components/story-board";
 import { StreakFlame } from "@/components/celebrations";
 import { ChallengesIcon } from "@/components/icons";
 import { IntroTabs } from "@/components/intro-tabs";
+import { ThenAndNow } from "@/components/then-and-now";
 
 export const metadata: Metadata = {
   title: "Challenges",
@@ -34,6 +35,10 @@ export default function ChallengesPage() {
           a student should never have to leave the course to start it.
           One frame, two tabs: the second is a tap away, not a scroll. */}
       <IntroTabs videos={challengesIntro} />
+
+      {/* The baseline beside the latest attempt, once there's a road
+          between them - see then-and-now.tsx. */}
+      <ThenAndNow />
 
       <StoryBoard />
     </div>

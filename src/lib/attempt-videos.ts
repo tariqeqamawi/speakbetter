@@ -12,10 +12,17 @@
 // Three per challenge. A challenge is attempted more than once by
 // design, and the last three attempts are the ones worth comparing;
 // older videos are dropped as new ones arrive, and their feedback
-// records stay behind in the store. Three two-minute phone videos is a
-// few hundred megabytes at most - small next to a phone's storage, not
-// small next to a browser's default quota, which is why the site asks
-// for persistent storage the first time it keeps one.
+// records stay behind in the store. The exception is a baseline: the
+// first recording of "Record Your Speaking Baseline" and "Tell a Story
+// Without Any Help" is the student as they arrived, and it's pinned -
+// never dropped for a newer one, not removable from the shelf - so
+// that weeks later it can be set beside the latest attempt and the
+// distance travelled can be seen rather than told.
+//
+// Three two-minute phone videos is a few hundred megabytes at most -
+// small next to a phone's storage, not small next to a browser's
+// default quota, which is why the site asks for persistent storage the
+// first time it keeps one.
 //
 // Two object stores rather than one, so listing a challenge's videos
 // (meta) never has to read the files (blobs) - a poster and a duration
@@ -34,6 +41,8 @@ export interface StoredVideoMeta {
   type: string;
   /** A small JPEG data URL of one frame, for the shelf. */
   poster?: string;
+  /** Kept for good - a baseline. Never pruned, never removable. */
+  pinned?: boolean;
 }
 
 const DB_NAME = "speak-better-videos";
@@ -84,8 +93,17 @@ function request<T>(req: IDBRequest<T>): Promise<T> {
  * Keep a video. The attempt's feedback is recorded separately (and
  * first) in the store; this fails quietly if the browser won't hold
  * the file - the feedback is the record, the video is a convenience.
+ *
+ * `pin` asks for it to be kept for good - the caller says so for the
+ * first recording of a baseline challenge. It holds only if the
+ * challenge has no pinned recording yet: a baseline is the first take,
+ * and re-recording it later doesn't move the starting line.
  */
-export async function keepVideo(meta: StoredVideoMeta, blob: Blob): Promise<boolean> {
+export async function keepVideo(
+  meta: StoredVideoMeta,
+  blob: Blob,
+  pin = false,
+): Promise<boolean> {
   if (!canKeepVideos()) return false;
   try {
     // Ask once for storage that survives the browser tidying up. Not
@@ -95,14 +113,17 @@ export async function keepVideo(meta: StoredVideoMeta, blob: Blob): Promise<bool
       navigator.storage.persist().catch(() => {});
     }
     const db = await open();
+    const already = await listVideos(meta.challengeSlug, db);
+    const pinned = pin && !already.some((v) => v.pinned);
     const tx = db.transaction([META, FILES], "readwrite");
-    tx.objectStore(META).put(meta);
+    tx.objectStore(META).put(pinned ? { ...meta, pinned: true } : meta);
     tx.objectStore(FILES).put(blob, meta.id);
     await done(tx);
 
-    // Three per challenge: the oldest beyond that go.
+    // Three per challenge, not counting the baseline: the oldest
+    // beyond that go.
     const kept = await listVideos(meta.challengeSlug, db);
-    const stale = kept.slice(KEEP_PER_CHALLENGE);
+    const stale = kept.filter((v) => !v.pinned).slice(KEEP_PER_CHALLENGE);
     if (stale.length) {
       const prune = db.transaction([META, FILES], "readwrite");
       for (const v of stale) {
@@ -151,11 +172,29 @@ export async function loadVideo(id: string): Promise<Blob | null> {
   }
 }
 
-/** Take a video off this device. The attempt's feedback stays. */
+/** The pinned baseline recording of a challenge, if this device has it. */
+export async function baselineVideo(
+  challengeSlug: string,
+): Promise<StoredVideoMeta | undefined> {
+  return (await listVideos(challengeSlug)).find((v) => v.pinned);
+}
+
+/**
+ * Take a video off this device. The attempt's feedback stays. A
+ * pinned recording is left alone - the baseline isn't the student's to
+ * lose by accident.
+ */
 export async function forgetVideo(id: string): Promise<void> {
   if (!canKeepVideos()) return;
   try {
     const db = await open();
+    const meta = (await request(
+      db.transaction(META, "readonly").objectStore(META).get(id),
+    )) as StoredVideoMeta | undefined;
+    if (meta?.pinned) {
+      db.close();
+      return;
+    }
     const tx = db.transaction([META, FILES], "readwrite");
     tx.objectStore(META).delete(id);
     tx.objectStore(FILES).delete(id);

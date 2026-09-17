@@ -87,6 +87,7 @@ Each phase lists what it builds, which master plan sections it delivers, and wha
 - Retry flow: best attempt and most recent attempt both tracked and visible; feedback records kept permanently, videos deleted after review (§06 step 7, §13)
 - Downloadable feedback (§13)
 - The recordings shelf: a student's last three videos for each challenge, kept on their own device and played from it — the app hosts nothing (§13) — *built*
+- The two baselines pinned for good, and the then-and-now panel at ten challenges passed: baseline beside latest attempt, videos, scores, spectra and the colors lit since (§13) — *built*
 
 **Deliberately excluded, per §13:** annotated video playback, attempt-to-attempt delivery comparison. The video playback question is answered: from the student's own device, never from storage of ours.
 

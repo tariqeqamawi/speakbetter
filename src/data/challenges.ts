@@ -79,6 +79,13 @@ export interface Challenge {
   vimeoId: string | null;
   /** Passive items are watched, not recorded (the Mindset Toolbox) */
   passive?: boolean;
+  /**
+   * A baseline is the "before": the student as they arrived, recorded
+   * before a single technique. Its first recording is kept on the
+   * device for good, never dropped for a newer one, so that weeks later
+   * it can be set beside the latest attempt (§13, then-and-now).
+   */
+  baseline?: boolean;
   brief: string;
   criteria: string[];
   targetSkills: CategoryId[];
@@ -90,6 +97,7 @@ export const challenges: Challenge[] = [
   {
     slug: "speaking-baseline",
     phase: "S",
+    baseline: true,
     title: "Record Your Speaking Baseline",
     vimeoId: "1081200493",
     brief:
@@ -105,6 +113,7 @@ export const challenges: Challenge[] = [
   {
     slug: "story-without-help",
     phase: "S",
+    baseline: true,
     title: "Tell a Story Without Any Help",
     vimeoId: "1081200781",
     brief:

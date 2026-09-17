@@ -60,12 +60,18 @@ export function RecordingsShelf({
           Your recordings
         </h3>
         <span className="text-xs text-ink-faint">
-          Last {KEEP_PER_CHALLENGE} · kept on this device
+          {videos.some((v) => v.pinned)
+            ? `Your baseline and the last ${KEEP_PER_CHALLENGE} · kept on this device`
+            : `Last ${KEEP_PER_CHALLENGE} · kept on this device`}
         </span>
       </div>
 
-      <ul className="grid grid-cols-3 gap-2">
-        {videos.map((v) => {
+      <ul className={`grid gap-2 ${videos.length > 3 ? "grid-cols-4" : "grid-cols-3"}`}>
+        {/* The baseline first, then newest first - the "before" holds
+            its place on the shelf however many takes follow it. */}
+        {[...videos]
+          .sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)))
+          .map((v) => {
           const attempt = attemptOf(v.id);
           return (
             <li key={v.id}>
@@ -91,10 +97,16 @@ export function RecordingsShelf({
                   <span className="absolute bottom-1 right-1 rounded bg-navy-950/80 px-1.5 py-0.5 text-[0.65rem] font-semibold tabular-nums text-ink">
                     {fmt(v.durationSec)}
                   </span>
-                  {attempt?.passed && (
-                    <span className="absolute left-1 top-1 flex size-5 items-center justify-center rounded-full bg-mindset text-navy-950">
-                      <CheckIcon className="size-3" />
+                  {v.pinned ? (
+                    <span className="absolute left-1 top-1 rounded bg-ink px-1.5 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider text-navy-950">
+                      Baseline
                     </span>
+                  ) : (
+                    attempt?.passed && (
+                      <span className="absolute left-1 top-1 flex size-5 items-center justify-center rounded-full bg-mindset text-navy-950">
+                        <CheckIcon className="size-3" />
+                      </span>
+                    )
                   )}
                 </span>
                 <span className="flex items-baseline justify-between px-0.5">
@@ -250,9 +262,11 @@ function RecordingViewer({
 
         <div className="flex items-center justify-between gap-3 px-1">
           <span className="text-xs text-ink-faint">
-            Played from this device - the app keeps no copy.
+            {video.pinned
+              ? "Your baseline - kept on this device for good, for the before-and-after."
+              : "Played from this device - the app keeps no copy."}
           </span>
-          {!missing && (
+          {!missing && !video.pinned && (
             <button
               type="button"
               onClick={onForget}

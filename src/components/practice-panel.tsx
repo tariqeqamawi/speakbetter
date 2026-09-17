@@ -108,6 +108,9 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
       setStage({ kind: "reviewed", url, attempt });
       // The feedback is recorded; now the video, on this device only.
       // If the browser won't keep it, nothing is lost but the replay.
+      // A baseline's first take is the "before" and is pinned for good
+      // (see lib/attempt-videos.ts); keepVideo ignores the pin if this
+      // device already holds one.
       keepVideo(
         {
           id: attempt.id,
@@ -119,6 +122,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
           poster: await poster,
         },
         file,
+        Boolean(challenge.baseline),
       ).then((kept) => {
         if (kept) setShelfKey((k) => k + 1);
       });
