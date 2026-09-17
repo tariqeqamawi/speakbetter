@@ -55,6 +55,11 @@ type Zoom = { list: DeckCard[]; index: number };
 
 /** How hard a shake has to be before it counts as one. */
 const SHAKE_FORCE = 24;
+
+/** The spread's fan: a card's width as a share of the fan's, and how far
+    along the next card sits, as a share of a card's width. */
+const FAN_CARD = 0.26;
+const FAN_STEP = 0.4;
 const SHAKE_COOLDOWN = 900;
 
 /** One card taken at random from a list. */
@@ -194,9 +199,13 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
   }, [view.mode, openColor]);
 
   // The card opened full size sits over whichever surface called it.
+  // Opened from the spread it carries the whole hand along as a strip,
+  // so the seven are a swipe or a tap apart rather than a trip back out.
   const overlay = zoom && (
     <CardZoom
       card={zoom.list[zoom.index]}
+      hand={zoom.list === hand ? hand : undefined}
+      index={zoom.index}
       hasPrev={zoom.index > 0}
       hasNext={zoom.index < zoom.list.length - 1}
       position={`${zoom.index + 1} of ${zoom.list.length}`}
@@ -205,6 +214,7 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
           z && z.list[z.index + delta] ? { ...z, index: z.index + delta } : z,
         )
       }
+      onJump={(index) => setZoom((z) => (z ? { ...z, index } : z))}
       onClose={() => setZoom(null)}
     />
   );
@@ -670,9 +680,82 @@ function FullSpread({
   onDeal: () => void;
   onBack: () => void;
 }) {
-  // The card lifted from the fan by pointing at its name below.
+  // The card lifted out of the fan: the one under the pointer, or the
+  // one whose name is pointed at below.
   const [raised, setRaised] = useState<number | null>(null);
   const mid = (hand.length - 1) / 2;
+  const fanRef = useRef<HTMLDivElement>(null);
+
+  // Which card a point across the fan belongs to. Worked out from where
+  // the cards are laid rather than from what's under the pointer,
+  // because the lifted card grows over its neighbours' edges: read off
+  // the screen, sliding right from a lifted card would skip the one
+  // beside it. Each card owns the strip of itself the next one leaves
+  // showing; the last owns all of itself.
+  const indexAt = useCallback(
+    (clientX: number): number | null => {
+      const fan = fanRef.current;
+      if (!fan) return null;
+      const box = fan.getBoundingClientRect();
+      const w = box.width * FAN_CARD;
+      const step = w * FAN_STEP;
+      const first = box.width / 2 - mid * step - w / 2;
+      const i = Math.floor((clientX - box.left - first) / step);
+      return Math.max(0, Math.min(hand.length - 1, i));
+    },
+    [hand.length, mid],
+  );
+
+  // Press, slide, release - the same gesture as the dial. A finger down
+  // on the fan lifts the card under it, sliding moves the lift with it,
+  // and letting go opens the card that's up. On a phone the cards
+  // overlap to a sliver each, and a sliver is a poor thing to have to
+  // hit; this way any touch on the fan lands on a card, and the card
+  // shows itself before the finger commits.
+  useEffect(() => {
+    const fan = fanRef.current;
+    if (!fan) return;
+    let pressing = false;
+    let last: number | null = null;
+    const onStart = (e: TouchEvent) => {
+      pressing = true;
+      last = indexAt(e.touches[0].clientX);
+      setRaised(last);
+      e.preventDefault();
+    };
+    const onMove = (e: TouchEvent) => {
+      if (!pressing) return;
+      e.preventDefault();
+      const i = indexAt(e.touches[0].clientX);
+      if (i !== last) {
+        last = i;
+        hapticTap();
+        setRaised(i);
+      }
+    };
+    const onEnd = (e: TouchEvent) => {
+      if (!pressing) return;
+      pressing = false;
+      e.preventDefault();
+      const i = indexAt(e.changedTouches[0].clientX);
+      setRaised(null);
+      if (i !== null) onZoom(i);
+    };
+    const onCancel = () => {
+      pressing = false;
+      setRaised(null);
+    };
+    fan.addEventListener("touchstart", onStart, { passive: false });
+    fan.addEventListener("touchmove", onMove, { passive: false });
+    fan.addEventListener("touchend", onEnd, { passive: false });
+    fan.addEventListener("touchcancel", onCancel);
+    return () => {
+      fan.removeEventListener("touchstart", onStart);
+      fan.removeEventListener("touchmove", onMove);
+      fan.removeEventListener("touchend", onEnd);
+      fan.removeEventListener("touchcancel", onCancel);
+    };
+  }, [indexAt, onZoom]);
 
   return (
     <div className="flex flex-col gap-5">
@@ -706,22 +789,41 @@ function FullSpread({
       {/* The fan. Each card is placed by its distance from the middle
           one: stepped sideways, turned a little further, and dropped
           along the arc a hand makes. The transform lives in a custom
-          property so the hover lift (see .fan-card) can add to it
-          rather than replace it. The box is tall enough for the outer
-          cards' corners and a lifted card. */}
-      <div className="relative mx-auto aspect-[2/1] w-full max-w-4xl">
+          property so the lift (see .fan-card) can add to it rather than
+          replace it. The box is tall enough for the outer cards'
+          corners and a lifted card.
+
+          Under a mouse the card under the pointer lifts and a click
+          opens it; the cards themselves don't take the pointer, so the
+          fan decides which card is meant (see indexAt) and a click
+          can't land on a different card than the one that's up. They
+          still take the keyboard - each is a button, and Enter on a
+          focused one opens it. */}
+      <div
+        ref={fanRef}
+        className="relative mx-auto aspect-[2/1] w-full max-w-4xl cursor-pointer touch-none select-none"
+        onMouseMove={(e) => setRaised(indexAt(e.clientX))}
+        onMouseLeave={() => setRaised(null)}
+        onClick={(e) => {
+          const i = indexAt(e.clientX);
+          if (i === null) return;
+          hapticTap();
+          onZoom(i);
+        }}
+      >
         {hand.map((card, i) => {
           const d = i - mid;
           return (
             <span
               key={card.vimeoId}
-              className={`fan-card absolute left-1/2 top-[6%] w-[26%] ${
+              className={`fan-card absolute left-1/2 top-[6%] ${
                 raised === i ? "is-raised" : ""
               }`}
               style={
                 {
+                  width: `${FAN_CARD * 100}%`,
                   zIndex: 10 + i,
-                  "--fan": `translateX(${d * 40}%) rotate(${d * 6}deg) translateY(${d * d * 2.2}%)`,
+                  "--fan": `translateX(${d * FAN_STEP * 100}%) rotate(${d * 6}deg) translateY(${d * d * 2.2}%)`,
                 } as React.CSSProperties
               }
             >
@@ -733,7 +835,7 @@ function FullSpread({
                   hapticTap();
                   onZoom(i);
                 }}
-                className="max-w-none"
+                className="pointer-events-none max-w-none"
               />
             </span>
           );
@@ -785,17 +887,24 @@ function FullSpread({
  */
 function CardZoom({
   card,
+  hand,
+  index,
   hasPrev,
   hasNext,
   position,
   onStep,
+  onJump,
   onClose,
 }: {
   card: DeckCard;
+  /** The dealt spread this card was opened from, if it was. */
+  hand?: DeckCard[];
+  index: number;
   hasPrev: boolean;
   hasNext: boolean;
   position: string;
   onStep: (delta: number) => void;
+  onJump: (index: number) => void;
   onClose: () => void;
 }) {
   // Escape closes it, the arrows walk it, and the page underneath holds
@@ -853,29 +962,72 @@ function CardZoom({
           />
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => onStep(-1)}
             disabled={!hasPrev}
             aria-label="Previous card"
-            className="rounded-lg px-2 py-1 text-ink-faint transition-colors hover:text-ink disabled:opacity-30"
+            className="flex size-11 items-center justify-center rounded-full text-ink-muted transition-colors hover:text-ink disabled:opacity-30"
           >
-            <ChevronDownIcon className="size-4 rotate-90" />
+            <ChevronDownIcon className="size-5 rotate-90" />
           </button>
-          <span className="text-xs tabular-nums text-ink-faint">{position}</span>
+
+          {hand ? (
+            // The hand, as a strip: one small back per card in its
+            // color, the open one standing up. A tap goes straight to
+            // it - seven cards should be seven taps apart at most, not
+            // six presses of the same arrow.
+            <div
+              className="flex items-end gap-1.5"
+              role="tablist"
+              aria-label="The spread"
+            >
+              {hand.map((c, i) => {
+                const on = i === index;
+                return (
+                  <button
+                    key={c.vimeoId}
+                    type="button"
+                    role="tab"
+                    aria-selected={on}
+                    aria-label={c.title}
+                    onClick={() => {
+                      if (!on) hapticTap();
+                      onJump(i);
+                    }}
+                    className={`aspect-[89/127] w-6 rounded-[3px] transition-all duration-200 sm:w-7 ${
+                      on
+                        ? "-translate-y-1 shadow-[0_0_14px_-2px_currentColor]"
+                        : "opacity-45 hover:opacity-80"
+                    }`}
+                    style={{
+                      background: `var(--color-${c.categoryId})`,
+                      color: `var(--color-${c.categoryId})`,
+                    }}
+                  />
+                );
+              })}
+            </div>
+          ) : (
+            <span className="min-w-12 text-center text-xs tabular-nums text-ink-faint">
+              {position}
+            </span>
+          )}
+
           <button
             type="button"
             onClick={() => onStep(1)}
             disabled={!hasNext}
             aria-label="Next card"
-            className="rounded-lg px-2 py-1 text-ink-faint transition-colors hover:text-ink disabled:opacity-30"
+            className="flex size-11 items-center justify-center rounded-full text-ink-muted transition-colors hover:text-ink disabled:opacity-30"
           >
-            <ChevronDownIcon className="size-4 -rotate-90" />
+            <ChevronDownIcon className="size-5 -rotate-90" />
           </button>
         </div>
 
         <p className="text-center text-xs text-ink-faint">
+          {hand ? `${position} · ` : ""}
           Tap the card to turn it over
           {" · "}
           <Link

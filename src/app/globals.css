@@ -787,11 +787,13 @@ body {
 }
 
 /* The spread as a hand: seven cards fanned over each other. The
-   component places each card with --fan; a card lifts out of the fan
-   and comes forward while it's pointed at, hovered or named below, so
-   it can be read where it lies. The lift is added after the rotation,
-   so it runs along the card's own length - up and out of the hand, the
-   way a card is drawn from one. */
+   component places each card with --fan and decides which one is up -
+   the one under the pointer or the finger, or the one whose name is
+   pointed at below - and marks it is-raised. The lift is added after
+   the rotation, so it runs along the card's own length: up and out of
+   the hand, the way a card is drawn from one. (Not :hover - the lifted
+   card grows over its neighbours' edges, and a hover that follows the
+   pointer across the screen would skip the card beside it.) */
 .fan-card {
   transform: translateX(-50%) var(--fan);
   transition:
@@ -800,22 +802,11 @@ body {
   filter: drop-shadow(0 12px 18px rgba(3, 7, 18, 0.55));
 }
 
-.fan-card:hover,
 .fan-card.is-raised,
 .fan-card:has(:focus-visible) {
   transform: translateX(-50%) var(--fan) translateY(-9%) scale(1.12);
   z-index: 40 !important;
   filter: drop-shadow(0 26px 34px rgba(3, 7, 18, 0.7));
-}
-
-/* Without a mouse there's no hovering, and the tap that would lift a
-   card is the tap that opens it - so no lift, and the card lies still
-   under a finger. */
-@media (hover: none) {
-  .fan-card:hover {
-    transform: translateX(-50%) var(--fan);
-    z-index: auto !important;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
