@@ -82,4 +82,5 @@ export const demoState: AppState = {
   freezesRemaining: 2,
   watchedOn: {},
   questChests: [],
+  sharedReels: [],
 };

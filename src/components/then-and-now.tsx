@@ -12,6 +12,8 @@ import {
 } from "@/lib/attempt-videos";
 import { SpectrumStrip } from "@/components/spectrum";
 import { PlayIcon, TrendingUpIcon } from "@/components/icons";
+import { PlayFillIcon } from "@/components/player-icons";
+import { ProgressReel } from "@/components/progress-reel";
 
 // Then and now: the student as they arrived, beside the student today.
 //
@@ -36,6 +38,7 @@ export function ThenAndNow() {
   const [before, setBefore] = useState<StoredVideoMeta | null | undefined>();
   const [after, setAfter] = useState<StoredVideoMeta | null | undefined>();
   const [which, setWhich] = useState<string | null>(null);
+  const [reel, setReel] = useState(false);
 
   const baselines = challenges.filter((c) => c.baseline);
   // The baselines the student has actually recorded - their first take
@@ -49,15 +52,17 @@ export function ThenAndNow() {
     ? (before && attemptsFor(slug).find((a) => a.id === before.id)) ||
       attemptsFor(slug)[0]
     : undefined;
-  // The "now" is the latest attempt at anything that isn't a baseline -
-  // the most recent evidence of where they are.
-  const nowAttempt = [...state.attempts]
+  // The "now" is the latest passed attempt at anything that isn't a
+  // baseline - the most recent evidence of where they are - and the
+  // latest attempt of any kind where nothing has passed yet.
+  const later = [...state.attempts]
     .reverse()
-    .find((a) => !challengeBySlug.get(a.challengeSlug)?.baseline);
-  const passed = challenges.filter(
-    (c) => !c.passive && isChallengeComplete(c.slug),
-  ).length;
+    .filter((a) => !challengeBySlug.get(a.challengeSlug)?.baseline);
+  const nowAttempt = later.find((a) => a.passed) ?? later[0];
+  const recordable = challenges.filter((c) => !c.passive);
+  const passed = recordable.filter((c) => isChallengeComplete(c.slug)).length;
   const open = passed >= UNLOCK_AT;
+  const finished = passed >= recordable.length;
 
   useEffect(() => {
     if (!open || !slug) return;
@@ -107,7 +112,7 @@ export function ThenAndNow() {
         <div className="flex items-center gap-2">
           <TrendingUpIcon className="size-5 text-mindset" />
           <h2 className="text-sm font-semibold uppercase tracking-wider text-ink">
-            Then and now
+            {finished ? "The whole road" : "Then and now"}
           </h2>
         </div>
         {recorded.length > 1 && (
@@ -172,6 +177,31 @@ export function ThenAndNow() {
           </p>
         )}
       </div>
+
+      {/* The reel: twenty seconds of then, twenty of now, cut on this
+          phone and shared from it - see progress-reel.tsx. */}
+      <button
+        type="button"
+        onClick={() => setReel(true)}
+        className="flex items-center justify-center gap-2 rounded-lg bg-ink px-4 py-2.5 text-sm font-semibold text-navy-900 transition-opacity hover:opacity-90"
+      >
+        <PlayFillIcon className="size-4" />
+        Play your before and after
+      </button>
+      <p className="-mt-1 text-center text-xs text-ink-faint text-balance">
+        About fifty seconds, made on this phone - share it to your socials
+        or with the other students.
+      </p>
+
+      {reel && (
+        <ProgressReel
+          thenAttempt={thenAttempt}
+          nowAttempt={nowAttempt}
+          thenVideo={before ?? null}
+          nowVideo={after ?? null}
+          onClose={() => setReel(false)}
+        />
+      )}
     </section>
   );
 }

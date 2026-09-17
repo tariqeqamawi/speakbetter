@@ -49,6 +49,25 @@ export interface Attempt {
   summary: string;
 }
 
+/**
+ * A before-and-after the student chose to share with the community: the
+ * two scores and spectra and the date, never the videos - those stay on
+ * the device (§13). Kept locally until the community layer lands, when
+ * this same record is what gets posted.
+ */
+export interface SharedReel {
+  id: string;
+  at: string; // ISO datetime
+  thenSlug: string;
+  thenScore: number;
+  thenSpectrum: Record<CategoryId, number>;
+  nowSlug: string;
+  nowScore: number;
+  nowSpectrum: Record<CategoryId, number>;
+  /** Challenges passed at the time. */
+  passed: number;
+}
+
 export interface AppState {
   unlocked: boolean;
   level: Level | null;
@@ -73,6 +92,8 @@ export interface AppState {
   /** A downscaled data URL. Small enough to sit in localStorage today,
    *  and swapped for a storage bucket URL when Supabase lands. */
   avatar: string;
+  /** Before-and-afters shared to the community, newest last. */
+  sharedReels: SharedReel[];
 }
 
 const STARTING_FREEZES = 2;
@@ -90,6 +111,7 @@ const EMPTY: AppState = {
   intention: "",
   displayName: "",
   avatar: "",
+  sharedReels: [],
 };
 
 export const STORAGE_KEY = "speak-better-state-v1";
@@ -106,6 +128,8 @@ interface StoreApi {
   claimQuestChest: () => void;
   markLessonWatched: (vimeoId: string) => void;
   recordAttempt: (attempt: Attempt) => void;
+  /** Post a before-and-after to the community (§12). */
+  shareReel: (reel: SharedReel) => void;
   dismissCelebration: (badgeId: string) => void;
   attemptsFor: (challengeSlug: string) => Attempt[];
   bestAttempt: (challengeSlug: string) => Attempt | undefined;
@@ -277,6 +301,11 @@ function StoreCore({
         }),
       recordAttempt: (attempt) =>
         applyWithBadges((p) => ({ ...p, attempts: [...p.attempts, attempt] })),
+      // INTEGRATION SWAP POINT (§12, stack §19): today this is a row in
+      // the student's own state; with Supabase it becomes an insert
+      // into the community feed, and the local copy is the cache.
+      shareReel: (reel) =>
+        applyWithBadges((p) => ({ ...p, sharedReels: [...p.sharedReels, reel] })),
       dismissCelebration: (badgeId) =>
         setCelebrations((q) => q.filter((b) => b.id !== badgeId)),
       attemptsFor,

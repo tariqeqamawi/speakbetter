@@ -88,6 +88,8 @@ Each phase lists what it builds, which master plan sections it delivers, and wha
 - Downloadable feedback (§13)
 - The recordings shelf: a student's last three videos for each challenge, kept on their own device and played from it — the app hosts nothing (§13) — *built*
 - The two baselines pinned for good, and the then-and-now panel at ten challenges passed: baseline beside latest attempt, videos, scores, spectra and the colors lit since (§13) — *built*
+- The before-and-after reel: fifty seconds cut on the phone from the baseline and the latest attempt, shared to socials from the share sheet or with the other students as scores and spectra (§13, §12) — *built*
+- Ahead of Phase 6: the community feed of before-and-afters, and the crowd-on-the-road panel beside the journey map — who's on your challenge, who uploaded recently, where everyone is (§12) — *built on sample data, swap points marked*
 
 **Deliberately excluded, per §13:** annotated video playback, attempt-to-attempt delivery comparison. The video playback question is answered: from the student's own device, never from storage of ours.
 
