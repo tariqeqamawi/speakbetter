@@ -30,6 +30,17 @@ export function PauseFillIcon({ className = "size-6" }: IconProps) {
   );
 }
 
+/** A speaker with its sound crossed out - tap for sound. */
+export function SoundOffIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M4.75 9.5v5h3l4.5 3.75V5.75L7.75 9.5h-3Z" />
+      <path d="m15.75 9.75 4.5 4.5" />
+      <path d="m20.25 9.75-4.5 4.5" />
+    </svg>
+  );
+}
+
 /** Captions - a frame with subtitle lines. */
 export function CaptionsIcon({ className = "size-5" }: IconProps) {
   return (

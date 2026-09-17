@@ -16,6 +16,7 @@ import {
   PauseFillIcon,
   PlayFillIcon,
   ResetFrameIcon,
+  SoundOffIcon,
   SpeedIcon,
   ZoomPortraitIcon,
 } from "@/components/player-icons";
@@ -154,6 +155,9 @@ export function VimeoPlayer({
   const [frame, setFrame] = useState<Frame>("fit");
   const [playing, setPlaying] = useState(false);
   const [ended, setEnded] = useState(false);
+  // Playing, but silently: the browser let the video start and took
+  // the sound away. See the "Tap for sound" button below.
+  const [silenced, setSilenced] = useState(false);
   const [ready, setReady] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -248,6 +252,13 @@ export function VimeoPlayer({
       byline: false,
       portrait: false,
       responsive: false,
+      // Only ever set from a click on the facade. Asked for in the
+      // embed itself rather than with play() after ready(), because
+      // ready() resolves long after the click that mounted us, and a
+      // play() that far from a gesture is one the browser answers by
+      // muting - which is how the orientation videos went silent. The
+      // iframe's own autoplay rides the page's activation instead.
+      autoplay,
     });
     playerRef.current = player;
 
@@ -255,8 +266,6 @@ export function VimeoPlayer({
       .ready()
       .then(() => {
         setReady(true);
-        // Only ever set from a click on the facade, so the user gesture
-        // that mounted us also authorizes playback.
         if (autoplay) player.play().catch(() => {});
       })
       .catch(() => {});
@@ -272,6 +281,24 @@ export function VimeoPlayer({
     const onPlay = () => {
       setPlaying(true);
       setEnded(false);
+      // There's no mute control on this player, so a muted player is
+      // never the student's doing: it's the browser refusing sound
+      // to a start it didn't see a gesture for. Try once to turn it
+      // back up - that works where the page has been tapped at all -
+      // and where it doesn't, say so on the frame.
+      player
+        .getMuted()
+        .then(async (muted) => {
+          if (!muted) return setSilenced(false);
+          try {
+            await player.setMuted(false);
+            await player.setVolume(1);
+            setSilenced(await player.getMuted());
+          } catch {
+            setSilenced(true);
+          }
+        })
+        .catch(() => {});
     };
     // Clearing the floater on pause keeps a cue from replaying its fade
     // on resume, seconds after the words it belongs to were spoken.
@@ -314,6 +341,16 @@ export function VimeoPlayer({
       playerRef.current = null;
     };
   }, [vimeoId, autoplay, cueAt]);
+
+  // From a tap, which is the one thing the browser wanted.
+  const unmute = useCallback(() => {
+    const p = playerRef.current;
+    if (!p) return;
+    p.setMuted(false)
+      .then(() => p.setVolume(1))
+      .then(() => setSilenced(false))
+      .catch(() => {});
+  }, []);
 
   const togglePlay = useCallback(() => {
     const p = playerRef.current;
@@ -559,6 +596,21 @@ export function VimeoPlayer({
             </button>
             <span className="text-xs text-ink-faint">Lesson complete</span>
           </div>
+        )}
+
+        {/* The browser started the video without sound. One tap fixes
+            it, and the tap has to be on something that says so - a
+            student who presses play and hears nothing assumes the
+            video is broken, not that their browser is being careful. */}
+        {silenced && playing && (
+          <button
+            type="button"
+            onClick={unmute}
+            className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/20 bg-navy-950/80 px-4 py-2 text-sm font-semibold text-ink backdrop-blur transition-colors hover:bg-navy-900"
+          >
+            <SoundOffIcon className="size-4" />
+            Tap for sound
+          </button>
         )}
 
         {/* click anywhere to play/pause */}
