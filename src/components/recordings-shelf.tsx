@@ -79,7 +79,7 @@ export function RecordingsShelf({
                 type="button"
                 onClick={() => setOpen(v)}
                 aria-label={`Play your recording from ${new Date(v.at).toLocaleDateString()}`}
-                className="group flex w-full flex-col gap-1.5 rounded-xl border border-navy-600 bg-navy-800 p-1.5 text-left transition-colors hover:border-navy-500"
+                className="group flex w-full flex-col gap-1.5 rounded-xl border border-navy-600 bg-navy-800 p-1.5 text-left transition-colors hover:border-ink-faint"
               >
                 <span className="relative block aspect-[3/4] w-full overflow-hidden rounded-lg bg-navy-950">
                   {v.poster ? (

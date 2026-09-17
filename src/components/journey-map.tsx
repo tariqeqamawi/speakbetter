@@ -18,6 +18,7 @@ import { XpBadge } from "@/components/xp-badge";
 import { useStore } from "@/lib/store";
 import { VideoStill } from "@/components/video-still";
 import { CheckIcon, LockIcon, ProfileIcon } from "@/components/icons";
+import { StudentsHere } from "@/components/students-here";
 
 // The STORY journey as terrain: a winding path of nodes, one per
 // challenge, each named in the open beside its marker so the whole road
@@ -252,9 +253,14 @@ export function JourneyMap() {
         <h2 className="text-sm font-medium uppercase tracking-wider text-ink-faint">
           The journey
         </h2>
-        <span className="text-xs tabular-nums text-ink-faint">
-          {done} of {challenges.length}
-        </span>
+        <div className="flex items-center gap-3">
+          {/* The other walkers - see students-here.tsx. Where the 2D/3D
+              toggle used to sit, and a better use of the corner. */}
+          <StudentsHere />
+          <span className="text-xs tabular-nums text-ink-faint">
+            {done} of {challenges.length}
+          </span>
+        </div>
       </div>
 
       <div className="map-scene">

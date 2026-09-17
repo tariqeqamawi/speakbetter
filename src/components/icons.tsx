@@ -273,6 +273,20 @@ export function XIcon({ className = "size-5" }: IconProps) {
   );
 }
 
+/** Three people, shoulder to shoulder - the other students. */
+export function GroupIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <circle cx="12" cy="8" r="3" />
+      <path d="M6.5 19.25v-1.5a4.25 4.25 0 0 1 4.25-4.25h2.5a4.25 4.25 0 0 1 4.25 4.25v1.5" />
+      <circle cx="5" cy="10" r="2.25" />
+      <circle cx="19" cy="10" r="2.25" />
+      <path d="M2.75 18.25v-1a3 3 0 0 1 3-3h.5" />
+      <path d="M21.25 18.25v-1a3 3 0 0 0-3-3h-.5" />
+    </svg>
+  );
+}
+
 /** Arrows leaving four corners - open this bigger. */
 export function ExpandIcon({ className = "size-5" }: IconProps) {
   return (
