@@ -1,12 +1,15 @@
-// The key ideas the player shows beside the teacher, timed to the second
-// he says them. Built from the lesson transcripts by `npm run build:cues`
-// - see scripts/build-lesson-cues.mjs for how a moment earns a cue and
-// scripts/cues/ for the vocabulary and rhetoric it reads.
+// What the player shows beside the teacher: a short phrase naming what
+// he's talking about, lifted from the captions and timed to the second
+// he says it, every five to ten seconds. Built from the lesson
+// transcripts by `npm run build:cues` - see scripts/build-lesson-cues.mjs
+// for how a phrase earns the screen and scripts/cues/ for the vocabulary
+// and rhetoric it reads.
 
 export interface LessonCue {
   /** Seconds into the lesson, a beat before the words land. */
   t: number;
-  /** The phrase, title-cased; the player renders it uppercase. */
+  /** The phrase, two to four of his words, title-cased; the player
+      renders it uppercase. */
   w: string;
   /**
    * A drawing to show instead of the words - the name of a component in
@@ -20,7 +23,7 @@ export interface LessonCue {
   img?: string;
 }
 
-// One table covers all 121 videos in ~17 KB, so it's fetched whole - but
+// One table covers all 121 videos in ~40 KB, so it's fetched whole - but
 // lazily, and once per session: nothing about a page that isn't playing a
 // lesson should pay for it.
 let table: Promise<Record<string, LessonCue[]>> | null = null;

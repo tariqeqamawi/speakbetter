@@ -86,17 +86,19 @@ Skills is one section with two tabs. **Skills** is the video library: the seven 
 
 ### The lesson player — what appears beside the teacher
 
-A lesson is one to two minutes of a person talking to camera, and the margins either side of him are dead space. The player uses them as a second channel of teaching: **each time the teacher lands a point, the thing he is making a point *about* appears in the margin** — as the words themselves, or as a single-color stroke icon where a drawing says it faster than reading would.
+A lesson is one to two minutes of a person talking to camera, and the margins either side of him are dead space. The player uses them as a second channel of teaching: **every five to ten seconds, a short phrase naming what he is talking about right now appears in the margin** — his own words, or a single-color stroke icon where a drawing says it faster than reading would.
 
-What appears is neither hand-written nor random. A build step reads each lesson's own transcript and finds the beats where a point is being landed — from the rhetoric used to land it ("I promise you", "remember", "it's not about *what* you say, it's about *how*", "if you… then…") and from passages that make their point by painting rather than announcing, which is how the most vivid teaching in the course actually reads. It then shows whichever phrase inside that beat is most distinctive to that lesson and most worth picturing.
+Two things it is not. It is not a keyword track: a cue is a **phrase**, two or three words and now and then four, because two words name an idea where one only gestures at it — EMOTIONAL JOURNEY is the point, JOURNEY could be anything. And it is not subtitles: what appears is what he is speaking *about*, a short contiguous run of his own words chosen for naming the thing, never the whole sentence.
+
+What appears is neither hand-written nor random. A build step reads each lesson's own transcript and walks down it, taking the strongest unshown phrase in each window. Strength is a phrase's own vocabulary — how much of it belongs to this lesson rather than to the whole course, how much of it can be pictured — weighted by how strongly the sentence around it reads as a point being made, which the engine hears in the rhetoric ("I promise you", "remember", "it's not about *what* you say, it's about *how*", "if you… then…") and in passages that make their point by painting rather than announcing.
 
 Three rules keep a second channel from becoming noise:
 
-- **An idea appears once per lesson**, counted by word stem, so OVATION can never follow STANDING OVATION.
+- **An idea appears once per lesson**, counted by word stem, so OVATION can never follow STANDING OVATION. The single exception is an idea he returns to half a minute later in different words, and then only where the alternative is a hole in the cadence — at that distance it reads as a callback rather than as the screen stuttering.
 - **An idea rarely repeats across the course**, so the lessons don't all surface the same handful of words.
-- **A moment with nothing worth showing shows nothing.** Silence beats a word that isn't a point.
+- **A stretch with nothing worth naming shows nothing.** Where the material runs out the gap stretches; the bar never drops. Silence beats a phrase that names nothing.
 
-Around 600 cues across the 121 videos — the 81 Skills lessons plus the challenge explainers and intros — roughly one every sixteen seconds. Because they're generated from the transcripts rather than maintained by hand, the whole course can be re-cut by rerunning one script, and every lesson's cues can be reviewed on one page without watching a single video.
+Around 1,000 cues across the 121 videos — the 81 Skills lessons plus the challenge explainers and intros. Seven in ten land inside the five-to-ten-second promise and the rest are the stretches where he genuinely isn't naming anything: the ceiling is the material, not the engine, which is worth knowing before anyone tries to tune it further. Because they're generated from the transcripts rather than maintained by hand, the whole course can be re-cut by rerunning one script, and every lesson's cues can be reviewed on one page without watching a single video.
 
 ## 04 · Pillar two — Challenges, on the STORY journey
 

@@ -229,9 +229,12 @@ export function VimeoPlayer({
       icon: due.icon,
       img: due.img,
       color: WORD_COLORS[Math.floor(Math.random() * WORD_COLORS.length)],
-      // The gray areas flanking the centered teacher.
-      left: leftSide ? 4 + Math.random() * 13 : 70 + Math.random() * 16,
-      top: 15 + Math.random() * 55,
+      // The gray areas flanking the centered teacher. A phrase is a
+      // column 23% wide (see the render below), so it starts near the
+      // edge it belongs to rather than drifting toward him - and stops
+      // short of the bottom, where three wrapped lines would run off.
+      left: leftSide ? 3 + Math.random() * 7 : 69 + Math.random() * 7,
+      top: 12 + Math.random() * 46,
       key: floaterKeyRef.current++,
     });
   }, []);
@@ -506,10 +509,15 @@ export function VimeoPlayer({
           <span
             key={floater.key}
             aria-hidden
-            className="float-word pointer-events-none absolute z-[15] text-xs font-semibold uppercase tracking-[0.18em] sm:text-sm"
+            // Cues are phrases now, two to four words, so the margin
+            // has to be a column rather than a spot: capped at the width
+            // of the gray band beside the teacher, wrapped, and balanced
+            // so a phrase never strands one word on its own line.
+            className="float-word pointer-events-none absolute z-[15] text-xs font-semibold uppercase leading-snug tracking-[0.14em] text-balance sm:text-sm"
             style={{
               left: `${floater.left}%`,
               top: `${floater.top}%`,
+              maxWidth: "23%",
               color: floater.color,
               textShadow: floater.img ? undefined : "0 0 14px currentColor",
             }}
