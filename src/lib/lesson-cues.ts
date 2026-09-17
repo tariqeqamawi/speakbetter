@@ -1,16 +1,25 @@
-// What the player shows beside the teacher: a short phrase naming what
-// he's talking about, lifted from the captions and timed to the second
-// he says it, every five to ten seconds. Built from the lesson
-// transcripts by `npm run build:cues` - see scripts/build-lesson-cues.mjs
-// for how a phrase earns the screen and scripts/cues/ for the vocabulary
-// and rhetoric it reads.
+// What the player shows beside the teacher: one complete thought from
+// what he's saying, lifted from the captions and timed to the second he
+// says it, about every ten seconds. Built from the lesson transcripts
+// by `npm run build:cues` - see scripts/build-lesson-cues.mjs for how a
+// thought earns the screen and scripts/cues/ for the vocabulary and
+// rhetoric it reads.
 
 export interface LessonCue {
   /** Seconds into the lesson, a beat before the words land. */
   t: number;
-  /** The phrase, two to four of his words, title-cased; the player
+  /** The thought, three to ten of his words, title-cased; the player
       renders it uppercase. */
   w: string;
+  /**
+   * Other things he says in the same stretch that could stand here
+   * instead - a different angle on the moment, never the same idea in
+   * other words. The player deals one option per slot at random each
+   * time a lesson is played from the top, so a second viewing shows
+   * different things. Words only; a slot's drawing belongs to its
+   * first choice.
+   */
+  alt?: { t: number; w: string }[];
   /**
    * A drawing to show instead of the words - the name of a component in
    * cue-icons.tsx. Single-color stroke, tinted like any other cue.
@@ -23,7 +32,7 @@ export interface LessonCue {
   img?: string;
 }
 
-// One table covers all 121 videos in ~40 KB, so it's fetched whole - but
+// One table covers all 121 videos in ~70 KB, so it's fetched whole - but
 // lazily, and once per session: nothing about a page that isn't playing a
 // lesson should pay for it.
 let table: Promise<Record<string, LessonCue[]>> | null = null;

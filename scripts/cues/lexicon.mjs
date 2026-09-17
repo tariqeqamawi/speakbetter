@@ -323,11 +323,22 @@ export const ICONS = {
 };
 
 /**
- * The icon a cue should wear, if the set has one for it. Tries the whole
- * phrase before its words so "eye contact" doesn't become an eye.
+ * The longest concept in the set that a cue contains, whole words only
+ * - so "take people on this wild roller coaster" finds "roller coaster"
+ * rather than nothing, and "eye contact" is found before "eye". Null
+ * where the set has nothing for it.
  */
+export function iconKeyFor(phrase) {
+  const padded = " " + phrase + " ";
+  let best = null;
+  for (const key of Object.keys(ICONS))
+    if (padded.includes(" " + key + " ") && (!best || key.length > best.length))
+      best = key;
+  return best;
+}
+
+/** The icon a cue should wear, if the set has one for it. */
 export function iconFor(phrase) {
-  if (ICONS[phrase]) return ICONS[phrase];
-  for (const w of phrase.split(" ")) if (ICONS[w]) return ICONS[w];
-  return null;
+  const key = iconKeyFor(phrase);
+  return key ? ICONS[key] : null;
 }

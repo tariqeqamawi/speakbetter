@@ -2,39 +2,45 @@
 // and when.
 //
 // The rule it works to is simple to state and most of the difficulty is
-// in honoring it: every five to ten seconds, a short phrase naming what
-// the teacher is talking about right now appears beside him - lifted
-// word for word out of the captions, never paraphrased. A few of them
-// arrive as a drawing instead, where a drawing says it faster.
+// in honoring it: about every ten seconds, one complete thought from
+// what the teacher is saying right now appears beside him - lifted word
+// for word out of the captions, never paraphrased. A few of them arrive
+// as a drawing instead, where a drawing says it faster.
 //
 // TWO THINGS THIS IS NOT
 //
-// Not a keyword track. A cue is a *phrase* - two or three words, now and
-// then four - because two words name an idea and one only gestures at
-// it: "emotional journey" is the point, "journey" could be anything.
-// Single words aren't eligible at all, which is the largest change this
-// engine has been through.
+// Not a keyword track. A cue is a *thought* - a clause of his, three to
+// nine words, that stands on its own: "find the scene that shows it",
+// not FIND THE SCENE, and not SCENE. The engine used to lift the two or
+// three most distinctive words out of a sentence, and the screen read
+// as a list of topics. A clause reads as a point.
 //
-// Not subtitles either. The screen shows what he is speaking *about*,
-// not everything he says: a contiguous run of his own words, chosen for
-// naming the thing, and never the whole sentence.
+// Not subtitles either. The screen shows one thing he said, not
+// everything he says: a clause chosen because it names the idea, and
+// never the whole sentence when the sentence runs on.
 //
 // HOW IT RUNS
 //
 //   1. BEATS      cues/beats.mjs scores each sentence for how strongly
-//                 it reads as a point being made - now a weighting on
-//                 the phrases inside it rather than a gate on whether
-//                 the stretch gets a cue at all.
-//   2. CANDIDATES every contiguous run of his words that could go on
-//                 screen, scored for how distinctive its vocabulary is
-//                 to this lesson and how showable it is (cues/lexicon).
+//                 it reads as a point being made - a weighting on the
+//                 clauses inside it rather than a gate on whether the
+//                 stretch gets a cue at all.
+//   2. CANDIDATES every clause of his that could stand on screen as a
+//                 thought, scored by the strongest idea inside it - how
+//                 distinctive its vocabulary is to this lesson, and how
+//                 showable (cues/lexicon).
 //   3. CADENCE    a walk down the lesson taking the strongest unshown
-//                 phrase every 5 to 10 seconds. Where nothing showable
-//                 is being said the gap stretches, rather than the bar
-//                 dropping - silence beats a phrase that names nothing.
+//                 thought about every ten seconds. Where nothing
+//                 showable is being said the gap stretches, rather than
+//                 the bar dropping - silence beats a line that says
+//                 nothing.
 //   4. NOVELTY    an idea floats once per lesson and rarely across the
 //                 course, so no two moments show the same thing twice.
-//   5. FORM       words, icon, or image - whichever carries the idea.
+//   5. TAKES      each slot keeps a couple of runners-up - different
+//                 ideas from the same stretch - so a lesson watched
+//                 twice shows different things. The player deals a
+//                 fresh take every time playback starts from the top.
+//   6. FORM       words, icon, or image - whichever carries the idea.
 //
 // Why the cadence pass replaced the beat gate: the old engine only spoke
 // where the rhetoric marked a landing, which left a median gap of eleven
@@ -49,7 +55,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { GLUE, ICONS, STOP, iconFor, vividness } from "./cues/lexicon.mjs";
+import { GLUE, ICONS, STOP, iconFor, iconKeyFor, vividness } from "./cues/lexicon.mjs";
 import { scoreBeats, sentencesOf } from "./cues/beats.mjs";
 import { IMAGES, imageFor } from "./cues/images.mjs";
 
@@ -63,13 +69,13 @@ const transcripts = JSON.parse(
 );
 
 // -- Tuning -----------------------------------------------------------
-// The cadence. A cue's fade runs 4s (see .float-word) and the player
-// shows one at a time, so MIN is also what stops one cue cutting the
-// last one off: five seconds leaves a beat of clear screen between them.
-// MAX is the promise - the gap goes past it only where nothing worth
-// naming is being said.
-const MIN_GAP = 5;
-const MAX_GAP = 10;
+// The cadence: about one every ten seconds. A cue's fade runs 6s (see
+// .float-word) - a clause takes longer to read than a pair of words -
+// and the player shows one at a time, so MIN is also what stops one cue
+// cutting the last one off. MAX is the promise; the gap goes past it
+// only where nothing worth saying whole is being said.
+const MIN_GAP = 8;
+const MAX_GAP = 13;
 // The bar a phrase clears to be worth the screen. Set low, and
 // deliberately: a phrase scores low mostly for being made of words the
 // whole course uses, and on a lesson whose subject *is* one of those
@@ -82,8 +88,25 @@ const CUE_FLOOR = 0.65;
 // A point worth lifting whole even when its words are all stopwords.
 const VERBATIM_EMPHASIS = 2.5;
 const LEAD = 0.25; // appear a beat before the words land
-/** The longest run of his words a cue may lift. */
+/** The longest run of his words an *idea* may span - the phrase inside
+    a clause that decides how strong the clause is. */
 const PHRASE_MAX = 5;
+// The shape of a thought. Under three words it's a label, not a
+// thought; past ten it's a sentence to read instead of watching him,
+// and past sixty-odd characters it no longer fits the margin beside him
+// in four lines.
+const CLAUSE_MIN = 3;
+const CLAUSE_MAX = 10;
+const CLAUSE_CHARS = 58;
+// How far either side of its slot a runner-up may fall. The slot is
+// five seconds wide and a thought is a few seconds long, so held to the
+// slot exactly most had no runner-up at all. The player keeps the takes
+// it deals from crowding each other.
+const ALT_SLACK = 3;
+// Runners-up kept per slot, so a second viewing can show something
+// else. Two: with the first choice that's three takes on each moment,
+// and a lesson watched three times has run out of new things to say.
+const ALTS = 2;
 // An idea floats once a lesson. The exception, and only where the
 // alternative is a hole in the cadence: an idea he comes back to this
 // long afterwards, in different words, reads as a callback rather than
@@ -192,6 +215,197 @@ function phrasesOfText(text) {
   for (const clause of text.split(/[,.;:!?]+/))
     if (clause.trim()) out.push(...phrasesFrom(tokenize(clause)));
   return out;
+}
+
+// -- Thoughts ---------------------------------------------------------
+
+/**
+ * Words a thought can't end on. A clause that stops on one of these
+ * was cut mid-idea - "the depths of" is a run-up, not a point.
+ */
+const NO_END = new Set([
+  "a", "an", "the", "of", "to", "and", "or", "but", "nor", "with", "for",
+  "in", "on", "at", "by", "from", "into", "onto", "than", "as", "that",
+  "which", "who", "whom", "whose", "is", "are", "was", "were", "be",
+  "been", "being", "am", "if", "so", "because", "when", "while", "very",
+  "really", "just", "then", "your", "my", "their", "our", "his", "her",
+  "its", "this", "these", "those", "some", "any", "every", "each", "more",
+  "most", "no", "not", "about", "like", "how", "what", "where", "why",
+  "i", "we", "he", "she", "they", "i'm", "i've", "i'll", "you're",
+  "you've", "we're", "we've", "it's", "that's", "there's", "can", "could",
+  "will", "would", "should", "might", "may", "must", "do", "does", "did",
+  "have", "has", "had", "get", "got", "gets", "going", "gonna", "wanna",
+]);
+
+/** Words a thought can't open on - the tail of some other thought. */
+const NO_START = new Set([
+  "it", "here", "there", "of", "and", "or", "but", "nor", "than", "as", "that", "which", "whom",
+  "whose", "with", "for", "at", "by", "from", "into", "onto", "is", "are",
+  "was", "were", "so", "because", "if", "then", "also", "too", "either",
+]);
+
+/**
+ * What he starts a clause with before getting to it. Stripped from the
+ * front so "and so what you want to do is find the scene" opens on the
+ * thought rather than on the throat-clearing; a thought that's still
+ * too long after that is split, not trimmed further.
+ */
+const LEAD_IN =
+  /^(?:(?:and|so|but|because|now|well|then|okay|ok|right|like|you know|i mean|which means|that means|again|also|yeah|yes|no|oh|actually|basically|literally|really|just|alright|all right|not only that|on top of that|the thing is|here's the thing)\s+)+/;
+const TRAIL_OFF = /(?:\s+(?:right|okay|ok|you know|yeah|though))+$/;
+
+/**
+ * The joining words. Whisper puts a comma where he paused, but he
+ * pauses less than he joins - most of his sentences are "... and ...
+ * and ... and ...", one breath, three thoughts. So a clause is cut at
+ * these too, and the units between them are what thoughts are built
+ * from.
+ */
+const JOINS = new Set([
+  "and", "but", "because", "which", "that", "then", "when", "while",
+  "where", "or", "if",
+]);
+
+/** Joins that as often introduce a relative clause as a new thought. */
+const RELATIVE = new Set(["that", "which"]);
+
+/**
+ * Words a thought may begin after, inside a unit. He doesn't pause or
+ * join inside "the way you do that is by taking the audience on an
+ * emotional journey", but there's a thought starting after "by" all the
+ * same. A run may open on the word after one of these - at a small
+ * cost against a run that opens where he actually drew breath - but it
+ * still has to close where he did: a thought cut short in front of a
+ * preposition ("create the structures that you're talking") or a verb
+ * ("your hands express visually what your mouth") is the one thing the
+ * screen must never show, and there was no list of words safe to stop
+ * before.
+ */
+const HINGES = new Set([
+  "to", "of", "by", "into", "in", "on", "at", "for", "with", "from",
+  "about", "like", "as", "than", "means", "called", "through", "without",
+  "toward", "towards", "onto", "over", "under", "before", "after",
+]);
+
+/**
+ * Every run of his words in a sentence that could stand on screen as a
+ * thought.
+ *
+ * Whisper punctuates reliably, so his clauses are already marked: split
+ * on the marks, strip the lead-in, and what's left is a stretch he
+ * delivered as one unit of sense. That stretch is cut again at every
+ * joining word into units. A thought is a run of his words that opens
+ * at the start of a unit - or just after a hinge word inside one - and
+ * closes at the end of a unit; the joins between units come along, the
+ * join in front is dropped. Then the
+ * shape rules: three to nine words, at least two that carry an idea,
+ * opening and closing on words a thought can open and close on.
+ *
+ * "A standing ovation is where you finish your talk and everybody
+ * stands up out of their chair and claps for you" offers "a standing
+ * ovation is where you finish your talk", "everybody stands up out of
+ * their chair", "everybody stands up out of their chair and claps for
+ * you", "where you finish your talk" - and not "finish your talk and
+ * everybody", because a run can't end inside a unit.
+ *
+ * Each run says how it was cut: `whole` opened and closed where he
+ * drew breath, `hinged` opened at a hinge inside a unit. The score
+ * prefers the former; the latter is what keeps a long, join-free run
+ * of his from offering nothing at all.
+ */
+function clausesOf(text) {
+  const out = [];
+  const pieces = text
+    .replace(/[\u2014\u2013]|\s-\s/g, ",")
+    .split(/[,.;:!?()"]+/);
+  for (const piece of pieces) {
+    const trimmed = piece
+      .toLowerCase()
+      .replace(/[\u2018\u2019]/g, "'")
+      .trim()
+      .replace(LEAD_IN, "")
+      .replace(TRAIL_OFF, "");
+    const tokens = tokenize(trimmed);
+    if (!tokens.length) continue;
+
+    // The piece as one flat run, with the boundaries marked: where a
+    // unit begins (after a join, or at the front), and where a thought
+    // may also open (after a hinge).
+    const unitStart = new Set([0]);
+    for (let k = 1; k < tokens.length; k++)
+      if (JOINS.has(tokens[k - 1])) unitStart.add(k);
+    const isJoin = (k) => JOINS.has(tokens[k]);
+
+    for (let i = 0; i < tokens.length; i++) {
+      // Opens at a unit start, or after a hinge. Never on a join itself.
+      // A unit that follows "that" or "which" is as often a relative
+      // clause as a new thought - "the process that | we're going
+      // through here" - so opening there counts as a hinge, not a
+      // breath: allowed, at the same small cost.
+      const opensWhole =
+        unitStart.has(i) && (i === 0 || !RELATIVE.has(tokens[i - 1]));
+      const opensHinged =
+        i > 0 && (HINGES.has(tokens[i - 1]) || RELATIVE.has(tokens[i - 1]));
+      if (!opensWhole && !opensHinged) continue;
+      if (isJoin(i)) continue;
+
+      for (let j = i; j < tokens.length && j - i < CLAUSE_MAX; j++) {
+        // Closes at a unit end: before a join, or at the back. Never on
+        // a join itself.
+        const next = tokens[j + 1];
+        if (!(next === undefined || JOINS.has(next))) continue;
+        if (isJoin(j)) continue;
+
+        const run = tokens.slice(i, j + 1);
+        const clause = run.join(" ");
+        if (clause.length > CLAUSE_CHARS) break;
+        if (run.length < CLAUSE_MIN) continue;
+        if (NO_START.has(run[0]) || NO_END.has(run[run.length - 1])) continue;
+        if (run.filter(isContent).length < 2) continue;
+        out.push({
+          clause,
+          // The whole stretch between two of his pauses, as he said it.
+          whole: i === 0 && j === tokens.length - 1,
+          hinged: !opensWhole,
+        });
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * The thoughts a beat offers, each scored by the strongest idea in it.
+ *
+ * A clause is worth what the best phrase inside it is worth - the
+ * vocabulary that makes it this lesson's, judged exactly as before
+ * (candidatesFor) - and then shaped: five to eight words is the natural
+ * length of a spoken point, either side of that costs a little, a
+ * stretch he delivered whole between two pauses is worth a little more
+ * than a run cut out of one, and a run cut at a hinge inside a unit a
+ * little less. The clause carries the phrase's score into the walk, and
+ * its own words into the ledger, so the novelty rules see the whole
+ * thought.
+ */
+function thoughtsFor(doc, beat, ledger) {
+  const out = [];
+  const seen = new Set();
+  for (const { clause, whole, hinged } of clausesOf(beat.text)) {
+    if (seen.has(clause)) continue;
+    seen.add(clause);
+    const inner = candidatesFor(doc, { ...beat, text: clause }, ledger);
+    if (!inner.length) continue;
+    const n = clause.split(" ").length;
+    const shape = n < 4 ? 0.85 : n === 4 ? 0.95 : n > 8 ? 0.95 : 1;
+    const cut = whole ? 1.08 : hinged ? 0.9 : 1;
+    out.push({
+      phrase: clause,
+      score: inner[0].score * shape * cut,
+      vivid: inner[0].vivid,
+      df: inner[0].df,
+    });
+  }
+  return out.sort((a, b) => b.score - a.score);
 }
 
 /** Title-cased for the data file. */
@@ -462,7 +676,7 @@ for (const doc of docs) {
   // lesson by what the lesson itself has shown.
   const pool = [];
   for (const beat of beats) {
-    for (const c of candidatesFor(doc, beat, ledger)) {
+    for (const c of thoughtsFor(doc, beat, ledger)) {
       const at = spokenAt(spoken, c.phrase, beat.start - 0.4, beat.end + 0.4);
       if (at === null) continue;
       pool.push({ ...c, t: Math.max(0, at - LEAD) });
@@ -474,7 +688,7 @@ for (const doc of docs) {
     console.log(
       "  " +
         pool.length +
-        " phrases offered over " +
+        " thoughts offered over " +
         duration.toFixed(0) +
         "s, " +
         pool.filter((c) => c.score >= CUE_FLOOR).length +
@@ -496,6 +710,7 @@ for (const doc of docs) {
   const said = new Set(); // lines lifted whole, so none is lifted twice
   const used = new Set(); // phrases already taken
   const list = [];
+  const windows = []; // per cue, the stretch it was chosen from
 
   /**
    * Whether an idea in this phrase has been on screen inside `within`
@@ -572,6 +787,7 @@ for (const doc of docs) {
         const quoted = verbatimCue(beat);
         const t = Math.round(Math.max(0, beat.start - LEAD) * 10) / 10;
         list.push({ t, w: present(quoted), phrase: quoted });
+        windows.push({ from, to });
         said.add(quoted);
         lastAt = t;
         if (inspectId === doc.id)
@@ -602,6 +818,10 @@ for (const doc of docs) {
 
     const t = Math.round(pick.t * 10) / 10;
     list.push({ t, w: present(pick.phrase), phrase: pick.phrase });
+    // The stretch this cue was chosen from. A cue that stretched past
+    // the window is its own stretch - a runner-up has to be about the
+    // same moment, not a moment ten seconds off.
+    windows.push({ from: Math.min(from, pick.t), to: Math.max(to, pick.t) });
     used.add(pick.phrase);
     for (const w of pick.phrase.split(" ")) {
       if (!isContent(w)) continue;
@@ -615,12 +835,24 @@ for (const doc of docs) {
         "  " +
           t.toFixed(1).padStart(6) +
           "  " +
-          present(pick.phrase).padEnd(34) +
+          present(pick.phrase).padEnd(48) +
           pick.score.toFixed(2),
       );
   }
 
   if (list.length) {
+    assignTakes(list, windows, pool);
+    if (inspectId === doc.id) {
+      console.log("\n  Other takes:");
+      for (const cue of list)
+        if (cue.alt)
+          console.log(
+            "  " +
+              cue.t.toFixed(1).padStart(6) +
+              "  " +
+              cue.alt.map((a) => a.w).join("  |  "),
+          );
+    }
     assignForms(list);
     cues[doc.id] = list;
     totalCues += list.length;
@@ -628,6 +860,62 @@ for (const doc of docs) {
     images += list.filter((c) => c.img).length;
     covered++;
   }
+}
+
+/**
+ * A second and third thing to say at each slot, for the second and
+ * third viewing.
+ *
+ * A runner-up is a thought from the same stretch of the lesson that
+ * clears the floor and is about something else: it shares no idea, by
+ * stem, with any first-take cue within RECALL seconds of it - not with
+ * the cue it stands in for, and not with the one after either, because
+ * the player deals each slot independently and a runner-up that echoed
+ * the next cue would put the same idea up twice in a row. Further off
+ * than that, an echo reads as a callback, the same allowance the walk
+ * makes. Nor may it share an idea with another runner-up in the same
+ * slot, for the same reason on a later viewing.
+ *
+ * The one allowance: the cue it stands in for. The strongest idea in a
+ * stretch tends to be the only strong one, so every runner-up in the
+ * stretch names it too, and a rule with no give here leaves most
+ * slots with one take. A runner-up may share ideas with its own cue as
+ * long as it brings at least two of its own - a different angle on the
+ * point, not the point again in other clothes.
+ */
+function assignTakes(list, windows, pool) {
+  const stemsOf = (phrase) => phrase.split(" ").filter(isContent).map(stem);
+  const shownNear = (t, stems, except) =>
+    list.some(
+      (cue) =>
+        cue !== except &&
+        Math.abs(cue.t - t) < RECALL &&
+        stemsOf(cue.phrase).some((x) => stems.includes(x)),
+    );
+
+  list.forEach((cue, i) => {
+    const from = windows[i].from - ALT_SLACK;
+    const to = windows[i].to + ALT_SLACK;
+    const own = new Set(stemsOf(cue.phrase));
+    const taken = new Set();
+    const alts = [];
+    for (const c of pool) {
+      if (c.t < from) continue;
+      if (c.t > to) break;
+      if (c.score < CUE_FLOOR || c.phrase === cue.phrase) continue;
+      const stems = stemsOf(c.phrase);
+      if (stems.filter((x) => !own.has(x)).length < 2) continue;
+      if (stems.some((x) => taken.has(x)) || shownNear(c.t, stems, cue))
+        continue;
+      alts.push(c);
+      for (const x of stems) taken.add(x);
+    }
+    alts.sort((a, b) => b.score - a.score);
+    if (alts.length)
+      cue.alt = alts
+        .slice(0, ALTS)
+        .map((c) => ({ t: Math.round(c.t * 10) / 10, w: present(c.phrase) }));
+  });
 }
 
 /**
@@ -653,16 +941,10 @@ function assignForms(list) {
       // An image beats an icon; a concept named in full ("roller
       // coaster") beats a bare one ("grief"), which in turn beats one
       // merely recognized from a single word inside a longer phrase.
-      const named = Boolean(ICONS[cue.phrase] || IMAGES[cue.phrase]);
-      const rank = image
-        ? 4
-        : named && cue.phrase.includes(" ")
-          ? 3
-          : named
-            ? 2
-            : icon
-              ? 1
-              : 0;
+      // A concept named in full ("roller coaster") beats one recognized
+      // from a single word inside the thought ("grief").
+      const key = iconKeyFor(cue.phrase);
+      const rank = image ? 4 : key && key.includes(" ") ? 3 : icon ? 1 : 0;
       return { index, image, icon, rank };
     })
     .filter((d) => d.rank > 0)

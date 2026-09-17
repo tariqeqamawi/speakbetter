@@ -86,11 +86,13 @@ Skills is one section with two tabs. **Skills** is the video library: the seven 
 
 ### The lesson player — what appears beside the teacher
 
-A lesson is one to two minutes of a person talking to camera, and the margins either side of him are dead space. The player uses them as a second channel of teaching: **every five to ten seconds, a short phrase naming what he is talking about right now appears in the margin** — his own words, or a single-color stroke icon where a drawing says it faster than reading would.
+A lesson is one to two minutes of a person talking to camera, and the margins either side of him are dead space. The player uses them as a second channel of teaching: **about every ten seconds, one complete thought from what he is saying right now appears in the margin** — his own words, lifted whole, or a single-color stroke icon where a drawing says it faster than reading would.
 
-Two things it is not. It is not a keyword track: a cue is a **phrase**, two or three words and now and then four, because two words name an idea where one only gestures at it — EMOTIONAL JOURNEY is the point, JOURNEY could be anything. And it is not subtitles: what appears is what he is speaking *about*, a short contiguous run of his own words chosen for naming the thing, never the whole sentence.
+Two things it is not. It is not a keyword track: a cue is a **thought** — a clause of his, three to ten words, that stands on its own. FIND THE SCENE THAT SHOWS IT is a point; FIND THE SCENE is a topic, and SCENE could be anything. And it is not subtitles: what appears is one thing he said, chosen because it names the idea, never the whole sentence when the sentence runs on.
 
-What appears is neither hand-written nor random. A build step reads each lesson's own transcript and walks down it, taking the strongest unshown phrase in each window. Strength is a phrase's own vocabulary — how much of it belongs to this lesson rather than to the whole course, how much of it can be pictured — weighted by how strongly the sentence around it reads as a point being made, which the engine hears in the rhetoric ("I promise you", "remember", "it's not about *what* you say, it's about *how*", "if you… then…") and in passages that make their point by painting rather than announcing.
+What appears is neither hand-written nor arbitrary. A build step reads each lesson's own transcript, cuts it where he paused and where he joined one thought to the next, and walks down it taking the strongest unshown thought in each window. Strength is the vocabulary inside it — how much of it belongs to this lesson rather than to the whole course, how much of it can be pictured — weighted by how strongly the sentence around it reads as a point being made, which the engine hears in the rhetoric ("I promise you", "remember", "it's not about *what* you say, it's about *how*", "if you… then…") and in passages that make their point by painting rather than announcing. A thought opens and closes where he did: never cut short in front of a preposition, never a fragment lifted from the middle of a clause.
+
+And it is not the same every time. Each slot keeps a couple of runners-up — other things he says in the same stretch, about something else — and the player deals one option per slot at random every time a lesson is played from the top. A lesson watched twice shows different things; a lesson watched three times has said everything it has to say.
 
 Three rules keep a second channel from becoming noise:
 
@@ -98,7 +100,7 @@ Three rules keep a second channel from becoming noise:
 - **An idea rarely repeats across the course**, so the lessons don't all surface the same handful of words.
 - **A stretch with nothing worth naming shows nothing.** Where the material runs out the gap stretches; the bar never drops. Silence beats a phrase that names nothing.
 
-Around 1,000 cues across the 121 videos — the 81 Skills lessons plus the challenge explainers and intros. Seven in ten land inside the five-to-ten-second promise and the rest are the stretches where he genuinely isn't naming anything: the ceiling is the material, not the engine, which is worth knowing before anyone tries to tune it further. Because they're generated from the transcripts rather than maintained by hand, the whole course can be re-cut by rerunning one script, and every lesson's cues can be reviewed on one page without watching a single video.
+Around 700 cues across the 121 videos — the 81 Skills lessons plus the challenge explainers and intros — with runners-up behind more than half of them. Two in three land inside the eight-to-thirteen-second promise and the rest are the stretches where he genuinely isn't saying anything that stands whole: the ceiling is the material, not the engine, which is worth knowing before anyone tries to tune it further. Because they're generated from the transcripts rather than maintained by hand, the whole course can be re-cut by rerunning one script, and every lesson's cues can be reviewed on one page without watching a single video.
 
 ## 04 · Pillar two — Challenges, on the STORY journey
 

@@ -40,6 +40,31 @@ const SPEEDS = [0.75, 1, 1.25, 1.5, 2];
 // earned it. Seek past that and the moment has gone - cues are missed,
 // never queued up to fire late.
 const CUE_GRACE = 2.5; // seconds
+// How long a cue is on screen (see .float-word), and so the least two
+// dealt cues may be apart: a runner-up that would land on top of the
+// cue before it is passed over for that slot's first choice.
+const CUE_FADE = 6; // seconds
+
+/**
+ * One viewing's cues: each slot's first choice or one of its runners-up,
+ * chosen at random, so the same lesson watched twice shows different
+ * things. Dealt in order, and a choice that would crowd the one before
+ * it gives way to the slot's first choice - which was placed by the
+ * engine to keep its distance.
+ */
+function dealCues(list: LessonCue[]): LessonCue[] {
+  const take: LessonCue[] = [];
+  let last = -Infinity;
+  for (const cue of list) {
+    const options: LessonCue[] = [cue, ...(cue.alt ?? [])];
+    const clear = options.filter((o) => o.t - last >= CUE_FADE);
+    const pool = clear.length ? clear : [cue];
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    take.push(pick);
+    last = pick.t;
+  }
+  return take;
+}
 
 // The floating key words wear white or one of the spectrum's neons.
 // White appears twice so it comes up more often than any single color.
@@ -178,7 +203,12 @@ export function VimeoPlayer({
   // something else.) A lesson with no cue at that moment floats nothing.
   // Only in the default and fullscreen framings: portrait crops the
   // margins away.
+  //
+  // cuesRef holds the lesson's cues as built; takeRef holds this
+  // viewing's deal from them (see dealCues), re-dealt each time
+  // playback comes back to the top.
   const cuesRef = useRef<LessonCue[]>([]);
+  const takeRef = useRef<LessonCue[]>([]);
   const cueLessonRef = useRef(vimeoId);
   const nextCueRef = useRef(0);
   const floaterKeyRef = useRef(0);
@@ -195,11 +225,14 @@ export function VimeoPlayer({
   useEffect(() => {
     let alive = true;
     cuesRef.current = [];
+    takeRef.current = [];
     cueLessonRef.current = vimeoId;
     nextCueRef.current = 0;
     lessonCues(vimeoId)
       .then((list) => {
-        if (alive) cuesRef.current = list;
+        if (!alive) return;
+        cuesRef.current = list;
+        takeRef.current = dealCues(list);
       })
       .catch(() => {});
     return () => {
@@ -210,11 +243,15 @@ export function VimeoPlayer({
   // Driven by playback position rather than a timer, and stable across
   // renders so the player effect below never rebuilds over it.
   const cueAt = useCallback((seconds: number) => {
-    const list = cuesRef.current;
+    let list = takeRef.current;
     if (!list.length) return;
-    // A seek backwards (or a replay) hands the earlier cues back.
-    if (nextCueRef.current > 0 && seconds < list[nextCueRef.current - 1].t)
+    // A seek backwards (or a replay) hands the earlier cues back - and
+    // a fresh deal with them, so the second time through isn't the
+    // first time through again.
+    if (nextCueRef.current > 0 && seconds < list[nextCueRef.current - 1].t) {
       nextCueRef.current = 0;
+      list = takeRef.current = dealCues(cuesRef.current);
+    }
 
     let due: LessonCue | null = null;
     while (
@@ -233,12 +270,13 @@ export function VimeoPlayer({
       icon: due.icon,
       img: due.img,
       color: WORD_COLORS[Math.floor(Math.random() * WORD_COLORS.length)],
-      // The gray areas flanking the centered teacher. A phrase is a
-      // column 23% wide (see the render below), so it starts near the
+      // The gray areas flanking the centered teacher. A thought is a
+      // column 25% wide (see the render below), so it starts near the
       // edge it belongs to rather than drifting toward him - and stops
-      // short of the bottom, where three wrapped lines would run off.
-      left: leftSide ? 3 + Math.random() * 7 : 69 + Math.random() * 7,
-      top: 12 + Math.random() * 46,
+      // well short of the bottom, because on a phone a ten-word thought
+      // wraps to five lines and takes nearly half the frame's height.
+      left: leftSide ? 3 + Math.random() * 6 : 70 + Math.random() * 6,
+      top: 10 + Math.random() * 30,
       key: floaterKeyRef.current++,
     });
   }, []);
@@ -546,15 +584,16 @@ export function VimeoPlayer({
           <span
             key={floater.key}
             aria-hidden
-            // Cues are phrases now, two to four words, so the margin
-            // has to be a column rather than a spot: capped at the width
-            // of the gray band beside the teacher, wrapped, and balanced
-            // so a phrase never strands one word on its own line.
-            className="float-word pointer-events-none absolute z-[15] text-xs font-semibold uppercase leading-snug tracking-[0.14em] text-balance sm:text-sm"
+            // A cue is a whole thought now, up to ten words, so the
+            // margin has to be a column rather than a spot: capped at
+            // the width of the gray band beside the teacher, wrapped
+            // over up to four lines, and balanced so a thought never
+            // strands one word on its own line.
+            className="float-word pointer-events-none absolute z-[15] text-xs font-semibold uppercase leading-snug tracking-[0.12em] text-balance sm:text-sm"
             style={{
               left: `${floater.left}%`,
               top: `${floater.top}%`,
-              maxWidth: "23%",
+              maxWidth: "25%",
               color: floater.color,
               textShadow: floater.img ? undefined : "0 0 14px currentColor",
             }}

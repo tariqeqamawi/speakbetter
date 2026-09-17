@@ -46,7 +46,13 @@ const cache = new Map();
  * Returns the public path the player loads, or null.
  */
 export function imageFor(phrase, root) {
-  const slug = IMAGES[phrase];
+  // The longest drawn concept the cue contains, whole words only.
+  const padded = " " + phrase + " ";
+  let key = null;
+  for (const k of Object.keys(IMAGES))
+    if (padded.includes(" " + k + " ") && (!key || k.length > key.length))
+      key = k;
+  const slug = key ? IMAGES[key] : null;
   if (!slug) return null;
   if (!cache.has(slug))
     cache.set(slug, existsSync(join(root, "public/cues", slug + ".png")));

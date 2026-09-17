@@ -618,8 +618,12 @@ body {
  * element for each new word. */
 /* Shortened from 5.5s so cues can sit closer together: the player shows
    one at a time, so a cue's welcome is exactly as long as its fade. */
+/* Six seconds, up from four: a cue is a whole thought now, three to
+   ten words over up to four lines, and it has to be readable at a
+   glance and then read. The engine keeps cues at least eight seconds
+   apart, so two are never on screen at once. */
 .float-word {
-  animation: float-word 4s ease-in-out both;
+  animation: float-word 6s ease-in-out both;
 }
 
 @keyframes float-word {
@@ -627,10 +631,10 @@ body {
     opacity: 0;
     transform: translateY(14px);
   }
-  18% {
+  12% {
     opacity: 0.9;
   }
-  78% {
+  84% {
     opacity: 0.9;
   }
   100% {
