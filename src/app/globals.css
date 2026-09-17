@@ -749,21 +749,77 @@ body {
   }
 }
 
-/* A dealt spread's cards lift toward the reader on hover - seven cards
-   on a table, and the one under your hand is the one you're about to
-   pick up. */
-.spread-card {
-  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
+/* Under a mouse, the front card of the fan swells while the pointer is
+   on it - enough that its text reads without opening it. Hover only:
+   a finger on a phone is already the tap that opens the card, and a
+   card that grows under a finger is a card that moved. The scale is a
+   transform, so the fan's layout doesn't shift under it; the card just
+   comes forward over its neighbours. */
 @media (hover: hover) {
-  .spread-card:hover {
-    transform: translateY(-6px);
+  .deck-front-card {
+    transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .deck-front-card:hover {
+    transform: scale(1.22);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .spread-card {
+  .deck-front-card {
+    transition: none;
+  }
+}
+
+/* A card opened full size: as tall as the screen allows once the
+   controls under it have their room (about 9rem: the arrows, the line
+   of text, the padding), and never wider than the screen. Sized off
+   the shorter side, so it's whole in either orientation. dvh where the
+   browser has it, so a phone's toolbar sliding in doesn't crop the
+   bottom of the card. */
+.card-zoom {
+  width: min(92vw, calc((100vh - 9rem) * 89 / 127));
+}
+
+@supports (height: 100dvh) {
+  .card-zoom {
+    width: min(92vw, calc((100dvh - 9rem) * 89 / 127));
+  }
+}
+
+/* The spread as a hand: seven cards fanned over each other. The
+   component places each card with --fan; a card lifts out of the fan
+   and comes forward while it's pointed at, hovered or named below, so
+   it can be read where it lies. The lift is added after the rotation,
+   so it runs along the card's own length - up and out of the hand, the
+   way a card is drawn from one. */
+.fan-card {
+  transform: translateX(-50%) var(--fan);
+  transition:
+    transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 240ms ease;
+  filter: drop-shadow(0 12px 18px rgba(3, 7, 18, 0.55));
+}
+
+.fan-card:hover,
+.fan-card.is-raised,
+.fan-card:has(:focus-visible) {
+  transform: translateX(-50%) var(--fan) translateY(-9%) scale(1.12);
+  z-index: 40 !important;
+  filter: drop-shadow(0 26px 34px rgba(3, 7, 18, 0.7));
+}
+
+/* Without a mouse there's no hovering, and the tap that would lift a
+   card is the tap that opens it - so no lift, and the card lies still
+   under a finger. */
+@media (hover: none) {
+  .fan-card:hover {
+    transform: translateX(-50%) var(--fan);
+    z-index: auto !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fan-card {
     transition: none;
   }
 }

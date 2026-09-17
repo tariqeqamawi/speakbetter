@@ -531,9 +531,14 @@ function ColorCarousel({
       </div>
 
       {/* The fan. The front card is the one you're choosing; the rest of
-          the color stacks away behind it on both sides. */}
+          the color stacks away behind it on both sides.
+
+          On a laptop the fan opens wider and the cards grow with it: a
+          card sized for a thumb is a postage stamp beside a keyboard,
+          and the text on it - about 3% of its own width - is what the
+          card is for. */}
       <div
-        className="relative mx-auto flex aspect-[5/4] w-full max-w-lg touch-pan-y select-none items-center justify-center"
+        className="relative mx-auto flex aspect-[5/4] w-full max-w-lg touch-pan-y select-none items-center justify-center lg:max-w-3xl"
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={endDrag}
@@ -548,7 +553,7 @@ function ColorCarousel({
           return (
             <span
               key={c.vimeoId}
-              className="deck-stack-card absolute w-[44%] max-w-[14rem]"
+              className="deck-stack-card absolute w-[44%] max-w-[14rem] lg:max-w-[21rem]"
               style={{
                 zIndex: 20 - near,
                 opacity: 1 - near * 0.16,
@@ -556,15 +561,20 @@ function ColorCarousel({
               }}
             >
               {front ? (
-                <LessonCard
-                  key={c.vimeoId}
-                  data={c}
-                  startFlipped
-                  onActivate={() => {
-                    if (!dragged.current) onZoom(i);
-                  }}
-                  className="max-w-none"
-                />
+                // Under a mouse the front card swells while the pointer
+                // is on it - see .deck-front-card. Reading it shouldn't
+                // cost a click; the click is for opening it big.
+                <span className="deck-front-card block">
+                  <LessonCard
+                    key={c.vimeoId}
+                    data={c}
+                    startFlipped
+                    onActivate={() => {
+                      if (!dragged.current) onZoom(i);
+                    }}
+                    className="max-w-none"
+                  />
+                </span>
               ) : (
                 <button
                   type="button"
@@ -640,9 +650,14 @@ function ColorCarousel({
  * a finish - and no two deals hand you the same talk. Random on purpose:
  * a hand you chose is a hand of what you already do.
  *
- * Face up, because a spread is dealt to be looked at, with the lesson
- * named under each card - the title is what makes a card an ingredient
- * you can actually plan with, and the card itself opens full size.
+ * Drawn as a hand: seven cards fanned over each other, the way you'd
+ * hold them, in the order the colors run. Face up, because a spread is
+ * dealt to be looked at - and under a mouse a card lifts out of the fan
+ * and comes forward while the pointer is on it, so it can be read where
+ * it lies. Any card opens full size with a tap. The seven lessons are
+ * named under the fan, because the fan shows you the colors and the
+ * titles are what make a card an ingredient you can plan with; hovering
+ * a name lifts its card.
  */
 function FullSpread({
   hand,
@@ -655,6 +670,10 @@ function FullSpread({
   onDeal: () => void;
   onBack: () => void;
 }) {
+  // The card lifted from the fan by pointing at its name below.
+  const [raised, setRaised] = useState<number | null>(null);
+  const mid = (hand.length - 1) / 2;
+
   return (
     <div className="flex flex-col gap-5">
       <div className="flex w-full items-center justify-between gap-3">
@@ -684,34 +703,69 @@ function FullSpread({
         Tap any card to read it.
       </p>
 
-      {/* Four across on a phone, so the whole hand is on one screen -
-          seven cards you have to scroll through aren't a spread, they're
-          a list. The card is a color and a mark at that size; the lesson
-          under it is what names the ingredient. */}
-      <div className="grid grid-cols-4 gap-x-2.5 gap-y-4 sm:gap-x-3 sm:gap-y-5 lg:grid-cols-7">
+      {/* The fan. Each card is placed by its distance from the middle
+          one: stepped sideways, turned a little further, and dropped
+          along the arc a hand makes. The transform lives in a custom
+          property so the hover lift (see .fan-card) can add to it
+          rather than replace it. The box is tall enough for the outer
+          cards' corners and a lifted card. */}
+      <div className="relative mx-auto aspect-[2/1] w-full max-w-4xl">
+        {hand.map((card, i) => {
+          const d = i - mid;
+          return (
+            <span
+              key={card.vimeoId}
+              className={`fan-card absolute left-1/2 top-[6%] w-[26%] ${
+                raised === i ? "is-raised" : ""
+              }`}
+              style={
+                {
+                  zIndex: 10 + i,
+                  "--fan": `translateX(${d * 40}%) rotate(${d * 6}deg) translateY(${d * d * 2.2}%)`,
+                } as React.CSSProperties
+              }
+            >
+              <LessonCard
+                key={card.vimeoId}
+                data={card}
+                startFlipped
+                onActivate={() => {
+                  hapticTap();
+                  onZoom(i);
+                }}
+                className="max-w-none"
+              />
+            </span>
+          );
+        })}
+      </div>
+
+      {/* The hand, named. */}
+      <ul className="mx-auto flex max-w-3xl flex-wrap justify-center gap-x-4 gap-y-1.5">
         {hand.map((card, i) => (
-          <div key={card.vimeoId} className="flex flex-col items-center gap-2">
+          <li key={card.vimeoId}>
             <button
               type="button"
               onClick={() => {
                 hapticTap();
                 onZoom(i);
               }}
-              aria-label={`${card.title} - open the card`}
-              className="card-3d spread-card relative block aspect-[89/127] w-full"
+              onMouseEnter={() => setRaised(i)}
+              onMouseLeave={() => setRaised(null)}
+              onFocus={() => setRaised(i)}
+              onBlur={() => setRaised(null)}
+              className="flex items-center gap-1.5 rounded-md px-1 py-0.5 text-left text-xs font-medium text-ink-muted transition-colors hover:text-ink sm:text-[0.8rem]"
             >
-              <CardFaceDown
-                section={card.section}
-                code={card.category.code}
-                color={`var(--color-${card.categoryId})`}
+              <span
+                aria-hidden
+                className="size-2 shrink-0 rounded-full"
+                style={{ background: `var(--color-${card.categoryId})` }}
               />
-            </button>
-            <span className="text-center text-[0.6rem] font-medium leading-tight text-ink-muted text-balance sm:text-[0.7rem]">
               {card.title}
-            </span>
-          </div>
+            </button>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 }
@@ -722,9 +776,12 @@ function FullSpread({
  * The card carries three blocks of text at about 3% of its own width,
  * which is legible on an 89mm card in the hand and marginal on a phone
  * inside a carousel. So any card opens to the height of the screen -
- * sized off the shorter dimension, so it's whole in either orientation
- * rather than cropped tall - and a tap still turns it over, because a
- * card you can't turn over is a picture of a card.
+ * as tall as the viewport allows once the controls under it have their
+ * room, and never wider than the screen, so it's whole in either
+ * orientation rather than cropped tall - and a tap still turns it over,
+ * because a card you can't turn over is a picture of a card. There is
+ * no cap in rems: on a laptop this is the full-screen view, and a card
+ * that stops growing at phone size on a 27-inch monitor isn't one.
  */
 function CardZoom({
   card,
@@ -787,7 +844,7 @@ function CardZoom({
           onStep(dx < 0 ? 1 : -1);
         }}
       >
-        <div style={{ width: "min(26rem, 86vw, calc(76vh * 89 / 127))" }}>
+        <div className="card-zoom">
           <LessonCard
             key={card.vimeoId}
             data={card}

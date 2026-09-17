@@ -311,6 +311,12 @@ export function LessonCard({
   const color = data.color ?? `var(--color-${category.id})`;
   const code = data.code ?? category.code;
   const showBack = flipped;
+  // A card on its own is capped at a hand's width. A caller that sizes
+  // it - the deck's fan, the full-size view - says so with its own
+  // max-w-* and the cap stands down. (It has to: Tailwind emits
+  // max-w-none before max-w-xs, so passing max-w-none alongside the cap
+  // never beat it, and every "full size" card was quietly 20rem.)
+  const cap = /\bmax-w-/.test(className) ? "" : "max-w-xs";
 
   return (
     <button
@@ -322,7 +328,7 @@ export function LessonCard({
           ? `${data.title} - open the card`
           : `${data.title} - ${flipped ? "showing the lesson, tap to turn over" : "tap to turn over"}`
       }
-      className={`card-3d group aspect-[89/127] w-full max-w-xs cursor-pointer ${className}`}
+      className={`card-3d group aspect-[89/127] w-full cursor-pointer ${cap} ${className}`}
     >
       <span className={`card-3d-inner ${showBack ? "is-flipped" : ""}`}>
         {/* ── Face: the section's color, and the mark ───────────────── */}
