@@ -2,21 +2,41 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { LessonCard } from "@/components/lesson-card";
+import { LessonCard, CardFaceDown } from "@/components/lesson-card";
 import { CategoryIcon } from "@/components/category-icons";
-import { categories, type CategoryId } from "@/data/categories";
+import { categories, type Category, type CategoryId } from "@/data/categories";
 import { rulesCard, type DeckCardData } from "@/data/deck";
 import { hapticTap, playXpChime } from "@/lib/feedback-fx";
-import { ChevronDownIcon, RepeatIcon } from "@/components/icons";
+import {
+  ChevronDownIcon,
+  DeckIcon,
+  ExpandIcon,
+  RepeatIcon,
+  XIcon,
+} from "@/components/icons";
 
 // The deck, worked the way a deck is worked.
 //
-// Two screens and one gesture each. The dial is the closed deck seen
-// from above: seven face-down cards, one per color, worked with the same
-// press-slide-release the skill dial uses - hold a thumb down, slide
-// until the color you want lifts, let go. The reader is one card
-// filling the screen, and a flick carries you to the next one in that
-// color.
+// Three surfaces, each one gesture:
+//
+//   THE DIAL     the closed deck seen from above - seven face-down
+//                cards, one per color, worked with the same
+//                press-slide-release the skill dial uses. Hold a thumb
+//                down, slide until the color you want lifts, let go.
+//
+//   THE COLOR    that color fanned into a stacked carousel: the card in
+//                front is face up and readable, the rest of the color
+//                stacks away behind it on both sides. Swipe, drag or
+//                arrow through them and take the one you want. The seven
+//                colors sit along the bottom, so moving to another
+//                section never means going back out first.
+//
+//   THE SPREAD   one card pulled at random from every color at once -
+//                seven ingredients for one talk, which is what the deck
+//                is for. Deal it again and you have a different talk.
+//
+// Any card opens full size from any of them, because a card that can't
+// be read at arm's length isn't doing its job on a phone.
 //
 // Shaking the phone shuffles and pulls at random, which is the one thing
 // a physical deck does that a list of links never will. It's also the
@@ -27,16 +47,30 @@ export type DeckCard = DeckCardData;
 
 type View =
   | { mode: "dial" }
-  | { mode: "reader"; category: CategoryId; index: number };
+  | { mode: "color"; category: CategoryId; index: number }
+  | { mode: "spread" };
+
+/** A card opened full size, and the cards it sits among. */
+type Zoom = { list: DeckCard[]; index: number };
 
 /** How hard a shake has to be before it counts as one. */
 const SHAKE_FORCE = 24;
 const SHAKE_COOLDOWN = 900;
 
+/** One card taken at random from a list. */
+function anyOf(cards: DeckCard[]): DeckCard {
+  return cards[Math.floor(Math.random() * cards.length)];
+}
+
 export function CardDeck({ cards }: { cards: DeckCard[] }) {
   const [view, setView] = useState<View>({ mode: "dial" });
+  const [zoom, setZoom] = useState<Zoom | null>(null);
   const [hovered, setHovered] = useState<CategoryId | null>(null);
   const [shakeOn, setShakeOn] = useState(false);
+  // The dealt spread, kept while the student walks away into a color and
+  // comes back - a hand you have to re-deal to look at twice is a hand
+  // you can't think with.
+  const [hand, setHand] = useState<DeckCard[] | null>(null);
   const dialRef = useRef<HTMLDivElement>(null);
 
   const inSection = useCallback(
@@ -44,15 +78,32 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
     [cards],
   );
 
+  const openColor = useCallback((category: CategoryId, index = 0) => {
+    hapticTap();
+    setView({ mode: "color", category, index });
+  }, []);
+
   // ── Pull a card at random ──────────────────────────────────────────
   const pullRandom = useCallback(() => {
-    const card = cards[Math.floor(Math.random() * cards.length)];
+    const card = anyOf(cards);
     const list = cards.filter((c) => c.categoryId === card.categoryId);
     setView({
-      mode: "reader",
+      mode: "color",
       category: card.categoryId,
       index: list.findIndex((c) => c.vimeoId === card.vimeoId),
     });
+    hapticTap();
+    playXpChime();
+  }, [cards]);
+
+  // ── Deal a full spread: one card of every color ────────────────────
+  const deal = useCallback(() => {
+    const dealt = categories
+      .map((cat) => cards.filter((c) => c.categoryId === cat.id))
+      .filter((list) => list.length)
+      .map(anyOf);
+    setHand(dealt);
+    setView({ mode: "spread" });
     hapticTap();
     playXpChime();
   }, [cards]);
@@ -123,7 +174,7 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
       e.preventDefault();
       const cat = under(e.changedTouches[0]);
       setHovered(null);
-      if (cat) setView({ mode: "reader", category: cat, index: 0 });
+      if (cat) openColor(cat);
     };
     const onCancel = () => {
       dialing = false;
@@ -140,18 +191,55 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
       dial.removeEventListener("touchend", onEnd);
       dial.removeEventListener("touchcancel", onCancel);
     };
-  }, [view.mode]);
+  }, [view.mode, openColor]);
 
-  if (view.mode === "reader") {
+  // The card opened full size sits over whichever surface called it.
+  const overlay = zoom && (
+    <CardZoom
+      card={zoom.list[zoom.index]}
+      hasPrev={zoom.index > 0}
+      hasNext={zoom.index < zoom.list.length - 1}
+      position={`${zoom.index + 1} of ${zoom.list.length}`}
+      onStep={(delta) =>
+        setZoom((z) =>
+          z && z.list[z.index + delta] ? { ...z, index: z.index + delta } : z,
+        )
+      }
+      onClose={() => setZoom(null)}
+    />
+  );
+
+  if (view.mode === "color") {
     const list = inSection(view.category);
+    const section = categories.find((c) => c.id === view.category)!;
     return (
-      <Reader
-        cards={list}
-        index={Math.min(view.index, list.length - 1)}
-        onIndex={(index) => setView({ ...view, index })}
-        onBack={() => setView({ mode: "dial" })}
-        onShuffle={pullRandom}
-      />
+      <>
+        <ColorCarousel
+          cards={list}
+          section={section}
+          index={Math.min(view.index, list.length - 1)}
+          onIndex={(index) => setView({ ...view, index })}
+          onSection={(id) => openColor(id)}
+          onZoom={(index) => setZoom({ list, index })}
+          onBack={() => setView({ mode: "dial" })}
+          countIn={(id) => inSection(id).length}
+        />
+        {overlay}
+      </>
+    );
+  }
+
+  if (view.mode === "spread" && hand) {
+    return (
+      <>
+        <FullSpread
+          hand={hand}
+          onZoom={(index) => setZoom({ list: hand, index })}
+          onDeal={deal}
+          onBack={() => setView({ mode: "dial" })}
+        />
+        {overlay}
+      </>
     );
   }
 
@@ -210,9 +298,7 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
               onMouseLeave={() => setHovered(null)}
               onFocus={() => setHovered(cat.id)}
               onBlur={() => setHovered(null)}
-              onClick={() =>
-                setView({ mode: "reader", category: cat.id, index: 0 })
-              }
+              onClick={() => openColor(cat.id)}
               // A face-down card rather than a dot: the thing you're
               // reaching for is a card, and it should look like one
               // before you pick it up.
@@ -237,16 +323,35 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
         })}
       </div>
 
-      {/* Shuffle, and the instruction card that explains the whole thing */}
+      {/* The two ways in that aren't a color, and the instruction card */}
       <div className="flex flex-col items-center gap-4">
-        <button
-          type="button"
-          onClick={shakeOn ? pullRandom : enableShake}
-          className="flex items-center gap-2 rounded-lg border border-navy-600 bg-navy-800 px-4 py-2.5 text-sm font-semibold text-ink transition-colors hover:border-current"
-        >
-          <RepeatIcon className="size-4" />
-          {shakeOn ? "Pull a card" : "Shuffle - or shake your phone"}
-        </button>
+        <div className="flex flex-wrap items-center justify-center gap-2.5">
+          <button
+            type="button"
+            onClick={deal}
+            className="flex items-center gap-2 rounded-lg border border-navy-600 bg-navy-800 px-4 py-2.5 text-sm font-semibold text-ink transition-colors hover:border-current"
+          >
+            <DeckIcon className="size-4" />
+            Deal a full spread
+          </button>
+          <button
+            type="button"
+            onClick={shakeOn ? pullRandom : enableShake}
+            className="flex items-center gap-2 rounded-lg border border-navy-600 bg-navy-800 px-4 py-2.5 text-sm font-semibold text-ink transition-colors hover:border-current"
+          >
+            <RepeatIcon className="size-4" />
+            {shakeOn ? "Pull a card" : "Shuffle - or shake your phone"}
+          </button>
+        </div>
+        {hand && (
+          <button
+            type="button"
+            onClick={() => setView({ mode: "spread" })}
+            className="text-xs font-semibold text-ink-muted underline-offset-4 transition-colors hover:text-ink hover:underline"
+          >
+            Back to the spread you dealt
+          </button>
+        )}
 
         <details className="w-full max-w-md rounded-xl border border-navy-600 bg-navy-900/60">
           <summary className="flex cursor-pointer select-none items-center justify-between px-4 py-3 text-sm font-medium text-ink-muted transition-colors hover:text-ink">
@@ -267,34 +372,99 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
   );
 }
 
-/** One card, filling the screen, with the section under your thumb. */
-function Reader({
+/** The seven colors as a strip, for moving between them without going out. */
+function ColorStrip({
+  active,
+  onPick,
+  countIn,
+}: {
+  active: CategoryId;
+  onPick: (id: CategoryId) => void;
+  countIn: (id: CategoryId) => number;
+}) {
+  return (
+    <div className="flex items-end justify-center gap-1.5">
+      {categories.map((cat) => {
+        const on = cat.id === active;
+        return (
+          <button
+            key={cat.id}
+            type="button"
+            onClick={() => !on && onPick(cat.id)}
+            aria-current={on}
+            aria-label={`${cat.name} - ${countIn(cat.id)} cards`}
+            title={cat.name}
+            className={`flex aspect-[89/127] w-9 items-center justify-center rounded-md transition-all duration-200 sm:w-11 ${
+              on
+                ? "-translate-y-1 shadow-[0_0_18px_-3px_currentColor]"
+                : "opacity-45 hover:opacity-100"
+            }`}
+            style={{
+              background: `var(--color-${cat.id})`,
+              color: `var(--color-${cat.id})`,
+            }}
+          >
+            <CategoryIcon
+              category={cat.id}
+              className={`text-navy-950 ${on ? "size-4" : "size-3.5"}`}
+            />
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/**
+ * One color as a stacked carousel.
+ *
+ * Picking a color used to drop you on its first card and leave you
+ * paging forward in the order the course teaches them, which is the one
+ * way a deck is never used. This is the color spread in the hand: the
+ * card in front is face up and readable, the rest of the color stacks
+ * away behind it to either side, and you swipe until you reach the one
+ * you want. Nothing has to be walked past to get anywhere.
+ *
+ * The cards behind stay face down. A stack of readable faces is a list
+ * with extra steps - what the fan is for is seeing how much color you're
+ * choosing from, and the depth of a color is the argument for pulling
+ * from it.
+ */
+function ColorCarousel({
   cards,
+  section,
   index,
   onIndex,
+  onSection,
+  onZoom,
   onBack,
-  onShuffle,
+  countIn,
 }: {
   cards: DeckCard[];
+  section: Category;
   index: number;
   onIndex: (index: number) => void;
+  onSection: (id: CategoryId) => void;
+  onZoom: (index: number) => void;
   onBack: () => void;
-  onShuffle: () => void;
+  countIn: (id: CategoryId) => number;
 }) {
+  const color = `var(--color-${section.id})`;
   const card = cards[index];
-  const touch = useRef<{ x: number; y: number } | null>(null);
+  // How far a card can be from the front and still be worth drawing.
+  // Three and no further: the fan has to stay inside the width of a
+  // phone, and a card sliced off by the edge of the screen reads as a
+  // layout fault rather than as a deck going on.
+  const DEPTH = 3;
 
   const go = useCallback(
     (delta: number) => {
       const next = index + delta;
-      // Flicking back off the first card leaves the section, which is
-      // the gesture people already use to mean "out of here".
-      if (next < 0) return onBack();
-      if (next >= cards.length) return;
+      if (next < 0 || next >= cards.length) return;
       hapticTap();
       onIndex(next);
     },
-    [index, cards.length, onBack, onIndex],
+    [index, cards.length, onIndex],
   );
 
   useEffect(() => {
@@ -307,10 +477,31 @@ function Reader({
     return () => window.removeEventListener("keydown", onKey);
   }, [go, onBack]);
 
+  // Drag the fan with a finger or a mouse. A drag that moved the stack
+  // swallows the click that follows it, so letting go on top of a card
+  // doesn't also open the card you were only dragging past.
+  const drag = useRef<number | null>(null);
+  const dragged = useRef(false);
+  const onPointerDown = (e: React.PointerEvent) => {
+    drag.current = e.clientX;
+    dragged.current = false;
+  };
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (drag.current === null) return;
+    const dx = e.clientX - drag.current;
+    if (Math.abs(dx) < 44) return;
+    drag.current = e.clientX;
+    dragged.current = true;
+    go(dx < 0 ? 1 : -1);
+  };
+  const endDrag = () => {
+    drag.current = null;
+  };
+
   if (!card) return null;
 
   return (
-    <div className="flex flex-col items-center gap-5">
+    <div className="flex flex-col items-center gap-4">
       <div className="flex w-full items-center justify-between gap-3">
         <button
           type="button"
@@ -322,57 +513,100 @@ function Reader({
         </button>
         <span
           className="text-xs font-bold uppercase tracking-[0.2em]"
-          style={{ color: `var(--color-${card.categoryId})` }}
+          style={{ color }}
         >
-          {card.category.code}
+          {section.code}
         </span>
         <button
           type="button"
-          onClick={onShuffle}
-          aria-label="Pull a card at random"
+          onClick={() => {
+            playXpChime();
+            onIndex(Math.floor(Math.random() * cards.length));
+          }}
           className="flex items-center gap-1.5 text-sm font-semibold text-ink-muted transition-colors hover:text-ink"
         >
           <RepeatIcon className="size-4" />
-          Shuffle
+          Any card
         </button>
       </div>
 
-      {/* The card itself. A flick left brings the next one. */}
+      {/* The fan. The front card is the one you're choosing; the rest of
+          the color stacks away behind it on both sides. */}
       <div
-        className="w-full max-w-xs touch-pan-y"
-        onTouchStart={(e) => {
-          touch.current = {
-            x: e.touches[0].clientX,
-            y: e.touches[0].clientY,
-          };
-        }}
-        onTouchEnd={(e) => {
-          const start = touch.current;
-          touch.current = null;
-          if (!start) return;
-          const dx = e.changedTouches[0].clientX - start.x;
-          const dy = e.changedTouches[0].clientY - start.y;
-          // Horizontal enough to be a flick rather than a scroll.
-          if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy)) return;
-          go(dx < 0 ? 1 : -1);
-        }}
+        className="relative mx-auto flex aspect-[5/4] w-full max-w-lg touch-pan-y select-none items-center justify-center"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        onPointerLeave={endDrag}
       >
-        <LessonCard key={card.vimeoId} data={card} className="max-w-none" />
+        {cards.map((c, i) => {
+          const d = i - index;
+          if (Math.abs(d) > DEPTH) return null;
+          const near = Math.min(Math.abs(d), DEPTH);
+          const front = d === 0;
+          return (
+            <span
+              key={c.vimeoId}
+              className="deck-stack-card absolute w-[44%] max-w-[14rem]"
+              style={{
+                zIndex: 20 - near,
+                opacity: 1 - near * 0.16,
+                transform: `translateX(${d * 24}%) rotate(${d * 6}deg) scale(${1 - near * 0.08})`,
+              }}
+            >
+              {front ? (
+                <LessonCard
+                  key={c.vimeoId}
+                  data={c}
+                  startFlipped
+                  onActivate={() => {
+                    if (!dragged.current) onZoom(i);
+                  }}
+                  className="max-w-none"
+                />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (dragged.current) return;
+                    hapticTap();
+                    onIndex(i);
+                  }}
+                  aria-label={`Card ${i + 1} of ${cards.length}`}
+                  className="card-3d relative block aspect-[89/127] w-full"
+                >
+                  <CardFaceDown
+                    section={section.name}
+                    code={section.code}
+                    color={color}
+                  />
+                </button>
+              )}
+            </span>
+          );
+        })}
       </div>
 
-      {/* Where you are in the color */}
+      {/* Where you are in the color, and the way to read the card big */}
       <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={() => go(-1)}
+          disabled={index === 0}
           aria-label="Previous card"
-          className="rounded-lg px-2 py-1 text-ink-faint transition-colors hover:text-ink"
+          className="rounded-lg px-2 py-1 text-ink-faint transition-colors hover:text-ink disabled:opacity-30"
         >
           <ChevronDownIcon className="size-4 rotate-90" />
         </button>
-        <span className="text-xs tabular-nums text-ink-faint">
-          {index + 1} of {cards.length}
-        </span>
+        <button
+          type="button"
+          onClick={() => onZoom(index)}
+          className="flex items-center gap-1.5 rounded-lg border border-navy-600 bg-navy-800 px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-current"
+        >
+          <ExpandIcon className="size-4" />
+          Open the card
+        </button>
         <button
           type="button"
           onClick={() => go(1)}
@@ -384,12 +618,226 @@ function Reader({
         </button>
       </div>
 
-      <Link
-        href={`/skills/${card.categoryId}/${card.vimeoId}`}
-        className="text-xs font-semibold text-ink-muted underline-offset-4 transition-colors hover:text-ink hover:underline"
+      <p className="text-center text-xs text-ink-faint">
+        <span className="tabular-nums">
+          {index + 1} of {cards.length}
+        </span>
+        {" · "}
+        {section.name}
+      </p>
+
+      <ColorStrip active={section.id} onPick={onSection} countIn={countIn} />
+    </div>
+  );
+}
+
+/**
+ * The full spread: one card pulled at random from every color.
+ *
+ * This is the deck's whole argument in one gesture. Seven cards on the
+ * table are the ingredients for a talk that moves - a story, the
+ * language to paint it, a way to perform it, a shape, a mindset, a body,
+ * a finish - and no two deals hand you the same talk. Random on purpose:
+ * a hand you chose is a hand of what you already do.
+ *
+ * Face up, because a spread is dealt to be looked at, with the lesson
+ * named under each card - the title is what makes a card an ingredient
+ * you can actually plan with, and the card itself opens full size.
+ */
+function FullSpread({
+  hand,
+  onZoom,
+  onDeal,
+  onBack,
+}: {
+  hand: DeckCard[];
+  onZoom: (index: number) => void;
+  onDeal: () => void;
+  onBack: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-5">
+      <div className="flex w-full items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={onBack}
+          className="flex items-center gap-1.5 text-sm font-semibold text-ink-muted transition-colors hover:text-ink"
+        >
+          <ChevronDownIcon className="size-4 rotate-90" />
+          All colors
+        </button>
+        <span className="text-xs font-bold uppercase tracking-[0.2em] text-ink-faint">
+          The spread
+        </span>
+        <button
+          type="button"
+          onClick={onDeal}
+          className="flex items-center gap-1.5 text-sm font-semibold text-ink-muted transition-colors hover:text-ink"
+        >
+          <RepeatIcon className="size-4" />
+          Deal again
+        </button>
+      </div>
+
+      <p className="text-center text-sm text-ink-muted text-balance">
+        One card of every color - the ingredients for a talk that moves.
+        Tap any card to read it.
+      </p>
+
+      {/* Four across on a phone, so the whole hand is on one screen -
+          seven cards you have to scroll through aren't a spread, they're
+          a list. The card is a color and a mark at that size; the lesson
+          under it is what names the ingredient. */}
+      <div className="grid grid-cols-4 gap-x-2.5 gap-y-4 sm:gap-x-3 sm:gap-y-5 lg:grid-cols-7">
+        {hand.map((card, i) => (
+          <div key={card.vimeoId} className="flex flex-col items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                hapticTap();
+                onZoom(i);
+              }}
+              aria-label={`${card.title} - open the card`}
+              className="card-3d spread-card relative block aspect-[89/127] w-full"
+            >
+              <CardFaceDown
+                section={card.section}
+                code={card.category.code}
+                color={`var(--color-${card.categoryId})`}
+              />
+            </button>
+            <span className="text-center text-[0.6rem] font-medium leading-tight text-ink-muted text-balance sm:text-[0.7rem]">
+              {card.title}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * A card at arm's length.
+ *
+ * The card carries three blocks of text at about 3% of its own width,
+ * which is legible on an 89mm card in the hand and marginal on a phone
+ * inside a carousel. So any card opens to the height of the screen -
+ * sized off the shorter dimension, so it's whole in either orientation
+ * rather than cropped tall - and a tap still turns it over, because a
+ * card you can't turn over is a picture of a card.
+ */
+function CardZoom({
+  card,
+  hasPrev,
+  hasNext,
+  position,
+  onStep,
+  onClose,
+}: {
+  card: DeckCard;
+  hasPrev: boolean;
+  hasNext: boolean;
+  position: string;
+  onStep: (delta: number) => void;
+  onClose: () => void;
+}) {
+  // Escape closes it, the arrows walk it, and the page underneath holds
+  // still while it's up.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft") onStep(-1);
+      if (e.key === "ArrowRight") onStep(1);
+    };
+    window.addEventListener("keydown", onKey);
+    const { overflow } = document.body.style;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = overflow;
+    };
+  }, [onClose, onStep]);
+
+  const touch = useRef<{ x: number; y: number } | null>(null);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <button
+        type="button"
+        aria-label="Close the card"
+        onClick={onClose}
+        className="absolute inset-0 bg-navy-950/85 backdrop-blur-sm"
+      />
+
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={`${card.title} - card`}
+        className="panel-in relative flex flex-col items-center gap-4"
+        onTouchStart={(e) => {
+          touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        }}
+        onTouchEnd={(e) => {
+          const start = touch.current;
+          touch.current = null;
+          if (!start) return;
+          const dx = e.changedTouches[0].clientX - start.x;
+          const dy = e.changedTouches[0].clientY - start.y;
+          if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy)) return;
+          onStep(dx < 0 ? 1 : -1);
+        }}
       >
-        Watch this lesson
-      </Link>
+        <div style={{ width: "min(26rem, 86vw, calc(76vh * 89 / 127))" }}>
+          <LessonCard
+            key={card.vimeoId}
+            data={card}
+            startFlipped
+            className="max-w-none"
+          />
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => onStep(-1)}
+            disabled={!hasPrev}
+            aria-label="Previous card"
+            className="rounded-lg px-2 py-1 text-ink-faint transition-colors hover:text-ink disabled:opacity-30"
+          >
+            <ChevronDownIcon className="size-4 rotate-90" />
+          </button>
+          <span className="text-xs tabular-nums text-ink-faint">{position}</span>
+          <button
+            type="button"
+            onClick={() => onStep(1)}
+            disabled={!hasNext}
+            aria-label="Next card"
+            className="rounded-lg px-2 py-1 text-ink-faint transition-colors hover:text-ink disabled:opacity-30"
+          >
+            <ChevronDownIcon className="size-4 -rotate-90" />
+          </button>
+        </div>
+
+        <p className="text-center text-xs text-ink-faint">
+          Tap the card to turn it over
+          {" · "}
+          <Link
+            href={`/skills/${card.categoryId}/${card.vimeoId}`}
+            className="font-semibold text-ink-muted underline-offset-4 transition-colors hover:text-ink hover:underline"
+          >
+            Watch this lesson
+          </Link>
+        </p>
+
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute -top-3 -right-3 flex size-9 items-center justify-center rounded-full border border-navy-600 bg-navy-850 text-ink-muted transition-colors hover:text-ink"
+        >
+          <XIcon className="size-4" />
+        </button>
+      </div>
     </div>
   );
 }

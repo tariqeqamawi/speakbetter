@@ -414,14 +414,17 @@ Under it, the mark and section, the lesson title, and then the card teaches rath
 
 #### The digital deck
 
-The digital deck lives inside Skills as the **Cards** tab (§03), and carries **every skill lesson in the library** — 79 cards. The two section introductions are the only lessons left out: an introduction frames a section rather than handing you a move you can make, and a card you can't act on wastes a pull. Every card in the deck is a skill. Two screens, one gesture each:
+The digital deck lives inside Skills as the **Cards** tab (§03), and carries **every skill lesson in the library** — 77 cards. Four lessons are left out. The two section introductions frame a section rather than handing you a move you can make. The two Story Time lessons — the man a phone call away from the national snowboard team, told end to end and then taken apart — are the demonstration the section is built around, but they're his story rather than a technique: every transferable thing in them is already a card of its own, taught by the lesson that names it. A card you can't act on wastes a pull. Every card in the deck is a skill. Three surfaces, one gesture each:
 
 - **The dial** is the closed deck seen from above: seven face-down cards, one per color, each showing its section's icon. It's worked with the same press-slide-release as the Skills dial — hold a thumb down, slide until the color you want lifts, let go — so the hand already knows it.
-- **The reader** is one card filling the screen. A flick left brings the next card in that color; a flick back off the first card leaves the section, and an *All colors* button does the same for anyone not flicking. Tap the card to turn it over.
+- **The color** is that section fanned into a stacked carousel: the card in front is face up and readable, the rest of the color stacks away behind it to either side. Swipe, drag or arrow through them and take the one you want — nothing has to be walked past to reach anything. The cards behind stay face down, because a stack of readable faces is a list with extra steps; what the fan is for is seeing how deep the color you're choosing from goes. The seven colors sit along the bottom as a strip, so moving to another section never means going back out first.
+- **The spread** is one card pulled at random from every color at once — seven ingredients for one talk, which is the whole argument of the deck in a single gesture. Deal it again and you have a different talk. Random on purpose: a hand you chose is a hand of what you already do.
+
+**Any card opens full size**, sized off the shorter side of the screen so it's whole in either orientation, and a tap still turns it over. The card carries three blocks of text at about 3% of its own width — legible on an 89 mm card in the hand, marginal on a phone inside a carousel — so a card that can't be read at arm's length isn't doing its job.
 
 **Shaking the phone shuffles the deck and pulls a card at random** — the one thing a physical deck does that a list of links never will, and the honest answer to not knowing what to work on today. A button does the same job on a laptop, and asks for motion permission where the platform requires it.
 
-**The whole deck is open from the first minute.** Not card by card as each lesson is watched, and not behind a milestone: the deck is a tool, and a tool handed over one piece at a time is useless — the mechanic is pull one card of every color, which needs every color to be there. Nothing about it is a reward to be earned, and a student who opens the tab on day one gets all 79. **Which cards a student pulls is never logged** — see below.
+**The whole deck is open from the first minute.** Not card by card as each lesson is watched, and not behind a milestone: the deck is a tool, and a tool handed over one piece at a time is useless — the mechanic is pull one card of every color, which needs every color to be there. Nothing about it is a reward to be earned, and a student who opens the tab on day one gets all 77. **Which cards a student pulls is never logged** — see below.
 
 The deck ships with one card that isn't a lesson: the instruction card, explaining the pull-one-of-each-color mechanic. A deck explains itself in the hand, not in a manual.
 
@@ -441,7 +444,7 @@ Most of the questions raised during this plan's development have been resolved a
 - The exact final count of skill categories — seven or fewer — once all ~80 lessons are sorted and it's clear whether every skill nests cleanly into an existing color.
 - The exact form of the first-attempt-vs-latest-attempt comparison in Community — side-by-side playback, a before/after spectrum chart, or something else.
 - Whether in-app playback of a student's own video stays hosted in-app, or falls back to referencing the video on their phone — pending cost analysis.
-- Whether the printed deck ships all 79 cards or a curated subset. The digital deck carries every skill lesson; a physical run may be cut for cost, and that cut is a separate decision from the one made here.
+- Whether the printed deck ships all 77 cards or a curated subset. The digital deck carries every skill lesson; a physical run may be cut for cost, and that cut is a separate decision from the one made here.
 - Whether IMAGE is the right short code for Figurative language — it names what the section teaches (imagery) but could be misread as photography.
 - Which promotional video the landing page centers on, and whether the book and card deck get their own cross-sell moment there too, or stay upsells inside the course and the book itself.
 - Where the three unplaced challenge videos land in the STORY curriculum — Set & Scene, Foreshadowing & Fulfilment, and Mic Drop Moment — as additions to the O or Y phases, or as bonus challenges.

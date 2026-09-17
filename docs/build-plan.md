@@ -128,17 +128,18 @@ Each phase lists what it builds, which master plan sections it delivers, and wha
 *The third leg of the trinity arrives in-app.*
 
 **Builds:**
-- The digital deck inside Skills as the Cards tab: 79 cards, one per skill lesson, each in its section's color — the two section introductions left out, because a card you can't act on wastes a pull (§16) — *built*
-- The dial of seven face-down cards, worked with the same press-slide-release as the Skills dial; the full-screen reader, flick left for the next card in that color (§16) — *built*
+- The digital deck inside Skills as the Cards tab: 77 cards, one per skill lesson, each in its section's color — the two section introductions and the two Story Time lessons left out, because a card you can't act on wastes a pull (§16) — *built*
+- The dial of seven face-down cards, worked with the same press-slide-release as the Skills dial; a color opens as a stacked carousel you swipe through and take a card out of, with the seven colors as a strip for switching sections; any card opens full size (§16) — *built*
+- The full spread: one card pulled at random from every color at once, the seven ingredients for a talk, dealt again for a different one (§16) — *built*
 - Shake the phone to shuffle and pull at random, with a button doing the same on a laptop (§16) — *built*
 - The whole deck open from the first minute — no per-card earning and no milestone gate, because pull-one-of-every-color needs every color to be there (§16) — *built*
-- The card face that teaches rather than reminds: a neon plate carrying the lesson's motif, then what it is, how you use it, and the teacher's own lines lifted from the transcript (§16) — *built, all 79*
+- The card face that teaches rather than reminds: a neon plate carrying the lesson's motif, then what it is, how you use it, and the teacher's own lines lifted from the transcript (§16) — *built, all 77*
 - The instruction card explaining the pull-one-of-each-color mechanic (§16) — *built*
 - Deliberately untracked: which cards a student pulls is never logged or linked to challenge performance (§16)
 
 **Shippable when:** a student can pull cards on their phone as fast as flipping a physical deck.
 
-**Still open:** whether the printed deck ships all 79 cards or a curated subset, and the press specification — oracle stock at 89 × 127 mm, spot inks on neon (§16).
+**Still open:** whether the printed deck ships all 77 cards or a curated subset, and the press specification — oracle stock at 89 × 127 mm, spot inks on neon (§16).
 
 ---
 
@@ -148,7 +149,7 @@ These run in parallel as content/product work and never block an app phase:
 
 - **The book** — *How To Be a Powerful Unforgettable Speaker*: written from the transcript library, half story half skills, standalone product with upsell into course + deck (§16)
 - **The physical card deck** — printed and sold as its own product, same categories and colors (§16)
-- **Card copywriting** — the succinct explanations + examples, shared between the physical and digital decks — *written, all 79: `src/data/card-content.ts`*
+- **Card copywriting** — the succinct explanations + examples, shared between the physical and digital decks — *written, all 77: `src/data/card-content.ts`*
 
 ---
 

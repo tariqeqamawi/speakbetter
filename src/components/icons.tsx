@@ -273,6 +273,22 @@ export function XIcon({ className = "size-5" }: IconProps) {
   );
 }
 
+/** Arrows leaving four corners - open this bigger. */
+export function ExpandIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M9.5 4.75H4.75v4.75" />
+      <path d="M14.5 4.75h4.75v4.75" />
+      <path d="M9.5 19.25H4.75V14.5" />
+      <path d="M14.5 19.25h4.75V14.5" />
+      <path d="m4.75 4.75 4.5 4.5" />
+      <path d="m19.25 4.75-4.5 4.5" />
+      <path d="m4.75 19.25 4.5-4.5" />
+      <path d="m19.25 19.25-4.5-4.5" />
+    </svg>
+  );
+}
+
 export function CircleIcon({ className = "size-5" }: IconProps) {
   return (
     <svg {...base} className={className}>

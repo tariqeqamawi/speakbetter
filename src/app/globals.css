@@ -729,6 +729,45 @@ body {
   transform: rotateY(180deg);
 }
 
+/* ── The stacked carousel: one color, fanned in the hand ──────────────
+   The card in front is upright and readable; the rest of the color
+   stacks away behind it to either side, each turned and shrunk a little
+   further. The component sets the transform per card - all this does is
+   make the change between two cards a movement rather than a cut, which
+   is what tells the eye it's one deck being worked and not a slideshow.
+   The shadow is the card lying above the one behind it. */
+.deck-stack-card {
+  transition:
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 320ms ease;
+  filter: drop-shadow(0 14px 22px rgba(3, 7, 18, 0.6));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deck-stack-card {
+    transition: none;
+  }
+}
+
+/* A dealt spread's cards lift toward the reader on hover - seven cards
+   on a table, and the one under your hand is the one you're about to
+   pick up. */
+.spread-card {
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (hover: hover) {
+  .spread-card:hover {
+    transform: translateY(-6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spread-card {
+    transition: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .card-3d-inner {
     transition: none;

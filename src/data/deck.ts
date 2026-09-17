@@ -38,7 +38,7 @@ const cues = cueTable as Record<string, LessonCue[]>;
 //
 // It's also why the deck can't be curated down. A hand is only as good
 // as the choice behind each card, so every lesson that teaches a skill
-// gets one - 79 of them - and the depth of each color is what makes
+// gets one - 77 of them - and the depth of each color is what makes
 // pulling from it feel like a decision rather than a draw. (A printed
 // run may later ship a smaller set for cost; that's a decision for the
 // press, not for this.)
@@ -50,21 +50,43 @@ const cues = cueTable as Record<string, LessonCue[]>;
 // grinding through the library card by card - it's a tool, and a tool is
 // useless handed over one piece at a time: the mechanic is pull one card
 // of every color, which needs every color to be there. A student who
-// opens the tab on day one gets all 79.
+// opens the tab on day one gets all 77.
+
+/**
+ * Lessons that are worth watching but have no card.
+ *
+ * The two Story Time lessons are one story - the man a phone call away
+ * from the national snowboard team - told end to end and then taken
+ * apart. They're the demonstration the section is built around, and
+ * watching them is how a student sees the shape whole. But a card has to
+ * hand you a move you can make in your own talk, and "the almost
+ * snowboarder" is his story, not a technique: every transferable thing
+ * in it is already a card of its own, taught by the lesson that names
+ * it. A card of somebody else's anecdote is a pull that gives you
+ * nothing to do.
+ */
+const NOT_CARDS = new Set([
+  "1081031584", // Story Time: The Almost Snowboarder
+  "1081031902", // Story Time: The Almost Snowboarder - Debrief
+]);
 
 /**
  * Every lesson that teaches a specific skill, in the order the course
  * teaches them.
  *
- * Two things keep a lesson out. A lesson with no key points has nothing
- * to put on a card's face. And an introduction has nothing to *do* -
+ * Three things keep a lesson out. A lesson with no key points has
+ * nothing to put on a card's face. An introduction has nothing to *do* -
  * "Introduction To Figurative Language" frames a section rather than
  * handing you a move you can make, and a card you can't act on is a card
- * that wastes a pull. Every card in the deck is a skill.
+ * that wastes a pull. And a told story is a demonstration rather than a
+ * move - see NOT_CARDS. Every card in the deck is a skill.
  */
 export const deckLessonIds: string[] = lessons
   .filter(
-    (l) => takeaways[l.vimeoId]?.length && !/^Introduction To /i.test(l.title),
+    (l) =>
+      takeaways[l.vimeoId]?.length &&
+      !/^Introduction To /i.test(l.title) &&
+      !NOT_CARDS.has(l.vimeoId),
   )
   .map((l) => l.vimeoId);
 

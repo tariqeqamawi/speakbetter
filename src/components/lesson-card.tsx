@@ -198,10 +198,87 @@ function FaceWash({ treatment }: { treatment: FaceTreatment }) {
   );
 }
 
+/**
+ * The face a card shows lying face down: the section's color edge to
+ * edge, the mark in its navy well, the section named underneath, and the
+ * short code in both corners.
+ *
+ * Exported because the deck fans this face out - a dozen of them in an
+ * arc, for a color you pick a card out of - and a fan drawn from a
+ * near-copy would be a fan of some other deck. One drawing, used
+ * wherever a card is face down.
+ *
+ * It sizes off its container's width like everything else on the card,
+ * so it needs a container-type: inline-size parent - `card-3d` here, the
+ * `@container` utility in the spread.
+ */
+export function CardFaceDown({
+  section,
+  code,
+  color,
+  background,
+  face = "flat",
+  hidden = false,
+}: {
+  section: string;
+  code: string;
+  color: string;
+  background?: string;
+  face?: FaceTreatment;
+  /** Turned away from the reader, on a card showing its other side. */
+  hidden?: boolean;
+}) {
+  return (
+    <span
+      aria-hidden={hidden}
+      className="card-face flex flex-col items-center justify-between overflow-hidden p-[6.2cqw]"
+      style={{ background: background ?? color }}
+    >
+      <FaceWash treatment={face} />
+
+      {/* Face down, a card gives away its section and nothing else.
+          Both corners carry the same short code rather than one of
+          them carrying a card number, because a number would make
+          each card identifiable while it's still turned over - and a
+          deck whose backs can be told apart isn't a deck. The color
+          does the work; the code names the color. */}
+      <span className="relative flex w-full items-start justify-between text-navy-950">
+        <span className="text-[3cqw] font-bold uppercase tracking-[0.22em]">
+          {code}
+        </span>
+        <span className="text-[3cqw] font-bold uppercase tracking-[0.22em] opacity-45">
+          {code}
+        </span>
+      </span>
+
+      {/* The mark, in its own navy well */}
+      <span className="relative flex size-[35cqw] items-center justify-center rounded-full bg-navy-950 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)]">
+        <Image
+          src="/logo-mark.png"
+          alt=""
+          width={320}
+          height={266}
+          className="w-[27cqw]"
+        />
+      </span>
+
+      <span className="relative flex w-full flex-col items-center gap-[1.2cqw] text-navy-950">
+        <span className="text-center text-[4.4cqw] font-bold leading-tight text-balance">
+          {section}
+        </span>
+        <span className="text-[2.7cqw] font-semibold uppercase tracking-[0.22em] opacity-70">
+          Speak Better
+        </span>
+      </span>
+    </span>
+  );
+}
+
 export function LessonCard({
   data,
   startFlipped = false,
   face = "flat",
+  onActivate,
   className = "",
 }: {
   data: LessonCardData;
@@ -213,6 +290,12 @@ export function LessonCard({
   startFlipped?: boolean;
   /** How the colored face is filled - see FaceTreatment. */
   face?: FaceTreatment;
+  /**
+   * What a tap does instead of turning the card over. The carousel uses
+   * it to open the card full size: there, the card is already the right
+   * way up and what you want from it is a closer look.
+   */
+  onActivate?: () => void;
   className?: string;
 }) {
   const [flipped, setFlipped] = useState(startFlipped);
@@ -232,55 +315,25 @@ export function LessonCard({
   return (
     <button
       type="button"
-      onClick={() => setFlipped((f) => !f)}
-      aria-pressed={showBack}
-      aria-label={`${data.title} - ${flipped ? "showing the lesson, tap to turn over" : "tap to turn over"}`}
+      onClick={() => (onActivate ? onActivate() : setFlipped((f) => !f))}
+      aria-pressed={onActivate ? undefined : showBack}
+      aria-label={
+        onActivate
+          ? `${data.title} - open the card`
+          : `${data.title} - ${flipped ? "showing the lesson, tap to turn over" : "tap to turn over"}`
+      }
       className={`card-3d group aspect-[89/127] w-full max-w-xs cursor-pointer ${className}`}
     >
       <span className={`card-3d-inner ${showBack ? "is-flipped" : ""}`}>
         {/* ── Face: the section's color, and the mark ───────────────── */}
-        <span
-          aria-hidden={showBack}
-          className="card-face flex flex-col items-center justify-between overflow-hidden p-[6.2cqw]"
-          style={{ background: data.background ?? color }}
-        >
-          <FaceWash treatment={face} />
-
-          {/* Face down, a card gives away its section and nothing else.
-              Both corners carry the same short code rather than one of
-              them carrying a card number, because a number would make
-              each card identifiable while it's still turned over - and a
-              deck whose backs can be told apart isn't a deck. The color
-              does the work; the code names the color. */}
-          <span className="relative flex w-full items-start justify-between text-navy-950">
-            <span className="text-[3cqw] font-bold uppercase tracking-[0.22em]">
-              {code}
-            </span>
-            <span className="text-[3cqw] font-bold uppercase tracking-[0.22em] opacity-45">
-              {code}
-            </span>
-          </span>
-
-          {/* The mark, in its own navy well */}
-          <span className="relative flex size-[35cqw] items-center justify-center rounded-full bg-navy-950 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)]">
-            <Image
-              src="/logo-mark.png"
-              alt=""
-              width={320}
-              height={266}
-              className="w-[27cqw]"
-            />
-          </span>
-
-          <span className="relative flex w-full flex-col items-center gap-[1.2cqw] text-navy-950">
-            <span className="text-center text-[4.4cqw] font-bold leading-tight text-balance">
-              {data.section}
-            </span>
-            <span className="text-[2.7cqw] font-semibold uppercase tracking-[0.22em] opacity-70">
-              Speak Better
-            </span>
-          </span>
-        </span>
+        <CardFaceDown
+          section={data.section}
+          code={code}
+          color={color}
+          background={data.background}
+          face={face}
+          hidden={showBack}
+        />
 
         {/* ── Face: the lesson itself ───────────────────────────── */}
         <span
