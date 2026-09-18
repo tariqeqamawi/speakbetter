@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { LionMouth } from "@/components/lion-mouth";
 import {
   forwardRef,
   useCallback,
@@ -29,14 +29,16 @@ export interface TalkingLionHandle {
   prime: () => void;
 }
 
-// The coach persona, drawn as an audio visualizer rather than a puppet.
+// The coach persona: the lion, mouth moving with the voice.
 //
-// The earlier prototype split the raster mark into head and jaw layers
-// and rotated the jaw. From flat artwork the seam never fully hid and
-// six degrees of travel read as a twitch, not speech. So the mark now
-// responds the way a soundwave does: the whole lion pulses with the
-// audio - a gentle scale, a bloom of light behind the mane, and a bar
-// meter underneath, all driven by the same live amplitude.
+// Two earlier tries are worth remembering. Splitting the flat mark into
+// head and jaw and rotating the jaw never hid the seam, and six degrees
+// of travel read as a twitch. Pulsing the whole mark with the audio was
+// honest but wasn't speech. What works is the artist's own animation:
+// the brand MOV of the lion going from closed mouth to roar, cut into
+// twelve frames (lion-mouth.tsx) and scrubbed by the audio's amplitude
+// - loud syllables open the mouth, gaps close it. The bloom behind the
+// mane and the bar meter underneath still breathe with the same level.
 //
 // Two drive modes:
 //   audioSrc  - real amplitude off an AnalyserNode. The production
@@ -80,7 +82,12 @@ export const TalkingLion = forwardRef<
   { text, audioSrc, cues, autoPlay = false, onEnded, className = "" },
   ref,
 ) {
-  const [level, setLevel] = useState(0); // 0..1 live amplitude
+  const [level, setLevel] = useState(0); // 0..1 live amplitude, smoothed
+  // The mouth follows a faster envelope than the bloom: quick to open
+  // on a syllable, a little slower to close, so it flaps like speech
+  // rather than swelling like breath.
+  const [mouth, setMouth] = useState(0);
+  const mouthRef = useRef(0);
   const [speaking, setSpeaking] = useState(false);
   // The browser refused to start the clip - a tap on the button will.
   const [blocked, setBlocked] = useState(false);
@@ -107,6 +114,8 @@ export const TalkingLion = forwardRef<
     if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     rafRef.current = null;
     setLevel(0);
+    setMouth(0);
+    mouthRef.current = 0;
     setCueIndex(-1);
     smoothedRef.current = 0;
     envelopeRef.current = 0;
@@ -149,6 +158,13 @@ export const TalkingLion = forwardRef<
       const target = Math.min(1, rms * 6);
       smoothedRef.current += (target - smoothedRef.current) * 0.35;
       setLevel(smoothedRef.current);
+      // Attack fast, release slower - and a touch above the bloom, so
+      // ordinary speech opens the mouth properly and only silence
+      // closes it.
+      const want = Math.min(1, rms * 7.5);
+      mouthRef.current +=
+        (want - mouthRef.current) * (want > mouthRef.current ? 0.6 : 0.3);
+      setMouth(mouthRef.current);
 
       // Which word is being said right now - the same clock the audio
       // plays on, so the symbol can't drift out of sync with the voice.
@@ -178,6 +194,9 @@ export const TalkingLion = forwardRef<
   const runEnvelopeLoop = useCallback(() => {
     const tick = () => {
       envelopeRef.current *= 0.94; // decays between words
+      const t0 = performance.now() / 1000;
+      mouthRef.current = envelopeRef.current * (0.55 + 0.45 * Math.abs(Math.sin(t0 * 2 * Math.PI * 4.5)));
+      setMouth(mouthRef.current);
       const t = performance.now() / 1000;
       const flutter = 0.55 + 0.45 * Math.sin(t * 2 * Math.PI * 5.2);
       const target = envelopeRef.current * flutter;
@@ -335,14 +354,10 @@ export const TalkingLion = forwardRef<
             filter: "blur(18px)",
           }}
         />
-        <Image
-          src="/logo-mark.png"
-          alt="Speak Better coach"
-          width={762}
-          height={610}
-          priority
-          className="relative h-auto w-full will-change-transform"
-          style={{ transform: `scale(${(1 + level * 0.05).toFixed(3)})` }}
+        <LionMouth
+          level={mouth}
+          className="relative w-full will-change-transform"
+          style={{ transform: `scale(${(1 + level * 0.03).toFixed(3)})` }}
         />
         {/* The word being spoken, with its symbol. The row keeps its
             height whether or not a cue is showing, so the lion never

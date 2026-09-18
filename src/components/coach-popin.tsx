@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { LionMouth } from "@/components/lion-mouth";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useStore } from "@/lib/store";
 import { buildContext } from "@/lib/encouragement";
@@ -181,13 +181,10 @@ export function CoachPopIn() {
       }`}
     >
       <div className="flex max-w-sm items-start gap-3 rounded-2xl border border-navy-600 bg-navy-850 p-4 shadow-2xl shadow-navy-950/80">
-        {/* the lion, mouth moving while it speaks */}
-        <span className="relative block size-14 shrink-0">
-          <Image src="/lion-head.png" alt="" width={762} height={610}
-            className="absolute inset-0 size-full object-contain" />
-          <Image src="/lion-jaw.png" alt="" width={762} height={610}
-            className="absolute inset-0 size-full object-contain"
-            style={{ transformOrigin: "43.4% 36.2%", transform: `rotate(${jaw.toFixed(2)}deg)` }} />
+        {/* the lion, mouth moving while it speaks - the jaw envelope
+            (0..6) drives the same sprite the big lion uses */}
+        <span className="relative block w-[4.5rem] shrink-0">
+          <LionMouth level={jaw / 6} className="w-full" />
         </span>
 
         <div className="flex flex-1 flex-col gap-2">
