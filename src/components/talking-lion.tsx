@@ -166,12 +166,12 @@ export const TalkingLion = forwardRef<
       );
       // Shaped to a word, not a syllable: the mouth opens fast at the
       // start of a word, holds open across its syllables - the release
-      // is slow enough to ride through the dip between them - and
-      // shuts in the gap before the next word. Closed, open, closed,
-      // once per word, which is what speech looks like from across a
-      // room.
+      // rides through the dip between them - and shuts promptly in the
+      // gap before the next word; a slow close read as the lion
+      // trailing off after every word. Closed, open, closed, once per
+      // word, which is what speech looks like from across a room.
       mouthRef.current +=
-        (want - mouthRef.current) * (want > mouthRef.current ? 0.45 : 0.13);
+        (want - mouthRef.current) * (want > mouthRef.current ? 0.45 : 0.3);
       if (want === 0 && mouthRef.current < 0.06) mouthRef.current = 0;
       setMouth(mouthRef.current);
 
