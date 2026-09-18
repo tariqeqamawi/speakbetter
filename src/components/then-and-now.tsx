@@ -178,7 +178,7 @@ export function ThenAndNow() {
         )}
       </div>
 
-      {/* The reel: twenty seconds of then, twenty of now, cut on this
+      {/* The reel: ten seconds of then, ten of now, cut on this
           phone and shared from it - see progress-reel.tsx. */}
       <button
         type="button"
@@ -189,7 +189,7 @@ export function ThenAndNow() {
         Play your before and after
       </button>
       <p className="-mt-1 text-center text-xs text-ink-faint text-balance">
-        About fifty seconds, made on this phone - share it to your socials
+        About thirty seconds, made on this phone - share it to your socials
         or with the other students.
       </p>
 

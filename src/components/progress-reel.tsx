@@ -405,7 +405,7 @@ export function ProgressReel({
           <p className="text-center text-xs text-ink-faint text-balance">
             {phase === "playing"
               ? "Recording as it plays…"
-              : "About fifty seconds: twenty of then, twenty of now, and the difference."}
+              : "About thirty seconds: ten of then, ten of now, and the difference."}
           </p>
         )}
 

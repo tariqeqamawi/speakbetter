@@ -1,9 +1,11 @@
 // The before-and-after reel: the student as they arrived, then the
 // student today, cut together on the device.
 //
-// Twenty seconds of the baseline, a card with both scores, twenty
-// seconds of the latest attempt, and a closing card - about fifty
-// seconds, portrait, the shape a phone posts in. It's drawn frame by
+// Ten seconds of the baseline, a card with both scores, ten seconds
+// of the latest attempt, and a closing card - about thirty seconds,
+// portrait, the shape a phone posts in. Ten rather than twenty because
+// the point is the difference, and the difference is visible in ten:
+// a reel someone will watch to the end on a feed is a short one. It's drawn frame by
 // frame onto a canvas from the two videos and the two feedback records,
 // so the thing on screen is the thing that gets shared: while it plays,
 // the canvas and the videos' sound are recorded into one file, and at
@@ -40,7 +42,7 @@ export const REEL_W = 720;
 export const REEL_H = 1280;
 
 /** How much of each video plays. */
-const CLIP = 20;
+const CLIP = 10;
 const TITLE = 1.8;
 const BRIDGE = 3.2;
 const OUTRO = 3.6;
