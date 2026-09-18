@@ -82,14 +82,36 @@ export const DEFAULT_VOICE = "Charon";
 
 const KEY = "speak-better-coach-voice";
 
+/**
+ * How much faster than the model's own delivery the coach plays back.
+ * Pace in the direction is a suggestion Gemini takes loosely; this is
+ * the exact part. Pitch is preserved, so the gravel stays.
+ */
+export const COACH_RATE = 1.3;
+
+/** Set the coach's pace on an element. Both rates, because loading a
+ *  new src resets playbackRate to the default. */
+export function paceAudio(el: HTMLAudioElement): void {
+  el.defaultPlaybackRate = COACH_RATE;
+  el.playbackRate = COACH_RATE;
+  (el as HTMLAudioElement & { preservesPitch?: boolean }).preservesPitch = true;
+}
+
 /** The chosen voice on this browser: { voice, style }. */
 export function chosenVoice(): { voice: string; style: string } {
   try {
     const raw = window.localStorage.getItem(KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as { voice?: string; style?: string };
+      // A stored style only counts while it's still one of the app's
+      // presets - otherwise a browser that chose a voice weeks ago
+      // would keep speaking in a direction the app has since moved on
+      // from.
+      const style = STYLE_PRESETS.some((p) => p.style === parsed.style)
+        ? (parsed.style as string)
+        : DEFAULT_STYLE;
       if (parsed.voice && GEMINI_VOICES.some((v) => v.name === parsed.voice))
-        return { voice: parsed.voice, style: parsed.style || DEFAULT_STYLE };
+        return { voice: parsed.voice, style };
     }
   } catch {
     // no storage, or a bad entry - the default speaks
