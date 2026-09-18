@@ -201,8 +201,8 @@ export function Landing() {
         <Image
           src="/logo-full.png"
           alt="The Speak Better lion, its mane in full color above a soundwave"
-          width={430}
-          height={410}
+          width={1000}
+          height={972}
           className="h-40 w-auto sm:h-52"
         />
         <blockquote className="max-w-xl text-xl font-semibold leading-relaxed text-balance sm:text-2xl">
