@@ -104,6 +104,66 @@ function lensPath(width: number, midY: number, halfHeight: number) {
   );
 }
 
+/**
+ * The header wave, built to cost nothing per frame.
+ *
+ * The first version was one SVG: three groups scrolling under an SVG
+ * mask. A transform on an SVG group isn't handed to the compositor,
+ * and a mask means the whole masked area is re-rasterized every frame
+ * - at the full width of a desktop window, sixty times a second, for
+ * the life of every page. It was the choppiness at the top of the
+ * screen. So the header is three separate SVGs, one wave each, moved
+ * as HTML elements (which the compositor animates on its own thread,
+ * with no paint at all), and the edge fade is a CSS mask on the
+ * wrapper, which is composited too. Same picture; the main thread
+ * never hears about it.
+ */
+function HeaderWave({ className }: { className: string }) {
+  const spec = variants.header;
+  const gradientId = "soundwave-spectrum-header";
+  const [f0, f1, f2, f3] = spec.fade;
+  const fade = `linear-gradient(to right, transparent 0%, rgba(0,0,0,0.85) ${f0}%, #000 ${f1}%, rgba(0,0,0,0.85) ${f2}%, transparent ${f3}%)`;
+  return (
+    <div
+      className={`overflow-hidden ${className}`}
+      style={{ maskImage: fade, WebkitMaskImage: fade }}
+      aria-hidden
+    >
+      <svg width="0" height="0" className="absolute" aria-hidden>
+        <defs>
+          <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="var(--color-storytelling)" />
+            <stop offset="16%" stopColor="var(--color-figurative)" />
+            <stop offset="33%" stopColor="var(--color-acting)" />
+            <stop offset="50%" stopColor="var(--color-structure)" />
+            <stop offset="67%" stopColor="var(--color-mindset)" />
+            <stop offset="84%" stopColor="var(--color-body-language)" />
+            <stop offset="100%" stopColor="var(--color-advanced)" />
+          </linearGradient>
+        </defs>
+      </svg>
+      {spec.waves.map((wave) => (
+        <svg
+          key={wave.className}
+          className={`absolute inset-y-0 left-0 h-full w-[200%] ${wave.className}`}
+          viewBox={`0 0 ${VIEW_W * 2} ${spec.viewH}`}
+          preserveAspectRatio="none"
+        >
+          <path
+            d={wavePath(VIEW_W * 2, wave.period, wave.amplitude, spec.midY)}
+            fill="none"
+            stroke={`url(#${gradientId})`}
+            strokeWidth={wave.width}
+            strokeLinecap="round"
+            opacity={wave.opacity}
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+      ))}
+    </div>
+  );
+}
+
 export function Soundwave({
   variant = "header",
   className = "",
@@ -111,6 +171,7 @@ export function Soundwave({
   variant?: Variant;
   className?: string;
 }) {
+  if (variant === "header") return <HeaderWave className={className} />;
   const spec = variants[variant];
   const gradientId = `soundwave-spectrum-${variant}`;
   const fadeId = `soundwave-fade-${variant}`;

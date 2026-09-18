@@ -255,6 +255,27 @@ body {
   }
 }
 
+/* The header's waves are HTML-level elements two viewBoxes wide, so a
+   full loop is half their own width rather than 400 SVG units. */
+@keyframes soundwave-scroll-half {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+svg.soundwave-a {
+  animation-name: soundwave-scroll-half;
+}
+svg.soundwave-b {
+  animation-name: soundwave-scroll-half;
+}
+svg.soundwave-c {
+  animation-name: soundwave-scroll-half;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .soundwave-a,
   .soundwave-b,

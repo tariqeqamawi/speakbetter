@@ -24,7 +24,7 @@ const destinations = [
 
 export function TopBar() {
   return (
-    <header className="pt-safe sticky top-0 z-20 bg-navy-900/85 backdrop-blur">
+    <header className="pt-safe sticky top-0 z-20 bg-navy-900/92">
       <div className="spectrum-rule h-0.5" />
       {/* The soundwave lives in the band between the two rules */}
       <div className="relative border-b border-navy-700/80">
@@ -106,7 +106,7 @@ export function BottomTabs() {
   if (!ready || !state.unlocked) return null;
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-20 border-t border-navy-600 bg-navy-850/95 backdrop-blur sm:hidden"
+      className="fixed inset-x-0 bottom-0 z-20 border-t border-navy-600 bg-navy-850/97 sm:hidden"
       aria-label="Primary"
     >
       <div className="pb-safe mx-auto flex max-w-md items-stretch justify-around">

@@ -43,7 +43,7 @@ export function StoryBoard() {
       <div
         className={`sticky-under-header -mx-4 px-4 transition-all duration-300 ${
           stuck
-            ? "border-b border-navy-700/70 bg-navy-900/90 py-2.5 shadow-lg shadow-navy-950/40 backdrop-blur"
+            ? "border-b border-navy-700/70 bg-navy-900/95 py-2.5 shadow-lg shadow-navy-950/40"
             : "py-0"
         }`}
       >
