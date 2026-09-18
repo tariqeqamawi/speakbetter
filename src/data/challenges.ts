@@ -90,6 +90,24 @@ export interface Challenge {
   criteria: string[];
   targetSkills: CategoryId[];
   relatedLessonIds: string[];
+  /**
+   * The longest a recording may run, in seconds. Three minutes unless
+   * the challenge says otherwise - the pitch is thirty. Enforced with a
+   * five-second grace on both the phone and the server, and not
+   * negotiable beyond that: being succinct is part of what the course
+   * teaches, and a limit that bends teaches the opposite.
+   */
+  maxSeconds?: number;
+}
+
+/** The limit every challenge has unless it names its own. */
+export const DEFAULT_MAX_SECONDS = 180;
+/** How far over the limit a recording may run before it's refused. */
+export const GRACE_SECONDS = 5;
+
+/** A challenge's limit, in seconds. */
+export function maxSecondsFor(challenge: Pick<Challenge, "maxSeconds">): number {
+  return challenge.maxSeconds ?? DEFAULT_MAX_SECONDS;
 }
 
 export const challenges: Challenge[] = [
@@ -440,6 +458,7 @@ export const challenges: Challenge[] = [
   },
   {
     slug: "thirty-second-pitch",
+    maxSeconds: 30,
     phase: "Y",
     title: "Pitch Your Idea in 30 Seconds",
     vimeoId: "1081950736",

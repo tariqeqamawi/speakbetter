@@ -210,6 +210,22 @@ This only works if the underlying AI can genuinely watch the video, not just tra
 
 Because every observation maps back to a category in Skills, the AI's coaching is never generic. It can always point to the specific color that's missing and the specific lesson that addresses it — the assessment and the curriculum are speaking the same language.
 
+### How the coach works — built
+
+Gemini watches the recording natively, frames and audio together. Before it watches, it is briefed with the teacher's methodology: the challenge's brief and criteria, the full transcripts of the lessons the challenge cites and of their neighbouring lessons, four "voice" transcripts that carry his stories and phrasing (the Almost Snowboarder pair, the standing ovation, the challenges intro), and the rest of the library as its cards. It is told to coach only from that material, to sound like him and reach for his stories, and never to invent one.
+
+**The standard is quality, not presence.** A gesture that is there is not a gesture that works. Someone miming a friend hauled up a cliff is judged on whether the weight is believable — visible strain, tensed muscles, effort on the face — and someone lifting an imaginary mug on whether they hold a handle and it arrives at the mouth the way a mug does. Present-but-loose gets credit for the attempt and a precise note on what would make an audience believe it.
+
+**Every review makes three decisions, in order.** Was the brief completed — each criterion judged on its own, met or not, with a timestamp and what was seen or heard, and no rounding up out of kindness. Did they use the lessons the challenge cites — each one used or not, how well (0–100), with evidence or with what using it would have looked like at a specific moment. And the reach: what else from the library would make the next take more compelling, scaled by level — a Beginner gets one or two natural next steps, an Intermediate three or four across colors, an Advanced student the full library and the demanding techniques.
+
+It also spots **skills the student used without being asked** — a rhetorical question, a pause before the key line, a metaphor — and names the lesson each belongs to; Intermediate and Advanced see the list, a Beginner sees the count. And it notices **the setup**: a phone held in one hand takes that hand out of the performance, so good one-handed gestures earn "next time prop the phone up so you've got both of them free".
+
+Every note has the shape *well done for X — next time try Y*, names a color, cites a lesson, and gives the moment in the student's own video. The seven-color spectrum is scored with fixed anchors (40 lights a color, 80 is the teacher's own standard). The app holds the pass rule, not the model: every criterion met and the score at the level's bar.
+
+**Time limits are the challenge's own** — three minutes unless it says otherwise, the pitch is thirty seconds — with five seconds of grace and no more, on the phone and on the server: being succinct is part of what the course teaches, and a limit that bends teaches the opposite.
+
+**The video's path:** phone → a private store (the server only issues the permission) → Gemini → deleted from both the moment the answer is back, or the moment it fails. Nothing about a recording persists on our side (§13). A review of a 45-second take costs a few cents and returns in under a minute.
+
 ## 08 · The transcript and video reference
 
 Every lesson in Skills has a transcript. Collected together, these transcripts become the reference the AI actually checks a student's performance against — this is what turns the skill categories from a list of topics into something the AI can genuinely detect, rather than judge on vibes. When the AI reviews a challenge video, it isn't guessing what "good storytelling" looks like in the abstract; it's checking the performance against the same explanations the student was just taught.

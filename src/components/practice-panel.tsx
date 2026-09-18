@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { upload } from "@vercel/blob/client";
 import { useStore, type Attempt, type FeedbackNote } from "@/lib/store";
-import type { Challenge } from "@/data/challenges";
+import { GRACE_SECONDS, maxSecondsFor, type Challenge } from "@/data/challenges";
 import { lessonByVimeoId } from "@/data/lessons";
 import { categoryById, type CategoryId } from "@/data/categories";
 import Link from "next/link";
@@ -14,21 +15,31 @@ import { capturePoster, keepVideo } from "@/lib/attempt-videos";
 // The practice loop (master plan §06, steps 3–7; build plan Phase 4).
 //
 // Video handling honors §13: the file is read locally for duration and
-// playback via an object URL - in this stub it never leaves the device
-// at all. The real integration uploads it temporarily for Gemini's
-// review, then deletes it; the feedback record is what persists - and
-// the video itself is kept on the student's own device, the last three
-// per challenge, so they can watch back what they submitted (see
-// lib/attempt-videos.ts and the shelf above the upload box).
-
-const MAX_SECONDS = 183; // 3 minutes, with a few seconds of grace
+// playback via an object URL. For the review it goes straight from the
+// phone to a private store (api/review/upload issues the permission),
+// the coach watches it, and it's deleted; the feedback record is what
+// persists - and the video itself is kept on the student's own device,
+// the last three per challenge, so they can watch back what they
+// submitted (see lib/attempt-videos.ts and the shelf above the box).
+//
+// The time limit is the challenge's own (three minutes unless it says
+// otherwise, the pitch is thirty seconds), with five seconds of grace
+// and no more: being succinct is part of what the course teaches.
 
 type Stage =
   | { kind: "idle" }
   | { kind: "selected"; file: File; url: string; durationSec: number }
+  | { kind: "uploading"; file: File; url: string; durationSec: number; percent: number }
   | { kind: "reviewing"; file: File; url: string; durationSec: number }
   | { kind: "reviewed"; url: string; attempt: Attempt }
   | { kind: "error"; message: string };
+
+/** "3 minutes", "30 seconds", "1:30". */
+function limitLabel(sec: number): string {
+  if (sec % 60 === 0) return `${sec / 60} minute${sec === 60 ? "" : "s"}`;
+  if (sec < 60) return `${sec} seconds`;
+  return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
+}
 
 export function PracticePanel({ challenge }: { challenge: Challenge }) {
   const { state, ready, recordAttempt, attemptsFor, bestAttempt, latestAttempt } =
@@ -44,6 +55,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
   const attempts = attemptsFor(challenge.slug);
   const best = bestAttempt(challenge.slug);
   const latest = latestAttempt(challenge.slug);
+  const limit = maxSecondsFor(challenge);
 
   const onFile = (file: File | undefined) => {
     if (!file) return;
@@ -56,10 +68,10 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
         setStage({ kind: "error", message: "Couldn't read that video - try a different file." });
         return;
       }
-      if (durationSec > MAX_SECONDS) {
+      if (durationSec > limit + GRACE_SECONDS) {
         setStage({
           kind: "error",
-          message: `That's ${fmt(durationSec)} - challenge videos are three minutes max (two is the sweet spot). Trim it or record a tighter take.`,
+          message: `Your video is too long - that's ${fmt(durationSec)}, and this challenge is ${limitLabel(limit)} at most. Try again and keep it under ${limitLabel(limit)}: being succinct is part of the skill.`,
         });
         return;
       }
@@ -71,11 +83,40 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
   };
 
   const submit = async (file: File, url: string, durationSec: number) => {
-    setStage({ kind: "reviewing", file, url, durationSec });
+    setStage({ kind: "uploading", file, url, durationSec, percent: 0 });
     // A frame for the shelf, taken while the coach is watching - the
     // wait is there anyway.
     const poster = capturePoster(url, durationSec);
     try {
+      // The recording goes phone-to-store; the server only issues the
+      // permission. Where uploads aren't configured (a preview without
+      // the store) the review runs without a video and the stand-in
+      // coach answers.
+      let blobUrl: string | undefined;
+      try {
+        const ext = (file.name.split(".").pop() || "mp4").toLowerCase();
+        const put = await upload(`attempts/${challenge.slug}/${crypto.randomUUID()}.${ext}`, file, {
+          access: "private",
+          handleUploadUrl: "/api/review/upload",
+          contentType: file.type || "video/mp4",
+          multipart: file.size > 8 * 1024 * 1024,
+          clientPayload: JSON.stringify({ challengeSlug: challenge.slug, durationSec }),
+          onUploadProgress: ({ percentage }) =>
+            setStage((s) => (s.kind === "uploading" ? { ...s, percent: Math.round(percentage) } : s)),
+        });
+        blobUrl = put.url;
+      } catch (err) {
+        // A refusal (too long, wrong type) is worth telling; a missing
+        // store just means the stand-in answers.
+        const message = err instanceof Error ? err.message : "";
+        if (/too long|at most|seconds/i.test(message)) {
+          setStage({ kind: "error", message });
+          return;
+        }
+        blobUrl = undefined;
+      }
+
+      setStage({ kind: "reviewing", file, url, durationSec });
       const res = await fetch("/api/review", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -84,6 +125,8 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
           durationSec,
           level: state.level ?? "beginner",
           attemptNumber: attempts.length + 1,
+          blobUrl,
+          contentType: file.type || undefined,
         }),
       });
       if (!res.ok) {
@@ -103,6 +146,11 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
         focus: result.focus,
         fullNotes: result.fullNotes,
         summary: result.summary,
+        briefVerdict: result.briefVerdict,
+        criteria: result.criteria,
+        lessonsUsed: result.lessonsUsed,
+        skillsSpotted: result.skillsSpotted,
+        mock: result.mock || undefined,
       };
       recordAttempt(attempt);
       setStage({ kind: "reviewed", url, attempt });
@@ -157,8 +205,11 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
       {stage.kind === "idle" && (
         <div className="flex flex-col items-start gap-3 rounded-xl border border-navy-600 bg-navy-800 p-5">
           <p className="text-sm text-ink-muted">
-            Record yourself on your phone - selfie mode, two minutes ideal,
-            three max - then upload it here for your AI review.
+            Record yourself on your phone - selfie mode,{" "}
+            {limit >= 120
+              ? `${limitLabel(limit)} at most, and shorter is better`
+              : `${limitLabel(limit)} at most`}
+            {" "}- then upload it here for your coach&apos;s review.
           </p>
           <input
             ref={inputRef}
@@ -176,10 +227,10 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
             {attempts.length > 0 ? "Record another attempt" : "Upload your video"}
           </button>
           <p className="text-xs text-ink-faint">
-            Your video is reviewed, never stored by us - the feedback is
-            what&apos;s kept, and your last three recordings stay on this
-            device so you can watch them back. (AI review stub - Gemini
-            arrives with service integration.)
+            Your video goes to your coach for review and is deleted the
+            moment the review is back - it&apos;s never stored by us. The
+            feedback is what&apos;s kept, and your last three recordings
+            stay on this device so you can watch them back.
           </p>
         </div>
       )}
@@ -224,11 +275,29 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
         </div>
       )}
 
+      {stage.kind === "uploading" && (
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-navy-600 bg-navy-800 p-8 text-center">
+          <div className="h-1 w-48 overflow-hidden rounded-full bg-navy-700">
+            <div
+              className="spectrum-rule h-full rounded-full transition-[width] duration-300"
+              style={{ width: `${Math.max(4, stage.percent)}%` }}
+            />
+          </div>
+          <p className="text-sm text-ink-muted">
+            Sending your video to your coach… {stage.percent}%
+          </p>
+        </div>
+      )}
+
       {stage.kind === "reviewing" && (
         <div className="flex flex-col items-center gap-3 rounded-xl border border-navy-600 bg-navy-800 p-8 text-center">
           <div className="spectrum-rule h-1 w-24 animate-pulse rounded-full" />
           <p className="text-sm text-ink-muted">
             Your coach is watching your performance…
+          </p>
+          <p className="text-xs text-ink-faint text-balance">
+            Watching and listening properly takes a minute or two. Stay on
+            this page.
           </p>
         </div>
       )}
@@ -390,12 +459,130 @@ function Feedback({
         <p className="coach-cue text-sm text-ink-muted">{attempt.summary}</p>
       )}
 
+      {settled && attempt.criteria && attempt.criteria.length > 0 && (
+        <div className="coach-cue" style={{ animationDelay: "80ms" }}>
+          <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-ink-faint">
+            The brief
+          </h3>
+          {attempt.briefVerdict && (
+            <p className="mb-2 text-sm text-ink">{attempt.briefVerdict}</p>
+          )}
+          <ul className="flex flex-col gap-1.5">
+            {attempt.criteria.map((c, i) => (
+              <li key={i} className="flex items-start gap-2 text-sm">
+                <span
+                  className={`mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full ${
+                    c.met ? "bg-mindset text-navy-950" : "border border-navy-500 text-ink-faint"
+                  }`}
+                >
+                  {c.met ? <CheckIcon className="size-3" /> : <CircleIcon className="size-2" />}
+                </span>
+                <span className="flex flex-col">
+                  <span className={c.met ? "text-ink" : "text-ink-muted"}>{c.text}</span>
+                  {c.evidence && (
+                    <span className="text-xs text-ink-faint">{c.evidence}</span>
+                  )}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <div>
         <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-ink-faint">
           Your color spectrum
         </h3>
         <SpectrumBars spectrum={attempt.spectrum} revealCount={barsShown} />
       </div>
+
+      {settled && attempt.lessonsUsed && attempt.lessonsUsed.length > 0 && (
+        <div className="coach-cue" style={{ animationDelay: "120ms" }}>
+          <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-ink-faint">
+            The lessons this challenge asked for
+          </h3>
+          <ul className="flex flex-col gap-2">
+            {attempt.lessonsUsed.map((l) => {
+              const lesson = lessonByVimeoId.get(l.lessonId);
+              if (!lesson) return null;
+              const cat = categoryById.get(lesson.category);
+              return (
+                <li key={l.lessonId} className="flex flex-col gap-1 text-sm">
+                  <span className="flex items-center gap-2">
+                    <span className={`size-2 shrink-0 rounded-full ${cat?.bgClass ?? ""}`} />
+                    <Link
+                      href={`/skills/${lesson.category}/${lesson.vimeoId}`}
+                      className="flex-1 font-medium text-ink underline-offset-4 hover:underline"
+                    >
+                      {lesson.title}
+                    </Link>
+                    <span className="h-1.5 w-16 shrink-0 overflow-hidden rounded-full bg-navy-700">
+                      <span
+                        className={`block h-full rounded-full ${cat?.bgClass ?? "bg-ink"} ${l.used ? "" : "opacity-30"}`}
+                        style={{ width: `${l.used ? Math.max(8, l.quality) : 0}%` }}
+                      />
+                    </span>
+                    <span className="w-7 shrink-0 text-right text-xs tabular-nums text-ink-faint">
+                      {l.used ? l.quality : "–"}
+                    </span>
+                  </span>
+                  {l.evidence && (
+                    <span className="pl-4 text-xs text-ink-faint">{l.evidence}</span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+
+      {/* Skills hit by instinct - Intermediate and Advanced see them
+          named, with the lesson behind each, so what was luck can be
+          studied on purpose (§08). A Beginner is told how many, and
+          that the list is waiting at the next level. */}
+      {settled && attempt.skillsSpotted && attempt.skillsSpotted.length > 0 && (
+        <div className="coach-cue rounded-lg border border-navy-600 bg-navy-900/50 p-3" style={{ animationDelay: "140ms" }}>
+          <h3 className="mb-1 text-xs font-medium uppercase tracking-wider text-ink-faint">
+            Skills you used without being asked
+          </h3>
+          {canRevealAll ? (
+            <ul className="flex flex-col gap-2">
+              {attempt.skillsSpotted.map((s) => {
+                const lesson = lessonByVimeoId.get(s.lessonId);
+                if (!lesson) return null;
+                const cat = categoryById.get(lesson.category);
+                return (
+                  <li key={s.lessonId} className="flex flex-col gap-0.5 text-sm">
+                    <span className="flex items-center gap-2">
+                      <span className={`size-2 shrink-0 rounded-full ${cat?.bgClass ?? ""}`} />
+                      {s.at && (
+                        <span className="rounded bg-navy-700 px-1 py-0.5 text-[0.65rem] font-semibold tabular-nums text-ink-muted">
+                          {s.at}
+                        </span>
+                      )}
+                      <Link
+                        href={`/skills/${lesson.category}/${lesson.vimeoId}`}
+                        className="flex-1 font-medium text-ink underline-offset-4 hover:underline"
+                      >
+                        {lesson.title}
+                      </Link>
+                      <span className="text-xs tabular-nums text-ink-faint">{s.quality}</span>
+                    </span>
+                    {s.evidence && <span className="pl-4 text-xs text-ink-faint">{s.evidence}</span>}
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p className="text-sm text-ink-muted">
+              Your coach spotted {attempt.skillsSpotted.length}{" "}
+              {attempt.skillsSpotted.length === 1 ? "technique" : "techniques"} from other
+              lessons in this take. At Intermediate they&apos;re named, with the
+              lesson behind each.
+            </p>
+          )}
+        </div>
+      )}
 
       {settled && (
       <div className="coach-cue" style={{ animationDelay: "150ms" }}>
@@ -481,7 +668,14 @@ function FeedbackNoteRow({
     <li className={`flex items-start gap-2 text-sm text-ink ${className}`} style={style}>
       <span className={`mt-1.5 size-2 shrink-0 rounded-full ${cat?.bgClass ?? ""}`} />
       <span className="flex flex-col gap-1">
-        {note.note}
+        <span>
+          {note.at && (
+            <span className="mr-1.5 rounded bg-navy-700 px-1 py-0.5 text-[0.65rem] font-semibold tabular-nums text-ink-muted">
+              {note.at}
+            </span>
+          )}
+          {note.note}
+        </span>
         {lessons.length > 0 && (
           <span className="flex flex-wrap gap-x-3 gap-y-1">
             {lessons.map((lesson) => (

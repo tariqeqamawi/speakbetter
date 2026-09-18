@@ -34,6 +34,8 @@ export interface FeedbackNote {
    * learn. Rendered as links into Skills at Intermediate/Advanced (§08),
    * so a skill stumbled into by chance can be studied on purpose. */
   lessonIds?: string[];
+  /** m:ss in the student's own video, where the coach gives one. */
+  at?: string;
 }
 
 export interface Attempt {
@@ -47,6 +49,17 @@ export interface Attempt {
   focus: FeedbackNote[]; // the 2–3 priority notes (all levels)
   fullNotes: FeedbackNote[]; // everything the AI noticed (revealed at int/adv)
   summary: string;
+  /** The brief, judged - one line, then each criterion. From the real
+   *  coach only; older and mock attempts have neither. */
+  briefVerdict?: string;
+  criteria?: { text: string; met: boolean; evidence: string }[];
+  /** The lessons the challenge cited, and whether they were used. */
+  lessonsUsed?: { lessonId: string; used: boolean; quality: number; evidence: string }[];
+  /** Techniques from other lessons used without being asked for -
+   *  revealed at Intermediate and Advanced (§08). */
+  skillsSpotted?: { lessonId: string; quality: number; at?: string; evidence: string }[];
+  /** True while the stand-in coach answered rather than Gemini. */
+  mock?: boolean;
 }
 
 /**

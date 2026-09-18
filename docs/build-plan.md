@@ -80,9 +80,9 @@ Each phase lists what it builds, which master plan sections it delivers, and wha
 *The heart of the product, and the hardest phase. Everything before this was arranged so this phase lands into a working course.*
 
 **Builds:**
-- Video upload from the student's phone: 3-minute cap enforced, temporary storage only (§06 steps 3–4, §13)
-- Gemini video review: the model watches the performance — gestures, eye contact, posture, filler words, pacing, storytelling — against the challenge's structured success criteria from Phase 2 and the transcript reference from Phase 1 (§07, §08)
-- Scoring: pass/fail against challenge criteria + the color-spectrum breakdown of which categories showed up (§05)
+- Video upload from the student's phone: the challenge's own cap enforced with five seconds' grace, phone-to-private-store, deleted after review (§06 steps 3–4, §13) — *built, Vercel Blob*
+- Gemini video review: the model watches the performance — gestures, eye contact, posture, filler words, pacing, storytelling — against the challenge's structured success criteria from Phase 2 and the transcript reference from Phase 1 (§07, §08) — *built: `src/lib/coach`, Gemini 3.1 Pro, the three decisions, quality-not-presence, skills spotted, the setup note; a review bench at `/prototype/review`*
+- Scoring: pass/fail against challenge criteria + the color-spectrum breakdown of which categories showed up (§05) — *built; the app holds the pass rule*
 - Feedback screen: score first, spectrum chart, then coaching notes — with the level-dependent shape from §08/§09: two-or-three focus skills for everyone; the click-through "everything the AI noticed" reveal for Intermediate and Advanced only
 - Retry flow: best attempt and most recent attempt both tracked and visible; feedback records kept permanently, videos deleted after review (§06 step 7, §13)
 - Downloadable feedback (§13)
