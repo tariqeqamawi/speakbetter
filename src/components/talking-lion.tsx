@@ -17,6 +17,12 @@ import {
 const SILENCE =
   "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=";
 
+/** How far the mouth is allowed to open, as a share of the sprite's
+ *  travel. The full roar frame reads as exaggerated for ordinary
+ *  coaching, so the loudest syllable stops about seven-tenths of the
+ *  way there. */
+const MOUTH_MAX = 0.7;
+
 export interface TalkingLionHandle {
   /**
    * Call inside a click or tap, before fetching audio. Browsers only
@@ -153,7 +159,7 @@ export const TalkingLion = forwardRef<
       // sprite and only the loudest syllables reach the end of it.
       // A noise floor first, so silence is frame 0 - the mouth closed -
       // and not the first sliver of open that room tone would give.
-      const want = Math.min(1, Math.max(0, rms - 0.035) * 10);
+      const want = Math.min(MOUTH_MAX, Math.max(0, rms - 0.035) * 10);
       // Shaped to a word, not a syllable: the mouth opens fast at the
       // start of a word, holds open across its syllables - the release
       // is slow enough to ride through the dip between them - and
@@ -185,7 +191,9 @@ export const TalkingLion = forwardRef<
     const tick = () => {
       envelopeRef.current *= 0.94; // decays between words
       const t0 = performance.now() / 1000;
-      const want = envelopeRef.current * 0.8 * (0.55 + 0.45 * Math.abs(Math.sin(t0 * 2 * Math.PI * 4.5)));
+      const want =
+        Math.min(MOUTH_MAX, envelopeRef.current * 0.8) *
+        (0.55 + 0.45 * Math.abs(Math.sin(t0 * 2 * Math.PI * 4.5)));
       mouthRef.current += (want - mouthRef.current) * 0.3;
       setMouth(mouthRef.current);
       setLevel(envelopeRef.current);

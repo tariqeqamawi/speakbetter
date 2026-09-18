@@ -55,18 +55,18 @@ export const GEMINI_VOICES: { name: string; character: string; gender: "male" | 
  * British before the lion is settled on one.
  */
 export const DEFAULT_STYLE =
-  "in a deep, gravelly baritone - a lion's voice - warm and energetic, speaking briskly at a quick, natural conversational pace with no lingering pauses, like a coach talking to you across a table";
+  "in a very deep, gravelly, rumbling baritone - a lion's voice, rough at the edges - warm, fast and lively, at a quick conversational clip with barely a pause, like a coach talking to you across a table";
 
 /** Directions worth trying against each other on the audition page. */
 export const STYLE_PRESETS: { label: string; style: string }[] = [
-  { label: "Gravelly baritone, brisk", style: DEFAULT_STYLE },
+  { label: "Gravelly baritone, quick", style: DEFAULT_STYLE },
   {
     label: "Deep, quick",
-    style: "in a very deep male voice with a slight rasp, speaking quickly and fluently with no lingering pauses, reassuring",
+    style: "in a very deep, gravelly male voice with a heavy rasp, speaking fast and fluently with barely a pause, reassuring",
   },
   {
     label: "Warm, brisk",
-    style: "in a low, warm male voice, speaking briskly at a quick conversational pace, like a coach who's on your side",
+    style: "in a low, warm, husky male voice, speaking fast at a lively conversational clip, like a coach who's on your side",
   },
 ];
 
