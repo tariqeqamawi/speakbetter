@@ -1,13 +1,20 @@
 // The lion, mouth moving.
 //
-// Sixteen frames of the brand animation - the lion from closed mouth
-// to a moderately open one - cut from the 2.5-second MOV the mark was
-// delivered as, laid in one vertical sprite (public/lion-mouth.webp),
-// and picked by how loud the coach is right now. Frame 0 is closed and
-// at rest; the last is as far as the mouth goes while talking. The
-// full roar at the top of the clip is left out on purpose: at the
-// size a coach is shown, a roar on every loud syllable read as
-// shouting. The soundwave under the lion is cropped out too. The
+// Ten frames of the brand animation, cut from the 2.5-second MOV the
+// mark was delivered as, laid in one vertical sprite (public/lion-
+// mouth.webp), and picked by how loud the coach is right now.
+//
+// The clip is a roar: the lion draws in - face contracted, mouth shut
+// - then opens and lunges out, then settles. The talking frames are
+// the draw-in and the start of the release: frame 0 is the most
+// contracted pose in the clip (source frame 11), mouth shut and
+// everything pulled inward, and the frames after it are the jaw
+// dropping and the face opening outward, up to source frame 20 - open
+// and alive, but before the lunge becomes a roar. So a syllable opens
+// the mouth AND brings the face out, and the gap after draws it back
+// in, which is the way the animator drew the lion coming alive. The
+// soundwave under the lion is cropped out; it has its own, live, in
+// talking-lion.tsx. The
 // player hands in a level between 0 and 1 from the audio's own
 // amplitude, and this shows the frame that matches: the mouth opens
 // on the syllables and closes in the gaps, which is what lip-sync is
@@ -17,9 +24,9 @@
 //
 // Regenerate the sprite with the notes in scripts/build-lion-mouth.md.
 
-export const MOUTH_FRAMES = 16;
-/** The sprite's frame size - 400 × 247, the lion and mic without the wave. */
-export const MOUTH_ASPECT = "400 / 247";
+export const MOUTH_FRAMES = 10;
+/** The sprite's frame size - 400 × 263, the lion and mic without the wave. */
+export const MOUTH_ASPECT = "400 / 263";
 
 /** The frame for a level, straight: the sprite's own range is the
  *  restraint, and the envelope that feeds it does the smoothing. */
