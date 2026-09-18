@@ -25,6 +25,9 @@ export const MOUTH_ASPECT = "400 / 247";
  *  restraint, and the envelope that feeds it does the smoothing. */
 export function mouthFrame(level: number): number {
   const v = Math.max(0, Math.min(1, level));
+  // Under a small level the mouth is shut, not ajar - the first open
+  // frame has to be earned by a sound.
+  if (v < 0.07) return 0;
   return Math.round(v * (MOUTH_FRAMES - 1));
 }
 

@@ -153,9 +153,13 @@ export const TalkingLion = forwardRef<
       // sprite and only the loudest syllables reach the end of it.
       // A noise floor first, so silence is frame 0 - the mouth closed -
       // and not the first sliver of open that room tone would give.
-      const want = Math.min(1, Math.max(0, rms - 0.02) * 7);
+      const want = Math.min(1, Math.max(0, rms - 0.035) * 10);
+      // Quick both ways: a syllable opens it in a frame or two and the
+      // gap after shuts it, which is what makes speech read as speech
+      // rather than a mouth left ajar.
       mouthRef.current +=
-        (want - mouthRef.current) * (want > mouthRef.current ? 0.28 : 0.18);
+        (want - mouthRef.current) * (want > mouthRef.current ? 0.5 : 0.32);
+      if (want === 0 && mouthRef.current < 0.05) mouthRef.current = 0;
       setMouth(mouthRef.current);
 
       // Which word is being said right now - the same clock the audio
