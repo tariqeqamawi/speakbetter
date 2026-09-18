@@ -48,11 +48,17 @@ export function TalkingLion({
   text,
   audioSrc,
   cues,
+  autoPlay = false,
+  onEnded,
   className = "",
 }: {
   text?: string;
   audioSrc?: string;
   cues?: SpokenCue[];
+  /** Speak as soon as an audio source arrives - for a page where the
+   *  tap that fetched the audio is the tap that meant "play". */
+  autoPlay?: boolean;
+  onEnded?: () => void;
   className?: string;
 }) {
   const [level, setLevel] = useState(0); // 0..1 live amplitude
@@ -200,6 +206,7 @@ export function TalkingLion({
         setSpeaking(false);
         stopLoop();
         setFinished(true);
+        onEnded?.();
       };
       await el.play();
       return;
@@ -225,7 +232,21 @@ export function TalkingLion({
     envelopeRef.current = 1;
     runEnvelopeLoop();
     window.speechSynthesis.speak(utter);
-  }, [speaking, audioSrc, text, runAmplitudeLoop, runEnvelopeLoop, stopLoop]);
+  }, [speaking, audioSrc, text, runAmplitudeLoop, runEnvelopeLoop, stopLoop, onEnded]);
+
+  // A new clip on a page that asked for it to play: play it. The
+  // element's src has to have caught up first, hence the frame.
+  const speakRef = useRef(speak);
+  useEffect(() => {
+    speakRef.current = speak;
+  }, [speak]);
+  useEffect(() => {
+    if (!autoPlay || !audioSrc) return;
+    const id = requestAnimationFrame(() => {
+      speakRef.current();
+    });
+    return () => cancelAnimationFrame(id);
+  }, [autoPlay, audioSrc]);
 
   const stop = useCallback(() => {
     if (audioSrc) audioRef.current?.pause();

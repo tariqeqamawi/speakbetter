@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useStore } from "@/lib/store";
 import { buildContext } from "@/lib/encouragement";
 import { hapticTap } from "@/lib/feedback-fx";
+import { speakUrl } from "@/lib/coach/voice";
 
 // The coach, dropping in unprompted to say something true about how the
 // student is doing. Deliberately rationed - at most once a day, only
@@ -37,6 +38,7 @@ export function CoachPopIn() {
   const askedRef = useRef(false);
   const rafRef = useRef<number | null>(null);
   const envRef = useRef(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const dismiss = useCallback(() => {
     setLeaving(true);
@@ -88,20 +90,10 @@ export function CoachPopIn() {
     return () => window.clearTimeout(timer);
   }, [ready, state, celebrations.length]);
 
-  const speak = useCallback(() => {
-    if (!message || !("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    const utter = new SpeechSynthesisUtterance(message);
-    utter.rate = 0.98;
-    utter.pitch = 0.85;
-    utter.onboundary = () => { envRef.current = 1; };
-    utter.onend = () => {
-      setSpeaking(false);
-      setJaw(0);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
-    setSpeaking(true);
-    envRef.current = 1;
+  // The jaw, pumped by an envelope: a beat on each word from the
+  // browser's voice, or a steady flutter while the coach's own audio
+  // plays. Same motion either way - the mark reads as talking.
+  const animate = () => {
     const tick = () => {
       envRef.current *= 0.94;
       const t = performance.now() / 1000;
@@ -110,8 +102,59 @@ export function CoachPopIn() {
       rafRef.current = requestAnimationFrame(tick);
     };
     tick();
+  };
+  const settle = () => {
+    setSpeaking(false);
+    setJaw(0);
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+  };
+
+  const speak = useCallback(async () => {
+    if (!message) return;
+    setSpeaking(true);
+
+    // The coach's own voice first (see lib/coach/voice.ts) ...
+    const url = await speakUrl(message);
+    if (url) {
+      const el = new Audio(url);
+      audioRef.current = el;
+      el.onended = () => {
+        settle();
+        URL.revokeObjectURL(url);
+      };
+      el.onerror = () => settle();
+      // A steady pump while it plays; the envelope is topped up every
+      // few frames so the jaw keeps moving through the whole line.
+      envRef.current = 1;
+      const pump = window.setInterval(() => {
+        envRef.current = 0.7 + Math.random() * 0.3;
+      }, 140);
+      el.onpause = () => window.clearInterval(pump);
+      animate();
+      el.play().catch(() => settle());
+      return;
+    }
+
+    // ... and the browser's own where it isn't available.
+    if (!("speechSynthesis" in window)) return settle();
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(message);
+    utter.rate = 0.98;
+    utter.pitch = 0.85;
+    utter.onboundary = () => { envRef.current = 1; };
+    utter.onend = settle;
+    utter.onerror = settle;
+    envRef.current = 1;
+    animate();
     window.speechSynthesis.speak(utter);
   }, [message]);
+
+  const stop = () => {
+    audioRef.current?.pause();
+    audioRef.current = null;
+    window.speechSynthesis?.cancel();
+    settle();
+  };
 
   useEffect(() => () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); }, []);
 
@@ -140,7 +183,7 @@ export function CoachPopIn() {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={speaking ? () => { window.speechSynthesis.cancel(); setSpeaking(false); setJaw(0); } : speak}
+              onClick={speaking ? stop : speak}
               className="min-h-9 rounded-lg border border-navy-600 px-3 py-1.5 text-[0.7rem] font-semibold text-ink-muted transition-colors hover:text-ink"
             >
               {speaking ? "Stop" : "Hear it"}
