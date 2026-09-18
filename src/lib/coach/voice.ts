@@ -15,19 +15,20 @@
  *  and which way the voice reads. The lion is a low male voice; the
  *  audition lists those first, but the others stay for comparison. */
 export const GEMINI_VOICES: { name: string; character: string; gender: "male" | "female" }[] = [
-  { name: "Charon", character: "Informative, deep", gender: "male" },
-  { name: "Algieba", character: "Smooth", gender: "male" },
+  // The lower, rougher male voices first - the lion's register.
   { name: "Algenib", character: "Gravelly", gender: "male" },
+  { name: "Charon", character: "Informative, deep", gender: "male" },
   { name: "Alnilam", character: "Firm", gender: "male" },
   { name: "Orus", character: "Firm", gender: "male" },
   { name: "Enceladus", character: "Breathy", gender: "male" },
-  { name: "Iapetus", character: "Clear", gender: "male" },
-  { name: "Umbriel", character: "Easy-going", gender: "male" },
-  { name: "Rasalgethi", character: "Informative", gender: "male" },
   { name: "Schedar", character: "Even", gender: "male" },
+  { name: "Sadaltager", character: "Knowledgeable", gender: "male" },
+  { name: "Iapetus", character: "Clear", gender: "male" },
+  { name: "Rasalgethi", character: "Informative", gender: "male" },
+  { name: "Umbriel", character: "Easy-going", gender: "male" },
+  { name: "Algieba", character: "Smooth", gender: "male" },
   { name: "Achird", character: "Friendly", gender: "male" },
   { name: "Zubenelgenubi", character: "Casual", gender: "male" },
-  { name: "Sadaltager", character: "Knowledgeable", gender: "male" },
   { name: "Sadachbia", character: "Lively", gender: "male" },
   { name: "Fenrir", character: "Excitable", gender: "male" },
   { name: "Puck", character: "Upbeat", gender: "male" },
@@ -47,12 +48,37 @@ export const GEMINI_VOICES: { name: string; character: string; gender: "male" | 
   { name: "Pulcherrima", character: "Forward", gender: "female" },
 ];
 
-/** The direction the voice is given, in words. */
+/**
+ * The direction the voice is given, in words. Gemini's voices take a
+ * direction the way an actor does - register, pace, mood, and an
+ * accent, which is how the same stock voice can be tried American and
+ * British before the lion is settled on one.
+ */
 export const DEFAULT_STYLE =
-  "in a low, warm, unhurried male voice, like a coach who's on your side";
+  "in a deep, gravelly baritone - a lion's voice - warm and unhurried, like a coach who's on your side";
+
+/** Directions worth trying against each other on the audition page. */
+export const STYLE_PRESETS: { label: string; style: string }[] = [
+  { label: "Gravelly baritone", style: DEFAULT_STYLE },
+  {
+    label: "Deep and quiet",
+    style: "in a very deep, quiet male voice with a slight rasp, slow and reassuring",
+  },
+  {
+    label: "Warm and unhurried",
+    style: "in a low, warm, unhurried male voice, like a coach who's on your side",
+  },
+];
+
+/** The accent, appended to the direction. */
+export const ACCENTS: { label: string; suffix: string }[] = [
+  { label: "American", suffix: ", with a natural American accent" },
+  { label: "British", suffix: ", with a natural British accent (Received Pronunciation, London)" },
+  { label: "Unspecified", suffix: "" },
+];
 
 /** The voice the app speaks in until the audition settles it. */
-export const DEFAULT_VOICE = "Charon";
+export const DEFAULT_VOICE = "Algenib";
 
 const KEY = "speak-better-coach-voice";
 

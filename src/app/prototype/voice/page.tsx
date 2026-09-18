@@ -3,8 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { TalkingLion, type TalkingLionHandle } from "@/components/talking-lion";
 import {
+  ACCENTS,
   DEFAULT_STYLE,
   GEMINI_VOICES,
+  STYLE_PRESETS,
   chooseVoice,
   chosenVoice,
   speakUrl,
@@ -45,6 +47,9 @@ export default function VoiceAudition() {
   const [chosen, setChosen] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [show, setShow] = useState<"male" | "all">("male");
+  const [accent, setAccent] = useState(0);
+  // What's actually sent: the direction plus the accent.
+  const direction = `${style}${ACCENTS[accent].suffix}`;
   const urlRef = useRef<string | null>(null);
   const lionRef = useRef<TalkingLionHandle>(null);
 
@@ -72,7 +77,7 @@ export default function VoiceAudition() {
     lionRef.current?.prime();
     setBusy(voice);
     setError(null);
-    const url = await speakUrl(line, voice, style);
+    const url = await speakUrl(line, voice, direction);
     setBusy(null);
     if (!url) {
       setError("The coach lost its voice for a moment - try again.");
@@ -96,7 +101,7 @@ export default function VoiceAudition() {
 
   const use = () => {
     if (!current) return;
-    chooseVoice(current, style);
+    chooseVoice(current, direction);
     setChosen(current);
   };
 
@@ -148,8 +153,41 @@ export default function VoiceAudition() {
       </div>
 
       <section className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs text-ink-faint">Register:</span>
+          {STYLE_PRESETS.map((p) => (
+            <button
+              key={p.label}
+              type="button"
+              onClick={() => setStyle(p.style)}
+              className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
+                style === p.style
+                  ? "border-ink-faint bg-navy-700 text-ink"
+                  : "border-navy-600 bg-navy-800 text-ink-muted hover:text-ink"
+              }`}
+            >
+              {p.label}
+            </button>
+          ))}
+          <span className="ml-2 text-xs text-ink-faint">Accent:</span>
+          {ACCENTS.map((a, i) => (
+            <button
+              key={a.label}
+              type="button"
+              onClick={() => setAccent(i)}
+              aria-pressed={accent === i}
+              className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
+                accent === i
+                  ? "border-ink-faint bg-navy-700 text-ink"
+                  : "border-navy-600 bg-navy-800 text-ink-muted hover:text-ink"
+              }`}
+            >
+              {a.label}
+            </button>
+          ))}
+        </div>
         <label className="flex flex-col gap-1 text-xs text-ink-faint">
-          The direction - how the voice is told to say it
+          The direction - how the voice is told to say it (edit freely; the accent is added after)
           <input
             value={style}
             onChange={(e) => setStyle(e.target.value)}
@@ -189,8 +227,8 @@ export default function VoiceAudition() {
 
       <div className="flex items-center justify-between gap-3">
         <p className="text-xs text-ink-faint">
-          The lion is a low male voice. The sixteen male voices are listed; the rest are
-          there for comparison.
+          The lion is a low male voice. The sixteen male voices are listed, lowest and
+          roughest first; the rest are there for comparison.
         </p>
         <div className="flex gap-1 rounded-lg border border-navy-600 bg-navy-900/60 p-0.5">
           {(["male", "all"] as const).map((k) => (

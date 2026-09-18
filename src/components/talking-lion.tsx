@@ -154,12 +154,15 @@ export const TalkingLion = forwardRef<
       // A noise floor first, so silence is frame 0 - the mouth closed -
       // and not the first sliver of open that room tone would give.
       const want = Math.min(1, Math.max(0, rms - 0.035) * 10);
-      // Quick both ways: a syllable opens it in a frame or two and the
-      // gap after shuts it, which is what makes speech read as speech
-      // rather than a mouth left ajar.
+      // Shaped to a word, not a syllable: the mouth opens fast at the
+      // start of a word, holds open across its syllables - the release
+      // is slow enough to ride through the dip between them - and
+      // shuts in the gap before the next word. Closed, open, closed,
+      // once per word, which is what speech looks like from across a
+      // room.
       mouthRef.current +=
-        (want - mouthRef.current) * (want > mouthRef.current ? 0.5 : 0.32);
-      if (want === 0 && mouthRef.current < 0.05) mouthRef.current = 0;
+        (want - mouthRef.current) * (want > mouthRef.current ? 0.45 : 0.13);
+      if (want === 0 && mouthRef.current < 0.06) mouthRef.current = 0;
       setMouth(mouthRef.current);
 
       // Which word is being said right now - the same clock the audio

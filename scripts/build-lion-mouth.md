@@ -11,7 +11,7 @@ back (41–75). The talking frames are source frames 11 to 20, in order:
 to 20 are the jaw dropping and the face opening outward, stopping before
 the lunge becomes a roar. Everything below the mane (the soundwave) is
 cleared, and the crop is the common bounding box of those ten frames
-(130,0 → 843,469).
+(598,202 → 1335,776 in the full 1920 × 1080 frame, with 12 px of padding).
 
 To rebuild from a new MOV:
 

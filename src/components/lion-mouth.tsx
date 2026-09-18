@@ -25,8 +25,9 @@
 // Regenerate the sprite with the notes in scripts/build-lion-mouth.md.
 
 export const MOUTH_FRAMES = 10;
-/** The sprite's frame size - 400 × 263, the lion and mic without the wave. */
-export const MOUTH_ASPECT = "400 / 263";
+/** The sprite's frame size - 440 × 343: the whole lion, mane to chin,
+ *  and the mic, without the wave. */
+export const MOUTH_ASPECT = "440 / 343";
 
 /** The frame for a level, straight: the sprite's own range is the
  *  restraint, and the envelope that feeds it does the smoothing. */
