@@ -2,12 +2,32 @@
 
 import Image from "next/image";
 import {
+  forwardRef,
   useCallback,
   useEffect,
+  useImperativeHandle,
   useRef,
   useState,
   type ComponentType,
 } from "react";
+
+/** A quarter-second of silence, for waking the audio path up inside a
+ *  tap - see TalkingLionHandle.prime. */
+const SILENCE =
+  "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=";
+
+export interface TalkingLionHandle {
+  /**
+   * Call inside a click or tap, before fetching audio. Browsers only
+   * let sound start from a gesture, and by the time a clip has been
+   * generated the gesture is seconds gone: Safari refuses outright,
+   * Firefox after a few seconds, Chrome usually allows it and
+   * sometimes doesn't. Priming starts the audio context and plays a
+   * beat of silence through the element while the tap is still warm,
+   * and after that the real clip plays whenever it arrives.
+   */
+  prime: () => void;
+}
 
 // The coach persona, drawn as an audio visualizer rather than a puppet.
 //
@@ -44,25 +64,26 @@ export interface SpokenCue {
   summary?: boolean;
 }
 
-export function TalkingLion({
-  text,
-  audioSrc,
-  cues,
-  autoPlay = false,
-  onEnded,
-  className = "",
-}: {
-  text?: string;
-  audioSrc?: string;
-  cues?: SpokenCue[];
-  /** Speak as soon as an audio source arrives - for a page where the
-   *  tap that fetched the audio is the tap that meant "play". */
-  autoPlay?: boolean;
-  onEnded?: () => void;
-  className?: string;
-}) {
+export const TalkingLion = forwardRef<
+  TalkingLionHandle,
+  {
+    text?: string;
+    audioSrc?: string;
+    cues?: SpokenCue[];
+    /** Speak as soon as an audio source arrives - for a page where the
+     *  tap that fetched the audio is the tap that meant "play". */
+    autoPlay?: boolean;
+    onEnded?: () => void;
+    className?: string;
+  }
+>(function TalkingLion(
+  { text, audioSrc, cues, autoPlay = false, onEnded, className = "" },
+  ref,
+) {
   const [level, setLevel] = useState(0); // 0..1 live amplitude
   const [speaking, setSpeaking] = useState(false);
+  // The browser refused to start the clip - a tap on the button will.
+  const [blocked, setBlocked] = useState(false);
   const [cueIndex, setCueIndex] = useState(-1); // which cue is being spoken
   // Set once the clip plays through, which is what puts the summary up.
   const [finished, setFinished] = useState(false);
@@ -172,43 +193,84 @@ export function TalkingLion({
     tick();
   }, [paintBars]);
 
+  /** The audio graph - element into analyser into speakers - built once. */
+  const graph = useCallback(() => {
+    const el = audioRef.current;
+    if (!el) return null;
+    if (!ctxRef.current) {
+      const Ctx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext })
+          .webkitAudioContext;
+      const ctx = new Ctx();
+      const source = ctx.createMediaElementSource(el);
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 1024;
+      // Narrow the dB window to where conversational speech actually
+      // lives, so a normal-volume clip drives the meter fully.
+      analyser.minDecibels = -75;
+      analyser.maxDecibels = -25;
+      analyser.smoothingTimeConstant = 0.75;
+      source.connect(analyser);
+      analyser.connect(ctx.destination);
+      ctxRef.current = ctx;
+      analyserRef.current = analyser;
+    }
+    return ctxRef.current;
+  }, []);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      prime: () => {
+        const ctx = graph();
+        const el = audioRef.current;
+        if (!ctx || !el) return;
+        ctx.resume().catch(() => {});
+        if (!el.src || el.src === window.location.href) el.src = SILENCE;
+        el.muted = true;
+        el.play()
+          .then(() => {
+            el.pause();
+            el.muted = false;
+          })
+          .catch(() => {
+            el.muted = false;
+          });
+      },
+    }),
+    [graph],
+  );
+
   const speak = useCallback(async () => {
     if (speaking) return;
 
     if (audioSrc) {
       const el = audioRef.current;
-      if (!el) return;
-      if (!ctxRef.current) {
-        const Ctx =
-          window.AudioContext ||
-          (window as unknown as { webkitAudioContext: typeof AudioContext })
-            .webkitAudioContext;
-        const ctx = new Ctx();
-        const source = ctx.createMediaElementSource(el);
-        const analyser = ctx.createAnalyser();
-        analyser.fftSize = 1024;
-        // Narrow the dB window to where conversational speech actually
-        // lives, so a normal-volume clip drives the meter fully.
-        analyser.minDecibels = -75;
-        analyser.maxDecibels = -25;
-        analyser.smoothingTimeConstant = 0.75;
-        source.connect(analyser);
-        analyser.connect(ctx.destination);
-        ctxRef.current = ctx;
-        analyserRef.current = analyser;
-      }
-      await ctxRef.current.resume();
+      const ctx = graph();
+      if (!el || !ctx) return;
+      await ctx.resume().catch(() => {});
+      if (el.src !== audioSrc) el.src = audioSrc;
+      el.muted = false;
       el.currentTime = 0;
-      setSpeaking(true);
       setFinished(false); // a replay clears the summary until it's earned
-      runAmplitudeLoop();
       el.onended = () => {
         setSpeaking(false);
         stopLoop();
         setFinished(true);
         onEnded?.();
       };
-      await el.play();
+      try {
+        await el.play();
+      } catch {
+        // The browser wants a tap for this one. Say so; the button is
+        // the tap.
+        setBlocked(true);
+        return;
+      }
+      setBlocked(false);
+      setSpeaking(true);
+      runAmplitudeLoop();
       return;
     }
 
@@ -232,7 +294,7 @@ export function TalkingLion({
     envelopeRef.current = 1;
     runEnvelopeLoop();
     window.speechSynthesis.speak(utter);
-  }, [speaking, audioSrc, text, runAmplitudeLoop, runEnvelopeLoop, stopLoop, onEnded]);
+  }, [speaking, audioSrc, text, graph, runAmplitudeLoop, runEnvelopeLoop, stopLoop, onEnded]);
 
   // A new clip on a page that asked for it to play: play it. The
   // element's src has to have caught up first, hence the frame.
@@ -342,17 +404,28 @@ export function TalkingLion({
         </div>
       </div>
 
-      {/* preload=none: the clip only downloads when the visitor asks to hear it */}
-      {audioSrc && <audio ref={audioRef} src={audioSrc} preload="none" hidden />}
+      {/* Always mounted, src managed by hand, so it can be primed inside
+          a tap before there's a clip to play. preload=none: the clip
+          only downloads when the visitor asks to hear it. */}
+      <audio ref={audioRef} preload="none" hidden />
 
       <button
         type="button"
         onClick={speaking ? stop : speak}
         disabled={!supported}
-        className="flex min-h-11 items-center rounded-lg border border-navy-600 bg-navy-800 px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-navy-700 disabled:opacity-50"
+        className={`flex min-h-11 items-center rounded-lg border px-5 py-2.5 text-sm font-semibold text-ink transition-colors disabled:opacity-50 ${
+          blocked
+            ? "border-ink-faint bg-navy-700 hover:bg-navy-600"
+            : "border-navy-600 bg-navy-800 hover:bg-navy-700"
+        }`}
       >
-        {speaking ? "Stop" : "Hear the coach"}
+        {speaking ? "Stop" : blocked ? "Tap to hear the coach" : "Hear the coach"}
       </button>
+      {blocked && (
+        <p className="text-xs text-ink-faint">
+          Your browser wanted a tap before playing sound - it&apos;s ready now.
+        </p>
+      )}
 
       {!supported && (
         <p className="text-xs text-ink-faint">
@@ -361,4 +434,4 @@ export function TalkingLion({
       )}
     </div>
   );
-}
+});

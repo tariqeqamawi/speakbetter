@@ -113,11 +113,22 @@ export function CoachPopIn() {
     if (!message) return;
     setSpeaking(true);
 
+    // The element is made and started - on a beat of silence - inside
+    // the tap, because the clip arrives seconds later and a browser
+    // may refuse to start sound on its own by then.
+    const el = new Audio(
+      "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=",
+    );
+    el.muted = true;
+    el.play().catch(() => {});
+    audioRef.current = el;
+
     // The coach's own voice first (see lib/coach/voice.ts) ...
     const url = await speakUrl(message);
-    if (url) {
-      const el = new Audio(url);
-      audioRef.current = el;
+    if (url && audioRef.current === el) {
+      el.pause();
+      el.src = url;
+      el.muted = false;
       el.onended = () => {
         settle();
         URL.revokeObjectURL(url);
@@ -134,6 +145,7 @@ export function CoachPopIn() {
       el.play().catch(() => settle());
       return;
     }
+    if (audioRef.current !== el) return; // stopped while fetching
 
     // ... and the browser's own where it isn't available.
     if (!("speechSynthesis" in window)) return settle();

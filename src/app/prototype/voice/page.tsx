@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { TalkingLion } from "@/components/talking-lion";
+import { TalkingLion, type TalkingLionHandle } from "@/components/talking-lion";
 import {
   DEFAULT_STYLE,
   GEMINI_VOICES,
@@ -45,6 +45,7 @@ export default function VoiceAudition() {
   const [chosen, setChosen] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const urlRef = useRef<string | null>(null);
+  const lionRef = useRef<TalkingLionHandle>(null);
 
   // Read once, after mount: the shortlist and the chosen voice live in
   // this browser and aren't there on the server.
@@ -64,6 +65,10 @@ export default function VoiceAudition() {
 
   const audition = async (voice: string) => {
     if (busy) return;
+    // Wake the audio path while this tap is still warm - the clip
+    // arrives seconds from now, and by then a browser may refuse to
+    // start sound on its own.
+    lionRef.current?.prime();
     setBusy(voice);
     setError(null);
     const url = await speakUrl(line, voice, style);
@@ -110,7 +115,7 @@ export default function VoiceAudition() {
         </p>
       </header>
 
-      <TalkingLion audioSrc={audio} autoPlay />
+      <TalkingLion ref={lionRef} audioSrc={audio} autoPlay />
 
       <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-navy-600 bg-navy-800 px-4 py-3">
         <div className="text-sm">
