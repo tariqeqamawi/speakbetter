@@ -7,7 +7,7 @@
 
 const VIEW_W = 400;
 
-type Variant = "header" | "hero";
+type Variant = "header" | "hero" | "coach";
 
 interface WaveSpec {
   period: number;
@@ -68,6 +68,20 @@ const variants: Record<Variant, VariantSpec> = {
       { period: 104, amplitude: 13, opacity: 0.34, width: 7, className: "soundwave-a" },
       { period: 146, amplitude: 9.5, opacity: 0.3, width: 5.5, className: "soundwave-b" },
       { period: 74, amplitude: 6, opacity: 0.26, width: 4, className: "soundwave-c" },
+    ],
+  },
+  // Under the talking lion, at a third of the hero's width: the same
+  // ribbons drawn heavier and brighter, so at that size they read as
+  // the logo's wave - a band of color - and not three threads.
+  coach: {
+    viewH: 80,
+    midY: 40,
+    fade: [3, 40, 96, 100],
+    lens: 30,
+    waves: [
+      { period: 96, amplitude: 15, opacity: 0.6, width: 12, className: "soundwave-a" },
+      { period: 138, amplitude: 11, opacity: 0.55, width: 9.5, className: "soundwave-b" },
+      { period: 70, amplitude: 7.5, opacity: 0.5, width: 7, className: "soundwave-c" },
     ],
   },
 };

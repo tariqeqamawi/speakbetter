@@ -1,6 +1,7 @@
 "use client";
 
 import { LionMouth } from "@/components/lion-mouth";
+import { Soundwave } from "@/components/soundwave";
 import {
   forwardRef,
   useCallback,
@@ -37,10 +38,11 @@ export interface TalkingLionHandle {
 // honest but wasn't speech. What works is the artist's own animation:
 // the brand MOV of the lion going from closed mouth to roar, cut into
 // twelve frames (lion-mouth.tsx) and scrubbed by the audio's amplitude
-// - syllables open the mouth, gaps close it. Nothing else moves: the
-// bloom behind the mane and the bar meter underneath were tried and
-// pulled, because a light that pulses next to a face that's talking
-// is the thing your eye goes to instead of the face.
+// - syllables open the mouth, gaps close it. Under it, the mark's own
+// soundwave - the ribbons from the logo, scrolling as they do in the
+// header - swells and settles with the voice. The bloom that used to
+// pulse behind the mane is gone: a light next to a face that's talking
+// is where the eye goes instead of the face.
 //
 // Two drive modes:
 //   audioSrc  - real amplitude off an AnalyserNode. The production
@@ -83,7 +85,7 @@ export const TalkingLion = forwardRef<
   { text, audioSrc, cues, autoPlay = false, onEnded, className = "" },
   ref,
 ) {
-  const [, setLevel] = useState(0); // 0..1 live amplitude, smoothed - kept for callers that read it later
+  const [level, setLevel] = useState(0); // 0..1 live amplitude, smoothed
   // The mouth follows a faster envelope than the bloom: quick to open
   // on a syllable, a little slower to close, so it flaps like speech
   // rather than swelling like breath.
@@ -149,7 +151,9 @@ export const TalkingLion = forwardRef<
       // reads as motion rather than flicker.
       // Gain set so ordinary speech sits around the middle of the
       // sprite and only the loudest syllables reach the end of it.
-      const want = Math.min(1, rms * 4.5);
+      // A noise floor first, so silence is frame 0 - the mouth closed -
+      // and not the first sliver of open that room tone would give.
+      const want = Math.min(1, Math.max(0, rms - 0.02) * 7);
       mouthRef.current +=
         (want - mouthRef.current) * (want > mouthRef.current ? 0.28 : 0.18);
       setMouth(mouthRef.current);
@@ -314,6 +318,20 @@ export const TalkingLion = forwardRef<
     <div className={`flex flex-col items-center gap-4 ${className}`}>
       <div className="relative w-full max-w-xs">
         <LionMouth level={mouth} className="relative w-full" />
+        {/* The logo's wave, alive: the same ribbons as the mark, drawn
+            by the Soundwave the header uses, breathing with the level -
+            flat and faint in silence, full when the coach is speaking. */}
+        <div
+          aria-hidden
+          className="-mx-[6%] -mt-4 w-[112%] will-change-transform"
+          style={{
+            transform: `scaleY(${(0.3 + level * 0.7).toFixed(3)})`,
+            opacity: 0.7 + level * 0.3,
+            transition: "transform 90ms ease-out, opacity 120ms ease-out",
+          }}
+        >
+          <Soundwave variant="coach" className="h-20 w-full sm:h-24" />
+        </div>
         {/* The word being spoken, with its symbol. The row keeps its
             height whether or not a cue is showing, so the lion never
             shifts as words come and go. */}
