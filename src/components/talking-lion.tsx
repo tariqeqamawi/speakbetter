@@ -18,12 +18,6 @@ import {
 const SILENCE =
   "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=";
 
-/** How far the mouth is allowed to open, as a share of the sprite's
- *  travel. The full roar frame reads as exaggerated for ordinary
- *  coaching, so the loudest syllable stops about seven-tenths of the
- *  way there. */
-const MOUTH_MAX = 0.7;
-
 export interface TalkingLionHandle {
   /**
    * Call inside a click or tap, before fetching audio. Browsers only
@@ -98,6 +92,7 @@ export const TalkingLion = forwardRef<
   // rather than swelling like breath.
   const [mouth, setMouth] = useState(0);
   const mouthRef = useRef(0);
+  const loudRef = useRef(0); // the loudest RMS heard lately - the mouth's ceiling
   const [speaking, setSpeaking] = useState(false);
   // The browser refused to start the clip - a tap on the button will.
   const [blocked, setBlocked] = useState(false);
@@ -123,6 +118,7 @@ export const TalkingLion = forwardRef<
     setLevel(0);
     setMouth(0);
     mouthRef.current = 0;
+    loudRef.current = 0;
     setCueIndex(-1);
     smoothedRef.current = 0;
     envelopeRef.current = 0;
@@ -156,11 +152,18 @@ export const TalkingLion = forwardRef<
       // eased hard enough that a frame is never skipped - sixteen
       // frames of travel at most a couple per tick, which is what
       // reads as motion rather than flicker.
-      // Gain set so ordinary speech sits around the middle of the
-      // sprite and only the loudest syllables reach the end of it.
-      // A noise floor first, so silence is frame 0 - the mouth closed -
-      // and not the first sliver of open that room tone would give.
-      const want = Math.min(MOUTH_MAX, Math.max(0, rms - 0.035) * 10);
+      // Scaled to the clip's own loudness, not a fixed level: a calm,
+      // low direction comes out at half the RMS of a bright one and
+      // would barely part the lips against a fixed gain. The loudest
+      // syllable heard so far sets the top (fast up, slow down, so a
+      // quiet passage after a loud one still opens the mouth); a noise
+      // floor keeps room tone at frame 0, the mouth closed.
+      const floor = 0.02;
+      loudRef.current = Math.max(rms, loudRef.current * 0.998, 0.06);
+      const want = Math.min(
+        1,
+        Math.max(0, rms - floor) / (loudRef.current * 0.6 - floor),
+      );
       // Shaped to a word, not a syllable: the mouth opens fast at the
       // start of a word, holds open across its syllables - the release
       // is slow enough to ride through the dip between them - and
@@ -192,9 +195,7 @@ export const TalkingLion = forwardRef<
     const tick = () => {
       envelopeRef.current *= 0.94; // decays between words
       const t0 = performance.now() / 1000;
-      const want =
-        Math.min(MOUTH_MAX, envelopeRef.current * 0.8) *
-        (0.55 + 0.45 * Math.abs(Math.sin(t0 * 2 * Math.PI * 4.5)));
+      const want = envelopeRef.current * 0.8 * (0.55 + 0.45 * Math.abs(Math.sin(t0 * 2 * Math.PI * 4.5)));
       mouthRef.current += (want - mouthRef.current) * 0.3;
       setMouth(mouthRef.current);
       setLevel(envelopeRef.current);

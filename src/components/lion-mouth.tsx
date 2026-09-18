@@ -25,18 +25,24 @@
 // Regenerate the sprite with the notes in scripts/build-lion-mouth.md.
 
 export const MOUTH_FRAMES = 10;
+/** The widest frame talking reaches. Frame 9 is the start of the roar
+ *  and read as exaggerated on ordinary coaching lines. */
+export const MOUTH_TOP = 8;
 /** The sprite's frame size - 440 × 343: the whole lion, mane to chin,
  *  and the mic, without the wave. */
 export const MOUTH_ASPECT = "440 / 343";
 
-/** The frame for a level, straight: the sprite's own range is the
- *  restraint, and the envelope that feeds it does the smoothing. */
+/** The frame for a level. The sprite isn't linear: frames 0-4 are the
+ *  draw-in, the face moving outward with the lips barely parting, and
+ *  the mouth only visibly opens from 5 on. So the level walks the
+ *  first frames quickly (square root) and spends its range where the
+ *  opening shows; the envelope that feeds it does the smoothing. */
 export function mouthFrame(level: number): number {
   const v = Math.max(0, Math.min(1, level));
   // Under a small level the mouth is shut, not ajar - the first open
   // frame has to be earned by a sound.
   if (v < 0.07) return 0;
-  return Math.round(v * (MOUTH_FRAMES - 1));
+  return Math.min(MOUTH_TOP, Math.round(Math.sqrt(v) * MOUTH_TOP));
 }
 
 export function LionMouth({

@@ -2,7 +2,7 @@
 
 `public/lion-mouth.webp` is ten frames of the brand animation
 (`SpeakBetter1.mov`, 2.5 s, 75 frames, 1920 × 1080, QuickTime Animation
-with alpha), laid out vertically, 400 × 263 each.
+with alpha), laid out vertically, 440 × 343 each.
 
 The clip is a roar in three parts: the lion draws in (frames 1–16, the
 face contracting, mouth shut), opens and lunges out (17–40), and settles
@@ -20,8 +20,15 @@ To rebuild from a new MOV:
    build can).
 2. Take the draw-in-to-opening run (frames 11–20 in this cut), clear
    the wave, crop to their common bounding box.
-3. Resize to 400 wide, stack vertically, save as WebP with alpha, and
+3. Resize to 440 × 343, stack vertically, save as WebP with alpha, and
    set MOUTH_FRAMES and MOUTH_ASPECT in lion-mouth.tsx to match.
+
+Steps 2 and 3 are `build-lion-mouth.py` (Pillow + numpy), which also
+closes the mouth: the mark is drawn with the lips slightly parted, so
+the resting frame has its dark wedge shrunk to 40% of its height by
+extending the chin over it (the outline is untouched), and the edit
+tapers out over the next three frames - 45%, 30%, 15% - so the opening
+stays continuous.
 
 `src/components/lion-mouth.tsx` picks a frame from the audio level;
 `talking-lion.tsx` and `coach-popin.tsx` feed it.
