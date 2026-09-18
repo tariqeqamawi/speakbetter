@@ -11,45 +11,48 @@
 // and kept in the browser until it's settled; then it becomes the one
 // constant below.
 
-/** The thirty stock voices, with Google's own one-word character for each. */
-export const GEMINI_VOICES: { name: string; character: string }[] = [
-  { name: "Zephyr", character: "Bright" },
-  { name: "Puck", character: "Upbeat" },
-  { name: "Charon", character: "Informative" },
-  { name: "Kore", character: "Firm" },
-  { name: "Fenrir", character: "Excitable" },
-  { name: "Leda", character: "Youthful" },
-  { name: "Orus", character: "Firm" },
-  { name: "Aoede", character: "Breezy" },
-  { name: "Callirrhoe", character: "Easy-going" },
-  { name: "Autonoe", character: "Bright" },
-  { name: "Enceladus", character: "Breathy" },
-  { name: "Iapetus", character: "Clear" },
-  { name: "Umbriel", character: "Easy-going" },
-  { name: "Algieba", character: "Smooth" },
-  { name: "Despina", character: "Smooth" },
-  { name: "Erinome", character: "Clear" },
-  { name: "Algenib", character: "Gravelly" },
-  { name: "Rasalgethi", character: "Informative" },
-  { name: "Laomedeia", character: "Upbeat" },
-  { name: "Achernar", character: "Soft" },
-  { name: "Alnilam", character: "Firm" },
-  { name: "Schedar", character: "Even" },
-  { name: "Gacrux", character: "Mature" },
-  { name: "Pulcherrima", character: "Forward" },
-  { name: "Achird", character: "Friendly" },
-  { name: "Zubenelgenubi", character: "Casual" },
-  { name: "Vindemiatrix", character: "Gentle" },
-  { name: "Sadachbia", character: "Lively" },
-  { name: "Sadaltager", character: "Knowledgeable" },
-  { name: "Sulafat", character: "Warm" },
+/** The thirty stock voices, with Google's one-word character for each
+ *  and which way the voice reads. The lion is a low male voice; the
+ *  audition lists those first, but the others stay for comparison. */
+export const GEMINI_VOICES: { name: string; character: string; gender: "male" | "female" }[] = [
+  { name: "Charon", character: "Informative, deep", gender: "male" },
+  { name: "Algieba", character: "Smooth", gender: "male" },
+  { name: "Algenib", character: "Gravelly", gender: "male" },
+  { name: "Alnilam", character: "Firm", gender: "male" },
+  { name: "Orus", character: "Firm", gender: "male" },
+  { name: "Enceladus", character: "Breathy", gender: "male" },
+  { name: "Iapetus", character: "Clear", gender: "male" },
+  { name: "Umbriel", character: "Easy-going", gender: "male" },
+  { name: "Rasalgethi", character: "Informative", gender: "male" },
+  { name: "Schedar", character: "Even", gender: "male" },
+  { name: "Achird", character: "Friendly", gender: "male" },
+  { name: "Zubenelgenubi", character: "Casual", gender: "male" },
+  { name: "Sadaltager", character: "Knowledgeable", gender: "male" },
+  { name: "Sadachbia", character: "Lively", gender: "male" },
+  { name: "Fenrir", character: "Excitable", gender: "male" },
+  { name: "Puck", character: "Upbeat", gender: "male" },
+  { name: "Sulafat", character: "Warm", gender: "female" },
+  { name: "Gacrux", character: "Mature", gender: "female" },
+  { name: "Achernar", character: "Soft", gender: "female" },
+  { name: "Vindemiatrix", character: "Gentle", gender: "female" },
+  { name: "Despina", character: "Smooth", gender: "female" },
+  { name: "Kore", character: "Firm", gender: "female" },
+  { name: "Zephyr", character: "Bright", gender: "female" },
+  { name: "Leda", character: "Youthful", gender: "female" },
+  { name: "Aoede", character: "Breezy", gender: "female" },
+  { name: "Callirrhoe", character: "Easy-going", gender: "female" },
+  { name: "Autonoe", character: "Bright", gender: "female" },
+  { name: "Erinome", character: "Clear", gender: "female" },
+  { name: "Laomedeia", character: "Upbeat", gender: "female" },
+  { name: "Pulcherrima", character: "Forward", gender: "female" },
 ];
 
 /** The direction the voice is given, in words. */
-export const DEFAULT_STYLE = "warm and unhurried, like a coach who's on your side";
+export const DEFAULT_STYLE =
+  "in a low, warm, unhurried male voice, like a coach who's on your side";
 
 /** The voice the app speaks in until the audition settles it. */
-export const DEFAULT_VOICE = "Sulafat";
+export const DEFAULT_VOICE = "Charon";
 
 const KEY = "speak-better-coach-voice";
 

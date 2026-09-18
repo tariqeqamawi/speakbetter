@@ -44,6 +44,7 @@ export default function VoiceAudition() {
   const [shortlist, setShortlist] = useState<string[]>([]);
   const [chosen, setChosen] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
+  const [show, setShow] = useState<"male" | "all">("male");
   const urlRef = useRef<string | null>(null);
   const lionRef = useRef<TalkingLionHandle>(null);
 
@@ -99,7 +100,7 @@ export default function VoiceAudition() {
     setChosen(current);
   };
 
-  const ordered = [...GEMINI_VOICES].sort(
+  const ordered = GEMINI_VOICES.filter((v) => show === "all" || v.gender === "male").sort(
     (a, b) => Number(shortlist.includes(b.name)) - Number(shortlist.includes(a.name)),
   );
 
@@ -185,6 +186,28 @@ export default function VoiceAudition() {
       </section>
 
       {error && <p className="text-sm text-storytelling">{error}</p>}
+
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs text-ink-faint">
+          The lion is a low male voice. The sixteen male voices are listed; the rest are
+          there for comparison.
+        </p>
+        <div className="flex gap-1 rounded-lg border border-navy-600 bg-navy-900/60 p-0.5">
+          {(["male", "all"] as const).map((k) => (
+            <button
+              key={k}
+              type="button"
+              onClick={() => setShow(k)}
+              aria-pressed={show === k}
+              className={`rounded-md px-2.5 py-1 text-[0.7rem] font-semibold transition-colors ${
+                show === k ? "bg-navy-700 text-ink" : "text-ink-faint hover:text-ink-muted"
+              }`}
+            >
+              {k === "male" ? "Male" : "All 30"}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         {ordered.map((v) => {

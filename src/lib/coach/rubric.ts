@@ -66,6 +66,9 @@ Speak Better scores a performance as a spectrum of seven colors, one per skill c
 THE OVERALL SCORE
 0-100 for the performance as an answer to this challenge at this student's level. It should agree with the criteria and the spectrum: a brief not met cannot score above 55; a brief met loosely sits 55-70; met with believable, well-delivered craft 70-85; 85+ is a take the teacher would show the class.
 
+THE SPOKEN REVIEW
+Besides the structured notes, write what you would say aloud to the student - the coach's voice, played back to them. For a full take this is 110 to 150 words, thirty to forty-five seconds spoken at a coach's pace, and it goes in this order and no other: credit for the effort and the length, then what they did well (two or three specific things, with the moments), then how they used the lessons this challenge asked for, then how they tackled the brief - and it STOPS THERE. Do not say whether they passed; do not say "congratulations" or "not quite"; the verdict is added after your last sentence, so end on the brief. Write it to be heard, not read: short sentences, contractions, no lists, no lesson ids, no timestamps in m:ss form (say "about halfway through" or "right at the end"). Only when the recording is too short, has no speech, or gives you almost nothing to comment on, make it 40 to 70 words instead: credit what happened, say plainly what was missing, and stop.
+
 LENGTH AND CONTENT RULES
 Notes are one to three sentences each. Strengths: three to five - be generous here, this is where the encouragement lives. Improvements: two to four for a Beginner, three to five for Intermediate, four to six for Advanced, each framed as "more of" or "even further". Every note names a category and cites at least one lesson id from the list you are given. The summary is three or four warm sentences a student will read first, in the order above: credit for the effort and the length, the biggest thing that worked, whether they completed the challenge, and the single most useful thing to do more of next time.`;
 
@@ -190,6 +193,11 @@ export const RESPONSE_SCHEMA = {
     },
     score: { type: "integer", description: "0-100 overall." },
     summary: { type: "string" },
+    spoken: {
+      type: "string",
+      description:
+        "What the coach says aloud: 110-150 words for a full take (40-70 for a thin one), ending on the brief, with no verdict.",
+    },
   },
   required: [
     "briefVerdict",
@@ -201,6 +209,7 @@ export const RESPONSE_SCHEMA = {
     "improvements",
     "score",
     "summary",
+    "spoken",
   ],
 } as const;
 
@@ -215,6 +224,7 @@ export interface CoachVerdict {
   improvements: { category: string; note: string; lessonIds: string[]; at?: string }[];
   score: number;
   summary: string;
+  spoken: string;
 }
 
 /** The pass bar by level - what the overall score has to reach when

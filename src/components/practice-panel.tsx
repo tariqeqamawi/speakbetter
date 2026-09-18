@@ -11,6 +11,8 @@ import { SpectrumBars, SpectrumStrip } from "@/components/spectrum";
 import { CheckIcon, CircleIcon, PlayIcon } from "@/components/icons";
 import { RecordingsShelf } from "@/components/recordings-shelf";
 import { capturePoster, keepVideo } from "@/lib/attempt-videos";
+import { TalkingLion, type TalkingLionHandle } from "@/components/talking-lion";
+import { speakUrl } from "@/lib/coach/voice";
 
 // The practice loop (master plan §06, steps 3–7; build plan Phase 4).
 //
@@ -151,6 +153,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
         lessonsUsed: result.lessonsUsed,
         skillsSpotted: result.skillsSpotted,
         strengths: result.strengths,
+        spoken: result.spoken,
         mock: result.mock || undefined,
       };
       recordAttempt(attempt);
@@ -382,6 +385,15 @@ function Feedback({
   }, [barsDone, scoreDone, shownScore, attempt.score]);
 
   const settled = barsDone && scoreDone;
+  // The verdict comes last - the whole review first, then the line
+  // they were waiting for. Where there's a spoken review it lands
+  // when the coach reaches it; otherwise a beat after the notes.
+  const [verdictShown, setVerdictShown] = useState(reduceMotion || !attempt.spoken);
+  useEffect(() => {
+    if (!settled || verdictShown || attempt.spoken) return;
+    const t = setTimeout(() => setVerdictShown(true), 1400);
+    return () => clearTimeout(t);
+  }, [settled, verdictShown, attempt.spoken]);
 
   const noteLine = (n: FeedbackNote) => {
     const refs = canRevealAll
@@ -432,9 +444,11 @@ function Feedback({
           >
             {!settled
               ? "Reading your talk…"
-              : attempt.passed
-                ? "Challenge complete"
-                : "Keep going"}
+              : verdictShown
+                ? attempt.passed
+                  ? "Challenge complete"
+                  : "Keep going"
+                : "Your review"}
           </span>
           <span
             className={`text-3xl font-bold tabular-nums text-ink transition-transform duration-300 ${
@@ -455,6 +469,13 @@ function Feedback({
           </button>
         )}
       </div>
+
+      {settled && attempt.spoken && (
+        <ReviewVoice
+          spoken={attempt.spoken}
+          onVerdict={() => setVerdictShown(true)}
+        />
+      )}
 
       {settled && (
         <p className="coach-cue text-sm text-ink-muted">{attempt.summary}</p>
@@ -617,6 +638,28 @@ function Feedback({
       </div>
       )}
 
+      {settled && (
+        <div
+          className={`coach-cue rounded-xl border p-4 transition-opacity ${
+            verdictShown ? "opacity-100" : "opacity-0"
+          } ${attempt.passed ? "border-mindset/40 bg-mindset/10" : "border-storytelling/40 bg-storytelling/10"}`}
+          aria-live="polite"
+        >
+          {verdictShown && (
+            <>
+              <p className={`text-sm font-semibold ${attempt.passed ? "text-mindset" : "text-storytelling"}`}>
+                {attempt.passed ? "Congratulations - you've passed this challenge." : "Not quite there this time."}
+              </p>
+              <p className="mt-1 text-sm text-ink-muted">
+                {attempt.passed
+                  ? "The next one is waiting on the map."
+                  : "I'm sure you'll get it on the next attempt. Record a new video, upload it, and I'll be here waiting."}
+              </p>
+            </>
+          )}
+        </div>
+      )}
+
       {settled && canRevealAll && attempt.fullNotes.length > 0 && (
         <details className="rounded-lg border border-navy-600">
           <summary className="cursor-pointer select-none px-3 py-2.5 text-sm font-medium text-ink-muted transition-colors hover:text-ink">
@@ -650,6 +693,82 @@ function Feedback({
       >
         {attempt.passed ? "Continue" : "Try again"}
       </button>
+    </div>
+  );
+}
+
+/**
+ * The coach saying the review aloud - thirty to forty-five seconds,
+ * verdict last. Generated the moment the review arrives so it's ready
+ * by the time the reveal is done; played from a tap, because that's
+ * what browsers allow. The verdict block under the notes lands when
+ * the coach reaches it, or on a tap of "Skip to the verdict".
+ */
+function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => void }) {
+  const [url, setUrl] = useState<string | null>(null);
+  const [state, setState] = useState<"loading" | "ready" | "playing" | "done" | "failed">("loading");
+  const lionRef = useRef<TalkingLionHandle>(null);
+  const [play, setPlay] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    speakUrl(spoken).then((u) => {
+      if (!alive) return;
+      if (u) {
+        setUrl(u);
+        setState("ready");
+      } else setState("failed");
+    });
+    return () => {
+      alive = false;
+    };
+  }, [spoken]);
+
+  const hear = () => {
+    lionRef.current?.prime();
+    setPlay(true);
+    setState("playing");
+  };
+
+  return (
+    <div className="coach-cue flex flex-col items-center gap-2 rounded-xl border border-navy-600 bg-navy-900/60 p-4">
+      <TalkingLion
+        ref={lionRef}
+        audioSrc={play && url ? url : undefined}
+        autoPlay={play}
+        onEnded={() => {
+          setState("done");
+          onVerdict();
+        }}
+        className="scale-90"
+      />
+      {state === "loading" && (
+        <p className="text-xs text-ink-faint">Your coach is getting ready to talk you through it…</p>
+      )}
+      {state === "ready" && (
+        <button
+          type="button"
+          onClick={hear}
+          className="rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-navy-900 transition-opacity hover:opacity-90"
+        >
+          Hear your review
+        </button>
+      )}
+      {(state === "playing" || state === "done") && (
+        <p className="max-w-prose text-center text-xs text-ink-faint text-balance">{spoken}</p>
+      )}
+      {state === "failed" && (
+        <p className="max-w-prose text-center text-sm text-ink-muted">{spoken}</p>
+      )}
+      {state !== "done" && (
+        <button
+          type="button"
+          onClick={onVerdict}
+          className="text-xs font-medium text-ink-faint underline-offset-4 hover:text-ink hover:underline"
+        >
+          Skip to the verdict
+        </button>
+      )}
     </div>
   );
 }

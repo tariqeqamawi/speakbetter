@@ -61,6 +61,8 @@ export interface Attempt {
   skillsSpotted?: { lessonId: string; quality: number; at?: string; evidence: string }[];
   /** What worked - every level sees these, before the improvements. */
   strengths?: FeedbackNote[];
+  /** The review as the coach says it aloud, verdict last. */
+  spoken?: string;
   /** True while the stand-in coach answered rather than Gemini. */
   mock?: boolean;
 }

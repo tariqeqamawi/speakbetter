@@ -28,6 +28,9 @@ export interface ReviewResponse {
   /** What worked, on its own - shown to every level before the
    *  improvements. Absent from the mock. */
   strengths?: ReviewNote[];
+  /** The review as the coach says it aloud, verdict last. Absent from
+   *  the mock. */
+  spoken?: string;
   summary: string;
   /** The brief, judged. Absent from the mock. */
   briefVerdict?: string;
@@ -112,6 +115,14 @@ export function shapeVerdict(
   const score = clamp(verdict.score);
   const passed = allMet && score >= passBar(level);
 
+  // The verdict is the app's to give, and it's given last - the whole
+  // review first, then the one line they were waiting for.
+  const body = String(verdict.spoken ?? "").trim().replace(/\s+$/, "");
+  const closing = passed
+    ? "And that means... congratulations. You've passed this challenge."
+    : "Not quite there this time - and I'm sure you'll get it on the next attempt. Record a new video, upload it, and I'll be here waiting.";
+  const spoken = body ? `${body} ${closing}` : undefined;
+
   return {
     passed,
     score,
@@ -119,6 +130,7 @@ export function shapeVerdict(
     focus,
     fullNotes: [...strengths, ...improvements],
     strengths,
+    spoken,
     summary: String(verdict.summary ?? "").trim(),
     briefVerdict: String(verdict.briefVerdict ?? "").trim() || undefined,
     criteria,
