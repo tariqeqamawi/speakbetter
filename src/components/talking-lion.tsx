@@ -37,8 +37,10 @@ export interface TalkingLionHandle {
 // honest but wasn't speech. What works is the artist's own animation:
 // the brand MOV of the lion going from closed mouth to roar, cut into
 // twelve frames (lion-mouth.tsx) and scrubbed by the audio's amplitude
-// - loud syllables open the mouth, gaps close it. The bloom behind the
-// mane and the bar meter underneath still breathe with the same level.
+// - syllables open the mouth, gaps close it. Nothing else moves: the
+// bloom behind the mane and the bar meter underneath were tried and
+// pulled, because a light that pulses next to a face that's talking
+// is the thing your eye goes to instead of the face.
 //
 // Two drive modes:
 //   audioSrc  - real amplitude off an AnalyserNode. The production
@@ -47,7 +49,6 @@ export interface TalkingLionHandle {
 //               be tapped for amplitude, so the pulse is driven by an
 //               envelope pumped on each word boundary. Fallback only.
 
-const BAR_COUNT = 24;
 
 /** A word the coach says, and the symbol for it - shown while it's being
  *  spoken, then held afterwards as a summary. Times are in seconds
@@ -82,7 +83,7 @@ export const TalkingLion = forwardRef<
   { text, audioSrc, cues, autoPlay = false, onEnded, className = "" },
   ref,
 ) {
-  const [level, setLevel] = useState(0); // 0..1 live amplitude, smoothed
+  const [, setLevel] = useState(0); // 0..1 live amplitude, smoothed - kept for callers that read it later
   // The mouth follows a faster envelope than the bloom: quick to open
   // on a syllable, a little slower to close, so it flaps like speech
   // rather than swelling like breath.
@@ -104,11 +105,8 @@ export const TalkingLion = forwardRef<
   const analyserRef = useRef<AnalyserNode | null>(null);
   const ctxRef = useRef<AudioContext | null>(null);
   const smoothedRef = useRef(0);
-  const barsRef = useRef<HTMLDivElement | null>(null);
   // Read inside the animation loop, which is created once per playback.
   const cuesRef = useRef<SpokenCue[]>(cues ?? []);
-  // Frequency bins drive the bar meter directly (no React state per frame).
-  const freqRef = useRef<Uint8Array | null>(null);
 
   const stopLoop = useCallback(() => {
     if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
@@ -119,9 +117,6 @@ export const TalkingLion = forwardRef<
     setCueIndex(-1);
     smoothedRef.current = 0;
     envelopeRef.current = 0;
-    barsRef.current
-      ?.querySelectorAll<HTMLElement>("[data-bar]")
-      .forEach((b) => (b.style.transform = "scaleY(0.12)"));
   }, []);
 
   useEffect(() => stopLoop, [stopLoop]);
@@ -130,21 +125,11 @@ export const TalkingLion = forwardRef<
     cuesRef.current = cues ?? [];
   }, [cues]);
 
-  const paintBars = useCallback((levels: (i: number) => number) => {
-    const bars = barsRef.current?.querySelectorAll<HTMLElement>("[data-bar]");
-    bars?.forEach((b, i) => {
-      const v = Math.max(0.12, Math.min(1, levels(i)));
-      b.style.transform = `scaleY(${v.toFixed(3)})`;
-    });
-  }, []);
-
   /** Real amplitude: RMS for the pulse, frequency bins for the bars. */
   const runAmplitudeLoop = useCallback(() => {
     const analyser = analyserRef.current;
     if (!analyser) return;
     const wave = new Uint8Array(analyser.fftSize);
-    const freq = new Uint8Array(analyser.frequencyBinCount);
-    freqRef.current = freq;
     const tick = () => {
       analyser.getByteTimeDomainData(wave);
       let sum = 0;
@@ -158,12 +143,15 @@ export const TalkingLion = forwardRef<
       const target = Math.min(1, rms * 6);
       smoothedRef.current += (target - smoothedRef.current) * 0.35;
       setLevel(smoothedRef.current);
-      // Attack fast, release slower - and a touch above the bloom, so
-      // ordinary speech opens the mouth properly and only silence
-      // closes it.
-      const want = Math.min(1, rms * 7.5);
+      // The mouth: opens a little faster than it closes, and both are
+      // eased hard enough that a frame is never skipped - sixteen
+      // frames of travel at most a couple per tick, which is what
+      // reads as motion rather than flicker.
+      // Gain set so ordinary speech sits around the middle of the
+      // sprite and only the loudest syllables reach the end of it.
+      const want = Math.min(1, rms * 4.5);
       mouthRef.current +=
-        (want - mouthRef.current) * (want > mouthRef.current ? 0.6 : 0.3);
+        (want - mouthRef.current) * (want > mouthRef.current ? 0.28 : 0.18);
       setMouth(mouthRef.current);
 
       // Which word is being said right now - the same clock the audio
@@ -176,41 +164,24 @@ export const TalkingLion = forwardRef<
         setCueIndex((prev) => (prev === found ? prev : found));
       }
 
-      analyser.getByteFrequencyData(freq);
-      // Nearly all voice energy sits below ~4 kHz - a sixth of the bins
-      // at a 48 kHz sample rate - so the meter only samples that band,
-      // slightly log-spaced so the highs don't sit permanently dark.
-      const usable = Math.floor(freq.length / 6);
-      paintBars((i) => {
-        const bin = Math.floor(Math.pow(i / BAR_COUNT, 1.4) * usable);
-        return (freq[bin] / 255) * 1.3;
-      });
       rafRef.current = requestAnimationFrame(tick);
     };
     tick();
-  }, [paintBars]);
+  }, []);
 
   /** Synthesized stand-in: a syllable-rate flutter under a decaying envelope. */
   const runEnvelopeLoop = useCallback(() => {
     const tick = () => {
       envelopeRef.current *= 0.94; // decays between words
       const t0 = performance.now() / 1000;
-      mouthRef.current = envelopeRef.current * (0.55 + 0.45 * Math.abs(Math.sin(t0 * 2 * Math.PI * 4.5)));
+      const want = envelopeRef.current * 0.8 * (0.55 + 0.45 * Math.abs(Math.sin(t0 * 2 * Math.PI * 4.5)));
+      mouthRef.current += (want - mouthRef.current) * 0.3;
       setMouth(mouthRef.current);
-      const t = performance.now() / 1000;
-      const flutter = 0.55 + 0.45 * Math.sin(t * 2 * Math.PI * 5.2);
-      const target = envelopeRef.current * flutter;
-      smoothedRef.current += (target - smoothedRef.current) * 0.4;
-      setLevel(smoothedRef.current);
-      paintBars(
-        (i) =>
-          smoothedRef.current *
-          (0.4 + 0.6 * Math.abs(Math.sin(t * 4 + i * 0.9))),
-      );
+      setLevel(envelopeRef.current);
       rafRef.current = requestAnimationFrame(tick);
     };
     tick();
-  }, [paintBars]);
+  }, []);
 
   /** The audio graph - element into analyser into speakers - built once. */
   const graph = useCallback(() => {
@@ -342,23 +313,7 @@ export const TalkingLion = forwardRef<
   return (
     <div className={`flex flex-col items-center gap-4 ${className}`}>
       <div className="relative w-full max-w-xs">
-        {/* Bloom behind the mane, breathing with the voice */}
-        <div
-          aria-hidden
-          className="absolute inset-[-12%] rounded-full will-change-transform"
-          style={{
-            background:
-              "radial-gradient(circle at 50% 45%, rgba(245,61,224,0.35), rgba(34,217,245,0.18) 55%, transparent 75%)",
-            opacity: 0.25 + level * 0.75,
-            transform: `scale(${(0.96 + level * 0.12).toFixed(3)})`,
-            filter: "blur(18px)",
-          }}
-        />
-        <LionMouth
-          level={mouth}
-          className="relative w-full will-change-transform"
-          style={{ transform: `scale(${(1 + level * 0.03).toFixed(3)})` }}
-        />
+        <LionMouth level={mouth} className="relative w-full" />
         {/* The word being spoken, with its symbol. The row keeps its
             height whether or not a cue is showing, so the lion never
             shifts as words come and go. */}
@@ -397,26 +352,6 @@ export const TalkingLion = forwardRef<
           </div>
         )}
 
-        {/* Amplitude bars - the soundwave under the lion, live */}
-        <div
-          ref={barsRef}
-          aria-hidden
-          className="mt-2 flex h-10 items-end justify-center gap-1"
-        >
-          {Array.from({ length: BAR_COUNT }).map((_, i) => (
-            <span
-              key={i}
-              data-bar
-              className="w-1.5 origin-bottom rounded-full"
-              style={{
-                height: "100%",
-                transform: "scaleY(0.12)",
-                background: `hsl(${190 + (i / BAR_COUNT) * 130}, 90%, 60%)`,
-                transition: "transform 60ms linear",
-              }}
-            />
-          ))}
-        </div>
       </div>
 
       {/* Always mounted, src managed by hand, so it can be primed inside

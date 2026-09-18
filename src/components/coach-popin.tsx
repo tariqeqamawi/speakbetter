@@ -184,7 +184,7 @@ export function CoachPopIn() {
         {/* the lion, mouth moving while it speaks - the jaw envelope
             (0..6) drives the same sprite the big lion uses */}
         <span className="relative block w-[4.5rem] shrink-0">
-          <LionMouth level={jaw / 6} className="w-full" />
+          <LionMouth level={Math.min(1, jaw / 7)} className="w-full" />
         </span>
 
         <div className="flex flex-1 flex-col gap-2">
