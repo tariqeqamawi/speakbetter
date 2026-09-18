@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { TalkingLion, type TalkingLionHandle } from "@/components/talking-lion";
 import {
   ACCENTS,
+  DEFAULT_ACCENT,
   DEFAULT_STYLE,
   GEMINI_VOICES,
   STYLE_PRESETS,
@@ -47,7 +48,7 @@ export default function VoiceAudition() {
   const [chosen, setChosen] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [show, setShow] = useState<"male" | "all">("male");
-  const [accent, setAccent] = useState(0);
+  const [accent, setAccent] = useState(DEFAULT_ACCENT);
   // What's actually sent: the direction plus the accent.
   const direction = `${style}${ACCENTS[accent].suffix}`;
   const urlRef = useRef<string | null>(null);

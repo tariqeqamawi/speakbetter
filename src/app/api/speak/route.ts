@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createHash } from "node:crypto";
 import { GoogleGenAI } from "@google/genai";
-import { DEFAULT_STYLE, DEFAULT_VOICE, GEMINI_VOICES } from "@/lib/coach/voice";
+import { DEFAULT_DIRECTION, DEFAULT_VOICE, GEMINI_VOICES } from "@/lib/coach/voice";
 
 // The coach speaks: a line of feedback as audio, in the chosen stock
 // voice, directed in words. Gemini's TTS returns raw 24 kHz 16-bit PCM;
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
   const text = String(body.text ?? "").trim().slice(0, MAX_CHARS);
   if (!text) return NextResponse.json({ error: "Nothing to say." }, { status: 400 });
   const voice = GEMINI_VOICES.some((v) => v.name === body.voice) ? body.voice! : DEFAULT_VOICE;
-  const style = String(body.style ?? DEFAULT_STYLE).trim().slice(0, 200);
+  const style = String(body.style ?? DEFAULT_DIRECTION).trim().slice(0, 320);
 
   const key = createHash("sha1").update(`${MODEL}|${voice}|${style}|${text}`).digest("hex");
   const hit = cache.get(key);

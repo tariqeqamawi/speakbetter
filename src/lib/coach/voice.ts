@@ -55,18 +55,18 @@ export const GEMINI_VOICES: { name: string; character: string; gender: "male" | 
  * British before the lion is settled on one.
  */
 export const DEFAULT_STYLE =
-  "in a very deep, gravelly, rumbling baritone - a lion's voice, rough at the edges - warm, fast and lively, at a quick conversational clip with barely a pause, like a coach talking to you across a table";
+  "in a very deep, low, rumbling, gravelly baritone - a lion's voice - calm and even, steady in tone with little rise and fall, at a natural conversational pace";
 
 /** Directions worth trying against each other on the audition page. */
 export const STYLE_PRESETS: { label: string; style: string }[] = [
-  { label: "Gravelly baritone, quick", style: DEFAULT_STYLE },
+  { label: "Rumbling baritone, even", style: DEFAULT_STYLE },
   {
-    label: "Deep, quick",
-    style: "in a very deep, gravelly male voice with a heavy rasp, speaking fast and fluently with barely a pause, reassuring",
+    label: "Deep, steady",
+    style: "in a very deep, gravelly male voice with a heavy rasp, level and matter-of-fact with little inflection, reassuring",
   },
   {
-    label: "Warm, brisk",
-    style: "in a low, warm, husky male voice, speaking fast at a lively conversational clip, like a coach who's on your side",
+    label: "Warm, even",
+    style: "in a low, warm, husky male voice, even-toned and unhurried, like a coach who's on your side",
   },
 ];
 
@@ -76,6 +76,12 @@ export const ACCENTS: { label: string; suffix: string }[] = [
   { label: "British", suffix: ", with a natural British accent (Received Pronunciation, London)" },
   { label: "Unspecified", suffix: "" },
 ];
+
+/** The accent the app speaks in - British, settled on the audition page. */
+export const DEFAULT_ACCENT = 1;
+
+/** The whole direction as sent: the style with the accent appended. */
+export const DEFAULT_DIRECTION = `${DEFAULT_STYLE}${ACCENTS[DEFAULT_ACCENT].suffix}`;
 
 /** The voice the app speaks in - Charon, chosen on the audition page. */
 export const DEFAULT_VOICE = "Charon";
@@ -104,19 +110,20 @@ export function chosenVoice(): { voice: string; style: string } {
     if (raw) {
       const parsed = JSON.parse(raw) as { voice?: string; style?: string };
       // A stored style only counts while it's still one of the app's
-      // presets - otherwise a browser that chose a voice weeks ago
-      // would keep speaking in a direction the app has since moved on
-      // from.
-      const style = STYLE_PRESETS.some((p) => p.style === parsed.style)
-        ? (parsed.style as string)
-        : DEFAULT_STYLE;
+      // presets (with any of the accents) - otherwise a browser that
+      // chose a voice weeks ago would keep speaking in a direction the
+      // app has since moved on from.
+      const current = STYLE_PRESETS.some((p) =>
+        ACCENTS.some((a) => `${p.style}${a.suffix}` === parsed.style),
+      );
+      const style = current ? (parsed.style as string) : DEFAULT_DIRECTION;
       if (parsed.voice && GEMINI_VOICES.some((v) => v.name === parsed.voice))
         return { voice: parsed.voice, style };
     }
   } catch {
     // no storage, or a bad entry - the default speaks
   }
-  return { voice: DEFAULT_VOICE, style: DEFAULT_STYLE };
+  return { voice: DEFAULT_VOICE, style: DEFAULT_DIRECTION };
 }
 
 export function chooseVoice(voice: string, style: string): void {
