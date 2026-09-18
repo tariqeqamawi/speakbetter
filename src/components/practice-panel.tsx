@@ -150,6 +150,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
         criteria: result.criteria,
         lessonsUsed: result.lessonsUsed,
         skillsSpotted: result.skillsSpotted,
+        strengths: result.strengths,
         mock: result.mock || undefined,
       };
       recordAttempt(attempt);
@@ -489,6 +490,19 @@ function Feedback({
         </div>
       )}
 
+      {settled && attempt.strengths && attempt.strengths.length > 0 && (
+        <div className="coach-cue" style={{ animationDelay: "100ms" }}>
+          <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-ink-faint">
+            What worked
+          </h3>
+          <ul className="flex flex-col gap-2">
+            {attempt.strengths.map((note, i) => (
+              <FeedbackNoteRow key={i} note={note} showLessons={canRevealAll} />
+            ))}
+          </ul>
+        </div>
+      )}
+
       <div>
         <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-ink-faint">
           Your color spectrum
@@ -519,11 +533,11 @@ function Feedback({
                     <span className="h-1.5 w-16 shrink-0 overflow-hidden rounded-full bg-navy-700">
                       <span
                         className={`block h-full rounded-full ${cat?.bgClass ?? "bg-ink"} ${l.used ? "" : "opacity-30"}`}
-                        style={{ width: `${l.used ? Math.max(8, l.quality) : 0}%` }}
+                        style={{ width: `${l.used ? Math.max(8, l.quality * 10) : 0}%` }}
                       />
                     </span>
-                    <span className="w-7 shrink-0 text-right text-xs tabular-nums text-ink-faint">
-                      {l.used ? l.quality : "–"}
+                    <span className="w-9 shrink-0 text-right text-xs tabular-nums text-ink-faint">
+                      {l.used ? `${l.quality}/10` : "–"}
                     </span>
                   </span>
                   {l.evidence && (
@@ -566,7 +580,7 @@ function Feedback({
                       >
                         {lesson.title}
                       </Link>
-                      <span className="text-xs tabular-nums text-ink-faint">{s.quality}</span>
+                      <span className="text-xs tabular-nums text-ink-faint">{s.quality}/10</span>
                     </span>
                     {s.evidence && <span className="pl-4 text-xs text-ink-faint">{s.evidence}</span>}
                   </li>
@@ -587,7 +601,7 @@ function Feedback({
       {settled && (
       <div className="coach-cue" style={{ animationDelay: "150ms" }}>
         <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-ink-faint">
-          Focus on next
+          {attempt.strengths ? "For next time - do more of this" : "Focus on next"}
         </h3>
         <ul className="flex flex-col gap-2">
           {attempt.focus.map((note, i) => (

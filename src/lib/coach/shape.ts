@@ -25,6 +25,9 @@ export interface ReviewResponse {
   focus: ReviewNote[];
   /** Everything the coach noticed - strengths and improvements. */
   fullNotes: ReviewNote[];
+  /** What worked, on its own - shown to every level before the
+   *  improvements. Absent from the mock. */
+  strengths?: ReviewNote[];
   summary: string;
   /** The brief, judged. Absent from the mock. */
   briefVerdict?: string;
@@ -54,6 +57,8 @@ function asCategory(value: string, fallback: CategoryId): CategoryId {
 }
 
 const clamp = (n: number) => Math.max(0, Math.min(100, Math.round(Number(n) || 0)));
+/** Lesson quality is out of ten - a score people can feel, not audit. */
+const clamp10 = (n: number) => Math.max(0, Math.min(10, Math.round(Number(n) || 0)));
 
 /** Only lesson ids that exist - the coach is told to cite from a list,
  *  and a wrong id would render as a dead link. */
@@ -113,20 +118,21 @@ export function shapeVerdict(
     spectrum,
     focus,
     fullNotes: [...strengths, ...improvements],
+    strengths,
     summary: String(verdict.summary ?? "").trim(),
     briefVerdict: String(verdict.briefVerdict ?? "").trim() || undefined,
     criteria,
     lessonsUsed: (verdict.lessonsUsed ?? []).map((l) => ({
       lessonId: String(l.lessonId),
       used: Boolean(l.used),
-      quality: clamp(l.quality),
+      quality: clamp10(l.quality),
       evidence: String(l.evidence ?? ""),
     })),
     skillsSpotted: (verdict.skillsSpotted ?? [])
       .filter((s) => lessonByVimeoId.has(String(s.lessonId)))
       .map((s) => ({
         lessonId: String(s.lessonId),
-        quality: clamp(s.quality),
+        quality: clamp10(s.quality),
         at: s.at ? String(s.at) : undefined,
         evidence: String(s.evidence ?? ""),
       })),

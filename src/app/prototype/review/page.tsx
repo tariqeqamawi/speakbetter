@@ -198,7 +198,7 @@ export default function ReviewBench() {
               {result.lessonsUsed?.map((l) => (
                 <li key={l.lessonId}>
                   <span className="text-ink">{title(l.lessonId)}</span>{" "}
-                  <span className="tabular-nums text-ink-faint">{l.used ? l.quality : "not used"}</span>
+                  <span className="tabular-nums text-ink-faint">{l.used ? `${l.quality}/10` : "not used"}</span>
                   <div className="text-xs text-ink-faint">{l.evidence}</div>
                 </li>
               ))}
@@ -210,7 +210,7 @@ export default function ReviewBench() {
                   {result.skillsSpotted.map((s) => (
                     <li key={s.lessonId}>
                       <span className="text-ink-faint">{s.at}</span> <span className="text-ink">{title(s.lessonId)}</span>{" "}
-                      <span className="tabular-nums text-ink-faint">{s.quality}</span>
+                      <span className="tabular-nums text-ink-faint">{s.quality}/10</span>
                       <div className="text-xs text-ink-faint">{s.evidence}</div>
                     </li>
                   ))}

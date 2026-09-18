@@ -90,7 +90,10 @@ export async function review(
         // bounded by the clip length either way - a minute of video is
         // ~18k tokens and the thinking is a fraction of that.
         thinkingConfig: { thinkingBudget: 4096 },
-        temperature: 0.4,
+        // Low: the coach is describing what happened, not composing.
+        // The first run at 0.4 praised a speaker who wasn't in the
+        // frame for "keeping your eyes on the lens".
+        temperature: 0.2,
       },
     });
     const t2 = Date.now();

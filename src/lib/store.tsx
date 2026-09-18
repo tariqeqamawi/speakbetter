@@ -53,11 +53,14 @@ export interface Attempt {
    *  coach only; older and mock attempts have neither. */
   briefVerdict?: string;
   criteria?: { text: string; met: boolean; evidence: string }[];
-  /** The lessons the challenge cited, and whether they were used. */
+  /** The lessons the challenge cited, and whether they were used.
+   *  Quality is out of ten. */
   lessonsUsed?: { lessonId: string; used: boolean; quality: number; evidence: string }[];
   /** Techniques from other lessons used without being asked for -
-   *  revealed at Intermediate and Advanced (§08). */
+   *  revealed at Intermediate and Advanced (§08). Quality out of ten. */
   skillsSpotted?: { lessonId: string; quality: number; at?: string; evidence: string }[];
+  /** What worked - every level sees these, before the improvements. */
+  strengths?: FeedbackNote[];
   /** True while the stand-in coach answered rather than Gemini. */
   mock?: boolean;
 }
