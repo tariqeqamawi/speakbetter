@@ -1,4 +1,5 @@
 import { LazyVimeoPlayer } from "@/components/lazy-vimeo-player";
+import { PhoneFilm } from "@/components/phone-film";
 import {
   ChallengesIcon,
   DeckIcon,
@@ -27,20 +28,6 @@ function Phone({ children, label }: { children: React.ReactNode; label: string }
       </div>
       <figcaption className="text-xs font-semibold text-ink-muted">{label}</figcaption>
     </figure>
-  );
-}
-
-/** A live preview page, scaled into the phone. Loads only when near. */
-function Preview({ src, title }: { src: string; title: string }) {
-  return (
-    <iframe
-      src={src}
-      title={title}
-      loading="lazy"
-      tabIndex={-1}
-      className="pointer-events-none absolute left-0 top-0 h-[844px] w-[390px] origin-top-left"
-      style={{ transform: "scale(calc(216 / 390))" }}
-    />
   );
 }
 
@@ -85,25 +72,22 @@ export function LandingShowcase() {
         </ul>
       </section>
 
-      {/* The app, in your hand */}
+      {/* The app, in your hand - three short films of the real pages */}
       <section className="flex flex-col items-center gap-4">
         <h2 className="text-2xl font-semibold tracking-tight">The app, in your hand</h2>
         <p className="max-w-lg text-center text-ink-muted">
-          Live pages with a worked-in student behind them, not mock-ups: the dashboard, the trophy case, the journey,
-          the deck.
+          The real pages, with a worked-in student behind them: the journey, the skills dial into a color&apos;s
+          lessons, and the dashboard tab by tab.
         </p>
-        <div className="-mx-4 flex w-[calc(100%+2rem)] gap-5 overflow-x-auto px-4 pb-2 sm:mx-0 sm:w-full sm:justify-center sm:overflow-visible sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <Phone label="Dashboard">
-            <Preview src="/demo?bare=1" title="Dashboard preview" />
-          </Phone>
-          <Phone label="Trophy case">
-            <Preview src="/demo?bare=1&tab=badges" title="Trophy case preview" />
-          </Phone>
+        <div className="-mx-4 flex w-[calc(100%+2rem)] gap-6 overflow-x-auto px-4 pb-2 sm:mx-0 sm:w-full sm:justify-center sm:overflow-visible sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <Phone label="The journey">
-            <Preview src="/demo/challenges?bare=1" title="Journey preview" />
+            <PhoneFilm src="/film/tour-journey.mp4" poster="/film/tour-journey.jpg" label="The journey, scrolled" />
           </Phone>
-          <Phone label="The deck">
-            <Preview src="/demo/skills/cards?bare=1" title="Deck preview" />
+          <Phone label="Skills, into a color">
+            <PhoneFilm src="/film/tour-skills.mp4" poster="/film/tour-skills.jpg" label="The skills dial, then a color's lessons" />
+          </Phone>
+          <Phone label="The dashboard">
+            <PhoneFilm src="/film/tour-dashboard.mp4" poster="/film/tour-dashboard.jpg" label="The dashboard, tab by tab" />
           </Phone>
         </div>
       </section>
@@ -111,16 +95,7 @@ export function LandingShowcase() {
       {/* Record, send, hear back */}
       <section className="flex flex-col items-center gap-8 rounded-2xl border border-navy-600 bg-navy-800 p-6 sm:flex-row sm:justify-center sm:gap-14 sm:p-10">
         <Phone label="Thirty seconds of the real thing">
-          <video
-            src="/film/record-to-review.mp4"
-            poster="/film/record-to-review.jpg"
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            className="size-full object-cover"
-          />
+          <PhoneFilm src="/film/record-to-review.mp4" poster="/film/record-to-review.jpg" label="A take sent and reviewed" />
         </Phone>
         <div className="flex max-w-md flex-col gap-3">
           <h2 className="text-2xl font-semibold tracking-tight text-balance">Record. Send. Hear it back.</h2>

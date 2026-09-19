@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { LionMouth } from "@/components/lion-mouth";
+import { isBare } from "@/components/bare-mode";
 
 // The lion at the centre of a dial: at rest most of the time, and every
 // so often it draws in and roars - the brand animation itself, scrubbed
@@ -22,7 +23,7 @@ export function RoaringLion({ className = "" }: { className?: string }) {
   const raf = useRef<number | null>(null);
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || isBare()) return;
     let alive = true;
     let timer: number;
     const roar = () => {

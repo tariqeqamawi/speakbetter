@@ -21,7 +21,7 @@ export function DemoFrame({ children, bare = false }: { children: ReactNode; bar
   if (bare) return <div className="flex flex-col gap-4">{children}</div>;
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-3 rounded-xl border border-navy-600 bg-navy-800 px-4 py-3">
+      <div className="demo-banner flex flex-col gap-3 rounded-xl border border-navy-600 bg-navy-800 px-4 py-3">
         <p className="text-xs text-ink-muted">
           Preview - sample data, shown so the pages have something in them.
           Nothing here is yours, and nothing you click changes your progress.

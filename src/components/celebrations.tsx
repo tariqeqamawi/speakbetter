@@ -6,6 +6,7 @@ import { currentStreak } from "@/data/badges";
 import { BadgeIcon, FlameIcon } from "@/components/icons";
 import { BadgeMedal } from "@/components/badge-medal";
 import { hapticCelebrate, playCelebration } from "@/lib/feedback-fx";
+import { isBare } from "@/components/bare-mode";
 
 // The gamification layer made visible (master plan §11): milestones are
 // felt, not just read. One celebration shows at a time; each dismisses
@@ -13,7 +14,8 @@ import { hapticCelebrate, playCelebration } from "@/lib/feedback-fx";
 
 export function CelebrationHost() {
   const { celebrations, dismissCelebration } = useStore();
-  const current = celebrations[0];
+  // Not in a bare preview - nothing there is anyone's to celebrate.
+  const current = isBare() ? undefined : celebrations[0];
 
   // Sound and haptics land with the badge, not after it.
   useEffect(() => {

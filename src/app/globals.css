@@ -1599,3 +1599,31 @@ svg.soundwave-c {
     0 0 6px currentColor,
     0 0 14px color-mix(in oklab, currentColor 60%, transparent);
 }
+
+/* A bare preview (?bare=1, inside a phone frame on the landing page):
+   the page as it looks, with nothing breathing. */
+html.bare .ambient-light,
+html.bare .soundwave-a,
+html.bare .soundwave-b,
+html.bare .soundwave-c,
+html.bare .terrain-grid,
+html.bare .float-icon,
+html.bare .streak-glow,
+html.bare .spectrum-needed,
+html.bare .eq-wave,
+html.bare .map-pulse::after,
+html.bare .community-pop,
+html.bare .trophy-turn,
+html.bare .trophy-shine {
+  animation: none !important;
+}
+html.bare .terrain-grid {
+  opacity: 0.18;
+}
+html.bare .streak-glow,
+html.bare .spectrum-needed {
+  opacity: 0.6;
+}
+html.bare .demo-banner {
+  display: none;
+}

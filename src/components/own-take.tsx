@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { loadVideo, type StoredVideoMeta } from "@/lib/attempt-videos";
+import { isBare } from "@/components/bare-mode";
 
 // The student's own recording, in the circle of a challenge they've
 // passed on the journey map. At rest it's a frame of their take, in
@@ -91,7 +92,7 @@ export function usePeek(slugs: string[]): string | null {
   const key = slugs.join("|");
   useEffect(() => {
     if (!slugs.length) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || isBare()) return;
     let alive = true;
     let t: number;
     const rest = () => {

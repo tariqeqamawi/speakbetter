@@ -5,6 +5,7 @@ import { StoreProvider } from "@/lib/store";
 import { AmbientBackground } from "@/components/ambient-background";
 import { CelebrationHost } from "@/components/celebrations";
 import { PushSync } from "@/components/push-sync";
+import { BareMode } from "@/components/bare-mode";
 import { CoachPopIn } from "@/components/coach-popin";
 import { ServiceWorkerRegister } from "@/components/sw-register";
 import "./globals.css";
@@ -79,6 +80,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <BottomTabs />
           <CelebrationHost />
           <PushSync />
+          <BareMode />
           <CoachPopIn />
           <ServiceWorkerRegister />
         </StoreProvider>
