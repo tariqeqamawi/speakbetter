@@ -88,15 +88,18 @@ export function DashboardPanel({
         aria-label="Dashboard sections"
         className="sticky-under-header grid grid-cols-3 gap-1 rounded-2xl border border-navy-600 bg-navy-800 p-1.5"
       >
-        {sections.map((section) => {
+        {sections.map((section, i) => {
           const on = section.id === open?.id;
+          // Seven sections in rows of three: the first - the coach -
+          // takes a whole row, the six below sit two rows of three.
+          const wide = sections.length % 3 === 1 && i === 0;
           return (
             <button
               key={section.id}
               type="button"
               onClick={() => setOpenId(section.id)}
               aria-current={on ? "true" : undefined}
-              className={`flex h-11 items-center justify-center gap-1.5 rounded-xl px-2 text-[0.7rem] font-semibold transition-colors ${
+              className={`flex h-11 items-center justify-center gap-1.5 rounded-xl px-2 text-[0.7rem] font-semibold transition-colors ${wide ? "col-span-3" : ""} ${
                 on
                   ? `bg-navy-700 ${section.accentClass}`
                   : "text-ink-faint hover:bg-navy-850 hover:text-ink-muted"

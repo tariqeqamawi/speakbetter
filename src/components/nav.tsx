@@ -4,13 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useStore } from "@/lib/store";
-import {
-  ChallengesIcon,
-  CommunityIcon,
-  ProfileIcon,
-  SkillsIcon,
-} from "@/components/icons";
+import { ChallengesIcon, CommunityIcon, ProfileIcon, SkillsIcon, ListenIcon } from "@/components/icons";
 import { Soundwave } from "@/components/soundwave";
+import { LionMouth } from "@/components/lion-mouth";
 import { LevelIcon, levelMeta } from "@/components/level-icon";
 
 const destinations = [
@@ -45,11 +41,38 @@ export function TopBar() {
           </Link>
           <div className="flex items-center gap-2">
             <DesktopLinks />
+            <CoachButton />
             <LevelBadge />
           </div>
         </div>
       </div>
     </header>
+  );
+}
+
+/** The coach, one tap away wherever the student is: the lion's head
+ *  in the header, lit when they're on the coach's page. */
+function CoachButton() {
+  const { state, ready } = useStore();
+  const pathname = usePathname();
+  if (!ready || !state.unlocked) return null;
+  const on = pathname.startsWith("/coach");
+  return (
+    <Link
+      href="/coach"
+      title="Your coach - ask a question, read back your reviews"
+      aria-label="Your coach"
+      className={`relative flex size-11 items-center justify-center rounded-full border transition-colors ${
+        on ? "border-advanced shadow-[0_0_16px_-4px_var(--color-advanced)]" : "border-navy-600 hover:border-ink-faint"
+      }`}
+    >
+      <span className="w-9 overflow-hidden">
+        <LionMouth level={0} className="w-full translate-y-0.5" />
+      </span>
+      <span className="absolute -right-0.5 -top-0.5 grid size-4 place-items-center rounded-full border border-navy-900 bg-advanced text-navy-950">
+        <ListenIcon className="size-2.5" />
+      </span>
+    </Link>
   );
 }
 

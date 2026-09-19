@@ -833,6 +833,7 @@ function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => v
         ref={lionRef}
         text={spoken}
         captions
+        controls={false}
         audioSrc={play && url ? url : undefined}
         autoPlay={play}
         onEnded={() => {

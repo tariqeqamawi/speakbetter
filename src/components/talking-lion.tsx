@@ -86,6 +86,8 @@ export const TalkingLion = forwardRef<
     /** Show what's being said as it's said - a phrase at a time, paced
      *  across the clip by its share of the words - like a reel's captions. */
     captions?: boolean;
+    /** The page has its own play control - don't draw the lion's. */
+    controls?: boolean;
     /** Speak as soon as an audio source arrives - for a page where the
      *  tap that fetched the audio is the tap that meant "play". */
     autoPlay?: boolean;
@@ -93,7 +95,7 @@ export const TalkingLion = forwardRef<
     className?: string;
   }
 >(function TalkingLion(
-  { text, audioSrc, cues, captions = false, autoPlay = false, onEnded, className = "" },
+  { text, audioSrc, cues, captions = false, controls = true, autoPlay = false, onEnded, className = "" },
   ref,
 ) {
   const [level, setLevel] = useState(0); // 0..1 live amplitude, smoothed
@@ -459,6 +461,7 @@ export const TalkingLion = forwardRef<
           only downloads when the visitor asks to hear it. */}
       <audio ref={audioRef} preload="none" hidden />
 
+      {controls && (
       <button
         type="button"
         onClick={speaking ? stop : speak}
@@ -471,6 +474,7 @@ export const TalkingLion = forwardRef<
       >
         {speaking ? "Stop" : blocked ? "Tap to hear the coach" : "Hear the coach"}
       </button>
+      )}
       {blocked && (
         <p className="text-xs text-ink-faint">
           Your browser wanted a tap before playing sound - it&apos;s ready now.
