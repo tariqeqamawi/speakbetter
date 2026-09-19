@@ -41,10 +41,14 @@ export function SpectrumWave({
   values,
   className = "h-48 w-full sm:h-56",
   animate = true,
+  highlight,
 }: {
   values: Record<CategoryId, number>;
   className?: string;
   animate?: boolean;
+  /** Colors to make glow - the ones a challenge needs. Their column of
+   *  the trace burns brighter and pools light under the peak. */
+  highlight?: CategoryId[];
 }) {
   // Unique per instance, so two waves on one page don't share defs.
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
@@ -98,7 +102,57 @@ export function SpectrumWave({
         >
           <feGaussianBlur stdDeviation="7" />
         </filter>
+        <filter id={`pool-${uid}`} x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="16" />
+        </filter>
+        {/* One soft mask per highlighted color: its column of the
+            trace, feathered at both sides so the brightness fades into
+            the neighbours rather than stopping at a line. */}
+        <linearGradient id={`feather-${uid}`} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="white" stopOpacity="0" />
+          <stop offset="35%" stopColor="white" stopOpacity="1" />
+          <stop offset="65%" stopColor="white" stopOpacity="1" />
+          <stop offset="100%" stopColor="white" stopOpacity="0" />
+        </linearGradient>
+        {categories.map((cat, i) =>
+          highlight?.includes(cat.id) ? (
+            <mask key={cat.id} id={`col-${uid}-${cat.id}`}>
+              <rect x={step * (i - 0.35)} y={-40} width={step * 1.7} height={H + 80} fill={`url(#feather-${uid})`} />
+            </mask>
+          ) : null,
+        )}
       </defs>
+
+      {/* The colors this challenge needs, lit from within: a pool of
+          the color under the peak, and the trace burning brighter
+          across that column. */}
+      {categories.map((cat, i) =>
+        highlight?.includes(cat.id) ? (
+          <g key={cat.id}>
+            <ellipse
+              cx={peaks[i].x}
+              cy={Math.min(FLOOR - 10, peaks[i].y + (FLOOR - peaks[i].y) * 0.45)}
+              rx={step * 0.55}
+              ry={Math.max(28, (FLOOR - peaks[i].y) * 0.7)}
+              fill={`var(--color-${cat.id})`}
+              opacity="0.55"
+              filter={`url(#pool-${uid})`}
+              className={animate ? "eq-wave-slow" : undefined}
+            />
+            <path
+              d={line}
+              fill="none"
+              stroke={`var(--color-${cat.id})`}
+              strokeWidth="16"
+              strokeLinecap="round"
+              opacity="0.8"
+              filter={`url(#glow-${uid})`}
+              mask={`url(#col-${uid}-${cat.id})`}
+              className={animate ? "eq-wave" : undefined}
+            />
+          </g>
+        ) : null,
+      )}
 
       {/* Bleed: a heavily blurred copy under everything, so color spills
           past the line the way light does. */}

@@ -379,7 +379,7 @@ function AttemptCard({
         </span>
       </div>
       <span className="relative block overflow-hidden rounded-lg bg-navy-950/70 p-2">
-        <SpectrumWave values={attempt.spectrum} className="h-20 w-full" animate={false} />
+        <SpectrumWave values={attempt.spectrum} className="h-20 w-full" animate={false} highlight={required} />
       </span>
       <SpectrumKey spectrum={attempt.spectrum} required={required} />
       <span className="text-xs text-ink-faint">
