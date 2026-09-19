@@ -5,9 +5,10 @@ import { upload } from "@vercel/blob/client";
 import { useStore, type Attempt, type FeedbackNote } from "@/lib/store";
 import { GRACE_SECONDS, maxSecondsFor, type Challenge } from "@/data/challenges";
 import { lessonByVimeoId } from "@/data/lessons";
-import { categoryById, type CategoryId } from "@/data/categories";
+import { categories, categoryById, type CategoryId } from "@/data/categories";
 import Link from "next/link";
-import { SpectrumBars, SpectrumStrip } from "@/components/spectrum";
+import { SpectrumBars } from "@/components/spectrum";
+import { SpectrumWave } from "@/components/spectrum-wave";
 import {
   CheckIcon,
   CircleIcon,
@@ -352,6 +353,8 @@ function fmt(sec: number): string {
   return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
 }
 
+/** An attempt at a glance: the same resonance trace the dashboard
+ *  draws, with the score out of a hundred beside it. */
 function AttemptCard({ label, attempt }: { label: string; attempt: Attempt }) {
   return (
     <div className="flex flex-col gap-2 rounded-xl border border-navy-600 bg-navy-800 p-4">
@@ -359,11 +362,27 @@ function AttemptCard({ label, attempt }: { label: string; attempt: Attempt }) {
         <span className="text-xs font-medium uppercase tracking-wider text-ink-faint">
           {label}
         </span>
-        <span className="text-lg font-bold tabular-nums text-ink">
+        <span className="text-xl font-bold tabular-nums text-ink">
           {attempt.score}
+          <span className="text-xs font-medium text-ink-faint"> / 100</span>
         </span>
       </div>
-      <SpectrumStrip spectrum={attempt.spectrum} />
+      <span className="relative block overflow-hidden rounded-lg bg-navy-950/70 p-2">
+        <SpectrumWave values={attempt.spectrum} className="h-20 w-full" animate={false} />
+      </span>
+      <span className="flex justify-between px-1">
+        {categories.map((cat) => {
+          const v = attempt.spectrum[cat.id] ?? 0;
+          return (
+            <span
+              key={cat.id}
+              className={`text-[0.65rem] font-bold tabular-nums ${v >= 40 ? cat.textClass : "text-ink-faint"}`}
+            >
+              {v}
+            </span>
+          );
+        })}
+      </span>
       <span className="text-xs text-ink-faint">
         {new Date(attempt.at).toLocaleDateString()} ·{" "}
         {attempt.passed ? "passed" : "not passed"}
