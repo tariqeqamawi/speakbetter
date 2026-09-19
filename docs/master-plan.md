@@ -452,9 +452,23 @@ It's a small control, but it serves the course's core subject directly: a course
 
 ## 15 · The landing page and purchase
 
-Before any of this — Challenges, Skills, Community — a prospective student needs a way to arrive and decide to join. That's a dedicated landing page, built to promote and sell the course, with one of the existing promotional videos featured directly on the page as its centerpiece.
+The landing page plays the mechanic (§14) — the sample review, the lion, the spectrum — and then makes the offer. **The free baseline comes first**: anyone records the two baseline challenges and gets one real review from the coach — score, spectrum, what to do next — before paying anything, with the lessons those challenges lean on open to them. The landing demo shows the mechanic; the baseline makes it theirs, and the second review is where the ask lands: *"Unlock the rest of the journey."*
 
-The purchase flow is deliberately simple: a visitor watches the promotional video, pays on the landing page, and payment is what unlocks the app — the moment it clears, the student is taken straight into the main app to begin.
+### The offer — course + membership
+
+The shape is course plus membership, because the method deserves a price that says *this is the method*, and the coach costs something every time it's used. Three tiers, on the landing page and at `/pricing`:
+
+| Tier | Price | What it is |
+|---|---|---|
+| **Foundations** | **$149**, one payment, lifetime | The method: all 81 lessons, the deck, the 24-challenge STORY journey, the standing coach's written feedback on every take, XP, ranks, trophies, streaks. No video review, no *Ask your coach*, no board. |
+| **Coached** *(the default)* | **$29/month or $249/year** | Everything in Foundations plus the coach who watches every take, spoken feedback with captions, *Ask your coach*, this week's board, notes when a review is ready. Up to 20 reviews a month. Cancel any time; Foundations stays theirs. |
+| **Founders** | **$599**, one payment, limited seats | A year of Coached, a monthly live group session with the teacher, a live cohort that starts and finishes together, the printed deck posted to them, the book when it ships, first access to new lessons. |
+
+Why these numbers: $149 sits under the "think about it" line for a named course; $29 is above the AI-feedback apps because the curriculum is in it, and the yearly at $249 is less than the one-off plus two months, so the yearly is the obvious choice; at a few cents a review the membership's margin holds. Comparable market: AI-feedback apps at $10–30 a month with no curriculum, named speaking courses at $200–600 one-off, coaching at $150–400 an hour.
+
+Two things to build on this: **pay-as-you-go by phase** for Foundations buyers who won't subscribe — Coached for one phase at $39, the same gate the ranks already draw — and **teams** at $20 a seat a month, ten seats minimum, with a manager's board; one team contract is thirty consumer subscriptions.
+
+In the code the plan lives on the student's state (`data/pricing.ts`, `lib/plan.ts`) and the checkout is still a stub — Stripe arrives with service integration (§19), and the webhook calls the same unlock the stub does.
 
 ## 16 · A three-part system: course, book, and card deck
 

@@ -10,6 +10,8 @@ import { TalkingLion, type TalkingLionHandle } from "@/components/talking-lion";
 import { SectionBanner } from "@/components/section-banner";
 import { ListenIcon, XIcon } from "@/components/icons";
 import { hapticTap } from "@/lib/feedback-fx";
+import { hasCoach } from "@/lib/plan";
+import { UpgradePanel } from "@/components/upgrade-panel";
 
 // Ask your coach (master plan §07): hold the button and ask - "how
 // have I been improving over my last few takes?" - and the coach
@@ -143,6 +145,18 @@ export function AskCoach() {
   };
 
   if (!ready) return null;
+  if (!hasCoach(state))
+    return (
+      <section className="flex flex-col overflow-hidden rounded-2xl border border-navy-600 bg-navy-800">
+        <SectionBanner image="/sections/trophies-lion.jpg" title="Ask your coach" Icon={ListenIcon} accentClass="text-advanced" large />
+        <div className="p-5">
+          <UpgradePanel
+            title="Ask your coach comes with Coached"
+            body="Hold to ask how your speaking is developing and the coach answers from your own record - every take, every note - aloud. It's part of the membership, with the coach who watches every take."
+          />
+        </div>
+      </section>
+    );
 
   return (
     <section className="flex flex-col overflow-hidden rounded-2xl border border-navy-600 bg-navy-800">

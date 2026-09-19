@@ -4,6 +4,7 @@ import { categoryById, type CategoryId } from "@/data/categories";
 import { lessons, lessonByVimeoId } from "@/data/lessons";
 import { getTranscript } from "@/lib/transcripts";
 import { LessonPlayer } from "@/components/lesson-player";
+import { LessonGate } from "@/components/lesson-gate";
 import { XpBadge } from "@/components/xp-badge";
 import { lessonXp } from "@/lib/progress";
 import { LessonFooterNav } from "@/components/lesson-footer-nav";
@@ -53,7 +54,9 @@ export default async function LessonPage(props: PageProps<"/skills/[category]/[v
         </div>
       </header>
 
-      <LessonPlayer vimeoId={lesson.vimeoId} title={lesson.title} />
+      <LessonGate vimeoId={lesson.vimeoId}>
+        <LessonPlayer vimeoId={lesson.vimeoId} title={lesson.title} />
+      </LessonGate>
 
       {transcript && (
         <details className="group rounded-xl border border-navy-600 bg-navy-800">

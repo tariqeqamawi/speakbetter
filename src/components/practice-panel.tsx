@@ -34,6 +34,8 @@ import { setPendingReview } from "@/lib/push-client";
 import { studentId } from "@/lib/student-id";
 import { PushPrompt } from "@/components/push-prompt";
 import { TakeRecorder, canRecordInApp } from "@/components/take-recorder";
+import { UpgradePanel } from "@/components/upgrade-panel";
+import { TRIAL_REVIEWS, hasCoach, onTrial, trialAllowsChallenge, trialReviewsUsed } from "@/lib/plan";
 import { RecordingsShelf } from "@/components/recordings-shelf";
 import { capturePoster, keepVideo } from "@/lib/attempt-videos";
 import { TalkingLion, type TalkingLionHandle } from "@/components/talking-lion";
@@ -74,6 +76,11 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
   // The map's gate, held here as well: a locked challenge reached by
   // its link says why, rather than taking a recording it won't count.
   const gate = ready ? phaseGate(state, storyPhases.findIndex((p) => p.id === challenge.phase)) : null;
+  // The plan's limits (lib/plan.ts): the free baseline records the two
+  // baseline challenges and gets one real review.
+  const trial = ready && onTrial(state);
+  const trialBlocked = trial && !trialAllowsChallenge(challenge);
+  const trialSpent = trial && trialReviewsUsed(state) >= TRIAL_REVIEWS;
   const [stage, setStage] = useState<Stage>({ kind: "idle" });
   // Bumped once a new recording is on the device, so the shelf re-reads.
   const [shelfKey, setShelfKey] = useState(0);
@@ -137,7 +144,11 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
       // the store) the review runs without a video and the stand-in
       // coach answers.
       let blobUrl: string | undefined;
+      // Foundations has the standing coach's written feedback and no
+      // video review: nothing is uploaded, the stand-in answers.
+      const watch = hasCoach(state) || onTrial(state);
       try {
+        if (!watch) throw new Error("standing coach");
         const ext = (file.name.split(".").pop() || "mp4").toLowerCase();
         const put = await upload(`attempts/${challenge.slug}/${crypto.randomUUID()}.${ext}`, file, {
           access: "private",
@@ -255,7 +266,21 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
         </div>
       )}
 
-      {gate && !gate.open && (
+      {trialBlocked && (
+        <UpgradePanel
+          title="This challenge is part of the course"
+          body="The free baseline covers the two baseline challenges. The rest of the STORY journey - all twenty-four challenges, every lesson, the deck - comes with Foundations, and the coach who watches every take with Coached."
+        />
+      )}
+      {trialSpent && !trialBlocked && stage.kind === "idle" && (
+        <UpgradePanel
+          title="Your free review is used"
+          body="That was the coach watching your take - the score, the spectrum, what to do next. Every take gets that with Coached; the method itself is one payment with Foundations."
+          cta="Unlock the rest of the journey"
+        />
+      )}
+
+      {gate && !gate.open && !trialBlocked && (
         <div className="flex flex-col items-start gap-2 rounded-xl border border-navy-600 bg-navy-800 p-5">
           <p className="inline-flex items-center gap-2 text-sm font-semibold text-ink">
             <LockIcon className="size-4 text-ink-faint" />
@@ -300,7 +325,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
         />
       )}
 
-      {stage.kind === "idle" && (!gate || gate.open) && (
+      {stage.kind === "idle" && (!gate || gate.open) && !trialBlocked && !trialSpent && (
         <div className="flex flex-col items-start gap-3 rounded-xl border border-navy-600 bg-navy-800 p-5">
           <p className="text-sm text-ink-muted">
             Record yourself here - selfie mode,{" "}

@@ -13,6 +13,8 @@ import {
   ZoomPortraitIcon,
 } from "@/components/player-icons";
 import { UnlockButton } from "@/components/unlock-button";
+import { Pricing } from "@/components/pricing";
+import Link from "next/link";
 import { CoachDemo } from "@/components/coach-demo";
 import { SpectrumDemo } from "@/components/spectrum-demo";
 
@@ -61,7 +63,12 @@ export function Landing() {
             poster="/thumbs/1080612884.jpg"
           />
         </div>
-        <UnlockButton />
+        <div className="flex flex-col items-center gap-2">
+          <UnlockButton plan="trial">Start with the free baseline</UnlockButton>
+          <a href="#pricing" className="text-xs font-medium text-ink-faint underline-offset-4 hover:text-ink hover:underline">
+            See what&apos;s included
+          </a>
+        </div>
         <PreviewChip />
       </section>
 
@@ -332,20 +339,21 @@ export function Landing() {
         <StoryPreview />
       </section>
 
-      {/* Pricing / unlock */}
-      <section className="flex flex-col items-center gap-4 rounded-2xl border border-navy-600 bg-navy-800 p-8 text-center">
-        <div className="spectrum-rule h-1 w-16 rounded-full" />
-        <h2 className="text-2xl font-semibold tracking-tight">
-          Start speaking better today
-        </h2>
-        <p className="max-w-md text-sm text-ink-muted">
-          One purchase unlocks the full course: every lesson, every challenge,
-          and your AI speaking coach. Your first challenge takes minutes.
-        </p>
-        <UnlockButton />
-        <p className="text-xs text-ink-faint">
-          Checkout stub - Stripe payment arrives with service integration.
-        </p>
+      {/* Pricing */}
+      <section id="pricing" className="flex flex-col items-center gap-6">
+        <div className="flex flex-col items-center gap-2 text-center">
+          <div className="spectrum-rule h-1 w-16 rounded-full" />
+          <h2 className="text-2xl font-semibold tracking-tight">Start free. Keep the method. Add the coach.</h2>
+          <p className="max-w-md text-sm text-ink-muted">
+            Record your baseline for nothing and get one real review. Then choose how far to take it.
+          </p>
+        </div>
+        <div className="w-full">
+          <Pricing compact />
+        </div>
+        <Link href="/pricing" className="text-xs font-semibold text-ink-muted underline-offset-4 hover:text-ink hover:underline">
+          Compare the tiers in full →
+        </Link>
       </section>
     </div>
   );

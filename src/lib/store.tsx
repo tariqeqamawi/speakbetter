@@ -13,6 +13,7 @@ import {
 import { usePathname } from "next/navigation";
 import type { CategoryId } from "@/data/categories";
 import { evaluateBadges, type EarnedBadge } from "@/data/badges";
+import type { Plan } from "@/data/pricing";
 import { standing } from "@/lib/progress";
 import { demoState } from "@/lib/demo-state";
 
@@ -89,6 +90,9 @@ export interface SharedReel {
 
 export interface AppState {
   unlocked: boolean;
+  /** What they're on: the free baseline, or a tier (data/pricing.ts).
+   *  Absent on states from before plans existed - treated as coached. */
+  plan?: Plan;
   level: Level | null;
   attempts: Attempt[];
   watchedLessons: string[]; // vimeo ids
@@ -139,7 +143,7 @@ interface StoreApi {
   state: AppState;
   ready: boolean; // false until localStorage has been read (avoids hydration flash)
   celebrations: EarnedBadge[]; // badges earned but not yet shown
-  unlock: () => void;
+  unlock: (plan?: Plan) => void;
   setLevel: (level: Level) => void;
   setIntention: (intention: string) => void;
   setProfile: (patch: { displayName?: string; avatar?: string }) => void;
@@ -293,7 +297,7 @@ function StoreCore({
       state,
       ready,
       celebrations,
-      unlock: () => applyWithBadges((p) => ({ ...p, unlocked: true })),
+      unlock: (plan = "coached") => applyWithBadges((p) => ({ ...p, unlocked: true, plan })),
       setLevel: (level) => applyWithBadges((p) => ({ ...p, level })),
       setIntention: (intention) =>
         applyWithBadges((p) => ({ ...p, intention: intention.trim() })),
