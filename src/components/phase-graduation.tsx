@@ -3,8 +3,10 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { storyPhases } from "@/data/challenges";
-import { categories } from "@/data/categories";
+import { challengesInPhase, storyPhases } from "@/data/challenges";
+import { categories, categoryById } from "@/data/categories";
+import { RoaringLion } from "@/components/roaring-lion";
+import { VideoStill } from "@/components/video-still";
 import { useCurrentPhaseIndex } from "@/components/journey-map";
 import { useStore } from "@/lib/store";
 import { playCelebration, hapticCelebrate } from "@/lib/feedback-fx";
@@ -70,6 +72,7 @@ export function PhaseGraduation() {
   if (show === null) return null;
   const passedPhase = storyPhases[show];
   const nextPhase = storyPhases[Math.min(show + 1, storyPhases.length - 1)];
+  const firstAhead = challengesInPhase(nextPhase.id)[0];
 
   return (
     <div
@@ -131,12 +134,28 @@ export function PhaseGraduation() {
 
         <div className="spectrum-rule h-1 w-32 rounded-full" />
 
-        <p className="text-sm text-ink">
-          Next:{" "}
-          <b className={nextPhase.textClass}>
-            Level {Math.min(show + 2, storyPhases.length)} - {nextPhase.name}
-          </b>
-        </p>
+        {/* The gate opening: the next phase's colour floods in behind
+            the lion, who roars it open, and its first challenge's still
+            comes up out of the dark - the road ahead, seen for the
+            first time. */}
+        {nextPhase.id !== passedPhase.id && (
+          <div className={`gate-open relative flex w-full flex-col items-center gap-2 overflow-hidden rounded-2xl border p-4 ${nextPhase.borderClass} ${nextPhase.textClass}`}>
+            <span aria-hidden className={`gate-flood absolute inset-0 ${nextPhase.bgClass}`} />
+            <span className="relative w-24">
+              <RoaringLion className="w-full" />
+            </span>
+            <span className="relative text-[0.65rem] font-bold uppercase tracking-[0.3em]">
+              Level {Math.min(show + 2, storyPhases.length)} opens
+            </span>
+            <span className="relative text-lg font-semibold text-ink">{nextPhase.name}</span>
+            {firstAhead?.vimeoId && (
+              <span className="gate-reveal relative mt-1 w-28 overflow-hidden rounded-lg ring-1 ring-current">
+                <VideoStill vimeoId={firstAhead.vimeoId} accent={categoryById.get(firstAhead.targetSkills[0])!} sizes="112px" />
+              </span>
+            )}
+            {firstAhead && <span className="relative text-xs text-ink-muted">First up: {firstAhead.title}</span>}
+          </div>
+        )}
 
         <button
           type="button"

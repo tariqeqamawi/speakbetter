@@ -155,6 +155,16 @@ export function JourneyMap() {
       alive = false;
     };
   }, []);
+  // The road remembers: beside a passed node, one line the coach said
+  // about that take - proof it watched, and a reason to read it again.
+  const quoteFor = (slug: string): string | null => {
+    const best = [...state.attempts].filter((a) => a.challengeSlug === slug && a.passed).sort((a, b) => b.score - a.score)[0];
+    const note = best?.strengths?.[0]?.note ?? best?.focus?.[0]?.note;
+    if (!note) return null;
+    const first = note.split(/(?<=[.!?])\s/)[0];
+    return first.length > 88 ? `${first.slice(0, 85).trimEnd()}…` : first;
+  };
+
   // The passed node held under a finger, playing its take. The hold
   // starts after a beat, so a tap is still a tap.
   const [held, setHeld] = useState<string | null>(null);
@@ -603,6 +613,11 @@ export function JourneyMap() {
                   } ${veiled ? "blur-[2px] select-none" : ""}`}
                 >
                   {shownTitle}
+                  {node.passed && quoteFor(node.slug) && (
+                    <span className={`mt-0.5 block text-[0.6rem] font-normal italic leading-snug text-ink-faint ${labelLeft ? "text-right" : ""}`}>
+                      &ldquo;{quoteFor(node.slug)}&rdquo;
+                    </span>
+                  )}
                   {/* What it pays, and where you are - on one line so a
                       node never grows a third stacked label. A challenge
                       is worth several lessons, which is the point of

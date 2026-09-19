@@ -1546,3 +1546,48 @@ svg.soundwave-c {
     animation: none;
   }
 }
+
+/* A phase gate opening: the next colour floods in, then settles to a
+   tint; the first challenge's still rises out of the dark. */
+.gate-flood {
+  opacity: 0.12;
+  animation: gate-flood 1.6s ease-out both;
+}
+
+@keyframes gate-flood {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  35% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 0.12;
+    transform: scale(1);
+  }
+}
+
+.gate-reveal {
+  animation: gate-reveal 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.6s both;
+}
+
+@keyframes gate-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem) scale(0.9);
+    filter: brightness(0.2);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: brightness(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gate-flood,
+  .gate-reveal {
+    animation: none;
+  }
+}
