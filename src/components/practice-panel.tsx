@@ -253,7 +253,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
             <button
               type="button"
               onClick={() => recordRef.current?.click()}
-              className="inline-flex items-center gap-2 rounded-lg bg-ink px-5 py-2.5 text-sm font-semibold text-navy-900 transition-opacity hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-lg bg-acting px-5 py-2.5 text-sm font-semibold text-navy-900 shadow-[0_0_22px_-4px_var(--color-acting)] transition-[box-shadow,opacity] hover:opacity-90 hover:shadow-[0_0_28px_-2px_var(--color-acting)]"
             >
               <VideoIcon className="size-4" />
               Record
@@ -261,7 +261,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
             <button
               type="button"
               onClick={() => pickRef.current?.click()}
-              className="inline-flex items-center gap-2 rounded-lg border border-navy-600 px-5 py-2.5 text-sm font-semibold text-ink-muted transition-colors hover:text-ink"
+              className="inline-flex items-center gap-2 rounded-lg border border-body-language px-5 py-2.5 text-sm font-semibold text-body-language shadow-[0_0_18px_-6px_var(--color-body-language)] transition-[box-shadow,background-color] hover:bg-body-language/10 hover:shadow-[0_0_24px_-4px_var(--color-body-language)]"
             >
               <UploadIcon className="size-4" />
               Upload
