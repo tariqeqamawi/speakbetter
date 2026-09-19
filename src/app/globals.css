@@ -1409,3 +1409,69 @@ svg.soundwave-c {
     transition: none;
   }
 }
+
+/* A trophy up close: the medal turning on its axis under a passing
+   shine, the way a medal is turned in the hand. */
+.trophy-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  perspective: 900px;
+}
+
+.trophy-turn {
+  display: block;
+  transform-style: preserve-3d;
+  animation: trophy-turn 6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  filter: drop-shadow(0 18px 24px rgba(3, 7, 18, 0.7));
+}
+
+@keyframes trophy-turn {
+  0% {
+    transform: rotateY(-28deg) rotateX(6deg);
+  }
+  50% {
+    transform: rotateY(28deg) rotateX(-4deg);
+  }
+  100% {
+    transform: rotateY(-28deg) rotateX(6deg);
+  }
+}
+
+.trophy-shine {
+  pointer-events: none;
+  position: absolute;
+  inset: 8%;
+  border-radius: 9999px;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.28) 48%,
+    rgba(255, 255, 255, 0.05) 52%,
+    transparent 70%
+  );
+  mix-blend-mode: screen;
+  animation: trophy-shine 6s ease-in-out infinite;
+}
+
+@keyframes trophy-shine {
+  0%,
+  100% {
+    transform: translateX(-60%);
+    opacity: 0;
+  }
+  35% {
+    opacity: 1;
+  }
+  50% {
+    transform: translateX(60%);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trophy-turn,
+  .trophy-shine {
+    animation: none;
+  }
+}
