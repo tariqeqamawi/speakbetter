@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { isStudentId, putJson } from "@/lib/server/store";
+import { loadPush, sendPush } from "@/lib/server/push";
 import { del, get } from "@vercel/blob";
 import { challengeBySlug, GRACE_SECONDS, maxSecondsFor } from "@/data/challenges";
 import { buildContext } from "@/lib/coach/context";
@@ -37,6 +39,10 @@ interface ReviewRequest {
   contentType?: string;
   /** The bench asks for the raw verdict and the prompt alongside. */
   debug?: boolean;
+  /** Who's asking and which attempt this is, so the answer can be kept
+   *  for them if they've left the page, and a note sent (lib/server/push). */
+  studentId?: string;
+  attemptId?: string;
 }
 
 /** What's configured - true/false only, never the values. */
@@ -114,6 +120,23 @@ export async function POST(request: Request) {
           prompt: context.prompt,
         },
       });
+    // Kept for a student who left the page while the coach watched -
+    // the app picks it up on its next open - and a note sent to say so.
+    if (isStudentId(body.studentId) && typeof body.attemptId === "string" && /^[0-9a-f-]{36}$/i.test(body.attemptId)) {
+      const kept = { ...shaped, attemptId: body.attemptId, challengeSlug: challenge.slug, durationSec: body.durationSec, at: new Date().toISOString() };
+      putJson(`reviews/${body.studentId}/${body.attemptId}.json`, kept).catch(() => {});
+      loadPush(body.studentId)
+        .then((record) =>
+          record &&
+          sendPush(body.studentId!, record, {
+            title: "Your review is ready",
+            body: `Your coach has watched "${challenge.title}". ${shaped.passed ? "Come and hear it." : "Come and hear what to do next."}`,
+            url: `/challenges/${challenge.slug}`,
+            tag: "review",
+          }),
+        )
+        .catch(() => {});
+    }
     return NextResponse.json(shaped);
   } catch (err) {
     console.error("[coach] review failed", err);

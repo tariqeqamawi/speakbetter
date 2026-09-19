@@ -24,6 +24,9 @@ import {
   VideoIcon,
 } from "@/components/icons";
 import { LionMouth } from "@/components/lion-mouth";
+import { setPendingReview } from "@/lib/push-client";
+import { studentId } from "@/lib/student-id";
+import { PushPrompt } from "@/components/push-prompt";
 import { RecordingsShelf } from "@/components/recordings-shelf";
 import { capturePoster, keepVideo } from "@/lib/attempt-videos";
 import { TalkingLion, type TalkingLionHandle } from "@/components/talking-lion";
@@ -146,6 +149,12 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
       poster.then((p) => {
         if (p) setStage((s) => (s.kind === "reviewing" ? { ...s, poster: p } : s));
       });
+      // The attempt's id is fixed before the coach starts, and noted as
+      // pending: if the student leaves the page while the coach watches,
+      // the review is kept for them under it (api/review/result) and
+      // picked up on their next open (lib/push-client).
+      const attemptId = crypto.randomUUID();
+      setPendingReview({ attemptId, challengeSlug: challenge.slug, durationSec, at: new Date().toISOString() });
       const res = await fetch("/api/review", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -156,16 +165,20 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
           attemptNumber: attempts.length + 1,
           blobUrl,
           contentType: file.type || undefined,
+          studentId: studentId(),
+          attemptId,
         }),
       });
       if (!res.ok) {
+        setPendingReview(null);
         const err = (await res.json().catch(() => null)) as { error?: string } | null;
         setStage({ kind: "error", message: err?.error ?? "Review failed - try again." });
         return;
       }
+      setPendingReview(null);
       const result = (await res.json()) as Omit<Attempt, "id" | "challengeSlug" | "at" | "durationSec">;
       const attempt: Attempt = {
-        id: crypto.randomUUID(),
+        id: attemptId,
         challengeSlug: challenge.slug,
         at: new Date().toISOString(),
         durationSec,
@@ -749,6 +762,7 @@ function Feedback({
       {splash === "shown" && (
         <XpSplash attempt={attempt} challenge={challenge} onClose={() => setSplash("done")} />
       )}
+      {splash === "done" && <PushPrompt />}
 
       {settled && canRevealAll && attempt.fullNotes.length > 0 && (
         <details className="rounded-lg border border-navy-600">

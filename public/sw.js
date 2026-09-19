@@ -5,7 +5,7 @@
 // offline page when a navigation can't be served at all, and nothing
 // touches video or API traffic.
 
-const CACHE = "speak-better-v6";
+const CACHE = "speak-better-v7";
 const OFFLINE_URL = "/offline.html";
 
 // The bones of the app, cached at install so first-launch offline still
@@ -141,5 +141,42 @@ self.addEventListener("fetch", (event) => {
         return res;
       })
       .catch(() => caches.match(request).then((hit) => hit ?? Response.error())),
+  );
+});
+
+// ── Push ──────────────────────────────────────────────────────────────
+// A note from the coach (api/push): shown as sent, and a tap opens the
+// page it names. The lion mark is the badge.
+self.addEventListener("push", (event) => {
+  let note = { title: "Speak Better", body: "", url: "/", tag: "coach" };
+  try {
+    note = { ...note, ...event.data.json() };
+  } catch {
+    // an empty push is a poke: show the default
+  }
+  event.waitUntil(
+    self.registration.showNotification(note.title, {
+      body: note.body,
+      tag: note.tag,
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
+      data: { url: note.url },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || "/";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((wins) => {
+      for (const w of wins) {
+        if ("focus" in w) {
+          w.navigate(url);
+          return w.focus();
+        }
+      }
+      return self.clients.openWindow(url);
+    }),
   );
 });

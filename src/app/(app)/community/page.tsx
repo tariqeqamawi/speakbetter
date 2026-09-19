@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { CommunityFeed } from "@/components/community-feed";
+import { WeeklyBoard } from "@/components/weekly-board";
 
 export const metadata: Metadata = {
   title: "Community",
@@ -17,6 +18,7 @@ export default function CommunityPage() {
       </header>
       {/* The feed is the community's before-and-afters; the rest of the
           layer (§12) arrives with Phase 6. */}
+      <WeeklyBoard />
       <CommunityFeed />
     </div>
   );
