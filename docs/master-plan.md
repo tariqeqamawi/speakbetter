@@ -301,6 +301,10 @@ Each STORY phase asks for a **rank** on top of the phase before it being done: *
 
 Two things this deliberately is not. **The lessons are never locked** — a milestone unlock on the deck was tried and cut, the student paid for the library, and the coach prescribes lessons in its feedback; a prescription can't land on a lock. And there is no **all-time leaderboard**: the community's board (§12) is this week's XP, opt-in, so a newcomer can lead in their first week and nobody is demotivated by a table they'll never climb. If XP ever unlocks content, it is *bonus* content — the teacher's extras — not the curriculum.
 
+### Notes from the coach — push, rationed
+
+The app sends notifications, and only five kinds: **your review is ready** (the one with plain utility — a review takes a minute or two and people leave the page; the review is kept for them and picked up on their next open), **an evening nudge** if today's practice hasn't happened and a streak is on the line, **a Monday recap** (colours reached, XP), **the next rank within reach** and what it opens (once per rank), and **"improving about N% a take"** when the last three takes on a challenge each scored higher (once per challenge). Asked once, right after a first review, when the student has just seen what a note would be about; a "no" is kept. One note a day at most. On an iPhone in Safari the app says to add it to the home screen first, which is where push works. The device reports a handful of true figures on each open and the daily job decides — the coach's rule holds: nothing is said that isn't so.
+
 ### The moment a lesson finishes
 
 When a lesson ends, the XP it paid rises off the player and out of frame over about three seconds, carried by a two-note chime — the smaller sibling of the badge celebration, which gets three. It's quieter and shorter on purpose: finishing a lesson happens a hundred times across a course and earning a badge happens rarely, so this has to be a sound a student still likes on the hundredth hearing.
@@ -357,9 +361,17 @@ On a laptop the dashboard's panels sit two to a row and read as one heads-up dis
 
 The panels count in figures a student feels rather than in totals: **Challenges** shows how many were attempted, how many passed, and the **minutes spent speaking to a lens** ("13 minutes of speaking practiced and uploaded — well done, every minute in front of the lens counts"); **Lessons** shows lessons and **minutes watched**, and each color's lessons as a strip of stills, watched ones in colour, so the library reads as something to look at rather than a list; **Attempts** carry a frame of the recording from the device's own copy, where one is still kept. **The trophy case** opens any trophy full-screen: the medal large and turning under a passing shine, the day it was won, and what won it — or, for one not yet won, what would.
 
+### Small things that move
+
+The lion in each dial's hub **roars** every five to ten seconds — the brand animation itself, scrubbed through the talking lion's frames, at no clock. On the streak calendar a neon glow **runs along the streak's days**, oldest to today, then rests and runs again. The lessons panel shows each colour as one square per lesson, watched ones lit, and a tick in the colour on every watched still.
+
 ### The dials
 
 The skill dial and the deck's dial share one hub: **the lion holds the centre and keeps its shape**; the name of the colour under the pointer sits above the dial, in its colour, with its count, and the hub's ring glows that colour. (The name used to change inside the hub, which turned the circle into an oval on a long name.) The seven names have a short form for a dial or a tab — Storytelling, Figurative, Acting skills, Structure, Speaker's mindset, Body & physical, Advanced. The ring is the seven colours joined end to end, and one bright length of it — the colour under the pointer — **slides round to the next colour** rather than jumping, changing colour on the way. On a phone the deck's colour carousel is worked with a thumb drawn across it.
+
+### The review, spoken and seen
+
+One button — *Listen to your coach's feedback*, with the lion's head and a listening icon. As the lion speaks, **the words come up as captions** a phrase at a time, over the wave, so the feedback is heard and seen together the way a reel's captions are followed; the spoken text isn't printed under the lion, and *Read the transcript* opens it full screen. The review then reads as rooms rather than a page of text: the brief isn't read back (it's at the top of the page), and each part sits under its own plate — *What worked*, *Your color spectrum*, *The lessons this challenge asked for*, *Skills you used without being asked* (with a glowing border), *For next time — do more of this* — and the verdict last, said plainly: *"Didn't pass this time."* A miss is named in the spoken review too, after the credit: the criterion, and the one turn that would have made it.
 
 ### The review's colours
 
