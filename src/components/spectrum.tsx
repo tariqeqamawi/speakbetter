@@ -38,9 +38,11 @@ export function SpectrumBars({
               <div
                 className={`h-full rounded-full transition-[width] duration-500 ease-out ${cat.bgClass} ${
                   lit ? "" : "opacity-40"
-                } ${needed && lit ? "bar-needed" : ""}`}
+                } ${needed && lit ? "relative" : ""}`}
                 style={{ width: shown ? `${value}%` : "0%" }}
-              />
+              >
+                {needed && lit && <span className="spectrum-needed absolute inset-0 rounded-full shadow-[0_0_12px_1px_currentColor] will-change-[opacity]" />}
+              </div>
             </div>
             <span className={`w-8 shrink-0 text-right text-xs tabular-nums ${needed ? "" : "text-ink-faint"}`}>
               {shown ? value : "·"}
@@ -100,8 +102,10 @@ export function SpectrumKey({
               {marks && (
                 <span
                   aria-hidden
-                  className={`mt-0.5 size-1.5 rounded-full ${needed ? `${cat.bgClass} bar-needed` : "bg-navy-600"}`}
-                />
+                  className={`relative mt-0.5 size-1.5 rounded-full ${needed ? cat.bgClass : "bg-navy-600"}`}
+                >
+                  {needed && <span className="spectrum-needed absolute inset-0 rounded-full shadow-[0_0_8px_1px_currentColor] will-change-[opacity]" />}
+                </span>
               )}
             </span>
           );

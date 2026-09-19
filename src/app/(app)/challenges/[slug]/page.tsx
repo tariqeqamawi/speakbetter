@@ -7,7 +7,7 @@ import { categoryById } from "@/data/categories";
 import { CategoryChip } from "@/components/category-chip";
 import { XpBadge } from "@/components/xp-badge";
 import { challengeXp } from "@/lib/progress";
-import { VimeoPlayer } from "@/components/vimeo-player";
+import { LazyVimeoPlayer } from "@/components/lazy-vimeo-player";
 import { PracticePanel } from "@/components/practice-panel";
 import { CircleIcon } from "@/components/icons";
 
@@ -59,8 +59,15 @@ export default async function ChallengePage(props: PageProps<"/challenges/[slug]
         </div>
       </header>
 
+      {/* A poster until it's played: the embed's player script is the
+          heaviest thing on the page, and the student may be here to
+          record, not to rewatch the brief. */}
       {challenge.vimeoId && (
-        <VimeoPlayer vimeoId={challenge.vimeoId} title={challenge.title} />
+        <LazyVimeoPlayer
+          vimeoId={challenge.vimeoId}
+          title={challenge.title}
+          poster={`/thumbs/${challenge.vimeoId}.jpg`}
+        />
       )}
 
       <section className="rounded-xl border border-navy-600 bg-navy-800 p-4">

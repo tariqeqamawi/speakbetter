@@ -1394,25 +1394,3 @@ svg.soundwave-c {
     opacity: 0.7;
   }
 }
-
-/* The same pulse on a bar or a dot: the glow swells, the shape holds. */
-.bar-needed {
-  animation: bar-needed 2.8s ease-in-out infinite;
-}
-
-@keyframes bar-needed {
-  0%,
-  100% {
-    box-shadow: 0 0 6px -1px currentColor;
-  }
-  50% {
-    box-shadow: 0 0 16px 1px currentColor;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .bar-needed {
-    animation: none;
-    box-shadow: 0 0 10px 0 currentColor;
-  }
-}

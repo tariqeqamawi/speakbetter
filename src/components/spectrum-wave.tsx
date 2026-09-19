@@ -67,78 +67,118 @@ export function SpectrumWave({
   const line = smooth(points);
   const area = `${line} L ${W + step} ${FLOOR + 40} L ${-step} ${FLOOR + 40} Z`;
 
+  const defs = (
+    <defs>
+      {/* Each peak sits over its own color, and the stops bleed into
+          their neighbors between peaks. */}
+      <linearGradient id={`trace-${uid}`} x1="0" y1="0" x2="1" y2="0">
+        {categories.map((cat, i) => (
+          <stop
+            key={cat.id}
+            offset={`${((i + 0.5) / categories.length) * 100}%`}
+            stopColor={`var(--color-${cat.id})`}
+          />
+        ))}
+      </linearGradient>
+      <linearGradient id={`fill-${uid}`} x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="white" stopOpacity="0.55" />
+        <stop offset="100%" stopColor="white" stopOpacity="0.04" />
+      </linearGradient>
+      <mask id={`fade-${uid}`}>
+        <rect width={W} height={H + 40} fill={`url(#fill-${uid})`} />
+      </mask>
+      <filter id={`glow-${uid}`} x="-10%" y="-30%" width="120%" height="180%">
+        <feGaussianBlur stdDeviation="7" />
+      </filter>
+    </defs>
+  );
+
   return (
-    <svg
-      viewBox={`0 0 ${W} ${H}`}
-      preserveAspectRatio="none"
-      className={`relative ${className}`}
-      aria-hidden
-    >
-      <defs>
-        {/* Each peak sits over its own color, and the stops bleed into
-            their neighbors between peaks. */}
-        <linearGradient id={`trace-${uid}`} x1="0" y1="0" x2="1" y2="0">
-          {categories.map((cat, i) => (
-            <stop
-              key={cat.id}
-              offset={`${((i + 0.5) / categories.length) * 100}%`}
-              stopColor={`var(--color-${cat.id})`}
-            />
-          ))}
-        </linearGradient>
-        <linearGradient id={`fill-${uid}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="white" stopOpacity="0.55" />
-          <stop offset="100%" stopColor="white" stopOpacity="0.04" />
-        </linearGradient>
-        <mask id={`fade-${uid}`}>
-          <rect width={W} height={H + 40} fill={`url(#fill-${uid})`} />
-        </mask>
-        <filter
-          id={`glow-${uid}`}
-          x="-10%"
-          y="-30%"
-          width="120%"
-          height="180%"
-        >
-          <feGaussianBlur stdDeviation="7" />
-        </filter>
-        <filter id={`pool-${uid}`} x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="16" />
-        </filter>
-        {/* One soft mask per highlighted color: its column of the
-            trace, feathered at both sides so the brightness fades into
-            the neighbours rather than stopping at a line. */}
-        <linearGradient id={`feather-${uid}`} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="white" stopOpacity="0" />
-          <stop offset="35%" stopColor="white" stopOpacity="1" />
-          <stop offset="65%" stopColor="white" stopOpacity="1" />
-          <stop offset="100%" stopColor="white" stopOpacity="0" />
-        </linearGradient>
-        {categories.map((cat, i) =>
-          highlight?.includes(cat.id) ? (
-            <mask key={cat.id} id={`col-${uid}-${cat.id}`}>
-              <rect x={step * (i - 0.35)} y={-40} width={step * 1.7} height={H + 80} fill={`url(#feather-${uid})`} />
-            </mask>
-          ) : null,
-        )}
-      </defs>
+    <div className={`relative ${className}`} aria-hidden>
+      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="absolute inset-0 size-full">
+        {defs}
+        {/* Bleed: a heavily blurred copy under everything, so color spills
+            past the line the way light does. */}
+        <path
+          d={area}
+          fill={`url(#trace-${uid})`}
+          opacity="0.5"
+          filter={`url(#glow-${uid})`}
+          className={animate ? "eq-wave-slow" : undefined}
+        />
+        {/* Body of the trace, fading out toward the floor. */}
+        <path
+          d={area}
+          fill={`url(#trace-${uid})`}
+          mask={`url(#fade-${uid})`}
+          className={animate ? "eq-wave" : undefined}
+        />
+        {/* The line itself, twice: a glow and a crisp edge. */}
+        <path
+          d={line}
+          fill="none"
+          stroke={`url(#trace-${uid})`}
+          strokeWidth="9"
+          strokeLinecap="round"
+          opacity="0.55"
+          filter={`url(#glow-${uid})`}
+          className={animate ? "eq-wave" : undefined}
+        />
+        <path
+          d={line}
+          fill="none"
+          stroke={`url(#trace-${uid})`}
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          className={animate ? "eq-wave" : undefined}
+        />
+      </svg>
 
       {/* The colors this challenge needs, lit from within: a pool of
-          the color under the peak, and the trace burning brighter
-          across that column. */}
+          the color under the peak and the trace burning brighter across
+          that column. Each is its own SVG on its own layer, so the pulse
+          is a compositor opacity change - the blur is drawn once, not
+          sixty times a second. */}
       {categories.map((cat, i) =>
         highlight?.includes(cat.id) ? (
-          <g key={cat.id}>
+          <svg
+            key={cat.id}
+            viewBox={`0 0 ${W} ${H}`}
+            preserveAspectRatio="none"
+            className="spectrum-needed absolute inset-0 size-full will-change-[opacity]"
+            style={{ animationDelay: `${i * 0.35}s` }}
+          >
+            <defs>
+              <filter id={`pool-${uid}-${cat.id}`} x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="16" />
+              </filter>
+              <filter id={`glow-${uid}-${cat.id}`} x="-10%" y="-30%" width="120%" height="180%">
+                <feGaussianBlur stdDeviation="7" />
+              </filter>
+              <linearGradient id={`feather-${uid}-${cat.id}`} x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="white" stopOpacity="0" />
+                <stop offset="35%" stopColor="white" stopOpacity="1" />
+                <stop offset="65%" stopColor="white" stopOpacity="1" />
+                <stop offset="100%" stopColor="white" stopOpacity="0" />
+              </linearGradient>
+              <mask id={`col-${uid}-${cat.id}`}>
+                <rect
+                  x={step * (i - 0.35)}
+                  y={-40}
+                  width={step * 1.7}
+                  height={H + 80}
+                  fill={`url(#feather-${uid}-${cat.id})`}
+                />
+              </mask>
+            </defs>
             <ellipse
               cx={peaks[i].x}
               cy={Math.min(FLOOR - 10, peaks[i].y + (FLOOR - peaks[i].y) * 0.45)}
               rx={step * 0.55}
               ry={Math.max(28, (FLOOR - peaks[i].y) * 0.7)}
               fill={`var(--color-${cat.id})`}
-              opacity="0.55"
-              filter={`url(#pool-${uid})`}
-              className="spectrum-needed"
-              style={{ animationDelay: `${i * 0.35}s` }}
+              opacity="0.7"
+              filter={`url(#pool-${uid}-${cat.id})`}
             />
             <path
               d={line}
@@ -146,51 +186,12 @@ export function SpectrumWave({
               stroke={`var(--color-${cat.id})`}
               strokeWidth="16"
               strokeLinecap="round"
-              opacity="0.8"
-              filter={`url(#glow-${uid})`}
+              filter={`url(#glow-${uid}-${cat.id})`}
               mask={`url(#col-${uid}-${cat.id})`}
-              className="spectrum-needed"
-              style={{ animationDelay: `${i * 0.35}s` }}
             />
-          </g>
+          </svg>
         ) : null,
       )}
-
-      {/* Bleed: a heavily blurred copy under everything, so color spills
-          past the line the way light does. */}
-      <path
-        d={area}
-        fill={`url(#trace-${uid})`}
-        opacity="0.5"
-        filter={`url(#glow-${uid})`}
-        className={animate ? "eq-wave-slow" : undefined}
-      />
-      {/* Body of the trace, fading out toward the floor. */}
-      <path
-        d={area}
-        fill={`url(#trace-${uid})`}
-        mask={`url(#fade-${uid})`}
-        className={animate ? "eq-wave" : undefined}
-      />
-      {/* The line itself, twice: a glow and a crisp edge. */}
-      <path
-        d={line}
-        fill="none"
-        stroke={`url(#trace-${uid})`}
-        strokeWidth="9"
-        strokeLinecap="round"
-        opacity="0.55"
-        filter={`url(#glow-${uid})`}
-        className={animate ? "eq-wave" : undefined}
-      />
-      <path
-        d={line}
-        fill="none"
-        stroke={`url(#trace-${uid})`}
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        className={animate ? "eq-wave" : undefined}
-      />
-    </svg>
+    </div>
   );
 }
