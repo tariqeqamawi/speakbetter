@@ -67,6 +67,26 @@ export function Landing() {
           Speak Better is built on practice: short lessons, real on-camera
           challenges, and feedback in full color.
         </p>
+        {/* The value, counted - what's in the box, before the box is
+            opened below. */}
+        <ul className="flex flex-wrap items-center justify-center gap-2">
+          {[
+            { n: "81", label: "nano lessons", color: "text-storytelling" },
+            { n: "24", label: "interactive challenges", color: "text-structure" },
+            { n: "79", label: "cards in the digital deck", color: "text-figurative" },
+            { n: "1", label: "AI coach trained on the method", color: "text-advanced" },
+            { n: "7", label: "colors of speaking to light up", color: "text-mindset" },
+          ].map((v) => (
+            <li
+              key={v.label}
+              className="flex items-baseline gap-1.5 rounded-full border border-navy-600 bg-navy-800/70 px-3.5 py-1.5"
+            >
+              <span className={`text-base font-bold tabular-nums ${v.color}`}>{v.n}</span>
+              <span className="text-xs font-medium text-ink-muted">{v.label}</span>
+            </li>
+          ))}
+          <li className="px-2 text-xs font-medium text-ink-faint">…and the trophies, ranks, streaks and board to go with them</li>
+        </ul>
         <div className="w-full max-w-2xl">
           {/* Facade poster is a library still of the same instructor - the
               intro video itself is unlisted, so Vimeo offers no poster. */}
