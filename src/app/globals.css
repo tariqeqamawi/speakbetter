@@ -1394,3 +1394,18 @@ svg.soundwave-c {
     opacity: 0.7;
   }
 }
+
+/* The bright length of a dial's ring, sliding round to the next color
+   rather than jumping, and changing color on the way. */
+.dial-sweep {
+  transition:
+    stroke-dashoffset 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    stroke 0.35s ease,
+    opacity 0.25s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dial-sweep {
+    transition: none;
+  }
+}

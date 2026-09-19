@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LessonCard, CardFaceDown } from "@/components/lesson-card";
@@ -257,38 +259,36 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
   const activeCards = active ? inSection(active.id) : [];
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
+      {/* The color under the thumb, named above the deck in its color -
+          the hub keeps its shape, as the skill dial's does. */}
+      <div className="flex h-12 flex-col items-center justify-center text-center" aria-live="polite">
+        {active ? (
+          <>
+            <span className={`text-lg font-semibold leading-tight ${active.textClass}`}>{active.short}</span>
+            <span className="text-xs text-ink-muted">{activeCards.length} cards</span>
+          </>
+        ) : (
+          <>
+            <span className="text-lg font-semibold text-ink">{cards.length} cards</span>
+            <span className="text-xs text-ink-muted">Press a color and let go</span>
+          </>
+        )}
+      </div>
+
       {/* The deck, face down, one color per node */}
       <div
         ref={dialRef}
         className="relative mx-auto aspect-square w-full max-w-xl select-none touch-pan-y"
       >
         <div
-          className={`absolute left-1/2 top-1/2 flex aspect-square w-[46%] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1.5 rounded-full border bg-navy-800/90 p-5 text-center transition-colors duration-300 ${
-            active ? `border-current ${active.textClass}` : "border-navy-600"
+          className={`absolute left-1/2 top-1/2 flex aspect-square w-[46%] -translate-x-1/2 -translate-y-1/2 items-center justify-center overflow-hidden rounded-full border bg-navy-800/90 transition-[border-color,box-shadow,color] duration-300 ${
+            active
+              ? `border-current ${active.textClass} shadow-[0_0_36px_-6px_currentColor]`
+              : "border-navy-600"
           }`}
         >
-          {active ? (
-            <>
-              <span
-                className={`text-base font-semibold leading-tight ${active.textClass}`}
-              >
-                {active.name}
-              </span>
-              <span className="text-xs text-ink-muted">
-                {activeCards.length} cards
-              </span>
-            </>
-          ) : (
-            <>
-              <span className="text-base font-semibold text-ink">
-                {cards.length} cards
-              </span>
-              <span className="text-xs text-ink-muted">
-                Press a color and let go
-              </span>
-            </>
-          )}
+          <Image src="/logo-mark.png" alt="" width={320} height={256} className="h-16 w-auto sm:h-24" />
         </div>
 
         {categories.map((cat, i) => {

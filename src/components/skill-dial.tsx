@@ -20,7 +20,9 @@ const NODE_ANGLE = 360 / categories.length;
 const RADIUS = 41;
 /** Arc ring radius in viewBox units (100 x 100). */
 const ARC_R = 41;
-const ARC_GAP = 10; // degrees left unlit between arcs
+/** The ring's circumference and one color's length of it. */
+const CIRC = 2 * Math.PI * ARC_R;
+const SEGMENT = CIRC / categories.length;
 
 function polar(angleDeg: number, r: number): { x: number; y: number } {
   const rad = ((angleDeg - 90) * Math.PI) / 180;
@@ -104,6 +106,7 @@ export function SkillDial() {
   }, [router, prefix]);
 
   const active = hovered ? categories.find((c) => c.id === hovered) : null;
+  const activeIndex = active ? categories.indexOf(active) : -1;
   const activeLessons = active ? lessonsInCategory(active.id) : [];
   const activeWatched = activeLessons.filter((l) =>
     state.watchedLessons.includes(l.vimeoId),
@@ -141,30 +144,40 @@ export function SkillDial() {
       ref={dialRef}
       className="relative mx-auto aspect-square w-full max-w-xl select-none touch-pan-y"
     >
-      {/* The ring: one arc per category, faint until its node is hovered.
-          Decorative - the nodes carry the interaction. */}
+      {/* The ring: the seven colors joined end to end, faint, and one
+          bright length of it - the color under the pointer - that slides
+          round to the next color rather than jumping: a dashed circle
+          whose dash is one segment long and whose offset is animated. */}
       <svg
         viewBox="0 0 100 100"
         className="absolute inset-0 h-full w-full"
         aria-hidden
       >
-        {categories.map((cat, i) => {
-          const start = i * NODE_ANGLE + ARC_GAP / 2;
-          const end = (i + 1) * NODE_ANGLE - ARC_GAP / 2;
-          const lit = hovered === cat.id;
-          return (
-            <path
-              key={cat.id}
-              d={arcPath(start, end, ARC_R)}
-              fill="none"
-              stroke={`var(--color-${cat.id})`}
-              strokeWidth={lit ? 2.2 : 1}
-              strokeLinecap="round"
-              opacity={lit ? 0.95 : hovered ? 0.15 : 0.3}
-              className="transition-all duration-300"
-            />
-          );
-        })}
+        {categories.map((cat, i) => (
+          <path
+            key={cat.id}
+            d={arcPath(i * NODE_ANGLE, (i + 1) * NODE_ANGLE, ARC_R)}
+            fill="none"
+            stroke={`var(--color-${cat.id})`}
+            strokeWidth={1}
+            opacity={hovered ? 0.18 : 0.3}
+            className="transition-opacity duration-300"
+          />
+        ))}
+        <circle
+          cx="50"
+          cy="50"
+          r={ARC_R}
+          fill="none"
+          stroke={active ? `var(--color-${active.id})` : "transparent"}
+          strokeWidth={2.4}
+          strokeLinecap="round"
+          strokeDasharray={`${SEGMENT} ${CIRC - SEGMENT}`}
+          strokeDashoffset={-(activeIndex < 0 ? 0 : activeIndex) * SEGMENT}
+          opacity={active ? 0.95 : 0}
+          transform="rotate(-90 50 50)"
+          className="dial-sweep"
+        />
       </svg>
 
       {/* The hub: the lion, ringed in the color the pointer is on. It
