@@ -15,17 +15,20 @@ import { ZapIcon } from "@/components/icons";
 export function XpBadge({
   xp,
   size = "sm",
+  upTo = false,
   className = "",
 }: {
   xp: number;
   /** `sm` sits on a card corner; `md` sits in a heading. */
   size?: "sm" | "md";
+  /** A challenge pays by score, so its figure is the most it can pay. */
+  upTo?: boolean;
   className?: string;
 }) {
   const small = size === "sm";
   return (
     <span
-      title={`Worth ${xp} XP`}
+      title={upTo ? `Worth up to ${xp} XP - paid by your score` : `Worth ${xp} XP`}
       className={`inline-flex items-center gap-1 rounded-full font-bold tabular-nums ${
         small
           ? "px-1.5 py-0.5 text-[0.6rem]"
@@ -33,6 +36,7 @@ export function XpBadge({
       } ${className}`}
     >
       <ZapIcon className={small ? "size-3" : "size-3.5"} />
+      {upTo && <span className="font-medium opacity-80">up to</span>}
       {xp}
       <span className={small ? "sr-only" : ""}>XP</span>
     </span>

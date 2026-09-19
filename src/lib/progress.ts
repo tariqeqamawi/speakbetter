@@ -64,6 +64,24 @@ export function challengeXp(challenge: Challenge): number {
   return PHASE_XP[challenge.phase];
 }
 
+/**
+ * The share of a challenge's XP a score earns. A pass at 60 takes
+ * about two thirds of it; 100 takes all of it; the line between is
+ * straight. So the challenge is worth "up to" its figure, said before
+ * the fact, and a better take on the same challenge is worth more -
+ * a scale the student can see, not a lottery (§11).
+ */
+export function scoreShare(score: number): number {
+  const share = 0.65 + (0.35 * (score - 60)) / 40;
+  return Math.max(0.5, Math.min(1, share));
+}
+
+/** What a pass at this score is worth on this challenge. */
+export function challengeXpFor(challenge: Challenge, score: number): number {
+  if (challenge.passive) return challengeXp(challenge);
+  return Math.round(challengeXp(challenge) * scoreShare(score));
+}
+
 export interface Rank {
   name: string;
   at: number; // XP required to hold this rank
@@ -91,14 +109,18 @@ export interface RankStanding {
 }
 
 export function standing(state: AppState): RankStanding {
-  const passedSlugs = new Set(
-    state.attempts.filter((a) => a.passed).map((a) => a.challengeSlug),
-  );
+  // A challenge pays its best passing take - so improving a score on
+  // one already passed is worth something, and never less than before.
+  const bestPassed = new Map<string, number>();
+  for (const a of state.attempts) {
+    if (!a.passed) continue;
+    bestPassed.set(a.challengeSlug, Math.max(bestPassed.get(a.challengeSlug) ?? 0, a.score));
+  }
   // Summed item by item rather than by multiplying counts, because a
   // lesson and a challenge are each worth what they are individually.
   const challengeTotal = challenges
-    .filter((c) => passedSlugs.has(c.slug))
-    .reduce((sum, c) => sum + challengeXp(c), 0);
+    .filter((c) => bestPassed.has(c.slug))
+    .reduce((sum, c) => sum + challengeXpFor(c, bestPassed.get(c.slug)!), 0);
   const lessonTotal = state.watchedLessons.reduce(
     (sum, id) => sum + lessonXp(id),
     0,

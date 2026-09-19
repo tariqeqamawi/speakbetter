@@ -47,6 +47,7 @@ export default async function ChallengePage(props: PageProps<"/challenges/[slug]
           <XpBadge
             xp={challengeXp(challenge)}
             size="md"
+            upTo={!challenge.passive}
             className={`border border-navy-600 ${phase.textClass}`}
           />
         </div>

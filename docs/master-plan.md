@@ -283,7 +283,7 @@ Every action worth doing carries a number, and the number is shown *before* the 
 | Action | Worth |
 |---|---|
 | Watching a lesson | 8–22 XP, scaled by the lesson's length |
-| Passing a challenge | 100–200 XP, rising through the five STORY phases |
+| Passing a challenge | up to 100–200 XP, rising through the five STORY phases — paid by score (see below) |
 | The one passive challenge item | 50 XP |
 | Uploading an attempt | 25 XP |
 | Earning a badge | 50 XP |
@@ -292,6 +292,8 @@ Every action worth doing carries a number, and the number is shown *before* the 
 Lesson XP is deliberately not rounded to a tidy grid. A two-and-a-half minute lesson pays 22 and a thirty-second one pays 8, landing on fourteen distinct values across the library — **8, 11, 12, 14 reads as this lesson's own number; a course of 10s and 15s reads as a tariff applied to a list.** Each lesson becomes a small thing to complete rather than one identical unit among a hundred and twenty-one.
 
 Challenges pay an order of magnitude more, because a lesson is watched while a challenge is performed, recorded, and judged — and they climb through the phases, since the same effort late in the journey is being asked of someone doing harder things with it.
+
+**A challenge pays by score.** Its figure is the most it can pay, shown as "up to 150 XP" on the challenge; a pass at 60 earns about two thirds of it, 100 earns all of it, and the line between is straight (`scoreShare` in `lib/progress.ts`). A challenge counts its best passing take, so a better score on one already passed is worth more and never less. This is a scale the student can see before recording, not a variable reward — the anti-dark-pattern rule holds. The moment the verdict lands, a splash says what the take was worth and what a better one would be: *"Congratulations — you passed. 72 / 100. +141 XP. This challenge pays up to 150 — improve your score to unlock more."* A miss pays the upload and says what a pass would pay.
 
 ### The moment a lesson finishes
 

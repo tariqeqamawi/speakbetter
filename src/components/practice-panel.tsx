@@ -4,6 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { upload } from "@vercel/blob/client";
 import { useStore, type Attempt, type FeedbackNote } from "@/lib/store";
 import { GRACE_SECONDS, maxSecondsFor, type Challenge } from "@/data/challenges";
+import { XP, challengeXp, challengeXpFor } from "@/lib/progress";
+import { ZapIcon } from "@/components/icons";
+import { hapticCelebrate, playCelebration } from "@/lib/feedback-fx";
 import { lessonByVimeoId } from "@/data/lessons";
 import { categories, categoryById, type CategoryId } from "@/data/categories";
 import Link from "next/link";
@@ -341,7 +344,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
         <Feedback
           attempt={stage.attempt}
           videoUrl={stage.url}
-          challengeTitle={challenge.title}
+          challenge={challenge}
           onDone={() => setStage({ kind: "idle" })}
         />
       )}
@@ -394,14 +397,15 @@ function AttemptCard({ label, attempt }: { label: string; attempt: Attempt }) {
 function Feedback({
   attempt,
   videoUrl,
-  challengeTitle,
+  challenge,
   onDone,
 }: {
   attempt: Attempt;
   videoUrl: string;
-  challengeTitle: string;
+  challenge: Challenge;
   onDone: () => void;
 }) {
+  const challengeTitle = challenge.title;
   const { state } = useStore();
   const canRevealAll = state.level !== "beginner"; // §08/§09: nested reveal
 
@@ -443,6 +447,15 @@ function Feedback({
     const t = setTimeout(() => setVerdictShown(true), 1400);
     return () => clearTimeout(t);
   }, [settled, verdictShown, attempt.spoken]);
+
+  // The XP splash, a beat after the verdict: what this take earned,
+  // and what a better one would. Once per review.
+  const [splash, setSplash] = useState<"pending" | "shown" | "done">("pending");
+  useEffect(() => {
+    if (!verdictShown || splash !== "pending") return;
+    const t = setTimeout(() => setSplash("shown"), 900);
+    return () => clearTimeout(t);
+  }, [verdictShown, splash]);
 
   const noteLine = (n: FeedbackNote) => {
     const refs = canRevealAll
@@ -709,6 +722,10 @@ function Feedback({
         </div>
       )}
 
+      {splash === "shown" && (
+        <XpSplash attempt={attempt} challenge={challenge} onClose={() => setSplash("done")} />
+      )}
+
       {settled && canRevealAll && attempt.fullNotes.length > 0 && (
         <details className="rounded-lg border border-navy-600">
           <summary className="cursor-pointer select-none px-3 py-2.5 text-sm font-medium text-ink-muted transition-colors hover:text-ink">
@@ -816,6 +833,75 @@ function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => v
       {state === "failed" && (
         <p className="max-w-prose text-center text-sm text-ink-muted">{spoken}</p>
       )}
+    </div>
+  );
+}
+
+/**
+ * What the take was worth, said the moment the verdict lands. A pass
+ * pays the challenge by score - "you scored 72 and earned 116 XP; a
+ * better take is worth up to 150" - so the number invites the next
+ * attempt. A miss pays the upload and says what a pass would pay.
+ */
+function XpSplash({
+  attempt,
+  challenge,
+  onClose,
+}: {
+  attempt: Attempt;
+  challenge: Challenge;
+  onClose: () => void;
+}) {
+  const max = challengeXp(challenge);
+  const earned = attempt.passed ? challengeXpFor(challenge, attempt.score) : 0;
+  useEffect(() => {
+    if (attempt.passed) {
+      playCelebration();
+      hapticCelebrate();
+    }
+  }, [attempt.passed]);
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="xp-splash-title"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-navy-950/70 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="celebration-pop flex w-full max-w-sm flex-col items-center gap-3 rounded-2xl border border-navy-600 bg-navy-800 p-6 text-center shadow-2xl shadow-navy-950/80"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <span className="spectrum-rule h-1 w-16 rounded-full" />
+        <p id="xp-splash-title" className="text-lg font-bold text-ink">
+          {attempt.passed ? "Congratulations - you passed." : "Not this time - but it counts."}
+        </p>
+        <p className="text-3xl font-bold tabular-nums text-ink">
+          {attempt.score}
+          <span className="text-sm font-medium text-ink-faint"> / 100</span>
+        </p>
+        <p
+          className={`celebration-bounce inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-base font-bold tabular-nums ${
+            attempt.passed ? "bg-mindset/15 text-mindset" : "bg-storytelling/15 text-storytelling"
+          }`}
+        >
+          <ZapIcon className="size-4" />+{earned + XP.upload} XP
+        </p>
+        <p className="text-sm text-ink-muted text-balance">
+          {attempt.passed
+            ? earned < max
+              ? `${earned} XP for the pass, ${XP.upload} for the upload. This challenge pays up to ${max} - improve your score to unlock more.`
+              : `The full ${max} XP for the challenge, and ${XP.upload} for the upload. That's as good as it gets.`
+            : `${XP.upload} XP for the upload. Pass this challenge for up to ${max} XP - a better score pays more.`}
+        </p>
+        <button
+          type="button"
+          onClick={onClose}
+          className="mt-1 rounded-lg bg-ink px-5 py-2 text-sm font-semibold text-navy-900 transition-opacity hover:opacity-90"
+        >
+          {attempt.passed ? "Nice" : "Go again"}
+        </button>
+      </div>
     </div>
   );
 }
