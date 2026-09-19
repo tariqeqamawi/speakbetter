@@ -5,7 +5,7 @@
 // offline page when a navigation can't be served at all, and nothing
 // touches video or API traffic.
 
-const CACHE = "speak-better-v5";
+const CACHE = "speak-better-v6";
 const OFFLINE_URL = "/offline.html";
 
 // The bones of the app, cached at install so first-launch offline still

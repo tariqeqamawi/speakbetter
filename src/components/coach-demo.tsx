@@ -56,51 +56,51 @@ const SAMPLE_NOTES: { category: CategoryId; note: string; lesson: string }[] = [
 
 // What the coach is talking about, moment by moment. The times are
 // word timestamps from the clip itself (faster-whisper), in the clip's
-// own time - playback is faster, but media time isn't - so each symbol
+// own time (it arrives already at the coach's pace) so each symbol
 // lands on the word being spoken: the student hears "hands" and sees a
 // hand. The clip is the settled voice (Charon, British, the lion's
 // direction) said through /api/speak; regenerate it there if the line
 // changes, and re-time these.
 const CUES: SpokenCue[] = [
   {
-    at: 2.2,
-    until: 3.3,
+    at: 0.9,
+    until: 2.1,
     word: "Passed",
     colorClass: "text-mindset",
     Icon: CheckCircleIcon,
     summary: false, // a verdict, not something to work on
   },
   {
-    at: 6.9,
-    until: 9.9,
+    at: 4.0,
+    until: 6.5,
     word: "Hands",
     colorClass: "text-body-language",
     Icon: HandIcon,
   },
   {
-    at: 12.6,
-    until: 14.0,
+    at: 8.2,
+    until: 9.3,
     word: "Paint the picture",
     colorClass: "text-figurative",
     Icon: BrushIcon,
   },
   {
-    at: 15.2,
-    until: 17.1,
+    at: 9.9,
+    until: 11.4,
     word: "Went flat",
     colorClass: "text-acting",
     Icon: FlatlineIcon,
   },
   {
-    at: 18.3,
-    until: 20.7,
+    at: 12.0,
+    until: 14.1,
     word: "Comparison",
     colorClass: "text-figurative",
     Icon: SpectrumIcon,
   },
   {
-    at: 23.3,
-    until: 25.1,
+    at: 15.2,
+    until: 16.6,
     word: "Into the scene",
     colorClass: "text-storytelling",
     Icon: FilmIcon,
