@@ -365,6 +365,19 @@ Beyond challenge feedback, the coach **drops in unprompted** with encouragement 
 
 The rule that governs it: **every claim is checked against the record first.** The coach never congratulates anyone on something that didn't happen. That constraint holds when a language model replaces the composer — the model receives the same verified figures and phrases them, rather than inventing them.
 
+### The lion speaks — settled
+
+The coach's voice and the lion that says it are decided, after an audition of Gemini's thirty stock voices against real lines of coaching (the bench is at `/prototype/voice`), and these are the settings the app ships with:
+
+- **Voice: Charon** (Gemini text-to-speech), **British** — Received Pronunciation, London.
+- **Direction:** *"in a very deep, low, rumbling, gravelly baritone — a lion's voice — calm and even, steady in tone with little rise and fall, at a natural conversational pace."* Even, not melodic: the delivery was over-expressive when the direction asked for energy, so it asks for steadiness instead.
+- **Pace: 1.3×** playback with pitch preserved. Gemini takes pace in a direction loosely, so the exact part is the player's — the gravel stays where it is, the delivery is brisk and conversational.
+- Only a voice that is still one of the app's presets is honoured from a browser's saved choice; anything older falls back to these, so a phone that auditioned weeks ago doesn't keep an old lion.
+
+**The lion's mouth** is the brand animation itself, not a puppet of it: twenty-eight frames of the mark's own roar (ten real, two motion-interpolated in-betweens after each), scrubbed by the loudness of the voice. Its resting frame has been closed — the mark is drawn with the lips slightly parted, so the dark wedge is shrunk to 40% with the outline untouched — and it never reaches the roar itself, which read as exaggerated on ordinary coaching. Between frames the two neighbours are blended, so it blurs while it moves and is crisp while it doesn't. And it opens on **a beat of speech, not a syllable**: a sound opens it, it holds for about two syllables, closes promptly, and the next sound opens it again — "momentary" is two opens, *moment* and *tary* — which is what talking looks like from across a room. The sprite is rebuilt from the delivered MOV by `scripts/build-lion-mouth.py`.
+
+The teacher's own cloned voice remains a later swap behind the same function (`src/lib/coach/voice.ts`).
+
 ### Showing the mechanic before the sale
 
 The colour-spectrum score is the product's one genuinely novel idea, and a visitor previously couldn't see it until they had paid, onboarded and uploaded. The landing page now **plays it**: a sample review runs end to end — the coach watches, the spectrum fills, the notes land one after another, and the lion says it aloud. A second demo shows the same speaker before and after, two colours against seven. An instructor section answers who is teaching this.
