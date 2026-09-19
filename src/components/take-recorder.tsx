@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { VideoIcon, XIcon } from "@/components/icons";
+import { CheckIcon, VideoIcon, XIcon } from "@/components/icons";
 import { hapticTap } from "@/lib/feedback-fx";
 
 // Recording a take inside the app, with the clock in view. The phone's
@@ -46,14 +46,29 @@ export function canRecordInApp(): boolean {
   );
 }
 
+/** A criterion the clock can judge on its own: "at least 60 seconds"
+ *  ticks itself once the take has run that long; "under three
+ *  minutes" is what the stop at the limit guarantees, so it's ticked
+ *  from the first second. Everything else is the student's own tick. */
+function timed(text: string): { kind: "atLeast"; seconds: number } | { kind: "under" } | null {
+  const least = /at least (\d+) (second|minute)s?/i.exec(text);
+  if (least) return { kind: "atLeast", seconds: Number(least[1]) * (least[2].toLowerCase() === "minute" ? 60 : 1) };
+  if (/(under|within|less than|no more than).*(second|minute)s?/i.test(text)) return { kind: "under" };
+  return null;
+}
+
 export function TakeRecorder({
   limitSec,
+  criteria = [],
   onDone,
   onFallback,
   onClose,
 }: {
   /** The challenge's limit - the clock starts here and the recording stops here. */
   limitSec: number;
+  /** What the challenge asks for, one line each - the brief, on screen
+   *  while they speak, each line ticked as it's met. */
+  criteria?: string[];
   /** The take, with the seconds it ran. */
   onDone: (file: File, durationSec: number) => void;
   /** The browser couldn't record: open the phone's camera app instead. */
@@ -69,6 +84,8 @@ export function TakeRecorder({
   const [phase, setPhase] = useState<"asking" | "ready" | "recording" | "finishing" | "denied">("asking");
   const [left, setLeft] = useState(limitSec);
   const [facing, setFacing] = useState<"user" | "environment">("user");
+  const [ticked, setTicked] = useState<Set<number>>(new Set());
+  const [briefOpen, setBriefOpen] = useState(true);
 
   // The camera, opened when the sheet opens and closed when it closes.
   const open = useCallback(async (mode: "user" | "environment") => {
@@ -143,6 +160,13 @@ export function TakeRecorder({
   };
 
   const recording = phase === "recording";
+  const elapsed = limitSec - left;
+  const isMet = (text: string, i: number): boolean => {
+    const t = timed(text);
+    if (t?.kind === "atLeast") return recording && elapsed >= t.seconds;
+    if (t?.kind === "under") return recording;
+    return ticked.has(i);
+  };
   const tone = left <= alarmAt(limitSec) ? "alarm" : left <= warnAt(limitSec) ? "warn" : "calm";
   const ring = limitSec > 0 ? 1 - left / limitSec : 0;
 
@@ -190,6 +214,59 @@ export function TakeRecorder({
           {!recording && <span className="text-xs text-ink-muted">max</span>}
         </div>
       </div>
+
+      {/* The brief, in shorthand, while they speak: each line ticks as
+          it's met - by the clock where the clock can tell, by their own
+          tap where only they can. A tap on the heading folds it away. */}
+      {criteria.length > 0 && phase !== "denied" && (
+        <div className="relative mx-4 max-w-xs self-start rounded-xl border border-white/15 bg-navy-950/70 backdrop-blur-sm">
+          <button
+            type="button"
+            onClick={() => setBriefOpen((o) => !o)}
+            className="flex w-full items-center justify-between gap-3 px-3 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-ink-muted"
+          >
+            The brief
+            <span className="tabular-nums text-ink-faint">
+              {criteria.filter((c, i) => isMet(c, i)).length}/{criteria.length}
+            </span>
+          </button>
+          {briefOpen && (
+            <ul className="flex flex-col gap-1 px-2 pb-2">
+              {criteria.map((c, i) => {
+                const met = isMet(c, i);
+                const byClock = timed(c) !== null;
+                return (
+                  <li key={i}>
+                    <button
+                      type="button"
+                      disabled={byClock}
+                      onClick={() => {
+                        hapticTap();
+                        setTicked((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(i)) next.delete(i);
+                          else next.add(i);
+                          return next;
+                        });
+                      }}
+                      className="flex w-full items-start gap-2 rounded-lg px-1.5 py-1 text-left text-xs leading-snug disabled:cursor-default"
+                    >
+                      <span
+                        className={`mt-0.5 grid size-4 shrink-0 place-items-center rounded-full border transition-colors ${
+                          met ? "border-mindset bg-mindset text-navy-950 shadow-[0_0_8px_-1px_var(--color-mindset)]" : "border-white/30 text-transparent"
+                        }`}
+                      >
+                        <CheckIcon className="size-2.5" />
+                      </span>
+                      <span className={met ? "text-ink" : "text-ink-muted"}>{c}</span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      )}
 
       {/* The last stretch, said in words as well as colour. */}
       {recording && tone !== "calm" && (

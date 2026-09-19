@@ -290,6 +290,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
       {recorder && (
         <TakeRecorder
           limitSec={limit}
+          criteria={challenge.criteria}
           onDone={onRecorded}
           onFallback={() => {
             setRecorder(false);
