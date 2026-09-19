@@ -18,6 +18,7 @@ import { CategoryIcon } from "@/components/category-icons";
 import { SectionBanner } from "@/components/section-banner";
 import {
   ChallengesIcon,
+  CheckIcon,
   FilmIcon,
   FlameIcon,
   MedalIcon,
@@ -154,28 +155,35 @@ export default function DashboardPage() {
             state.watchedLessons.includes(l.vimeoId),
           ).length;
           return (
-            <li key={cat.id} className="flex flex-col gap-1.5">
-              <span className="flex items-center gap-3">
+            <li key={cat.id} className="flex flex-col gap-2">
+              <span className="flex items-center gap-2.5">
                 <CategoryIcon
                   category={cat.id}
                   className={`size-4 shrink-0 ${cat.textClass}`}
                 />
-                <span className="flex-1 truncate text-xs text-ink-muted">
+                <span className={`w-28 shrink-0 truncate text-xs font-medium ${cat.textClass}`}>
                   {cat.short}
                 </span>
-                <span className="h-2 w-20 overflow-hidden rounded-full bg-navy-900">
-                  <span
-                    className={`block h-full rounded-full ${cat.bgClass}`}
-                    style={{ width: `${(seen / inCat.length) * 100}%` }}
-                  />
+                {/* One square per lesson, the watched ones in the color:
+                    the count is the picture, not a sliver of a bar. */}
+                <span className="flex flex-1 flex-wrap gap-[3px]" aria-hidden>
+                  {inCat.map((l) => {
+                    const done = state.watchedLessons.includes(l.vimeoId);
+                    return (
+                      <span
+                        key={l.vimeoId}
+                        className={`h-2.5 w-2.5 rounded-[3px] ${done ? `${cat.bgClass} shadow-[0_0_6px_-1px_currentColor] ${cat.textClass}` : "bg-navy-950 ring-1 ring-inset ring-navy-600"}`}
+                      />
+                    );
+                  })}
                 </span>
-                <span className="w-10 text-right text-xs tabular-nums text-ink-faint">
-                  {seen}/{inCat.length}
+                <span className="w-10 shrink-0 text-right text-xs tabular-nums text-ink-muted">
+                  <b className={`font-semibold ${cat.textClass}`}>{seen}</b>/{inCat.length}
                 </span>
               </span>
-              {/* The section's lessons as a strip of stills - not
-                  links, a look at what's in there. Watched ones in
-                  full color, the rest dimmed until they are. */}
+              {/* The section's lessons as a strip of stills - not links,
+                  a look at what's in there. A watched one is lit and
+                  carries a tick in the color; the rest wait, dimmed. */}
               <span className="-mx-5 flex gap-1.5 overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {inCat.map((l) => {
                   const done = state.watchedLessons.includes(l.vimeoId);
@@ -183,9 +191,7 @@ export default function DashboardPage() {
                     <span
                       key={l.vimeoId}
                       title={l.title}
-                      className={`relative aspect-video w-16 shrink-0 overflow-hidden rounded-md bg-navy-900 ring-1 ${
-                        done ? `ring-current ${cat.textClass}` : "ring-navy-600"
-                      }`}
+                      className="relative aspect-video w-16 shrink-0 overflow-hidden rounded-md bg-navy-900"
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
@@ -193,8 +199,15 @@ export default function DashboardPage() {
                         alt=""
                         loading="lazy"
                         decoding="async"
-                        className={`size-full object-cover ${done ? "" : "opacity-45 saturate-50"}`}
+                        className={`size-full object-cover ${done ? "" : "opacity-40 saturate-0"}`}
                       />
+                      {done && (
+                        <span
+                          className={`absolute bottom-0.5 right-0.5 grid size-4 place-items-center rounded-full bg-navy-950/85 ${cat.textClass}`}
+                        >
+                          <CheckIcon className="size-2.5" />
+                        </span>
+                      )}
                     </span>
                   );
                 })}
