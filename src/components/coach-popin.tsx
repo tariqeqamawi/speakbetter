@@ -50,6 +50,8 @@ export function CoachPopIn() {
   useEffect(() => {
     if (!ready || askedRef.current) return;
     if (!state.unlocked || !state.level) return;
+    // Not inside the landing page's phone frames (a bare preview).
+    if (new URLSearchParams(window.location.search).get("bare") === "1") return;
     // Never talk over a badge.
     if (celebrations.length > 0) return;
 

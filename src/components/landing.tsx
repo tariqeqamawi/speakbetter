@@ -14,6 +14,7 @@ import {
 } from "@/components/player-icons";
 import { UnlockButton } from "@/components/unlock-button";
 import { Pricing } from "@/components/pricing";
+import { LandingShowcase } from "@/components/landing-showcase";
 import Link from "next/link";
 import { CoachDemo } from "@/components/coach-demo";
 import { SpectrumDemo } from "@/components/spectrum-demo";
@@ -161,11 +162,13 @@ export function Landing() {
           Watch your coach at work
         </h2>
         <p className="max-w-lg text-center text-ink-muted">
-          Record a challenge and this is what comes back - in seconds, on every
-          attempt, for as many attempts as you want.
+          Record a challenge and this is what comes back, in a minute or two, on every attempt: a coach that watched
+          - the hands, the eyes, the voice, the story - and says what it saw, aloud, with the words on screen.
         </p>
         <CoachDemo />
       </section>
+
+      <LandingShowcase />
 
       {/* The spectrum */}
       <section className="flex flex-col items-center gap-4">

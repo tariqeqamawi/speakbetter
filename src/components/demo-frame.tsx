@@ -15,7 +15,10 @@ const tabs = [
   { href: "/badges", label: "Badges" },
 ];
 
-export function DemoFrame({ children }: { children: ReactNode }) {
+export function DemoFrame({ children, bare = false }: { children: ReactNode; bare?: boolean }) {
+  // Bare: the page as the app shows it, for the landing page's phone
+  // frames, which show these previews inside a phone outline.
+  if (bare) return <div className="flex flex-col gap-4">{children}</div>;
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 rounded-xl border border-navy-600 bg-navy-800 px-4 py-3">

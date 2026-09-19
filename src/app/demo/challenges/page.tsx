@@ -7,9 +7,10 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function DemoChallengesPage() {
+export default async function DemoChallengesPage(props: { searchParams: Promise<{ bare?: string }> }) {
+  const { bare } = await props.searchParams;
   return (
-    <DemoFrame>
+    <DemoFrame bare={bare === "1"}>
       <ChallengesPage />
     </DemoFrame>
   );

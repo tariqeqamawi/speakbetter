@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import { useSearchParams } from "next/navigation";
 
 // The dashboard on a phone.
 //
@@ -62,7 +63,10 @@ export function DashboardPanel({
    *  full card as the open panel when that line is tapped. */
   you: { compact: ReactNode; content: ReactNode };
 }) {
-  const [openId, setOpenId] = useState(sections[0]?.id);
+  // A link can name the tab to open - the landing page's phone frames
+  // show the trophy case this way.
+  const asked = useSearchParams().get("tab");
+  const [openId, setOpenId] = useState(sections.some((s) => s.id === asked) ? asked! : sections[0]?.id);
   // A section can come and go - "recent attempts" only exists once
   // there are some - so never hold a tab that isn't there any more.
   const open = sections.find((s) => s.id === openId) ?? (openId === "you" ? undefined : sections[0]);
