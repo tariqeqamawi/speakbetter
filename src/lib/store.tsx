@@ -13,6 +13,7 @@ import {
 import { usePathname } from "next/navigation";
 import type { CategoryId } from "@/data/categories";
 import { evaluateBadges, type EarnedBadge } from "@/data/badges";
+import { standing } from "@/lib/progress";
 import { demoState } from "@/lib/demo-state";
 
 // ─────────────────────────────────────────────────────────────────────
@@ -275,7 +276,7 @@ function StoreCore({
   const applyWithBadges = useCallback(
     (mutate: (prev: AppState) => AppState) => {
       const next = mutate(stateRef.current);
-      const newBadges = evaluateBadges(next);
+      const newBadges = evaluateBadges({ ...next, xp: standing(next).xp });
       const final = newBadges.length
         ? { ...next, badges: [...next.badges, ...newBadges] }
         : next;

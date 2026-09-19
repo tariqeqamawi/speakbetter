@@ -301,6 +301,18 @@ Each STORY phase asks for a **rank** on top of the phase before it being done: *
 
 Two things this deliberately is not. **The lessons are never locked** — a milestone unlock on the deck was tried and cut, the student paid for the library, and the coach prescribes lessons in its feedback; a prescription can't land on a lock. And there is no **all-time leaderboard**: the community's board (§12) is this week's XP, opt-in, so a newcomer can lead in their first week and nobody is demotivated by a table they'll never climb. If XP ever unlocks content, it is *bonus* content — the teacher's extras — not the curriculum.
 
+### Trophies are earned, not collected
+
+A trophy asks for a thing actually done well, and usually more than once: the skill trophies want the coach's score at the bar in **two separate talks** (Handy: body language 75 twice; Oscar: acting 80 twice; Sensational: figurative 80 twice; I See You: body language 65 in five talks), the Storyteller trophy wants two passed talks at 80 on storytelling *and* the Storyteller rank, the count trophies pair a count with a rank or with minutes on camera (five uploads and 250 XP; fifteen uploads and thirty minutes), and **a challenge's medal wants a pass at 75** — a scrape-through pass is a pass, but the medal waits for the better take, which is also where the XP is. A student who has barely started holds one or two, not fifteen.
+
+### Ask your coach
+
+The lion in the header opens the coach's own page. **Hold to ask**, or type — *"how have I been improving over my last few takes?"*, *"what keeps coming up?"* — and the coach answers aloud, with captions, from the student's own record: every take, its score and spectrum, every note. The record goes up with the question and comes straight back with the answer; nothing is kept. The rule that governs the reviews governs this: every claim has to be in the record, and a thin record is said to be thin. Below the conversation, everything the coach has said, newest first, with the spectrum and the spoken review a tap away.
+
+### Recording with the clock in view
+
+*Record* opens the camera inside the app: a full-screen preview, the clock counting down from the challenge's own limit, a ring filling as the time goes, amber inside the last thirty seconds and red inside the last ten (ten and five on a short challenge), and a stop at the limit — a two-minute challenge records two minutes and no more. Where the browser can't record, the phone's camera app is the fallback.
+
 ### Notes from the coach — push, rationed
 
 The app sends notifications, and only five kinds: **your review is ready** (the one with plain utility — a review takes a minute or two and people leave the page; the review is kept for them and picked up on their next open), **an evening nudge** if today's practice hasn't happened and a streak is on the line, **a Monday recap** (colours reached, XP), **the next rank within reach** and what it opens (once per rank), and **"improving about N% a take"** when the last three takes on a challenge each scored higher (once per challenge). Asked once, right after a first review, when the student has just seen what a note would be about; a "no" is kept. One note a day at most. On an iPhone in Safari the app says to add it to the home screen first, which is where push works. The device reports a handful of true figures on each open and the daily job decides — the coach's rule holds: nothing is said that isn't so.
@@ -423,6 +435,8 @@ The colour-spectrum score is the product's one genuinely novel idea, and a visit
 Each of the five phases owns a color, borrowed from the skill it leans on most — **S** green (awareness/mindset), **T** cyan (the physical instrument), **O** yellow (storytelling), **R** red (emotional truth), **Y** magenta (structure and the world). Every phase is drawn as its own bordered section holding just its challenges, so the journey reads as five distinct stages rather than one long list, and the phase's color runs through its letter, its heading, and its progress bars.
 
 Each challenge card carries a still, its brief, a **progress meter**, and a single action button that names where the student actually is: *Start challenge* when untouched, *Resume challenge* once underway, *Practice again* once passed. Progress is weighted across the real sequence rather than being all-or-nothing — warming up on the related skills, recording an attempt, and passing it each move the meter.
+
+**The road remembers.** Beside a passed challenge, one line the coach said about that take — proof it watched, and a reason to read the review again. And when a rank opens the next phase, the graduation card floods with the phase's colour, the lion roars it open, and the first challenge's still rises out of the dark.
 
 **Your own face on the road.** Where the device still holds the recording, a passed challenge's circle on the map wears a frame of the student's own take instead of the challenge's still. Held under a finger it plays a few seconds, muted; now and then one plays by itself, at random — proof, in their own face, that the road behind them was walked. If the copy is gone (the app keeps three per challenge, on the device only — §13), the circle shows the challenge's still as before.
 

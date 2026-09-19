@@ -11,6 +11,7 @@ interface BadgeEvalState {
     challengeSlug: string;
     at: string;
     passed: boolean;
+    score?: number;
     durationSec: number;
     spectrum: Record<CategoryId, number>;
   }[];
@@ -18,7 +19,25 @@ interface BadgeEvalState {
   badges: { id: string }[];
   /** Days a streak freeze covered - they count as practiced */
   frozenDays?: string[];
+  /** Total XP, worked out by the store - several trophies ask for a
+   *  rank as well as a deed. */
+  xp?: number;
 }
+
+// A trophy is earned, not collected (§11). Every one here asks for a
+// thing actually done well - a score the coach gave, more than once
+// for the skill trophies, and often a rank alongside - so that a
+// student who has barely started holds one or two, not fifteen. The
+// challenge medals ask for a pass at 75, the teacher's own bar within
+// reach: a scrape-through pass is a pass, but the trophy waits for the
+// better take, which is also where the XP is.
+
+/** Talks in which a color reached the bar. */
+function talksAt(s: BadgeEvalState, id: CategoryId, bar: number): number {
+  return s.attempts.filter((a) => (a.spectrum[id] ?? 0) >= bar).length;
+}
+const xpOf = (s: BadgeEvalState) => s.xp ?? 0;
+const minutesOf = (s: BadgeEvalState) => s.attempts.reduce((sum, a) => sum + (a.durationSec ?? 0), 0) / 60;
 
 export interface BadgeDef {
   id: string;
@@ -97,18 +116,18 @@ export const badgeDefs: BadgeDef[] = [
   {
     id: "five-uploads",
     title: "Finding Your Voice",
-    message: "You've uploaded five videos now. This is how speakers are made.",
+    message: "Five videos in, and the rank to show for it. This is how speakers are made.",
     icon: "video",
-    how: "Upload five challenge videos.",
-    earned: (s) => s.attempts.length >= 5,
+    how: "Upload five challenge videos and reach Finding Your Voice (250 XP).",
+    earned: (s) => s.attempts.length >= 5 && xpOf(s) >= 250,
   },
   {
     id: "ten-uploads",
     title: "Serious Reps",
-    message: "Ten videos uploaded. Your camera is officially your training partner.",
+    message: "Fifteen videos and half an hour on camera. Your camera is officially your training partner.",
     icon: "trending-up",
-    how: "Upload ten challenge videos.",
-    earned: (s) => s.attempts.length >= 10,
+    how: "Upload fifteen challenge videos - thirty minutes of speaking in all.",
+    earned: (s) => s.attempts.length >= 15 && minutesOf(s) >= 30,
   },
   {
     id: "practicing-machine",
@@ -170,11 +189,10 @@ export const badgeDefs: BadgeDef[] = [
     id: "ten-minutes",
     title: "Ten Minutes of Fame",
     message:
-      "Ten minutes of you, on camera, speaking. Most people never record one.",
+      "Twenty minutes of you, on camera, speaking. Most people never record one.",
     icon: "video",
-    how: "Upload ten minutes of video in total.",
-    earned: (s) =>
-      s.attempts.reduce((sum, a) => sum + (a.durationSec ?? 0), 0) >= 600,
+    how: "Twenty minutes of speaking uploaded, across any number of takes.",
+    earned: (s) => minutesOf(s) >= 20,
   },
   // Skill badges - earned off what the coach actually saw in a talk, so
   // each one is evidence of a specific thing done well, not participation.
@@ -184,26 +202,26 @@ export const badgeDefs: BadgeDef[] = [
     message:
       "Your hands did the talking too - gesture that strong is rare, and it reads on camera.",
     icon: "spectrum",
-    how: "Score 70 or higher on body language in a single talk.",
-    earned: (s) => s.attempts.some((a) => (a.spectrum["body-language"] ?? 0) >= 70),
+    how: "Score 75 or higher on body language in two separate talks - hands that draw what you're saying.",
+    earned: (s) => talksAt(s, "body-language", 75) >= 2,
   },
   {
     id: "i-see-you",
     title: "I See You",
     message:
-      "Three talks holding your eye line and your presence. The camera trusts you now.",
+      "Five talks holding your eye line and your presence. The camera trusts you now.",
     icon: "check-circle",
-    how: "Score 60 or higher on body language in three separate talks.",
-    earned: (s) =>
-      s.attempts.filter((a) => (a.spectrum["body-language"] ?? 0) >= 60).length >= 3,
+    how: "Score 65 or higher on body language in five separate talks - eye contact held throughout.",
+    earned: (s) => talksAt(s, "body-language", 65) >= 5,
   },
   {
     id: "storyteller",
     title: "Storyteller",
     message: "That was a story, properly told - scene, not summary.",
     icon: "film",
-    how: "Score 75 or higher on storytelling in a single talk.",
-    earned: (s) => s.attempts.some((a) => (a.spectrum.storytelling ?? 0) >= 75),
+    how: "Score 80 or higher on storytelling in two passed talks, and hold the Storyteller rank (600 XP).",
+    earned: (s) =>
+      s.attempts.filter((a) => a.passed && (a.spectrum.storytelling ?? 0) >= 80).length >= 2 && xpOf(s) >= 600,
   },
   {
     id: "oscar",
@@ -211,17 +229,17 @@ export const badgeDefs: BadgeDef[] = [
     message:
       "You didn't report the moment, you performed it. That's acting for speakers.",
     icon: "trophy",
-    how: "Score 75 or higher on acting skills in a single talk.",
-    earned: (s) => s.attempts.some((a) => (a.spectrum.acting ?? 0) >= 75),
+    how: "Score 80 or higher on acting skills in two separate talks - the moment performed, not reported.",
+    earned: (s) => talksAt(s, "acting", 80) >= 2,
   },
   {
     id: "twisted",
     title: "Twisted",
     message: "You set them up and turned it on them. Plot twist landed.",
     icon: "repeat",
-    how: "Pass the challenge 'Add a Twist in Third-Person'.",
+    how: "Pass 'Add a Twist in Third-Person' with a score of 75 or higher.",
     earned: (s) =>
-      s.attempts.some((a) => a.challengeSlug === "twist-third-person" && a.passed),
+      s.attempts.some((a) => a.challengeSlug === "twist-third-person" && a.passed && (a.score ?? 0) >= 75),
   },
   {
     id: "sensational",
@@ -229,17 +247,17 @@ export const badgeDefs: BadgeDef[] = [
     message:
       "Figurative, sensory, vivid - your listener saw it, not just heard it.",
     icon: "trending-up",
-    how: "Score 75 or higher on figurative language in a single talk.",
-    earned: (s) => s.attempts.some((a) => (a.spectrum.figurative ?? 0) >= 75),
+    how: "Score 80 or higher on figurative language in two separate talks.",
+    earned: (s) => talksAt(s, "figurative", 80) >= 2,
   },
   {
     id: "composer",
     title: "Composer",
     message: "You made your message a melody. Range like that keeps a room.",
     icon: "zap",
-    how: "Pass the challenge 'Play With Your Voice'.",
+    how: "Pass 'Play With Your Voice' with a score of 75 or higher.",
     earned: (s) =>
-      s.attempts.some((a) => a.challengeSlug === "voice-melody" && a.passed),
+      s.attempts.some((a) => a.challengeSlug === "voice-melody" && a.passed && (a.score ?? 0) >= 75),
   },
   // One per challenge. Passing a challenge is the single most meaningful
   // thing a student does here, so each one has its own name and art
@@ -253,13 +271,13 @@ export const badgeDefs: BadgeDef[] = [
       icon: "medal",
       how: challenge.passive
         ? `Watch every lesson in "${challenge.title}".`
-        : `Pass the challenge "${challenge.title}".`,
+        : `Pass "${challenge.title}" with a score of 75 or higher - a scrape-through pass counts as a pass, not a trophy.`,
       earned: (s: BadgeEvalState) =>
         challenge.passive
           ? challenge.relatedLessonIds.every((id) =>
               s.watchedLessons.includes(id),
             )
-          : s.attempts.some((a) => a.challengeSlug === challenge.slug && a.passed),
+          : s.attempts.some((a) => a.challengeSlug === challenge.slug && a.passed && (a.score ?? 0) >= 75),
     };
   }),
   ...storyPhases.map((phase) => ({
