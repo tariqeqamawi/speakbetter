@@ -452,7 +452,7 @@ It's a small control, but it serves the course's core subject directly: a course
 
 ## 15 · The landing page and purchase
 
-The landing page plays the mechanic (§14) — the sample review, the lion, the spectrum — and then makes the offer. **The free baseline comes first**: anyone records the two baseline challenges and gets one real review from the coach — score, spectrum, what to do next — before paying anything, with the lessons those challenges lean on open to them. The landing demo shows the mechanic; the baseline makes it theirs, and the second review is where the ask lands: *"Unlock the rest of the journey."*
+The landing page shows the app rather than describing it: the sample review with the lion speaking and the words as captions; **a lesson exactly as it plays inside**, with the words and symbols that land on the sentence being spoken; what's in the app, in eight lines; **the app in your hand** — the dashboard, the trophy case, the journey and the deck as *live preview pages* in phone frames (the `/demo` routes with a worked-in student, in a bare mode, so the previews are never out of date); and **thirty seconds of the real thing** — a short film of a take sent, the coach watching, the score and colours landing, the notes and the verdict, recorded from the app itself. Then the offer. **The free baseline comes first**: anyone records the two baseline challenges and gets one real review from the coach — score, spectrum, what to do next — before paying anything, with the lessons those challenges lean on open to them. The landing demo shows the mechanic; the baseline makes it theirs, and the second review is where the ask lands: *"Unlock the rest of the journey."*
 
 ### The offer — course + membership
 
