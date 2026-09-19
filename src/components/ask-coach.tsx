@@ -8,7 +8,7 @@ import { currentStreak } from "@/data/badges";
 import { speakUrl } from "@/lib/coach/voice";
 import { TalkingLion, type TalkingLionHandle } from "@/components/talking-lion";
 import { SectionBanner } from "@/components/section-banner";
-import { ListenIcon, XIcon } from "@/components/icons";
+import { ChevronDownIcon, ListenIcon, XIcon } from "@/components/icons";
 import { hapticTap } from "@/lib/feedback-fx";
 import { hasCoach } from "@/lib/plan";
 import { UpgradePanel } from "@/components/upgrade-panel";
@@ -37,6 +37,7 @@ export function AskCoach() {
   const [answer, setAnswer] = useState("");
   const [url, setUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [reading, setReading] = useState(false);
   const recRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const lionRef = useRef<TalkingLionHandle>(null);
@@ -80,6 +81,7 @@ export function AskCoach() {
     setPhase("thinking");
     setError(null);
     setAnswer("");
+    setReading(false);
     if (url) {
       URL.revokeObjectURL(url);
       setUrl(null);
@@ -184,7 +186,20 @@ export function AskCoach() {
           </p>
         )}
         {answer && phase !== "answering" && (
-          <p className="rounded-xl border border-navy-600 bg-navy-900/60 px-4 py-3 text-sm leading-relaxed text-ink">{answer}</p>
+          <div className="flex flex-col items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setReading((r) => !r)}
+              aria-expanded={reading}
+              className="inline-flex items-center gap-1.5 rounded-full border border-navy-600 px-3.5 py-1.5 text-xs font-semibold text-ink-muted transition-colors hover:text-ink"
+            >
+              {reading ? "Hide" : "Read"} the answer
+              <ChevronDownIcon className={`size-3.5 transition-transform ${reading ? "rotate-180" : ""}`} />
+            </button>
+            {reading && (
+              <p className="coach-cue w-full rounded-xl border border-navy-600 bg-navy-900/60 px-4 py-3 text-sm leading-relaxed text-ink">{answer}</p>
+            )}
+          </div>
         )}
         {error && <p className="text-center text-xs text-storytelling">{error}</p>}
 

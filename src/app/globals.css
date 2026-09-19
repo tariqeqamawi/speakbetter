@@ -1591,3 +1591,10 @@ svg.soundwave-c {
     animation: none;
   }
 }
+
+/* The word being said in a caption: neon, lit from within. */
+.caption-live {
+  text-shadow:
+    0 0 6px currentColor,
+    0 0 14px color-mix(in oklab, currentColor 60%, transparent);
+}

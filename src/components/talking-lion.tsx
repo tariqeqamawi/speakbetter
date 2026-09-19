@@ -112,11 +112,12 @@ export const TalkingLion = forwardRef<
   const [blocked, setBlocked] = useState(false);
   const [cueIndex, setCueIndex] = useState(-1); // which cue is being spoken
   const [captionIndex, setCaptionIndex] = useState(-1); // which phrase is being said
+  const [wordIndex, setWordIndex] = useState(-1); // which word of it
   // The text as phrases, each with its share of the clip: the clip has
   // no word timings, so each phrase gets the stretch of the clip its
   // characters are of the whole. Close enough to follow along by.
   const phrases = useMemo(() => (captions && text ? phrasesOf(text) : []), [captions, text]);
-  const phrasesRef = useRef<{ text: string; from: number; to: number }[]>(phrases);
+  const phrasesRef = useRef<Phrase[]>(phrases);
   useEffect(() => {
     phrasesRef.current = phrases;
   }, [phrases]);
@@ -142,6 +143,7 @@ export const TalkingLion = forwardRef<
     setMouth(0);
     mouthRef.current = 0;
     setCaptionIndex(-1);
+    setWordIndex(-1);
     loudRef.current = 0;
     holdUntilRef.current = 0;
     closeUntilRef.current = 0;
@@ -233,6 +235,14 @@ export const TalkingLion = forwardRef<
           const frac = el.currentTime / dur;
           const found = phrasesRef.current.findIndex((p) => frac >= p.from && frac < p.to);
           setCaptionIndex((prev) => (prev === found ? prev : found));
+          // And the word within it, by its share of the phrase - the
+          // karaoke line: each word lights as it's said.
+          const phrase = found >= 0 ? phrasesRef.current[found] : undefined;
+          if (phrase) {
+            const within = (frac - phrase.from) / Math.max(1e-6, phrase.to - phrase.from);
+            const w = phrase.words.findIndex((x) => within >= x.from && within < x.to);
+            setWordIndex((prev) => (prev === w ? prev : w));
+          }
         }
       }
 
@@ -381,7 +391,7 @@ export const TalkingLion = forwardRef<
 
   const activeCue = cueIndex >= 0 ? cues?.[cueIndex] : undefined;
   const summaryCues = (cues ?? []).filter((c) => c.summary !== false);
-  const caption = captionIndex >= 0 ? phrases[captionIndex]?.text : undefined;
+  const caption = captionIndex >= 0 ? phrases[captionIndex] : undefined;
 
   return (
     <div className={`flex flex-col items-center gap-4 ${className}`}>
@@ -405,13 +415,27 @@ export const TalkingLion = forwardRef<
             words are heard and seen together. The box keeps its height
             so the lion doesn't shift as phrases come and go. */}
         {captions && phrases.length > 0 && (
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 flex min-h-16 items-end justify-center px-2 pb-1" aria-live="off">
+          <div className="pointer-events-none -mt-2 flex min-h-11 items-center justify-center px-1" aria-live="off">
             {caption && (
               <p
                 key={captionIndex}
-                className="coach-cue max-w-[22rem] rounded-xl bg-navy-950/85 px-3.5 py-2 text-center text-[0.95rem] font-semibold leading-snug text-ink shadow-lg shadow-navy-950/60 text-balance"
+                className="coach-cue max-w-full overflow-hidden whitespace-nowrap rounded-xl bg-navy-950/85 px-3.5 py-1.5 text-center text-[0.9rem] font-semibold leading-snug shadow-lg shadow-navy-950/60"
               >
-                {caption}
+                {caption.words.map((w, i) => (
+                  <span
+                    key={i}
+                    className={`transition-colors duration-150 ${
+                      i === wordIndex
+                        ? "caption-live text-mindset"
+                        : i < wordIndex
+                          ? "text-ink"
+                          : "text-ink-muted"
+                    }`}
+                  >
+                    {w.text}
+                    {i < caption.words.length - 1 ? " " : ""}
+                  </span>
+                ))}
               </p>
             )}
           </div>
@@ -490,15 +514,23 @@ export const TalkingLion = forwardRef<
   );
 });
 
+export interface Phrase {
+  text: string;
+  from: number;
+  to: number;
+  /** Each word's share of the phrase, 0..1 - the karaoke timing. */
+  words: { text: string; from: number; to: number }[];
+}
+
 /** The text as phrases with their share of the clip. Sentences, split
- *  again at commas and dashes when they run long, so a caption is a
- *  line or two - the way a reel's are. */
-export function phrasesOf(text: string): { text: string; from: number; to: number }[] {
+ *  again at commas and dashes when they run long, so a caption is one
+ *  line - the way a reel's are - with each word's share of it. */
+export function phrasesOf(text: string): Phrase[] {
   const pieces = text
     .replace(/\s+/g, " ")
     .split(/(?<=[.!?])\s+/)
     .flatMap((sentence) =>
-      sentence.length > 90 ? sentence.split(/(?<=[,;:]|\s-)\s+/) : [sentence],
+      sentence.length > 36 ? sentence.split(/(?<=[,;:]|\s-)\s+/) : [sentence],
     )
     .map((p) => p.trim())
     .filter(Boolean);
@@ -507,7 +539,7 @@ export function phrasesOf(text: string): { text: string; from: number; to: numbe
   const raw: string[] = [];
   for (const piece of pieces) {
     const last = raw[raw.length - 1];
-    if (last && !/[.!?]$/.test(last) && last.length + piece.length + 1 <= 72) raw[raw.length - 1] = `${last} ${piece}`;
+    if (last && !/[.!?]$/.test(last) && last.length + piece.length + 1 <= 36) raw[raw.length - 1] = `${last} ${piece}`;
     else raw.push(piece);
   }
   // A phrase's weight is its characters plus a beat for the pause after it.
@@ -517,6 +549,17 @@ export function phrasesOf(text: string): { text: string; from: number; to: numbe
   return raw.map((p, i) => {
     const from = acc / total;
     acc += weights[i];
-    return { text: p, from, to: acc / total };
+    // Words by their length, a little extra for the one carrying the
+    // pause, so the last word holds until the phrase ends.
+    const ws = p.split(" ");
+    const ww = ws.map((w, j) => w.length + 1 + (j === ws.length - 1 ? 3 : 0));
+    const wt = ww.reduce((a, b) => a + b, 0) || 1;
+    let wacc = 0;
+    const words = ws.map((w, j) => {
+      const wf = wacc / wt;
+      wacc += ww[j];
+      return { text: w, from: wf, to: j === ws.length - 1 ? 1.01 : wacc / wt };
+    });
+    return { text: p, from, to: acc / total, words };
   });
 }
