@@ -419,21 +419,20 @@ export const TalkingLion = forwardRef<
             {caption && (
               <p
                 key={captionIndex}
-                className="coach-cue max-w-full overflow-hidden whitespace-nowrap rounded-xl bg-navy-950/85 px-3.5 py-1.5 text-center text-[0.9rem] font-semibold leading-snug shadow-lg shadow-navy-950/60"
+                className="coach-cue max-w-full whitespace-nowrap rounded-xl bg-navy-950/85 px-4 py-2 text-center text-[0.9rem] font-semibold leading-snug shadow-lg shadow-navy-950/60"
               >
                 {caption.words.map((w, i) => (
                   <span
                     key={i}
-                    className={`transition-colors duration-150 ${
+                    className={`inline-block origin-bottom mx-[0.22em] transition-[transform,color] duration-150 ${
                       i === wordIndex
-                        ? "caption-live text-mindset"
+                        ? `caption-live scale-[1.18] ${caption.colorClass}`
                         : i < wordIndex
                           ? "text-ink"
                           : "text-ink-muted"
                     }`}
                   >
                     {w.text}
-                    {i < caption.words.length - 1 ? " " : ""}
                   </span>
                 ))}
               </p>
@@ -520,6 +519,25 @@ export interface Phrase {
   to: number;
   /** Each word's share of the phrase, 0..1 - the karaoke timing. */
   words: { text: string; from: number; to: number }[];
+  /** The skill the phrase is about, for the colour of the lit word:
+   *  green for mindset, cyan for the body, red for the advanced
+   *  tricks, and so on - read off the words themselves. */
+  colorClass: string;
+}
+
+const PHRASE_COLORS: { colorClass: string; words: RegExp }[] = [
+  { colorClass: "text-body-language", words: /\b(hands?|gestures?|eyes?|eye contact|lens|camera|posture|face|body|physical|shoulders?|arms?|stood|standing|moved?|movement)\b/i },
+  { colorClass: "text-acting", words: /\b(voice|volume|whisper|tone|pace|paused?|pauses|loud|quiet|melody|energy|emotion|acting|performed|believable|strain)\b/i },
+  { colorClass: "text-figurative", words: /\b(metaphor|comparison|image|imagery|picture|painting|paint|vivid|sensory|figurative|like a|smell|colou?r)\b/i },
+  { colorClass: "text-structure", words: /\b(structure|framework|hook|closed?|opening|opened|invitation|order|middle third|beginning and an end|triplet|balance)\b/i },
+  { colorClass: "text-storytelling", words: /\b(story|stories|scene|anecdote|kitchen|tell|told|narrative|moment that changed|beginning|end)\b/i },
+  { colorClass: "text-advanced", words: /\b(rhetorical|open loop|callback|payoff|advanced|trick|reversal|promise)\b/i },
+  { colorClass: "text-mindset", words: /\b(nerve|nerves|courage|confidence|confident|calm|mindset|power|owned? the room|trust|apolog\w*)\b/i },
+];
+
+function phraseColor(text: string): string {
+  for (const { colorClass, words } of PHRASE_COLORS) if (words.test(text)) return colorClass;
+  return "text-mindset";
 }
 
 /** The text as phrases with their share of the clip. Sentences, split
@@ -534,10 +552,25 @@ export function phrasesOf(text: string): Phrase[] {
     )
     .map((p) => p.trim())
     .filter(Boolean);
+  // A piece with no comma to split at is cut at a word boundary, so no
+  // line is ever wider than the box - and no word is ever cut.
+  const fitted = pieces.flatMap((piece) => {
+    if (piece.length <= 36) return [piece];
+    const out: string[] = [];
+    let cur = "";
+    for (const w of piece.split(" ")) {
+      if (cur && cur.length + w.length + 1 > 36) {
+        out.push(cur);
+        cur = w;
+      } else cur = cur ? `${cur} ${w}` : w;
+    }
+    if (cur) out.push(cur);
+    return out;
+  });
   // Short pieces join their neighbour, so a caption is never a word or
   // two on its own; a piece ending a sentence closes the join.
   const raw: string[] = [];
-  for (const piece of pieces) {
+  for (const piece of fitted) {
     const last = raw[raw.length - 1];
     if (last && !/[.!?]$/.test(last) && last.length + piece.length + 1 <= 36) raw[raw.length - 1] = `${last} ${piece}`;
     else raw.push(piece);
@@ -560,6 +593,6 @@ export function phrasesOf(text: string): Phrase[] {
       wacc += ww[j];
       return { text: w, from: wf, to: j === ws.length - 1 ? 1.01 : wacc / wt };
     });
-    return { text: p, from, to: acc / total, words };
+    return { text: p, from, to: acc / total, words, colorClass: phraseColor(p) };
   });
 }
