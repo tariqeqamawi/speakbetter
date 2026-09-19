@@ -199,7 +199,7 @@ export default function DashboardPage() {
                         alt=""
                         loading="lazy"
                         decoding="async"
-                        className={`size-full object-cover ${done ? "" : "opacity-40 saturate-0"}`}
+                        className={`size-full object-cover ${done ? "" : "opacity-30"}`}
                       />
                       {done && (
                         <span

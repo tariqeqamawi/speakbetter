@@ -95,7 +95,14 @@ export function SpectrumWave({
 
   return (
     <div className={`relative ${className}`} aria-hidden>
-      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="absolute inset-0 size-full">
+      {/* The breath is one transform on the whole drawing, so the blur
+          underneath is rasterised once - animating the filtered paths
+          themselves re-blurred every frame. */}
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        preserveAspectRatio="none"
+        className={`absolute inset-0 size-full origin-bottom will-change-transform ${animate ? "eq-wave" : ""}`}
+      >
         {defs}
         {/* Bleed: a heavily blurred copy under everything, so color spills
             past the line the way light does. */}
@@ -104,14 +111,12 @@ export function SpectrumWave({
           fill={`url(#trace-${uid})`}
           opacity="0.5"
           filter={`url(#glow-${uid})`}
-          className={animate ? "eq-wave-slow" : undefined}
         />
         {/* Body of the trace, fading out toward the floor. */}
         <path
           d={area}
           fill={`url(#trace-${uid})`}
           mask={`url(#fade-${uid})`}
-          className={animate ? "eq-wave" : undefined}
         />
         {/* The line itself, twice: a glow and a crisp edge. */}
         <path
@@ -122,7 +127,6 @@ export function SpectrumWave({
           strokeLinecap="round"
           opacity="0.55"
           filter={`url(#glow-${uid})`}
-          className={animate ? "eq-wave" : undefined}
         />
         <path
           d={line}
@@ -130,7 +134,6 @@ export function SpectrumWave({
           stroke={`url(#trace-${uid})`}
           strokeWidth="2.5"
           strokeLinecap="round"
-          className={animate ? "eq-wave" : undefined}
         />
       </svg>
 

@@ -188,109 +188,68 @@ export function Soundwave({
   if (variant === "header") return <HeaderWave className={className} />;
   const spec = variants[variant];
   const gradientId = `soundwave-spectrum-${variant}`;
-  const fadeId = `soundwave-fade-${variant}`;
-  const maskId = `soundwave-mask-${variant}`;
   const clipId = `soundwave-lens-${variant}`;
-  const glowId = `soundwave-glow-${variant}`;
+  // The fade at both ends, as a CSS mask on the wrapper; the lens as a
+  // clip on it too. Both are fixed to the viewport while the ribbons
+  // scroll beneath - and each ribbon is its own svg moved by a
+  // compositor transform, so nothing is repainted as it moves. (One
+  // svg with the ribbons scrolling inside it under a mask and a clip
+  // repainted the whole thing every frame.)
+  const [f0, f1, f2, f3] = spec.fade;
+  const fade = `linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.85) ${f0}%, #000 ${f1}%, rgba(0,0,0,0.85) ${f2}%, transparent ${f3}%)`;
 
   return (
-    <svg
-      className={className}
-      viewBox={`0 0 ${VIEW_W} ${spec.viewH}`}
-      preserveAspectRatio="none"
+    <div
+      className={`relative overflow-hidden ${className}`}
+      style={{
+        WebkitMaskImage: fade,
+        maskImage: fade,
+        clipPath: spec.lens > 0 ? `url(#${clipId})` : undefined,
+      }}
       aria-hidden
     >
-      <defs>
-        <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="var(--color-storytelling)" />
-          <stop offset="16%" stopColor="var(--color-figurative)" />
-          <stop offset="33%" stopColor="var(--color-acting)" />
-          <stop offset="50%" stopColor="var(--color-structure)" />
-          <stop offset="67%" stopColor="var(--color-mindset)" />
-          <stop offset="84%" stopColor="var(--color-body-language)" />
-          <stop offset="100%" stopColor="var(--color-advanced)" />
-        </linearGradient>
-        <linearGradient id={fadeId} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="white" stopOpacity="0" />
-          <stop offset={`${spec.fade[0]}%`} stopColor="white" stopOpacity="0.85" />
-          <stop offset={`${spec.fade[1]}%`} stopColor="white" stopOpacity="1" />
-          <stop offset={`${spec.fade[2]}%`} stopColor="white" stopOpacity="0.85" />
-          <stop offset={`${spec.fade[3]}%`} stopColor="white" stopOpacity="0" />
-        </linearGradient>
-        <mask id={maskId}>
-          <rect
-            x="0"
-            y="0"
-            width={VIEW_W}
-            height={spec.viewH}
-            fill={`url(#${fadeId})`}
-          />
-        </mask>
-        {spec.lens > 0 && (
-          <>
-            <clipPath id={clipId}>
-              <path d={lensPath(VIEW_W, spec.midY, spec.lens)} />
+      <svg width="0" height="0" className="absolute" aria-hidden>
+        <defs>
+          <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="var(--color-storytelling)" />
+            <stop offset="16%" stopColor="var(--color-figurative)" />
+            <stop offset="33%" stopColor="var(--color-acting)" />
+            <stop offset="50%" stopColor="var(--color-structure)" />
+            <stop offset="67%" stopColor="var(--color-mindset)" />
+            <stop offset="84%" stopColor="var(--color-body-language)" />
+            <stop offset="100%" stopColor="var(--color-advanced)" />
+          </linearGradient>
+          {spec.lens > 0 && (
+            <clipPath id={clipId} clipPathUnits="objectBoundingBox">
+              <path d={lensPath(VIEW_W, spec.midY, spec.lens)} transform={`scale(${1 / VIEW_W} ${1 / spec.viewH})`} />
             </clipPath>
-            {/* The halo that makes the ribbons read as light rather than
-                paint. Kept off the header, where a blur would cost more
-                than it's worth on a thin line. */}
-            <filter
-              id={glowId}
-              x="-10%"
-              y="-40%"
-              width="120%"
-              height="180%"
-              colorInterpolationFilters="sRGB"
-            >
-              <feGaussianBlur stdDeviation="3.2" />
-            </filter>
-          </>
-        )}
-      </defs>
-
-      {/* The lens is fixed to the viewport while the waves scroll beneath
-          it, so the taper stays put instead of travelling with them. */}
-      <g clipPath={spec.lens > 0 ? `url(#${clipId})` : undefined}>
-        <g mask={`url(#${maskId})`}>
-          {spec.waves.map((wave) => {
-            const d = wavePath(
-              VIEW_W * 2,
-              wave.period,
-              wave.amplitude,
-              spec.midY,
-            );
-            return (
-              <g
-                key={wave.className}
-                className={wave.className}
-                // Overlaps brighten instead of muddying, the way the mark's
-                // ribbons go pale where they cross.
-                style={spec.lens > 0 ? { mixBlendMode: "screen" } : undefined}
-              >
-                {spec.lens > 0 && (
-                  <path
-                    d={d}
-                    fill="none"
-                    stroke={`url(#${gradientId})`}
-                    strokeWidth={wave.width * 1.9}
-                    strokeLinecap="round"
-                    opacity={wave.opacity * 0.8}
-                    filter={`url(#${glowId})`}
-                  />
-                )}
-                <path
-                  d={d}
-                  fill="none"
-                  stroke={`url(#${gradientId})`}
-                  strokeWidth={wave.width}
-                  strokeLinecap="round"
-                  opacity={wave.opacity}
-                />
-              </g>
-            );
-          })}
-        </g>
-      </g>
-    </svg>
+          )}
+        </defs>
+      </svg>
+      {spec.waves.map((wave) => {
+        const d = wavePath(VIEW_W * 2, wave.period, wave.amplitude, spec.midY);
+        return (
+          <svg
+            key={wave.className}
+            className={`absolute inset-y-0 left-0 h-full w-[200%] ${wave.className}`}
+            viewBox={`0 0 ${VIEW_W * 2} ${spec.viewH}`}
+            preserveAspectRatio="none"
+            // Overlaps brighten instead of muddying, the way the mark's
+            // ribbons go pale where they cross.
+            style={spec.lens > 0 ? { mixBlendMode: "screen" } : undefined}
+          >
+            {/* The halo: two wider, fainter passes of the ribbon rather
+                than a blur, which would be re-blurred as it moved. */}
+            {spec.lens > 0 && (
+              <>
+                <path d={d} fill="none" stroke={`url(#${gradientId})`} strokeWidth={wave.width * 3.2} strokeLinecap="round" opacity={wave.opacity * 0.18} />
+                <path d={d} fill="none" stroke={`url(#${gradientId})`} strokeWidth={wave.width * 1.9} strokeLinecap="round" opacity={wave.opacity * 0.4} />
+              </>
+            )}
+            <path d={d} fill="none" stroke={`url(#${gradientId})`} strokeWidth={wave.width} strokeLinecap="round" opacity={wave.opacity} />
+          </svg>
+        );
+      })}
+    </div>
   );
 }

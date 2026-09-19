@@ -118,12 +118,12 @@ export function SpectrumDemo() {
               </span>
               <span className="h-2 flex-1 overflow-hidden rounded-full bg-navy-700">
                 <span
-                  className={`block h-full rounded-full ${cat.bgClass}`}
+                  className={`block h-full w-full origin-left rounded-full will-change-transform ${cat.bgClass}`}
                   style={{
-                    width: `${value}%`,
+                    transform: `scaleX(${value / 100})`,
                     opacity: on ? 1 : 0.35,
                     transition:
-                      "width 900ms cubic-bezier(0.22,1,0.36,1), opacity 700ms ease",
+                      "transform 900ms cubic-bezier(0.22,1,0.36,1), opacity 700ms ease",
                   }}
                 />
               </span>

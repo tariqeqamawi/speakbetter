@@ -37,10 +37,10 @@ export function SpectrumBars({
             </span>
             <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-navy-700">
               <div
-                className={`h-full rounded-full transition-[width] duration-500 ease-out ${cat.bgClass} ${
+                className={`h-full w-full origin-left rounded-full transition-transform duration-500 ease-out will-change-transform ${cat.bgClass} ${
                   lit ? "" : "opacity-40"
                 } ${needed && lit ? "relative" : ""}`}
-                style={{ width: shown ? `${value}%` : "0%" }}
+                style={{ transform: `scaleX(${shown ? value / 100 : 0})` }}
               >
                 {needed && lit && <span className="spectrum-needed absolute inset-0 rounded-full shadow-[0_0_12px_1px_currentColor] will-change-[opacity]" />}
               </div>

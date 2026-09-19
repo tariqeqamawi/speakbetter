@@ -30,7 +30,7 @@ export function BadgeMedal({
         fill
         sizes="96px"
         className={`object-cover transition-[filter,opacity] duration-300 ${
-          earned ? "" : "opacity-35 grayscale"
+          earned ? "" : "opacity-30"
         }`}
       />
       {/* Sits under the art, so a missing file leaves the line icon

@@ -321,20 +321,20 @@ export function JourneyMap() {
             return (
               <div key={phase.id} aria-hidden className="contents">
                 <div
-                  className="pointer-events-none absolute -inset-x-10 blur-2xl"
+                  className="pointer-events-none absolute -inset-x-10"
                   style={{
                     top,
                     height: h,
-                    opacity: locked ? 0.07 : 0.17,
-                    background: `radial-gradient(60% 80% at 50% 35%, ${color}, transparent 75%)`,
+                    opacity: locked ? 0.09 : 0.2,
+                    background: `radial-gradient(55% 75% at 50% 35%, ${color} 0%, color-mix(in oklab, ${color} 40%, transparent) 35%, transparent 72%)`,
                   }}
                 />
                 <div
                   className="terrain-grid pointer-events-none absolute inset-x-0"
                   style={
                     {
-                      top,
-                      height: h,
+                      top: top - 90,
+                      height: h + 90,
                       "--grid-max": locked ? 0.09 : 0.24,
                       animationDelay: `${i * 2.6}s`,
                       backgroundImage: `repeating-linear-gradient(180deg, ${color} 0 1px, transparent 1px 30px), repeating-linear-gradient(90deg, ${color} 0 1px, transparent 1px 30px)`,
@@ -647,7 +647,7 @@ export function JourneyMap() {
                 <span className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2.5 w-52 -translate-x-1/2 overflow-hidden rounded-xl border border-navy-500 bg-navy-950 opacity-0 shadow-2xl shadow-navy-950 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100">
                   <span
                     className={`relative block aspect-video w-full bg-gradient-to-br from-navy-700 to-navy-900 ${
-                      node.locked ? "opacity-60 grayscale" : ""
+                      node.locked ? "opacity-40" : ""
                     }`}
                   >
                     <VideoStill vimeoId={node.vimeoId} accent={accent} sizes="208px" />

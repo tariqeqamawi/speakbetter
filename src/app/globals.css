@@ -517,22 +517,24 @@ svg.soundwave-c {
  * Peak opacity comes from --grid-max so locked land stays fainter. */
 .terrain-grid {
   opacity: 0;
+  will-change: transform, opacity;
   animation: terrain-grid 13s ease-in-out infinite;
   mask-image: linear-gradient(
     180deg,
     transparent,
-    black 15%,
+    transparent 90px,
+    black calc(90px + 15%),
     black 80%,
     transparent
   );
 }
 
+/* The drift is a transform - the grid is drawn once and slid, not
+   repainted sixty times a second as a moving background was. */
 @keyframes terrain-grid {
   0% {
     opacity: 0;
-    background-position:
-      0 0,
-      0 0;
+    transform: translateY(0);
   }
   20% {
     opacity: var(--grid-max, 0.24);
@@ -543,9 +545,7 @@ svg.soundwave-c {
   75%,
   100% {
     opacity: 0;
-    background-position:
-      0 90px,
-      0 0;
+    transform: translateY(90px);
   }
 }
 
@@ -1064,7 +1064,6 @@ svg.soundwave-c {
 
 .cta-neon-glow {
   background-color: var(--color-structure);
-  animation: cta-cycle-glow 56s linear infinite;
 }
 
 @keyframes cta-cycle {
@@ -1127,6 +1126,9 @@ svg.soundwave-c {
   transition: transform 0.18s ease, filter 0.18s ease;
 }
 
+/* The halo is blurred once and only its opacity breathes: cycling its
+   colour re-blurred it every frame, which alone cost the landing page
+   half its frame rate. The face of the sign still cycles. */
 .cta-neon-glow {
   position: absolute;
   inset: -5px;
@@ -1134,9 +1136,8 @@ svg.soundwave-c {
   border-radius: inherit;
   filter: blur(16px);
   opacity: 0.55;
-  animation:
-    cta-cycle-glow 56s linear infinite,
-    cta-pulse 6s ease-in-out infinite;
+  will-change: opacity;
+  animation: cta-pulse 6s ease-in-out infinite;
 }
 
 .cta-neon-wrap:hover .cta-neon {
