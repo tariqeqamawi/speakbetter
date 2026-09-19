@@ -4,10 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useStore } from "@/lib/store";
-import { ChallengesIcon, CommunityIcon, ProfileIcon, SkillsIcon, ListenIcon } from "@/components/icons";
+import { ChallengesIcon, CommunityIcon, ProfileIcon, SkillsIcon } from "@/components/icons";
 import { Soundwave } from "@/components/soundwave";
 import { LionMouth } from "@/components/lion-mouth";
-import { LevelIcon, levelMeta } from "@/components/level-icon";
 
 const destinations = [
   { href: "/community", label: "Community", Icon: CommunityIcon },
@@ -42,7 +41,6 @@ export function TopBar() {
           <div className="flex items-center gap-2">
             <DesktopLinks />
             <CoachButton />
-            <LevelBadge />
           </div>
         </div>
       </div>
@@ -51,7 +49,8 @@ export function TopBar() {
 }
 
 /** The coach, one tap away wherever the student is: the lion's head
- *  in the header, lit when they're on the coach's page. */
+ *  in a pill, named, lit when they're on the coach's page. The level
+ *  is changed on the dashboard, so the header carries one lion. */
 function CoachButton() {
   const { state, ready } = useStore();
   const pathname = usePathname();
@@ -60,37 +59,15 @@ function CoachButton() {
   return (
     <Link
       href="/coach"
-      title="Your coach - ask a question, read back your reviews"
-      aria-label="Your coach"
-      className={`relative flex size-11 items-center justify-center rounded-full border transition-colors ${
+      title="Your AI coach - ask a question, read back your reviews"
+      className={`flex min-h-11 items-center gap-1.5 rounded-full border py-1 pl-1.5 pr-3 transition-colors ${
         on ? "border-advanced shadow-[0_0_16px_-4px_var(--color-advanced)]" : "border-navy-600 hover:border-ink-faint"
       }`}
     >
-      <span className="w-9 overflow-hidden">
+      <span className="w-8 overflow-hidden">
         <LionMouth level={0} className="w-full translate-y-0.5" />
       </span>
-      <span className="absolute -right-0.5 -top-0.5 grid size-4 place-items-center rounded-full border border-navy-900 bg-advanced text-navy-950">
-        <ListenIcon className="size-2.5" />
-      </span>
-    </Link>
-  );
-}
-
-/** The student's level lion, following them across the app. */
-function LevelBadge() {
-  const { state, ready } = useStore();
-  if (!ready || !state.unlocked || !state.level) return null;
-  const meta = levelMeta[state.level];
-  return (
-    <Link
-      href="/profile"
-      title={`${meta.label} - change your level`}
-      className="flex min-h-11 items-center gap-1.5 rounded-full border border-navy-600 px-2.5 py-1 transition-colors hover:border-ink-faint"
-    >
-      <LevelIcon level={state.level} className="h-6 w-auto" />
-      <span className="hidden text-[0.7rem] font-semibold text-ink-muted sm:inline">
-        {meta.label}
-      </span>
+      <span className="text-[0.7rem] font-semibold text-ink-muted">AI Coach</span>
     </Link>
   );
 }
