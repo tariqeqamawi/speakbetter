@@ -1036,7 +1036,16 @@ function XpSplash({
 function WatchingCoach({ poster }: { poster?: string }) {
   return (
     <div className="flex flex-col items-center gap-4 rounded-xl border border-navy-600 bg-navy-800 p-6 text-center">
+      {/* The lion on the left, facing the take on the right - it looks
+          toward what it's watching. */}
       <div className="flex items-center justify-center gap-4">
+        <div className="watching-lion w-28">
+          <LionMouth level={0} className="w-full" />
+        </div>
+        <div className="watching-eyes" aria-hidden>
+          <span className="watching-eye"><span className="watching-pupil" /></span>
+          <span className="watching-eye"><span className="watching-pupil" /></span>
+        </div>
         <div className="relative h-36 w-24 overflow-hidden rounded-lg bg-navy-950 ring-1 ring-navy-600">
           {poster ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -1045,13 +1054,6 @@ function WatchingCoach({ poster }: { poster?: string }) {
             <div className="size-full animate-pulse bg-navy-700" />
           )}
           <div className="watching-scan absolute inset-x-0 h-8" />
-        </div>
-        <div className="watching-eyes" aria-hidden>
-          <span className="watching-eye"><span className="watching-pupil" /></span>
-          <span className="watching-eye"><span className="watching-pupil" /></span>
-        </div>
-        <div className="watching-lion w-28">
-          <LionMouth level={0} className="w-full" />
         </div>
       </div>
       <p className="text-sm text-ink">Your coach is watching your video…</p>

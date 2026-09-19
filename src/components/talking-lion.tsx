@@ -493,7 +493,7 @@ export const TalkingLion = forwardRef<
         disabled={!supported}
         className={`flex min-h-11 items-center rounded-full border font-semibold transition-colors disabled:opacity-50 ${
           large
-            ? "border-transparent bg-advanced px-8 py-3 text-base text-navy-950 shadow-[0_0_32px_-6px_var(--color-advanced)] hover:opacity-90"
+            ? "coach-pill border-transparent px-8 py-3 text-base !text-navy-950 hover:scale-[1.03]"
             : blocked
               ? "border-ink-faint bg-navy-700 px-5 py-2.5 text-sm text-ink hover:bg-navy-600"
               : "border-navy-600 bg-navy-800 px-5 py-2.5 text-sm text-ink hover:bg-navy-700"

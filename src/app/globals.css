@@ -1627,3 +1627,59 @@ html.bare .spectrum-needed {
 html.bare .demo-banner {
   display: none;
 }
+
+/* The AI Coach pill: a solid colour that drifts through the seven, the
+   way mood lighting does - orange first, then yellow, red, magenta,
+   blue, green, cyan - with a halo at the edge in the same colour. The
+   colour is one custom property animated on the element; the halo is
+   a box-shadow of currentColor, so both follow one animation. */
+.coach-pill {
+  --pill: var(--color-figurative);
+  background-color: var(--pill);
+  color: var(--pill);
+  box-shadow:
+    0 0 0 1.5px color-mix(in oklab, var(--pill) 70%, white 30%),
+    0 0 18px -2px var(--pill),
+    0 0 36px -8px var(--pill);
+  animation: coach-pill 42s linear infinite;
+  transition: transform 150ms ease;
+}
+
+@property --pill {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: #ff9500;
+}
+
+@keyframes coach-pill {
+  0% {
+    --pill: var(--color-figurative);
+  }
+  14% {
+    --pill: var(--color-storytelling);
+  }
+  28% {
+    --pill: var(--color-acting);
+  }
+  43% {
+    --pill: var(--color-structure);
+  }
+  57% {
+    --pill: #3b6cff;
+  }
+  71% {
+    --pill: var(--color-mindset);
+  }
+  86% {
+    --pill: var(--color-body-language);
+  }
+  100% {
+    --pill: var(--color-figurative);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coach-pill {
+    animation: none;
+  }
+}
