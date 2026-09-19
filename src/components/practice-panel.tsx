@@ -8,7 +8,7 @@ import { lessonByVimeoId } from "@/data/lessons";
 import { categoryById, type CategoryId } from "@/data/categories";
 import Link from "next/link";
 import { SpectrumBars, SpectrumStrip } from "@/components/spectrum";
-import { CheckIcon, CircleIcon, PlayIcon } from "@/components/icons";
+import { CheckIcon, CircleIcon, FilmIcon, PlayIcon, VideoIcon } from "@/components/icons";
 import { RecordingsShelf } from "@/components/recordings-shelf";
 import { capturePoster, keepVideo } from "@/lib/attempt-videos";
 import { TalkingLion, type TalkingLionHandle } from "@/components/talking-lion";
@@ -49,7 +49,11 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
   const [stage, setStage] = useState<Stage>({ kind: "idle" });
   // Bumped once a new recording is on the device, so the shelf re-reads.
   const [shelfKey, setShelfKey] = useState(0);
-  const inputRef = useRef<HTMLInputElement>(null);
+  // Two pickers: one that opens the camera, one that opens the library.
+  // A single input with `capture` skips the library on a phone, and
+  // one without it makes the camera a second tap away.
+  const recordRef = useRef<HTMLInputElement>(null);
+  const pickRef = useRef<HTMLInputElement>(null);
 
   if (!ready) return null;
   if (challenge.passive) return <PassiveProgress challenge={challenge} />;
@@ -209,27 +213,45 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
       {stage.kind === "idle" && (
         <div className="flex flex-col items-start gap-3 rounded-xl border border-navy-600 bg-navy-800 p-5">
           <p className="text-sm text-ink-muted">
-            Record yourself on your phone - selfie mode,{" "}
+            Record yourself here - selfie mode,{" "}
             {limit >= 120
               ? `${limitLabel(limit)} at most, and shorter is better`
               : `${limitLabel(limit)} at most`}
-            {" "}- then upload it here for your coach&apos;s review.
+            {" "}- or choose one you&apos;ve already recorded, and your coach will review it.
           </p>
           <input
-            ref={inputRef}
+            ref={recordRef}
             type="file"
             accept="video/*"
             capture="user"
             className="hidden"
             onChange={(e) => onFile(e.target.files?.[0])}
           />
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
-            className="rounded-lg bg-ink px-5 py-2.5 text-sm font-semibold text-navy-900 transition-opacity hover:opacity-90"
-          >
-            {attempts.length > 0 ? "Record another attempt" : "Upload your video"}
-          </button>
+          <input
+            ref={pickRef}
+            type="file"
+            accept="video/*"
+            className="hidden"
+            onChange={(e) => onFile(e.target.files?.[0])}
+          />
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => recordRef.current?.click()}
+              className="inline-flex items-center gap-2 rounded-lg bg-ink px-5 py-2.5 text-sm font-semibold text-navy-900 transition-opacity hover:opacity-90"
+            >
+              <VideoIcon className="size-4" />
+              {attempts.length > 0 ? "Record another attempt" : "Record now"}
+            </button>
+            <button
+              type="button"
+              onClick={() => pickRef.current?.click()}
+              className="inline-flex items-center gap-2 rounded-lg border border-navy-600 px-5 py-2.5 text-sm font-semibold text-ink-muted transition-colors hover:text-ink"
+            >
+              <FilmIcon className="size-4" />
+              Choose from library
+            </button>
+          </div>
           <p className="text-xs text-ink-faint">
             Your video goes to your coach for review and is deleted the
             moment the review is back - it&apos;s never stored by us. The

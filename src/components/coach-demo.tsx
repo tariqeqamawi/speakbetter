@@ -54,49 +54,53 @@ const SAMPLE_NOTES: { category: CategoryId; note: string; lesson: string }[] = [
   },
 ];
 
-// What the coach is talking about, moment by moment. The times were read
-// off the clip's own speech segments, so each symbol lands on the word
-// being spoken - the student hears "hands" and sees a hand.
+// What the coach is talking about, moment by moment. The times are
+// word timestamps from the clip itself (faster-whisper), in the clip's
+// own time - playback is faster, but media time isn't - so each symbol
+// lands on the word being spoken: the student hears "hands" and sees a
+// hand. The clip is the settled voice (Charon, British, the lion's
+// direction) said through /api/speak; regenerate it there if the line
+// changes, and re-time these.
 const CUES: SpokenCue[] = [
   {
-    at: 0.95,
-    until: 1.9,
+    at: 2.2,
+    until: 3.3,
     word: "Passed",
     colorClass: "text-mindset",
     Icon: CheckCircleIcon,
     summary: false, // a verdict, not something to work on
   },
   {
-    at: 4.0,
-    until: 6.05,
+    at: 6.9,
+    until: 9.9,
     word: "Hands",
     colorClass: "text-body-language",
     Icon: HandIcon,
   },
   {
-    at: 7.5,
-    until: 8.6,
+    at: 12.6,
+    until: 14.0,
     word: "Paint the picture",
     colorClass: "text-figurative",
     Icon: BrushIcon,
   },
   {
-    at: 8.95,
-    until: 10.6,
+    at: 15.2,
+    until: 17.1,
     word: "Went flat",
     colorClass: "text-acting",
     Icon: FlatlineIcon,
   },
   {
-    at: 10.9,
-    until: 12.85,
+    at: 18.3,
+    until: 20.7,
     word: "Comparison",
     colorClass: "text-figurative",
     Icon: SpectrumIcon,
   },
   {
-    at: 13.3,
-    until: 15.8,
+    at: 23.3,
+    until: 25.1,
     word: "Into the scene",
     colorClass: "text-storytelling",
     Icon: FilmIcon,
