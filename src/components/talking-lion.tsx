@@ -472,7 +472,7 @@ export const TalkingLion = forwardRef<
             : "border-navy-600 bg-navy-800 hover:bg-navy-700"
         }`}
       >
-        {speaking ? "Stop" : blocked ? "Tap to hear the coach" : "Hear the coach"}
+        {speaking ? "Stop" : blocked ? "Tap to listen to the coach" : "Listen to the coach"}
       </button>
       )}
       {blocked && (

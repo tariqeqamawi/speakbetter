@@ -23,14 +23,16 @@ import {
 // Clearly labelled as a sample. Nothing here is presented as real
 // student data.
 
+// Agrees with what the coach says: the scene and the hands worked,
+// the voice stayed at one volume, a first take with room to grow.
 const SAMPLE_SPECTRUM: Record<CategoryId, number> = {
-  storytelling: 78,
+  storytelling: 72,
   figurative: 34,
-  acting: 62,
-  structure: 71,
-  mindset: 83,
-  "body-language": 29,
-  advanced: 44,
+  acting: 41,
+  structure: 58,
+  mindset: 66,
+  "body-language": 63,
+  advanced: 22,
 };
 
 // Each note names the real lesson behind it - the same tie between
@@ -38,19 +40,19 @@ const SAMPLE_SPECTRUM: Record<CategoryId, number> = {
 // text, not links: the lessons live past the paywall.
 const SAMPLE_NOTES: { category: CategoryId; note: string; lesson: string }[] = [
   {
+    category: "storytelling",
+    note: "You dropped us straight into the kitchen, no build-up - the scene, not the story - and it's why we were with you from the first line.",
+    lesson: "Life Scene NOT Life Story",
+  },
+  {
     category: "body-language",
-    note: "Your hands went quiet at the key moment - that's exactly when they should be painting the picture.",
+    note: "When you described the bread your hands drew the loaf - the width, the weight - so the gesture was doing the describing with you.",
     lesson: "Hand Gestures: Express Visually What You Say Verbally",
   },
   {
-    category: "figurative",
-    note: "The middle third went flat. One vivid comparison would have lifted it.",
-    lesson: "Metaphors: What They Are And How To Use Them",
-  },
-  {
-    category: "storytelling",
-    note: "Strong instinct dropping straight into the scene. Keep doing that.",
-    lesson: "Life Scene NOT Life Story",
+    category: "acting",
+    note: "The middle third stayed at one volume, and the hands went quiet right at the line that mattered. Drop to a whisper there and bring one hand back up to paint it.",
+    lesson: "Play With Your Voice (Tone and Melody)",
   },
 ];
 
@@ -63,52 +65,53 @@ const SAMPLE_NOTES: { category: CategoryId; note: string; lesson: string }[] = [
 // changes, and re-time these.
 const CUES: SpokenCue[] = [
   {
-    at: 0.9,
-    until: 2.1,
-    word: "Passed",
-    colorClass: "text-mindset",
-    Icon: CheckCircleIcon,
-    summary: false, // a verdict, not something to work on
+    at: 8.4,
+    until: 10.8,
+    word: "Into the scene",
+    colorClass: "text-storytelling",
+    Icon: FilmIcon,
   },
   {
-    at: 4.0,
-    until: 6.5,
+    at: 17.9,
+    until: 20.6,
     word: "Hands",
     colorClass: "text-body-language",
     Icon: HandIcon,
   },
   {
-    at: 8.2,
-    until: 9.3,
-    word: "Paint the picture",
-    colorClass: "text-figurative",
-    Icon: BrushIcon,
+    at: 23.2,
+    until: 25.5,
+    word: "Nice shirt",
+    colorClass: "text-mindset",
+    Icon: CheckCircleIcon,
+    summary: false, // proof the coach watched, not something to work on
   },
   {
-    at: 9.9,
-    until: 11.4,
-    word: "Went flat",
+    at: 27.0,
+    until: 28.6,
+    word: "One volume",
     colorClass: "text-acting",
     Icon: FlatlineIcon,
   },
   {
-    at: 12.0,
-    until: 14.1,
-    word: "Comparison",
+    at: 34.6,
+    until: 36.4,
+    word: "Paint it",
     colorClass: "text-figurative",
-    Icon: SpectrumIcon,
+    Icon: BrushIcon,
   },
   {
-    at: 15.2,
-    until: 16.6,
-    word: "Into the scene",
-    colorClass: "text-storytelling",
-    Icon: FilmIcon,
+    at: 42.8,
+    until: 45.9,
+    word: "Passed",
+    colorClass: "text-mindset",
+    Icon: CheckCircleIcon,
+    summary: false, // a verdict, not something to work on
   },
 ];
 
 const SPOKEN =
-  "Nice work - that passed. Two things for next time. Your hands went quiet at the key moment, and that is exactly when they should be painting the picture. And the middle third went flat: one vivid comparison would lift it. Strong instinct dropping straight into the scene, though. Keep doing that.";
+  "Well done for getting this recorded - a full ninety seconds, standing, to a lens. That's not nothing. Two things worked. You dropped us straight into the kitchen, no build-up: that's the life-scene lesson, the scene not the story, and it's why we were with you from the first line. And when you described the bread, your hands drew the loaf - the width of it, the weight - so the gesture was doing the describing with you. Nice shirt, by the way. The blue works on camera. For next time: the middle third stayed at one volume. Your hands went quiet there too, right at the line that mattered. Drop to almost a whisper on that line, and bring one hand back up to paint it, and the rest will sound louder for it. The brief asked for one story with a beginning and an end - you had both. And that means... congratulations. You've passed this challenge.";
 
 type Stage = "idle" | "watching" | "scored";
 
@@ -132,10 +135,12 @@ export function CoachDemo() {
           text={SPOKEN}
           audioSrc="/coach/sample-review.mp3"
           cues={CUES}
+          captions
         />
         <p className="text-center text-xs text-ink-faint">
-          A sample review, spoken aloud by the coach - each skill named as
-          it comes up.
+          A sample review, spoken aloud by the coach - the words as captions,
+          each skill named as it comes up. This is the voice, the lion, and the
+          kind of feedback every take gets.
         </p>
       </div>
 
@@ -181,7 +186,7 @@ export function CoachDemo() {
                 Challenge complete
               </span>
               <span className="text-3xl font-bold tabular-nums text-ink">
-                74
+                64
                 <span className="text-base font-normal text-ink-faint">/100</span>
               </span>
             </div>
