@@ -9,7 +9,7 @@ import { SpectrumSignature } from "@/components/spectrum-signature";
 import { StreakCalendar } from "@/components/streak-calendar";
 import { BadgeCollection } from "@/components/badge-collection";
 import { DashboardHeader, DashboardHeaderCompact } from "@/components/dashboard-header";
-import { lessonMinutes } from "@/lib/progress";
+import { challengeXp, challengeXpFor, lessonMinutes, phaseGate } from "@/lib/progress";
 import { listAllVideos, type StoredVideoMeta } from "@/lib/attempt-videos";
 import { useEffect, useState } from "react";
 import { SpectrumStrip } from "@/components/spectrum";
@@ -18,6 +18,7 @@ import { CategoryIcon } from "@/components/category-icons";
 import { SectionBanner } from "@/components/section-banner";
 import {
   ChallengesIcon,
+  LockIcon,
   CheckIcon,
   FilmIcon,
   FlameIcon,
@@ -50,6 +51,7 @@ export default function DashboardPage() {
   const isComplete = useChallengeComplete();
   const phone = useIsPhone();
   const posters = useAttemptPosters();
+  const takes = useKeptTakes();
 
   if (!ready) return null;
 
@@ -90,35 +92,103 @@ export default function DashboardPage() {
           practiced and uploaded. Well done - every minute in front of the lens counts.
         </p>
       )}
-      <ul className="flex flex-col gap-2.5">
-        {storyPhases.map((phase) => {
+      {/* The journey in miniature: five checkpoints along a road, lit
+          as far as the student has reached - the road's own colours,
+          the rank each gate asks for. */}
+      <div className="flex items-center gap-1">
+        {storyPhases.map((phase, i) => {
+          const gate = phaseGate(state, i);
           const inPhase = challenges.filter((c) => c.phase === phase.id);
           const done = inPhase.filter((c) => isComplete(c.slug)).length;
+          const complete = done === inPhase.length;
+          const reached = gate.open;
           return (
-            <li key={phase.id} className="flex items-center gap-3">
-              <span className="w-4 text-xs font-bold text-ink">
+            <span key={phase.id} className="flex flex-1 items-center gap-1">
+              <span
+                title={`${phase.name}${reached ? "" : gate.rank ? ` - opens at ${gate.rank.name}` : ""}`}
+                className={`grid size-8 shrink-0 place-items-center rounded-full text-xs font-bold ${
+                  complete
+                    ? `${phase.bgClass} text-navy-950 shadow-[0_0_12px_-2px_currentColor] ${phase.textClass}`
+                    : reached
+                      ? `border-2 border-current bg-navy-900 ${phase.textClass} map-pulse`
+                      : "border border-navy-600 bg-navy-900 text-ink-faint"
+                }`}
+              >
+                {complete ? <CheckIcon className="size-3.5" /> : reached ? phase.id : <LockIcon className="size-3" />}
+              </span>
+              {i < storyPhases.length - 1 && (
+                <span className={`h-0.5 flex-1 rounded-full ${complete ? phase.bgClass : "bg-navy-700"}`} />
+              )}
+            </span>
+          );
+        })}
+      </div>
+
+      {/* Phase by phase: one square per challenge, passed ones in the
+          phase's colour - the count is the picture - and the XP each
+          phase has paid so far against what it can. */}
+      <ul className="flex flex-col gap-2.5">
+        {storyPhases.map((phase, i) => {
+          const inPhase = challenges.filter((c) => c.phase === phase.id);
+          const done = inPhase.filter((c) => isComplete(c.slug)).length;
+          const paid = inPhase.reduce((sum, c) => {
+            const best = state.attempts.filter((a) => a.challengeSlug === c.slug && a.passed).sort((a, b) => b.score - a.score)[0];
+            return sum + (best ? challengeXpFor(c, best.score) : c.passive && isComplete(c.slug) ? challengeXp(c) : 0);
+          }, 0);
+          const worth = inPhase.reduce((sum, c) => sum + challengeXp(c), 0);
+          const gate = phaseGate(state, i);
+          return (
+            <li key={phase.id} className="flex items-center gap-2.5">
+              <span className={`w-4 text-xs font-bold ${gate.open ? phase.textClass : "text-ink-faint"}`}>
                 {phase.id}
               </span>
-              <span className="flex-1 truncate text-xs text-ink-muted">
-                {phase.name}
+              <span className="w-24 shrink-0 truncate text-xs text-ink-muted">{phase.name}</span>
+              <span className="flex flex-1 flex-wrap gap-[3px]" aria-hidden>
+                {inPhase.map((c) => {
+                  const passed = isComplete(c.slug);
+                  return (
+                    <span
+                      key={c.slug}
+                      title={c.title}
+                      className={`h-2.5 w-2.5 rounded-[3px] ${
+                        passed ? `${phase.bgClass} shadow-[0_0_6px_-1px_currentColor] ${phase.textClass}` : "bg-navy-950 ring-1 ring-inset ring-navy-600"
+                      }`}
+                    />
+                  );
+                })}
               </span>
-              <span
-                className={`h-2 w-24 overflow-hidden rounded-full ${phase.tintClass}`}
-              >
-                <span
-                  className={`block h-full rounded-full ${phase.bgClass} ${phase.textClass} ${
-                    done > 0 ? "shadow-[0_0_8px_currentColor]" : ""
-                  }`}
-                  style={{ width: `${(done / inPhase.length) * 100}%` }}
-                />
-              </span>
-              <span className="w-8 text-right text-xs tabular-nums text-ink-faint">
-                {done}/{inPhase.length}
+              <span className="w-20 shrink-0 text-right text-[0.65rem] tabular-nums text-ink-faint">
+                <b className={`font-semibold ${paid > 0 ? phase.textClass : ""}`}>{paid}</b>/{worth} XP
+                <span className="block text-[0.6rem]">{done}/{inPhase.length} passed</span>
               </span>
             </li>
           );
         })}
       </ul>
+
+      {/* Frames of the takes this device still holds, newest first -
+          the student's own face along the road. */}
+      {takes.length > 0 && (
+        <div className="flex flex-col gap-1.5">
+          <span className="text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint">Your takes</span>
+          <div className="-mx-5 flex gap-1.5 overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {takes.map((t) => {
+              const c = challenges.find((x) => x.slug === t.challengeSlug);
+              return (
+                <Link
+                  key={t.id}
+                  href={`/challenges/${t.challengeSlug}`}
+                  title={c?.title}
+                  className="relative h-20 w-14 shrink-0 overflow-hidden rounded-md bg-navy-950 ring-1 ring-navy-600"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={t.poster} alt="" className="size-full object-cover" />
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
       <Link
         href="/challenges"
         className="self-start text-xs font-semibold text-ink-muted transition-colors hover:text-ink"
@@ -373,6 +443,21 @@ function Stat({ value, label, accent = "text-ink" }: { value: number; label: str
       <span className="text-[0.65rem] text-ink-faint">{label}</span>
     </span>
   );
+}
+
+/** The recordings this device still holds, newest first, with a frame each. */
+function useKeptTakes(): StoredVideoMeta[] {
+  const [takes, setTakes] = useState<StoredVideoMeta[]>([]);
+  useEffect(() => {
+    let alive = true;
+    listAllVideos().then((rows) => {
+      if (alive) setTakes(rows.filter((r) => r.poster));
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+  return takes;
 }
 
 /** Attempt id -> a frame of its recording, for the recordings this
