@@ -7,6 +7,7 @@ import {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
   type ComponentType,
@@ -82,6 +83,9 @@ export const TalkingLion = forwardRef<
     text?: string;
     audioSrc?: string;
     cues?: SpokenCue[];
+    /** Show what's being said as it's said - a phrase at a time, paced
+     *  across the clip by its share of the words - like a reel's captions. */
+    captions?: boolean;
     /** Speak as soon as an audio source arrives - for a page where the
      *  tap that fetched the audio is the tap that meant "play". */
     autoPlay?: boolean;
@@ -89,7 +93,7 @@ export const TalkingLion = forwardRef<
     className?: string;
   }
 >(function TalkingLion(
-  { text, audioSrc, cues, autoPlay = false, onEnded, className = "" },
+  { text, audioSrc, cues, captions = false, autoPlay = false, onEnded, className = "" },
   ref,
 ) {
   const [level, setLevel] = useState(0); // 0..1 live amplitude, smoothed
@@ -105,6 +109,15 @@ export const TalkingLion = forwardRef<
   // The browser refused to start the clip - a tap on the button will.
   const [blocked, setBlocked] = useState(false);
   const [cueIndex, setCueIndex] = useState(-1); // which cue is being spoken
+  const [captionIndex, setCaptionIndex] = useState(-1); // which phrase is being said
+  // The text as phrases, each with its share of the clip: the clip has
+  // no word timings, so each phrase gets the stretch of the clip its
+  // characters are of the whole. Close enough to follow along by.
+  const phrases = useMemo(() => (captions && text ? phrasesOf(text) : []), [captions, text]);
+  const phrasesRef = useRef<{ text: string; from: number; to: number }[]>(phrases);
+  useEffect(() => {
+    phrasesRef.current = phrases;
+  }, [phrases]);
   // Set once the clip plays through, which is what puts the summary up.
   const [finished, setFinished] = useState(false);
   // Resolved lazily: `window` isn't there during the server render.
@@ -126,6 +139,7 @@ export const TalkingLion = forwardRef<
     setLevel(0);
     setMouth(0);
     mouthRef.current = 0;
+    setCaptionIndex(-1);
     loudRef.current = 0;
     holdUntilRef.current = 0;
     closeUntilRef.current = 0;
@@ -208,6 +222,16 @@ export const TalkingLion = forwardRef<
           (c) => t >= c.at && t < c.until,
         );
         setCueIndex((prev) => (prev === found ? prev : found));
+      }
+      // Which phrase, by its share of the clip's length.
+      if (phrasesRef.current.length) {
+        const el = audioRef.current;
+        const dur = el?.duration;
+        if (el && dur && Number.isFinite(dur)) {
+          const frac = el.currentTime / dur;
+          const found = phrasesRef.current.findIndex((p) => frac >= p.from && frac < p.to);
+          setCaptionIndex((prev) => (prev === found ? prev : found));
+        }
       }
 
       rafRef.current = requestAnimationFrame(tick);
@@ -355,6 +379,7 @@ export const TalkingLion = forwardRef<
 
   const activeCue = cueIndex >= 0 ? cues?.[cueIndex] : undefined;
   const summaryCues = (cues ?? []).filter((c) => c.summary !== false);
+  const caption = captionIndex >= 0 ? phrases[captionIndex]?.text : undefined;
 
   return (
     <div className={`flex flex-col items-center gap-4 ${className}`}>
@@ -374,6 +399,21 @@ export const TalkingLion = forwardRef<
         >
           <Soundwave variant="coach" className="h-20 w-full sm:h-24" />
         </div>
+        {/* The captions: the phrase being said, over the wave, so the
+            words are heard and seen together. The box keeps its height
+            so the lion doesn't shift as phrases come and go. */}
+        {captions && phrases.length > 0 && (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 flex min-h-16 items-end justify-center px-2 pb-1" aria-live="off">
+            {caption && (
+              <p
+                key={captionIndex}
+                className="coach-cue max-w-[22rem] rounded-xl bg-navy-950/85 px-3.5 py-2 text-center text-[0.95rem] font-semibold leading-snug text-ink shadow-lg shadow-navy-950/60 text-balance"
+              >
+                {caption}
+              </p>
+            )}
+          </div>
+        )}
         {/* The word being spoken, with its symbol. The row keeps its
             height whether or not a cue is showing, so the lion never
             shifts as words come and go. */}
@@ -445,3 +485,34 @@ export const TalkingLion = forwardRef<
     </div>
   );
 });
+
+/** The text as phrases with their share of the clip. Sentences, split
+ *  again at commas and dashes when they run long, so a caption is a
+ *  line or two - the way a reel's are. */
+export function phrasesOf(text: string): { text: string; from: number; to: number }[] {
+  const pieces = text
+    .replace(/\s+/g, " ")
+    .split(/(?<=[.!?])\s+/)
+    .flatMap((sentence) =>
+      sentence.length > 90 ? sentence.split(/(?<=[,;:]|\s-)\s+/) : [sentence],
+    )
+    .map((p) => p.trim())
+    .filter(Boolean);
+  // Short pieces join their neighbour, so a caption is never a word or
+  // two on its own; a piece ending a sentence closes the join.
+  const raw: string[] = [];
+  for (const piece of pieces) {
+    const last = raw[raw.length - 1];
+    if (last && !/[.!?]$/.test(last) && last.length + piece.length + 1 <= 72) raw[raw.length - 1] = `${last} ${piece}`;
+    else raw.push(piece);
+  }
+  // A phrase's weight is its characters plus a beat for the pause after it.
+  const weights = raw.map((p) => p.length + (/[.!?]$/.test(p) ? 14 : 5));
+  const total = weights.reduce((a, b) => a + b, 0) || 1;
+  let acc = 0;
+  return raw.map((p, i) => {
+    const from = acc / total;
+    acc += weights[i];
+    return { text: p, from, to: acc / total };
+  });
+}

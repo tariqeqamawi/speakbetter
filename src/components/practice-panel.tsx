@@ -18,6 +18,7 @@ import {
   CircleIcon,
   ListenIcon,
   PlayIcon,
+  XIcon,
   RepeatIcon,
   SendIcon,
   UploadIcon,
@@ -747,7 +748,7 @@ function Feedback({
           {verdictShown && (
             <>
               <p className={`text-sm font-semibold ${attempt.passed ? "text-mindset" : "text-storytelling"}`}>
-                {attempt.passed ? "Congratulations - you've passed this challenge." : "Not quite there this time."}
+                {attempt.passed ? "Congratulations - you've passed this challenge." : "Didn't pass this time."}
               </p>
               <p className="mt-1 text-sm text-ink-muted">
                 {attempt.passed
@@ -813,6 +814,7 @@ function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => v
   const [state, setState] = useState<"loading" | "ready" | "playing" | "done" | "failed">("loading");
   const lionRef = useRef<TalkingLionHandle>(null);
   const [play, setPlay] = useState(false);
+  const [transcript, setTranscript] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -843,6 +845,8 @@ function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => v
     <div className="coach-cue flex flex-col items-center gap-2 rounded-xl border border-navy-600 bg-navy-900/60 p-4">
       <TalkingLion
         ref={lionRef}
+        text={spoken}
+        captions
         audioSrc={play && url ? url : undefined}
         autoPlay={play}
         onEnded={() => {
@@ -862,14 +866,47 @@ function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => v
             <LionMouth level={0} className="w-8 translate-y-0.5" />
           </span>
           <ListenIcon className="size-4" />
-          {state === "loading" ? "Getting your feedback…" : "Play feedback"}
+          {state === "loading" ? "Getting your feedback…" : "Listen to your coach's feedback"}
         </button>
-      )}
-      {(state === "playing" || state === "done") && (
-        <p className="max-w-prose text-center text-xs text-ink-faint text-balance">{spoken}</p>
       )}
       {state === "failed" && (
         <p className="max-w-prose text-center text-sm text-ink-muted">{spoken}</p>
+      )}
+      {state !== "failed" && (
+        <button
+          type="button"
+          onClick={() => setTranscript(true)}
+          className="text-xs font-medium text-ink-faint underline-offset-4 hover:text-ink hover:underline"
+        >
+          Read the transcript
+        </button>
+      )}
+      {transcript && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Your coach's feedback, written out"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-navy-950/80 p-0 backdrop-blur-sm sm:items-center sm:p-6"
+          onClick={() => setTranscript(false)}
+        >
+          <div
+            className="celebration-pop flex max-h-[85vh] w-full max-w-lg flex-col gap-4 overflow-y-auto rounded-t-3xl border border-navy-600 bg-navy-800 p-6 sm:rounded-3xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-[0.3em] text-ink-faint">Your coach said</span>
+              <button
+                type="button"
+                onClick={() => setTranscript(false)}
+                aria-label="Close"
+                className="grid size-9 place-items-center rounded-full border border-navy-600 text-ink-muted transition-colors hover:text-ink"
+              >
+                <XIcon className="size-4" />
+              </button>
+            </div>
+            <p className="text-lg leading-relaxed text-ink">{spoken}</p>
+          </div>
+        </div>
       )}
     </div>
   );

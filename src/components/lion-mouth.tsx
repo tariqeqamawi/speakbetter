@@ -27,10 +27,10 @@
 // Regenerate the sprite with the notes in scripts/build-lion-mouth.md.
 
 export const MOUTH_FRAMES = 28;
-/** The widest frame talking reaches: real frame 8 (source 19). Real
- *  frame 9 is the start of the roar and read as exaggerated on
- *  ordinary coaching lines. */
-export const MOUTH_TOP = 24;
+/** The widest frame talking reaches: real frame 7 (source 18). Frame 8
+ *  read as too wide for speech - a shout rather than a word - and 9 is
+ *  the roar itself. The small movements are where talking lives. */
+export const MOUTH_TOP = 21;
 /** The sprite's frame size - 440 × 343: the whole lion, mane to chin,
  *  and the mic, without the wave. */
 export const MOUTH_ASPECT = "440 / 343";

@@ -123,7 +123,7 @@ export function shapeVerdict(
   const body = String(verdict.spoken ?? "").trim().replace(/\s+$/, "");
   const closing = passed
     ? "And that means... congratulations. You've passed this challenge."
-    : "Not quite there this time - and I'm sure you'll get it on the next attempt. Record a new video, upload it, and I'll be here waiting.";
+    : "So this one didn't pass. Keep going - your speaking is developing, and I'm sure you'll get it on the next attempt. Record a new video, upload it, and I'll be here waiting.";
   const spoken = body ? `${body} ${closing}` : undefined;
 
   return {
