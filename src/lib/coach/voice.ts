@@ -93,7 +93,7 @@ const KEY = "speak-better-coach-voice";
  * Pace in the direction is a suggestion Gemini takes loosely; this is
  * the exact part. Pitch is preserved, so the gravel stays.
  */
-export const COACH_RATE = 1.3;
+export const COACH_RATE = 1.43;
 
 /** Set the coach's pace on an element. Both rates, because loading a
  *  new src resets playbackRate to the default. */
