@@ -195,12 +195,39 @@ export function Landing() {
         <h2 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
           Watch your coach in action
         </h2>
-        <p className="max-w-2xl text-center text-lg text-ink-muted text-balance">
-          The whole course turns on this. Record a challenge and, in a minute or two, a coach that actually watched
-          - the hands, the eyes, the voice, the story - tells you what it saw and what to do next, aloud, with the
-          words on screen. Praise that names what earned it; a miss said plainly, with the one turn that would have
-          made it.
-        </p>
+        <div className="flex max-w-2xl flex-col items-center gap-4 text-center">
+          <p className="text-lg text-ink-muted text-balance">
+            The whole Speak Better system is built on this. How do you teach a methodology this effective at scale?
+            With a competent AI coach trained on the methodology itself.
+          </p>
+          <p className="text-ink-muted text-balance">
+            Record a challenge and, in a minute or two, your coach - the lion - watches your video and makes note of:
+          </p>
+          <ul className="flex flex-wrap justify-center gap-2">
+            {[
+              ["your hand gestures", "text-body-language"],
+              ["your body language", "text-body-language"],
+              ["your eye contact", "text-body-language"],
+              ["your storytelling", "text-storytelling"],
+              ["your figurative language", "text-figurative"],
+              ["your acting", "text-acting"],
+              ["your energy", "text-acting"],
+              ["your tone of voice", "text-acting"],
+            ].map(([label, color]) => (
+              <li
+                key={label}
+                className={`rounded-full border border-navy-600 bg-navy-800/70 px-3 py-1 text-xs font-semibold ${color}`}
+              >
+                {label}
+              </li>
+            ))}
+          </ul>
+          <p className="text-ink-muted text-balance">
+            Then it gives you a detailed breakdown of how you did against the lessons in the course, and specific
+            notes on your performance. You&apos;ll know whether you passed or missed, what to improve next time, and
+            you&apos;ll watch your ability grow, take by take.
+          </p>
+        </div>
         <CoachDemo />
       </section>
 
