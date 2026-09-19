@@ -295,6 +295,12 @@ Challenges pay an order of magnitude more, because a lesson is watched while a c
 
 **A challenge pays by score.** Its figure is the most it can pay, shown as "up to 150 XP" on the challenge; a pass at 60 earns about two thirds of it, 100 earns all of it, and the line between is straight (`scoreShare` in `lib/progress.ts`). A challenge counts its best passing take, so a better score on one already passed is worth more and never less. This is a scale the student can see before recording, not a variable reward — the anti-dark-pattern rule holds. The moment the verdict lands, a splash says what the take was worth and what a better one would be: *"Congratulations — you passed. 72 / 100. +141 XP. This challenge pays up to 150 — improve your score to unlock more."* A miss pays the upload and says what a pass would pay.
 
+### XP is a key, not a number — the phases open at a rank
+
+Each STORY phase asks for a **rank** on top of the phase before it being done: **T** opens at *Finding Your Voice* (250 XP), **O** at *Storyteller* (600), **R** at *Performer* (1,200), **Y** at *Orator* (2,000). The numbers are set so that a student who passes each phase's challenges properly clears the next gate with a little to spare, and a student who scraped through at low scores — XP pays by score — comes up short, and makes it up by the things the course wants them doing anyway: the lessons the next phase leans on, or a better take on a challenge already passed. The map's banner says which rank, and how far: *"Opens at Storyteller (600 XP) — 30 XP to go. Lessons and better takes both count."* A locked challenge reached by its link says the same instead of taking a recording it wouldn't count.
+
+Two things this deliberately is not. **The lessons are never locked** — a milestone unlock on the deck was tried and cut, the student paid for the library, and the coach prescribes lessons in its feedback; a prescription can't land on a lock. And there is no **all-time leaderboard**: the community's board (§12) is this week's XP, opt-in, so a newcomer can lead in their first week and nobody is demotivated by a table they'll never climb. If XP ever unlocks content, it is *bonus* content — the teacher's extras — not the curriculum.
+
 ### The moment a lesson finishes
 
 When a lesson ends, the XP it paid rises off the player and out of frame over about three seconds, carried by a two-note chime — the smaller sibling of the badge celebration, which gets three. It's quieter and shorter on purpose: finishing a lesson happens a hundred times across a course and earning a badge happens rarely, so this has to be a sound a student still likes on the hundredth hearing.
@@ -312,6 +318,8 @@ Students should be able to see how they're progressing relative to other student
 Even so, the community layer isn't meant to be the main source of competitiveness — that should come from students competing with their earlier selves. The clearest version of that: letting a student set their very first challenge attempt side by side with their most recent one, so the improvement is undeniable. *This is where I started. This is where I am now.*
 
 Two pieces of the layer are built ahead of the rest. **The feed of before-and-afters**: each student's baseline score beside their latest, the two spectra, and the colors lit between — never the videos, which stay on the student's phone (§13). A feed of other people's distance travelled is the most persuasive thing the app can show someone at challenge three. And **the crowd on the road**: a button beside the journey map that opens who else is walking it — how many students are on the challenge you're on, who uploaded an attempt at it in the last few hours (first names, and only that an attempt was made — never the video, never the score), and where everyone else is along the road. None of it is about you; all of it is the reason to keep going. Both read from sample data until the community layer lands, at marked swap points.
+
+**This week's board.** A leaderboard of XP earned *this week*, reset every Monday, joined by choice with a display name — never all-time, never automatic. A weekly window means the top is reachable by whoever practiced most in the last seven days, which is the behaviour the app wants, and a lapsed Orator can't sit on it.
 
 Beyond visible-by-default scores, opt-out privacy, and the first-vs-latest comparison, the finer mechanics of the community layer are still open — the intent here is to establish its shape alongside Challenges and Skills, not to fully specify it.
 
@@ -342,6 +350,20 @@ Navigation stays deliberately small — four destinations: **Community**, **Chal
 **Profile** is the student's own corner: their standing (challenges complete, videos uploaded, colors reached, day streak), their demonstrated range as a spectrum of the strongest each color has ever shown, their badges, and their recent attempts. It's also the only place the level is changed — which keeps §09's promise that level movement is always the student's own decision.
 
 The brand mark — a lion with a spectrum-colored mane, speaking into a microphone over a soundwave — sits in the top bar beside the wordmark, and appears in full on the landing page. Its own palette (magenta and violet through to blue, with a warm amber lion) is where the category colors came from, so the identity and the scoring system are visibly the same idea.
+
+### The dashboard on a phone
+
+On a laptop the dashboard's panels sit two to a row and read as one heads-up display. On a phone the same panels are reached by **a strip of six tabs in two rows of three** — Challenges, Lessons, Spectrum / Streak, Badges, Attempts — under a one-line card of the student (avatar, name, level, rank, the bar to the next rank; tapping it opens the full card). One panel is open at a time, at the full width of the screen. A rail down the side was tried first and squeezed every panel into two-thirds of a phone; a single scrolling strip hid half the sections.
+
+The panels count in figures a student feels rather than in totals: **Challenges** shows how many were attempted, how many passed, and the **minutes spent speaking to a lens** ("13 minutes of speaking practiced and uploaded — well done, every minute in front of the lens counts"); **Lessons** shows lessons and **minutes watched**, and each color's lessons as a strip of stills, watched ones in colour, so the library reads as something to look at rather than a list; **Attempts** carry a frame of the recording from the device's own copy, where one is still kept. **The trophy case** opens any trophy full-screen: the medal large and turning under a passing shine, the day it was won, and what won it — or, for one not yet won, what would.
+
+### The dials
+
+The skill dial and the deck's dial share one hub: **the lion holds the centre and keeps its shape**; the name of the colour under the pointer sits above the dial, in its colour, with its count, and the hub's ring glows that colour. (The name used to change inside the hub, which turned the circle into an oval on a long name.) The seven names have a short form for a dial or a tab — Storytelling, Figurative, Acting skills, Structure, Speaker's mindset, Body & physical, Advanced. The ring is the seven colours joined end to end, and one bright length of it — the colour under the pointer — **slides round to the next colour** rather than jumping, changing colour on the way. On a phone the deck's colour carousel is worked with a thumb drawn across it.
+
+### The review's colours
+
+On the review's spectrum and the attempt cards, the colours a challenge needs to pass **glow and pulse softly**, marked *needed*; the rest are marked *bonus*. The attempt cards draw the same resonance wave the dashboard does, with a key beneath — each colour's score and short code, in its colour — so a wave reads as clearly as the bars, and the score is written out of a hundred. Record is a neon red button; Upload a neon cyan edge; sending a take is a round send icon; while the coach watches, the student's own still sits beside the lion with a pair of eyes tracking side to side; and the feedback is one button, *Play feedback*, with the lion's head and a listening icon.
 
 ### The level lion
 
@@ -389,6 +411,8 @@ The colour-spectrum score is the product's one genuinely novel idea, and a visit
 Each of the five phases owns a color, borrowed from the skill it leans on most — **S** green (awareness/mindset), **T** cyan (the physical instrument), **O** yellow (storytelling), **R** red (emotional truth), **Y** magenta (structure and the world). Every phase is drawn as its own bordered section holding just its challenges, so the journey reads as five distinct stages rather than one long list, and the phase's color runs through its letter, its heading, and its progress bars.
 
 Each challenge card carries a still, its brief, a **progress meter**, and a single action button that names where the student actually is: *Start challenge* when untouched, *Resume challenge* once underway, *Practice again* once passed. Progress is weighted across the real sequence rather than being all-or-nothing — warming up on the related skills, recording an attempt, and passing it each move the meter.
+
+**Your own face on the road.** Where the device still holds the recording, a passed challenge's circle on the map wears a frame of the student's own take instead of the challenge's still. Held under a finger it plays a few seconds, muted; now and then one plays by itself, at random — proof, in their own face, that the road behind them was walked. If the copy is gone (the app keeps three per challenge, on the device only — §13), the circle shows the challenge's still as before.
 
 One small piece of routing follows from this: a student who opens a lesson from a challenge's warm-up is offered **"Back to the challenge"** rather than the next lesson in the library, because the lesson was a detour rather than a destination.
 
@@ -516,6 +540,10 @@ Speak Better is being built on Light Brands' standard stack — the same foundat
 | Payments | Stripe — powers the landing page's pay-to-unlock flow (§15) |
 | Email | Resend, for transactional messages |
 | Forms & validation | React Hook Form with Zod |
+
+### Performance on a phone
+
+The challenge page's brief sits behind its poster until played — the embed's player script is the heaviest thing on the page. Any glow that pulses is drawn once and animated as a compositor opacity change on its own layer, never as an animated blur or box-shadow; the resonance wave's highlighted colours are each their own SVG for that reason. Long stretches of the coach's audio are paced on the server, not the phone (§14, *The lion speaks*).
 
 ### Observability & quality
 
