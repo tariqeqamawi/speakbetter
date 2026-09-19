@@ -18,7 +18,7 @@ export interface Feature {
 
 export const features: Feature[] = [
   { id: "lessons", label: "All 81 skill lessons, in the seven colors" },
-  { id: "deck", label: "The full deck of 79 cards, in the app" },
+  { id: "deck", label: "The digital card deck - all 79 cards, in the app" },
   { id: "journey", label: "The STORY journey - 24 challenges, five phases" },
   { id: "written", label: "Written feedback on every take from the standing coach" },
   { id: "loop", label: "XP, ranks, trophies, streaks - the whole practice loop" },
@@ -30,7 +30,7 @@ export const features: Feature[] = [
   { id: "reviews", label: "Up to 20 reviews a month - more than a take a day" },
   { id: "live", label: "A monthly live group session with the teacher" },
   { id: "cohort", label: "A live cohort: start together, finish together" },
-  { id: "printed", label: "The printed card deck, posted to you" },
+  { id: "printed", label: "The physical card deck - printed, boxed and posted to you" },
   { id: "book", label: "The book, when it ships" },
   { id: "first", label: "First access to every new lesson and challenge" },
 ];

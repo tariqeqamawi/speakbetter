@@ -1,6 +1,7 @@
 import { features, tiers, trial } from "@/data/pricing";
 import { UnlockButton } from "@/components/unlock-button";
 import { CheckIcon, XIcon } from "@/components/icons";
+import { TierArt } from "@/components/tier-art";
 
 // The offer, laid out (master plan §15): the free baseline first -
 // what anyone can do before paying - then the three tiers side by
@@ -50,6 +51,7 @@ export function Pricing() {
               <span className="text-4xl font-bold tracking-tight text-ink">{tier.price}</span>
               <span className="text-xs text-ink-faint">{tier.term}</span>
             </div>
+            <TierArt has={tier.has} />
             {/* Every tier lists everything: what it has, lit in its
                 colour; what it doesn't, greyed and struck - so the
                 columns visibly fill in from left to right. */}

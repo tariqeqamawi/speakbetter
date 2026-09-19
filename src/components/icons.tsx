@@ -102,6 +102,17 @@ export function SpectrumIcon({ className = "size-5" }: IconProps) {
   );
 }
 
+/** A closed book - the printed companion. */
+export function BookIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M5.5 4.5h11.75a1 1 0 0 1 1 1v14.25H7a1.5 1.5 0 0 1-1.5-1.5V4.5Z" />
+      <path d="M5.5 17.25A1.5 1.5 0 0 1 7 15.75h11.25" />
+      <path d="M9 8.5h5.5" />
+    </svg>
+  );
+}
+
 /** An arrow up out of a tray - a video from the library. */
 export function UploadIcon({ className = "size-5" }: IconProps) {
   return (
