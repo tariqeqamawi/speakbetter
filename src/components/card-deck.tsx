@@ -1,6 +1,7 @@
 "use client";
 
-import Image from "next/image";
+import { RoaringLion } from "@/components/roaring-lion";
+
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -288,7 +289,7 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
               : "border-navy-600"
           }`}
         >
-          <Image src="/logo-mark.png" alt="" width={320} height={256} className="h-16 w-auto sm:h-24" />
+          <RoaringLion className="w-[82%] translate-y-[3%]" />
         </div>
 
         {categories.map((cat, i) => {

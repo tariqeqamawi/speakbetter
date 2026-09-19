@@ -1,6 +1,7 @@
 "use client";
 
-import Image from "next/image";
+import { RoaringLion } from "@/components/roaring-lion";
+
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -189,13 +190,7 @@ export function SkillDial() {
             : "border-navy-600 shadow-[0_0_0_0_transparent]"
         }`}
       >
-        <Image
-          src="/logo-mark.png"
-          alt=""
-          width={320}
-          height={256}
-          className="h-20 w-auto sm:h-28"
-        />
+        <RoaringLion className="w-[82%] translate-y-[3%]" />
       </div>
 
       {/* The nodes */}

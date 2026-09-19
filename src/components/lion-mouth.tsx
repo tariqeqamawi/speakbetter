@@ -41,12 +41,12 @@ export const MOUTH_ASPECT = "440 / 343";
  *  visibly opens halfway along. So the level walks the first frames
  *  quickly (square root) and spends its range where the opening
  *  shows; the envelope that feeds it does the smoothing. */
-export function mouthPosition(level: number): number {
+export function mouthPosition(level: number, top: number = MOUTH_TOP): number {
   const v = Math.max(0, Math.min(1, level));
   // Under a small level the mouth is shut, not ajar - the first open
   // frame has to be earned by a sound.
   if (v < 0.07) return 0;
-  return Math.min(MOUTH_TOP, Math.sqrt(v) * MOUTH_TOP);
+  return Math.min(top, Math.sqrt(v) * top);
 }
 
 /** The nearest whole frame, for anything that wants one. */
@@ -75,13 +75,17 @@ export function LionMouth({
   level,
   className = "",
   style,
+  roar = false,
 }: {
   /** 0 closed .. 1 as open as talking gets. */
   level: number;
   className?: string;
   style?: React.CSSProperties;
+  /** Let 1 reach the roar itself - the last frame - rather than
+   *  stopping where talking stops. */
+  roar?: boolean;
 }) {
-  const pos = mouthPosition(level);
+  const pos = mouthPosition(level, roar ? MOUTH_FRAMES - 1 : MOUTH_TOP);
   const lower = Math.floor(pos);
   const upper = Math.min(MOUTH_FRAMES - 1, lower + 1);
   const mix = pos - lower;
