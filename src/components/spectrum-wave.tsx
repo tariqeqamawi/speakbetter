@@ -137,7 +137,8 @@ export function SpectrumWave({
               fill={`var(--color-${cat.id})`}
               opacity="0.55"
               filter={`url(#pool-${uid})`}
-              className={animate ? "eq-wave-slow" : undefined}
+              className="spectrum-needed"
+              style={{ animationDelay: `${i * 0.35}s` }}
             />
             <path
               d={line}
@@ -148,7 +149,8 @@ export function SpectrumWave({
               opacity="0.8"
               filter={`url(#glow-${uid})`}
               mask={`url(#col-${uid}-${cat.id})`}
-              className={animate ? "eq-wave" : undefined}
+              className="spectrum-needed"
+              style={{ animationDelay: `${i * 0.35}s` }}
             />
           </g>
         ) : null,

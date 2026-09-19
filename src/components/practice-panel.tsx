@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { upload } from "@vercel/blob/client";
 import { useStore, type Attempt, type FeedbackNote } from "@/lib/store";
-import { GRACE_SECONDS, maxSecondsFor, type Challenge } from "@/data/challenges";
-import { XP, challengeXp, challengeXpFor } from "@/lib/progress";
+import { GRACE_SECONDS, maxSecondsFor, storyPhases, type Challenge } from "@/data/challenges";
+import { XP, challengeXp, challengeXpFor, phaseGate } from "@/lib/progress";
+import { LockIcon } from "@/components/icons";
 import { ZapIcon } from "@/components/icons";
 import { hapticCelebrate, playCelebration } from "@/lib/feedback-fx";
 import { lessonByVimeoId } from "@/data/lessons";
@@ -60,6 +61,9 @@ function limitLabel(sec: number): string {
 export function PracticePanel({ challenge }: { challenge: Challenge }) {
   const { state, ready, recordAttempt, attemptsFor, bestAttempt, latestAttempt } =
     useStore();
+  // The map's gate, held here as well: a locked challenge reached by
+  // its link says why, rather than taking a recording it won't count.
+  const gate = ready ? phaseGate(state, storyPhases.findIndex((p) => p.id === challenge.phase)) : null;
   const [stage, setStage] = useState<Stage>({ kind: "idle" });
   // Bumped once a new recording is on the device, so the shelf re-reads.
   const [shelfKey, setShelfKey] = useState(0);
@@ -221,6 +225,30 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
         </div>
       )}
 
+      {gate && !gate.open && (
+        <div className="flex flex-col items-start gap-2 rounded-xl border border-navy-600 bg-navy-800 p-5">
+          <p className="inline-flex items-center gap-2 text-sm font-semibold text-ink">
+            <LockIcon className="size-4 text-ink-faint" />
+            This challenge isn&apos;t open yet
+          </p>
+          {gate.reason === "rank" && gate.rank ? (
+            <p className="text-sm text-ink-muted">
+              It opens at <span className="font-semibold text-ink">{gate.rank.name}</span> ({gate.rank.at} XP) -
+              you&apos;re <span className="font-semibold text-ink">{gate.xpToGo} XP</span> away. Watching the lessons
+              this phase leans on, or a better score on a challenge you&apos;ve passed, both get you there.
+            </p>
+          ) : (
+            <p className="text-sm text-ink-muted">
+              The road reaches here once the phase before is done
+              {gate.rank ? ` and you hold ${gate.rank.name} (${gate.rank.at} XP)` : ""}.
+            </p>
+          )}
+          <Link href="/challenges" className="text-sm font-medium text-ink underline-offset-4 hover:underline">
+            Back to the map
+          </Link>
+        </div>
+      )}
+
       {stage.kind === "idle" && (
         <RecordingsShelf
           challengeSlug={challenge.slug}
@@ -229,7 +257,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
         />
       )}
 
-      {stage.kind === "idle" && (
+      {stage.kind === "idle" && (!gate || gate.open) && (
         <div className="flex flex-col items-start gap-3 rounded-xl border border-navy-600 bg-navy-800 p-5">
           <p className="text-sm text-ink-muted">
             Record yourself here - selfie mode,{" "}

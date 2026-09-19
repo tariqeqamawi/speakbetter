@@ -13,7 +13,7 @@ import { categoryById, type CategoryId } from "@/data/categories";
 import { CategoryIcon } from "@/components/category-icons";
 import { communityPosts } from "@/data/community-activity";
 import { challengeProgress } from "@/lib/challenge-progress";
-import { challengeXp } from "@/lib/progress";
+import { challengeXp, openPhaseCount, phaseGate, type PhaseGate } from "@/lib/progress";
 import { XpBadge } from "@/components/xp-badge";
 import { useStore } from "@/lib/store";
 import { VideoStill } from "@/components/video-still";
@@ -41,16 +41,13 @@ const ROW_H = 108;
 const X_CYCLE = [50, 76, 50, 24];
 const PHASE_GAP = 132; // room above each phase circle: level rule + circle
 
-/** The earliest phase with work left in it. Later phases are locked;
- *  earlier ones stay open, since finished work is never taken away. */
+/** The furthest phase the road reaches: every phase before it is
+ *  done and its rank is held. Later phases are locked; earlier ones
+ *  stay open, since finished work is never taken away. */
 export function useCurrentPhaseIndex(): number {
   const { state, ready } = useStore();
   if (!ready) return 0;
-  const firstUnfinished = storyPhases.findIndex(
-    (p) =>
-      !challengesInPhase(p.id).every((c) => challengeProgress(c, state).passed),
-  );
-  return firstUnfinished === -1 ? storyPhases.length - 1 : firstUnfinished;
+  return Math.max(0, openPhaseCount(state) - 1);
 }
 
 interface Node {
@@ -143,14 +140,15 @@ export function JourneyMap() {
 
   // Lay the trail out top to bottom, phase by phase.
   const nodes: Node[] = [];
-  const banners: { phase: StoryPhase; y: number; locked: boolean }[] = [];
+  const banners: { phase: StoryPhase; y: number; locked: boolean; gate: PhaseGate }[] = [];
   let y = 24;
   let step = 0;
   let firstUnpassedSeen = false;
   for (let pi = 0; pi < storyPhases.length; pi++) {
     const phase = storyPhases[pi];
     const locked = pi > currentIndex;
-    banners.push({ phase, y, locked });
+    const gate = ready ? phaseGate(state, pi) : { open: pi === 0, reason: null, rank: null, xpToGo: 0 };
+    banners.push({ phase, y, locked, gate });
     y += PHASE_GAP;
     for (const challenge of challengesInPhase(phase.id)) {
       const passed = ready && challengeProgress(challenge, state).passed;
@@ -367,7 +365,7 @@ export function JourneyMap() {
           </svg>
 
           {/* Level rules + phase circles, their skills in orbit */}
-          {banners.map(({ phase, y: by, locked }, i) => (
+          {banners.map(({ phase, y: by, locked, gate }, i) => (
             <div key={phase.id} className="contents">
               <div
                 id={`journey-${phase.id}`}
@@ -418,16 +416,26 @@ export function JourneyMap() {
                       );
                     })}
                 </span>
-                <span className="map-pin flex flex-col">
+                <span className="map-pin flex min-w-0 flex-1 flex-col pr-6">
                   <span
                     className={`text-sm font-semibold ${locked ? "text-ink-faint" : phase.textClass}`}
                   >
                     {phase.name}
                   </span>
-                  {locked && (
+                  {locked && gate.reason === "rank" && gate.rank && (
                     <span className="text-[0.65rem] text-ink-faint">
-                      Locked - the road reaches here after the phase before.
+                      Opens at <span className={phase.textClass}>{gate.rank.name}</span> ({gate.rank.at} XP) -{" "}
+                      <span className="font-semibold text-ink">{gate.xpToGo} XP to go</span>. Lessons and better takes both count.
                     </span>
+                  )}
+                  {locked && gate.reason !== "rank" && (
+                    <span className="text-[0.65rem] text-ink-faint">
+                      Locked - the road reaches here after the phase before
+                      {gate.rank ? `, at ${gate.rank.name} (${gate.rank.at} XP)` : ""}.
+                    </span>
+                  )}
+                  {!locked && gate.rank && (
+                    <span className="text-[0.65rem] text-ink-faint">{gate.rank.name}</span>
                   )}
                 </span>
               </div>

@@ -1370,3 +1370,49 @@ svg.soundwave-c {
     animation: none;
   }
 }
+
+/* The colors a challenge needs, breathing in the spectrum - a soft
+   pulse so the glow isn't missed on a glance, offset per color so they
+   don't beat in step. */
+.spectrum-needed {
+  animation: spectrum-needed 2.8s ease-in-out infinite;
+}
+
+@keyframes spectrum-needed {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spectrum-needed {
+    animation: none;
+    opacity: 0.7;
+  }
+}
+
+/* The same pulse on a bar or a dot: the glow swells, the shape holds. */
+.bar-needed {
+  animation: bar-needed 2.8s ease-in-out infinite;
+}
+
+@keyframes bar-needed {
+  0%,
+  100% {
+    box-shadow: 0 0 6px -1px currentColor;
+  }
+  50% {
+    box-shadow: 0 0 16px 1px currentColor;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar-needed {
+    animation: none;
+    box-shadow: 0 0 10px 0 currentColor;
+  }
+}

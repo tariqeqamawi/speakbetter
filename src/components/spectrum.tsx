@@ -38,7 +38,7 @@ export function SpectrumBars({
               <div
                 className={`h-full rounded-full transition-[width] duration-500 ease-out ${cat.bgClass} ${
                   lit ? "" : "opacity-40"
-                } ${needed && lit ? "shadow-[0_0_10px_0_currentColor]" : ""}`}
+                } ${needed && lit ? "bar-needed" : ""}`}
                 style={{ width: shown ? `${value}%` : "0%" }}
               />
             </div>
@@ -100,7 +100,7 @@ export function SpectrumKey({
               {marks && (
                 <span
                   aria-hidden
-                  className={`mt-0.5 size-1.5 rounded-full ${needed ? `${cat.bgClass} shadow-[0_0_6px_0_currentColor]` : "bg-navy-600"}`}
+                  className={`mt-0.5 size-1.5 rounded-full ${needed ? `${cat.bgClass} bar-needed` : "bg-navy-600"}`}
                 />
               )}
             </span>

@@ -2,6 +2,7 @@ import type { AppState } from "@/lib/store";
 import { categories, type CategoryId } from "@/data/categories";
 import { challenges, type Challenge, type PhaseId } from "@/data/challenges";
 import { badgeDefs } from "@/data/badges";
+import { challengeProgress } from "@/lib/challenge-progress";
 import lengths from "@/data/lesson-lengths.json";
 
 // The dashboard's numbers, derived from the record rather than stored.
@@ -98,6 +99,61 @@ export const ranks: Rank[] = [
   { name: "Headliner", at: 3200 },
   { name: "Unforgettable", at: 5000 },
 ];
+
+/**
+ * The rank a phase asks for, on top of the phase before it being done
+ * (§11). XP is earned by watching lessons, passing challenges and
+ * scoring well on them, so a student short of the rank makes it up by
+ * the things the course wants them doing anyway - the lessons the next
+ * phase cites, or a better take on a challenge already passed. The
+ * lessons themselves are never locked.
+ */
+const PHASE_RANK: Record<PhaseId, string | null> = {
+  S: null,
+  T: "Finding Your Voice",
+  O: "Storyteller",
+  R: "Performer",
+  Y: "Orator",
+};
+
+export function phaseRank(phase: PhaseId): Rank | null {
+  const name = PHASE_RANK[phase];
+  return name ? (ranks.find((r) => r.name === name) ?? null) : null;
+}
+
+export interface PhaseGate {
+  open: boolean;
+  /** Why it's shut: the phase before has work left, or the rank isn't
+   *  held yet. "previous" wins when both apply. */
+  reason: "previous" | "rank" | null;
+  rank: Rank | null;
+  /** XP still needed for the rank; 0 when held. */
+  xpToGo: number;
+}
+
+/** Whether the phase at this index is open to the student. */
+const PHASES: PhaseId[] = ["S", "T", "O", "R", "Y"];
+
+export function phaseGate(state: AppState, phaseIndex: number): PhaseGate {
+  const rank = phaseRank(PHASES[phaseIndex]);
+  const xp = standing(state).xp;
+  const xpToGo = rank ? Math.max(0, rank.at - xp) : 0;
+  if (phaseIndex === 0) return { open: true, reason: null, rank, xpToGo };
+  const before = PHASES[phaseIndex - 1];
+  const previousDone = challenges
+    .filter((c) => c.phase === before)
+    .every((c) => challengeProgress(c, state).passed);
+  if (!previousDone) return { open: false, reason: "previous", rank, xpToGo };
+  if (xpToGo > 0) return { open: false, reason: "rank", rank, xpToGo };
+  return { open: true, reason: null, rank, xpToGo: 0 };
+}
+
+/** How many phases from the start are open - the road's reach. */
+export function openPhaseCount(state: AppState): number {
+  let n = 0;
+  while (n < PHASES.length && phaseGate(state, n).open) n++;
+  return n;
+}
 
 export interface RankStanding {
   xp: number;
