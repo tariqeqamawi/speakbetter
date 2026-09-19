@@ -8,9 +8,9 @@ import { XP, challengeXp, challengeXpFor } from "@/lib/progress";
 import { ZapIcon } from "@/components/icons";
 import { hapticCelebrate, playCelebration } from "@/lib/feedback-fx";
 import { lessonByVimeoId } from "@/data/lessons";
-import { categories, categoryById, type CategoryId } from "@/data/categories";
+import { categoryById, type CategoryId } from "@/data/categories";
 import Link from "next/link";
-import { SpectrumBars } from "@/components/spectrum";
+import { SpectrumBars, SpectrumKey } from "@/components/spectrum";
 import { SpectrumWave } from "@/components/spectrum-wave";
 import {
   CheckIcon,
@@ -214,9 +214,9 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
 
       {(best || latest) && stage.kind === "idle" && (
         <div className="grid gap-2 sm:grid-cols-2">
-          {best && <AttemptCard label="Best attempt" attempt={best} />}
+          {best && <AttemptCard label="Best attempt" attempt={best} required={challenge.targetSkills} />}
           {latest && latest.id !== best?.id && (
-            <AttemptCard label="Most recent" attempt={latest} />
+            <AttemptCard label="Most recent" attempt={latest} required={challenge.targetSkills} />
           )}
         </div>
       )}
@@ -358,7 +358,15 @@ function fmt(sec: number): string {
 
 /** An attempt at a glance: the same resonance trace the dashboard
  *  draws, with the score out of a hundred beside it. */
-function AttemptCard({ label, attempt }: { label: string; attempt: Attempt }) {
+function AttemptCard({
+  label,
+  attempt,
+  required,
+}: {
+  label: string;
+  attempt: Attempt;
+  required: CategoryId[];
+}) {
   return (
     <div className="flex flex-col gap-2 rounded-xl border border-navy-600 bg-navy-800 p-4">
       <div className="flex items-baseline justify-between">
@@ -373,19 +381,7 @@ function AttemptCard({ label, attempt }: { label: string; attempt: Attempt }) {
       <span className="relative block overflow-hidden rounded-lg bg-navy-950/70 p-2">
         <SpectrumWave values={attempt.spectrum} className="h-20 w-full" animate={false} />
       </span>
-      <span className="flex justify-between px-1">
-        {categories.map((cat) => {
-          const v = attempt.spectrum[cat.id] ?? 0;
-          return (
-            <span
-              key={cat.id}
-              className={`text-[0.65rem] font-bold tabular-nums ${v >= 40 ? cat.textClass : "text-ink-faint"}`}
-            >
-              {v}
-            </span>
-          );
-        })}
-      </span>
+      <SpectrumKey spectrum={attempt.spectrum} required={required} />
       <span className="text-xs text-ink-faint">
         {new Date(attempt.at).toLocaleDateString()} ·{" "}
         {attempt.passed ? "passed" : "not passed"}
@@ -590,7 +586,7 @@ function Feedback({
         <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-ink-faint">
           Your color spectrum
         </h3>
-        <SpectrumBars spectrum={attempt.spectrum} revealCount={barsShown} />
+        <SpectrumBars spectrum={attempt.spectrum} revealCount={barsShown} required={challenge.targetSkills} />
       </div>
 
       {settled && attempt.lessonsUsed && attempt.lessonsUsed.length > 0 && (
