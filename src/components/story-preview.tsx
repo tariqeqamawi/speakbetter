@@ -1,8 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
-import { challengesInPhase, maxSecondsFor, storyPhases, type PhaseId } from "@/data/challenges";
+import { useRef, useState } from "react";
+import { JourneyMap } from "@/components/journey-map";
+import { demoState } from "@/lib/demo-state";
+import { challengeBySlug, challengesInPhase, maxSecondsFor, storyPhases, type PhaseId } from "@/data/challenges";
 import { lessonByVimeoId } from "@/data/lessons";
 import { categoryById } from "@/data/categories";
 import { CategoryChip } from "@/components/category-chip";
@@ -12,18 +14,41 @@ import { CircleIcon, UploadIcon, VideoIcon } from "@/components/icons";
 import { PlayFillIcon } from "@/components/player-icons";
 
 // The STORY journey on the landing page, opened up. A visitor shouldn't
-// have to buy the course to find out what's in it: pick a phase, pick a
-// challenge, and its page appears the way the app shows it - the brief,
-// the explainer's still, what passing takes, the lessons to warm up
-// with, and the record and upload buttons. Not thumbnails of the
-// videos, the page itself.
+// have to buy the course to find out what's in it, and the journey map
+// is the thing Speak Better has that nothing else does - so here it is,
+// live, in a phone: a worked-in student's road, their face on the
+// challenge they're at, their takes and trophies pinned where they were
+// won, pinch-zoomable. Tap a node (or a phase above) and the challenge's
+// page appears beside it the way the app shows it - the brief, the
+// explainer's still, what passing takes, the lessons to warm up with,
+// and the record and upload buttons.
 
 export function StoryPreview() {
   const [active, setActive] = useState<PhaseId>("S");
   const [slug, setSlug] = useState<string | null>(null);
+  const frame = useRef<HTMLDivElement>(null);
   const phase = storyPhases.find((p) => p.id === active) ?? storyPhases[0];
   const challenges = challengesInPhase(active);
   const challenge = challenges.find((c) => c.slug === slug) ?? challenges[0];
+
+  // A phase chosen above scrolls the phone's map to that level.
+  const showPhase = (id: PhaseId) => {
+    setActive(id);
+    setSlug(null);
+    const f = frame.current;
+    const el = f?.querySelector<HTMLElement>(`#journey-${id}`);
+    if (f && el) {
+      const top = el.getBoundingClientRect().top - f.getBoundingClientRect().top + f.scrollTop - 56;
+      f.scrollTo({ top, behavior: "smooth" });
+    }
+  };
+  // A node tapped on the map opens its page beside it.
+  const pick = (s: string) => {
+    const c = challengeBySlug.get(s);
+    if (!c) return;
+    setActive(c.phase);
+    setSlug(s);
+  };
   const warmUp = challenge.relatedLessonIds.map((id) => lessonByVimeoId.get(id)).filter((l) => l !== undefined);
   const limit = maxSecondsFor(challenge);
   const limitLabel = limit % 60 === 0 ? `${limit / 60} minute${limit === 60 ? "" : "s"}` : `${limit} seconds`;
@@ -38,10 +63,7 @@ export function StoryPreview() {
             <li key={p.id}>
               <button
                 type="button"
-                onClick={() => {
-                  setActive(p.id);
-                  setSlug(null);
-                }}
+                onClick={() => showPhase(p.id)}
                 aria-pressed={selected}
                 className={`flex w-full flex-col items-center gap-0.5 rounded-xl border p-2.5 text-center transition-[transform,opacity] sm:p-4 ${p.borderClass} ${p.tintClass} ${
                   selected ? "scale-[1.03]" : "opacity-60 hover:opacity-100"
@@ -55,39 +77,24 @@ export function StoryPreview() {
         })}
       </ol>
 
-      <div className="grid gap-4 sm:grid-cols-[minmax(0,15rem)_minmax(0,1fr)] sm:items-start">
-        {/* This phase's challenges, as a list to pick from */}
-        <div className={`flex flex-col gap-2 rounded-2xl border bg-navy-800/60 p-3 ${phase.borderClass}`}>
-          <div className="flex items-baseline gap-2 px-1">
-            <span className={`text-lg font-bold ${phase.textClass}`}>{phase.id}</span>
-            <h3 className="text-sm font-semibold text-ink">{phase.name}</h3>
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,19rem)_minmax(0,1fr)] lg:items-start">
+        {/* The map itself, live, in a phone. Scroll it, pinch it, tap a
+            node. */}
+        <figure className="flex flex-col items-center gap-2 lg:sticky lg:top-24">
+          <div className="relative w-full max-w-[19rem] rounded-[2.2rem] border-4 border-navy-600 bg-navy-950 p-1.5 shadow-2xl shadow-navy-950">
+            <span className="absolute left-1/2 top-3 z-50 h-1.5 w-14 -translate-x-1/2 rounded-full bg-navy-700" />
+            <div
+              ref={frame}
+              className="relative h-[34rem] overflow-y-auto overscroll-contain rounded-[1.8rem] bg-navy-950 px-3 pb-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            >
+              <JourneyMap preview={demoState} onPick={pick} />
+            </div>
           </div>
-          <p className="px-1 text-xs text-ink-muted">{phase.tagline}</p>
-          <ul className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 sm:mx-0 sm:flex-col sm:overflow-visible sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {challenges.map((c, i) => {
-              const on = c.slug === challenge.slug;
-              return (
-                <li key={c.slug} className="shrink-0 sm:shrink">
-                  <button
-                    type="button"
-                    onClick={() => setSlug(c.slug)}
-                    aria-pressed={on}
-                    className={`flex w-full items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-xs font-medium transition-colors ${
-                      on
-                        ? `border-current bg-navy-800 text-ink ${phase.textClass}`
-                        : "border-navy-600 text-ink-muted hover:border-ink-faint hover:text-ink"
-                    }`}
-                  >
-                    <span className={`grid size-5 shrink-0 place-items-center rounded-full border border-current text-[0.6rem] font-bold ${on ? phase.textClass : "text-ink-faint"}`}>
-                      {i + 1}
-                    </span>
-                    <span className="max-w-[11rem] truncate text-ink sm:max-w-none sm:whitespace-normal">{c.title}</span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+          <figcaption className="text-center text-xs text-ink-muted">
+            A student five challenges in - their face on the road, their trophies where they won them.
+            <span className="block text-ink-faint">Scroll, pinch to look closer, tap a stop.</span>
+          </figcaption>
+        </figure>
 
         {/* The challenge's page, as the app lays it out */}
         <div key={challenge.slug} className="gallery-in flex flex-col gap-4 rounded-2xl border border-navy-600 bg-navy-900 p-4 sm:p-5">

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   challenges,
   challengesInPhase,
@@ -15,7 +15,9 @@ import { communityPosts } from "@/data/community-activity";
 import { challengeProgress } from "@/lib/challenge-progress";
 import { challengeXp, openPhaseCount, phaseGate, type PhaseGate } from "@/lib/progress";
 import { XpBadge } from "@/components/xp-badge";
-import { useStore } from "@/lib/store";
+import { useStore, type AppState } from "@/lib/store";
+import { presence } from "@/data/community-presence";
+import { BadgeMedal } from "@/components/badge-medal";
 import { VideoStill } from "@/components/video-still";
 import { OwnTake, usePeek } from "@/components/own-take";
 import { listAllVideos, type StoredVideoMeta } from "@/lib/attempt-videos";
@@ -31,6 +33,20 @@ import { StudentsHere } from "@/components/students-here";
 // garbled until the road gets near. Community voices surface beside the
 // nodes and fade, a topographic grid breathes through each territory,
 // and a checkered finish line waits at the bottom.
+//
+// Trophies are pinned where they were won: a small gold GPS pin beside
+// the node whose take earned the badge, so the road also reads as a
+// record. And the map zooms - a pinch on a phone, ctrl+wheel or the
+// buttons on a desktop, a double tap either way. At the normal scale
+// the pins are dots and the road reads whole; zoomed in, the pins say
+// their names and the other students on each challenge appear beside
+// it. The zoom is the CSS zoom property, so it's a real layout scale:
+// the page grows with it and scrolls as it always did, and the scene
+// scrolls sideways for the width that no longer fits.
+//
+// `preview` renders the map for a given state rather than the store's
+// (the landing page shows a worked-in student), with no links; a tap
+// on a node calls `onPick` instead.
 //
 // The map is always reclined, the way a navigation app is: the ground
 // tips away while the markers counter-rotate and stay standing on it.
@@ -102,10 +118,134 @@ function garble(text: string): string {
   return out;
 }
 
-export function JourneyMap() {
-  const { state, ready } = useStore();
-  const currentIndex = useCurrentPhaseIndex();
-  const inDemo = usePathname().startsWith("/demo");
+const ZOOM_MIN = 1;
+const ZOOM_MAX = 2.4;
+/** Past this the map is "zoomed in": pins say their names, crowds show. */
+const ZOOM_DETAIL = 1.35;
+
+export function JourneyMap({
+  preview,
+  onPick,
+}: {
+  /** Render this state instead of the store's - a worked-in sample. */
+  preview?: AppState;
+  /** In preview, a tap on a node reports its slug instead of navigating. */
+  onPick?: (slug: string) => void;
+} = {}) {
+  const store = useStore();
+  const state = preview ?? store.state;
+  const ready = preview ? true : store.ready;
+  const storeIndex = useCurrentPhaseIndex();
+  const currentIndex = preview ? Math.max(0, openPhaseCount(preview) - 1) : storeIndex;
+  const inDemo = usePathname().startsWith("/demo") || !!preview;
+
+  // ---- zoom ----
+  const sceneRef = useRef<HTMLDivElement>(null);
+  const [zoom, setZoom] = useState(1);
+  const zoomRef = useRef(1);
+  /** The scrolling ancestor, if the map lives inside one (the landing
+   *  page's phone frame); otherwise the window scrolls. */
+  const scrollParentOf = (el: HTMLElement | null): HTMLElement | null => {
+    for (let n = el?.parentElement ?? null; n; n = n.parentElement) {
+      const o = getComputedStyle(n).overflowY;
+      if (o === "auto" || o === "scroll") return n;
+    }
+    return null;
+  };
+  /** Zoom to `next`, keeping the scene point (cx, cy) - viewport px -
+   *  under the same spot on screen: the scene scrolls sideways, the
+   *  page (or the frame) scrolls down, by exactly the growth. */
+  const zoomTo = useCallback((next: number, cx?: number, cy?: number) => {
+    const scene = sceneRef.current;
+    if (!scene) return;
+    const z1 = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, next));
+    const z0 = zoomRef.current;
+    if (Math.abs(z1 - z0) < 0.001) return;
+    const rect = scene.getBoundingClientRect();
+    const px = (cx ?? rect.left + rect.width / 2) - rect.left;
+    const py = (cy ?? rect.top + Math.min(rect.height, window.innerHeight) / 2) - rect.top;
+    const sl = scene.scrollLeft;
+    zoomRef.current = z1;
+    setZoom(z1);
+    // After the new layout: same content point back under the finger.
+    requestAnimationFrame(() => {
+      scene.scrollLeft = ((sl + px) / z0) * z1 - px;
+      const dy = py * (z1 / z0 - 1);
+      const sp = scrollParentOf(scene);
+      if (sp) sp.scrollTop += dy;
+      else window.scrollBy(0, dy);
+    });
+  }, []);
+
+  // A pinch: two pointers on the scene, the zoom follows their distance.
+  const pointers = useRef(new Map<number, { x: number; y: number }>());
+  const pinch = useRef<{ dist: number; zoom: number } | null>(null);
+  const lastTap = useRef<{ t: number; x: number; y: number } | null>(null);
+  const onPointerDown = (e: React.PointerEvent) => {
+    if (e.pointerType === "mouse") return;
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.current.size === 2) {
+      const [a, b] = [...pointers.current.values()];
+      pinch.current = { dist: Math.hypot(a.x - b.x, a.y - b.y), zoom: zoomRef.current };
+    }
+  };
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!pointers.current.has(e.pointerId)) return;
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.current.size === 2 && pinch.current) {
+      const [a, b] = [...pointers.current.values()];
+      const dist = Math.hypot(a.x - b.x, a.y - b.y);
+      zoomTo(pinch.current.zoom * (dist / pinch.current.dist), (a.x + b.x) / 2, (a.y + b.y) / 2);
+    }
+  };
+  const onPointerUp = (e: React.PointerEvent) => {
+    const was = pointers.current.get(e.pointerId);
+    pointers.current.delete(e.pointerId);
+    if (pointers.current.size < 2) pinch.current = null;
+    // A double tap toggles between whole and close.
+    if (was && e.pointerType !== "mouse" && pointers.current.size === 0) {
+      const now = performance.now();
+      const prev = lastTap.current;
+      if (prev && now - prev.t < 320 && Math.hypot(prev.x - e.clientX, prev.y - e.clientY) < 24) {
+        zoomTo(zoomRef.current > 1.05 ? 1 : 1.8, e.clientX, e.clientY);
+        lastTap.current = null;
+      } else lastTap.current = { t: now, x: e.clientX, y: e.clientY };
+    }
+  };
+  // ctrl+wheel (a trackpad pinch on a laptop) zooms the map, not the page.
+  useEffect(() => {
+    const scene = sceneRef.current;
+    if (!scene) return;
+    const onWheel = (e: WheelEvent) => {
+      if (!e.ctrlKey) return;
+      e.preventDefault();
+      zoomTo(zoomRef.current * Math.exp(-e.deltaY / 240), e.clientX, e.clientY);
+    };
+    scene.addEventListener("wheel", onWheel, { passive: false });
+    return () => scene.removeEventListener("wheel", onWheel);
+  }, [zoomTo]);
+  const zoomedIn = zoom >= ZOOM_DETAIL;
+
+  // ---- who else is here, for the zoomed-in view ----
+  const crowd = useMemo(() => presence(), []);
+  const crowdFor = (slug: string) => crowd.find((c) => c.slug === slug);
+
+  // ---- trophies, pinned where they were won ----
+  // The take that earned a badge is the last attempt before the badge's
+  // time; the trophy stands beside that challenge. A badge with no take
+  // behind it (a lesson streak, say) has no place on the road.
+  const trophiesAt = (() => {
+    const at = new Map<string, AppState["badges"]>();
+    const attempts = [...state.attempts].sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
+    for (const badge of state.badges) {
+      const t = Date.parse(badge.earnedAt) + 5000;
+      let slug: string | null = null;
+      for (const a of attempts) if (Date.parse(a.at) <= t) slug = a.challengeSlug;
+      if (!slug) continue;
+      at.set(slug, [...(at.get(slug) ?? []), badge]);
+    }
+    return at;
+  })();
 
   // The map is far taller than the screen, so a fixed tilt origin would
   // throw most of it beyond the horizon. Instead the origin rides the
@@ -117,33 +257,36 @@ export function JourneyMap() {
   useEffect(() => {
     const el = tiltRef.current;
     if (!el) return;
+    const scene = sceneRef.current;
+    if (!scene) return;
+    const sp = scrollParentOf(scene);
     const update = () => {
-      // Layout position, not getBoundingClientRect: the rect measures
-      // the tilted plane, which would feed the origin back into itself.
-      let topDoc = 0;
-      for (
-        let node: HTMLElement | null = el;
-        node;
-        node = node.offsetParent as HTMLElement | null
-      )
-        topDoc += node.offsetTop;
-      const center = window.scrollY + window.innerHeight / 2 - topDoc;
+      // The scene's rect, not the tilted plane's - the plane's rect
+      // would feed the origin back into itself. Divided by the zoom,
+      // since the origin is set in the plane's own (zoomed) units.
+      const rect = scene.getBoundingClientRect();
+      const mid = sp
+        ? sp.getBoundingClientRect().top + sp.clientHeight / 2
+        : window.innerHeight / 2;
+      const center = (mid - rect.top) / zoomRef.current;
       setOriginY(Math.max(0, Math.min(el.offsetHeight, center)));
     };
     const t = window.setTimeout(update, 0);
-    window.addEventListener("scroll", update, { passive: true });
+    const target: HTMLElement | Window = sp ?? window;
+    target.addEventListener("scroll", update, { passive: true });
     window.addEventListener("resize", update);
     return () => {
       clearTimeout(t);
-      window.removeEventListener("scroll", update);
+      target.removeEventListener("scroll", update);
       window.removeEventListener("resize", update);
     };
-  }, []);
+  }, [zoom]);
 
   // The student's own recordings, one per passed challenge where this
   // device still holds one - the newest. Read once; posters only.
   const [takes, setTakes] = useState<Map<string, StoredVideoMeta>>(new Map());
   useEffect(() => {
+    if (preview) return;
     let alive = true;
     listAllVideos().then((rows) => {
       if (!alive) return;
@@ -154,7 +297,7 @@ export function JourneyMap() {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [preview]);
   // The road remembers: beside a passed node, one line the coach said
   // about that take - proof it watched, and a reason to read it again.
   const quoteFor = (slug: string): string | null => {
@@ -293,25 +436,67 @@ export function JourneyMap() {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-medium uppercase tracking-wider text-ink-faint">
-          The journey
-        </h2>
-        <div className="flex items-center gap-3">
-          {/* The other walkers - see students-here.tsx. Where the 2D/3D
-              toggle used to sit, and a better use of the corner. */}
-          <StudentsHere />
+      <div className={`flex items-center justify-between gap-3 ${preview ? "sticky top-0 z-40 -mx-1 bg-navy-950/85 px-1 pb-1 pt-7 backdrop-blur" : ""}`}>
+        {preview ? (
+          <span className="text-[0.65rem] font-medium uppercase tracking-wider text-ink-faint">
+            Pinch, or double-tap, to look closer
+          </span>
+        ) : (
+          <h2 className="text-sm font-medium uppercase tracking-wider text-ink-faint">
+            The journey
+          </h2>
+        )}
+        <div className="flex items-center gap-2">
+          {/* Zoom: out, in, and the scale - a pinch does the same. */}
+          <span className="flex items-center rounded-full border border-navy-600 bg-navy-800 text-ink-muted">
+            <button
+              type="button"
+              onClick={() => zoomTo(zoomRef.current / 1.35)}
+              aria-label="Zoom out"
+              disabled={zoom <= ZOOM_MIN + 0.01}
+              className="grid size-7 place-items-center rounded-full text-base leading-none transition-colors hover:text-ink disabled:opacity-40"
+            >
+              &minus;
+            </button>
+            <button
+              type="button"
+              onClick={() => zoomTo(zoom > 1.05 ? 1 : ZOOM_DETAIL + 0.15)}
+              aria-label={zoomedIn ? "Show the whole road" : "Look closer"}
+              className="min-w-9 px-1 text-[0.65rem] font-semibold tabular-nums transition-colors hover:text-ink"
+            >
+              {zoom.toFixed(1)}&times;
+            </button>
+            <button
+              type="button"
+              onClick={() => zoomTo(zoomRef.current * 1.35)}
+              aria-label="Zoom in"
+              disabled={zoom >= ZOOM_MAX - 0.01}
+              className="grid size-7 place-items-center rounded-full text-base leading-none transition-colors hover:text-ink disabled:opacity-40"
+            >
+              +
+            </button>
+          </span>
+          {/* The other walkers - see students-here.tsx. */}
+          {!preview && <StudentsHere />}
           <span className="text-xs tabular-nums text-ink-faint">
             {done} of {challenges.length}
           </span>
         </div>
       </div>
 
-      <div className="map-scene">
+      <div
+        ref={sceneRef}
+        className="map-scene"
+        data-zoom={zoomedIn ? "in" : "out"}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+      >
         <div
           ref={tiltRef}
           className="map-tilt map-3d relative mx-auto w-full max-w-2xl"
-          style={{ height, transformOrigin: `50% ${originY}px` }}
+          style={{ height, transformOrigin: `50% ${originY}px`, zoom }}
         >
           {/* Territory washes - five regions, each in its phase's light,
               with a topographic grid that surfaces, ripples down, and
@@ -581,6 +766,72 @@ export function JourneyMap() {
                   </span>
                 )}
 
+                {/* Trophies won on this take, pinned beside the node on
+                    the side the name isn't - dots at the normal scale,
+                    named when the map is zoomed in or the pin hovered. */}
+                {trophiesAt.has(node.slug) && (
+                  <>
+                    <span
+                      className={`absolute top-1/2 z-20 flex w-[7rem] -translate-y-1/2 justify-center gap-1 ${
+                        labelLeft ? "left-full ml-1" : "right-full mr-1"
+                      }`}
+                    >
+                      {trophiesAt.get(node.slug)!.map((badge, j) => (
+                        <span
+                          key={badge.id}
+                          className="trophy-pin relative flex flex-col items-center text-storytelling"
+                          style={{ animationDelay: `${j * 0.15}s` }}
+                          title={`${badge.title} - won here`}
+                        >
+                          {/* The glow is a gradient, not a box-shadow: a
+                              shadow here rasterises as a square in the
+                              tilted 3D context. */}
+                          <span
+                            aria-hidden
+                            className="absolute -inset-2 top-[-0.5rem] rounded-full bg-[radial-gradient(circle,color-mix(in_oklab,var(--color-storytelling)_50%,transparent)_0%,transparent_68%)]"
+                          />
+                          <span className="relative block size-6 rounded-full border-2 border-current sm:size-7">
+                            <BadgeMedal id={badge.id} icon={badge.icon} earned className="size-full" />
+                          </span>
+                          <span aria-hidden className="-mt-px size-0 border-x-[4px] border-t-[6px] border-x-transparent border-t-current" />
+                        </span>
+                      ))}
+                    </span>
+                    {/* Their names, when the map is close enough to read
+                        them. A sibling of the pins rather than a child of
+                        one box with them: boxed together, the 3D context
+                        painted the whole box dark. */}
+                    <span
+                      className={`trophy-name absolute top-1/2 z-20 mt-5 hidden w-[7rem] px-1 text-center text-[0.5rem] font-semibold leading-tight text-storytelling [text-shadow:0_1px_2px_#060a15,0_0_6px_#060a15] ${
+                        labelLeft ? "left-full ml-1" : "right-full mr-1"
+                      }`}
+                    >
+                      {trophiesAt.get(node.slug)!.map((b) => b.title).join(" · ")}
+                    </span>
+                  </>
+                )}
+
+                {/* Who else is on this challenge - only when zoomed in,
+                    where there's room for faces under the node. */}
+                {zoomedIn && !node.locked && crowdFor(node.slug) && (
+                  <span
+                    aria-hidden
+                    className={`absolute left-1/2 top-full z-10 mt-1.5 flex -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded-full border border-navy-600 bg-navy-950/90 py-0.5 pl-0.5 pr-1.5 text-[0.5rem] font-medium text-ink-muted ${node.phase.textClass}`}
+                  >
+                    <span className="flex -space-x-1">
+                      {crowdFor(node.slug)!.recent.slice(0, 3).map((s) => (
+                        <span
+                          key={s.name}
+                          className="grid size-3.5 place-items-center rounded-full border border-navy-950 bg-navy-700 text-[0.42rem] font-bold text-ink"
+                        >
+                          {s.name[0]}
+                        </span>
+                      ))}
+                    </span>
+                    <span className="text-ink-muted">{crowdFor(node.slug)!.count} here</span>
+                  </span>
+                )}
+
                 {/* Status jewel on the rim */}
                 {node.passed && (
                   <span
@@ -705,6 +956,17 @@ export function JourneyMap() {
               >
                 {body}
               </Link>
+            ) : onPick && !veiled ? (
+              <button
+                key={node.slug}
+                type="button"
+                onClick={() => onPick(node.slug)}
+                aria-label={node.locked ? `${node.title} - locked` : node.title}
+                className={`${cls} text-left`}
+                style={pos}
+              >
+                {body}
+              </button>
             ) : (
               <div
                 key={node.slug}
