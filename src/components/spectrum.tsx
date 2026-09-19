@@ -28,11 +28,12 @@ export function SpectrumBars({
         return (
           <div key={cat.id} className={`flex items-center gap-3 ${needed ? cat.textClass : ""}`}>
             <span
-              className={`w-40 shrink-0 truncate text-xs sm:w-56 ${
+              title={cat.name}
+              className={`w-28 shrink-0 truncate text-xs sm:w-44 ${
                 needed ? "font-semibold drop-shadow-[0_0_6px_currentColor]" : lit ? "text-ink" : "text-ink-faint"
               }`}
             >
-              {cat.name}
+              {cat.short}
             </span>
             <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-navy-700">
               <div

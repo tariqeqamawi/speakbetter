@@ -14,10 +14,14 @@ import Link from "next/link";
 import { SpectrumBars, SpectrumKey } from "@/components/spectrum";
 import { SpectrumWave } from "@/components/spectrum-wave";
 import {
+  CheckCircleIcon,
   CheckIcon,
   CircleIcon,
   ListenIcon,
   PlayIcon,
+  SkillsIcon,
+  SpectrumIcon,
+  TrendingUpIcon,
   XIcon,
   RepeatIcon,
   SendIcon,
@@ -25,6 +29,7 @@ import {
   VideoIcon,
 } from "@/components/icons";
 import { LionMouth } from "@/components/lion-mouth";
+import { SectionBanner } from "@/components/section-banner";
 import { setPendingReview } from "@/lib/push-client";
 import { studentId } from "@/lib/student-id";
 import { PushPrompt } from "@/components/push-prompt";
@@ -577,65 +582,22 @@ function Feedback({
         />
       )}
 
-      {settled && (
-        <p className="coach-cue text-sm text-ink-muted">{attempt.summary}</p>
-      )}
-
-      {settled && attempt.criteria && attempt.criteria.length > 0 && (
-        <div className="coach-cue" style={{ animationDelay: "80ms" }}>
-          <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-ink-faint">
-            The brief
-          </h3>
-          {attempt.briefVerdict && (
-            <p className="mb-2 text-sm text-ink">{attempt.briefVerdict}</p>
-          )}
-          <ul className="flex flex-col gap-1.5">
-            {attempt.criteria.map((c, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm">
-                <span
-                  className={`mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full ${
-                    c.met ? "bg-mindset text-navy-950" : "border border-navy-500 text-ink-faint"
-                  }`}
-                >
-                  {c.met ? <CheckIcon className="size-3" /> : <CircleIcon className="size-2" />}
-                </span>
-                <span className="flex flex-col">
-                  <span className={c.met ? "text-ink" : "text-ink-muted"}>{c.text}</span>
-                  {c.evidence && (
-                    <span className="text-xs text-ink-faint">{c.evidence}</span>
-                  )}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
       {settled && attempt.strengths && attempt.strengths.length > 0 && (
-        <div className="coach-cue" style={{ animationDelay: "100ms" }}>
-          <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-ink-faint">
-            What worked
-          </h3>
+        <ReviewSection image="/sections/challenges.jpg" title="What worked" Icon={CheckCircleIcon} accentClass="text-mindset" delay={100}>
           <ul className="flex flex-col gap-2">
             {attempt.strengths.map((note, i) => (
               <FeedbackNoteRow key={i} note={note} showLessons={canRevealAll} />
             ))}
           </ul>
-        </div>
+        </ReviewSection>
       )}
 
-      <div>
-        <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-ink-faint">
-          Your color spectrum
-        </h3>
+      <ReviewSection image="/sections/spectrum.jpg" title="Your color spectrum" Icon={SpectrumIcon} accentClass="text-body-language">
         <SpectrumBars spectrum={attempt.spectrum} revealCount={barsShown} required={challenge.targetSkills} />
-      </div>
+      </ReviewSection>
 
       {settled && attempt.lessonsUsed && attempt.lessonsUsed.length > 0 && (
-        <div className="coach-cue" style={{ animationDelay: "120ms" }}>
-          <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-ink-faint">
-            The lessons this challenge asked for
-          </h3>
+        <ReviewSection image="/sections/lessons.jpg" title="The lessons this challenge asked for" Icon={SkillsIcon} accentClass="text-storytelling" delay={120}>
           <ul className="flex flex-col gap-2">
             {attempt.lessonsUsed.map((l) => {
               const lesson = lessonByVimeoId.get(l.lessonId);
@@ -668,7 +630,7 @@ function Feedback({
               );
             })}
           </ul>
-        </div>
+        </ReviewSection>
       )}
 
       {/* Skills hit by instinct - Intermediate and Advanced see them
@@ -676,10 +638,14 @@ function Feedback({
           studied on purpose (§08). A Beginner is told how many, and
           that the list is waiting at the next level. */}
       {settled && attempt.skillsSpotted && attempt.skillsSpotted.length > 0 && (
-        <div className="coach-cue rounded-lg border border-navy-600 bg-navy-900/50 p-3" style={{ animationDelay: "140ms" }}>
-          <h3 className="mb-1 text-xs font-medium uppercase tracking-wider text-ink-faint">
-            Skills you used without being asked
-          </h3>
+        <ReviewSection
+          image="/sections/trophies-lion.jpg"
+          title="Skills you used without being asked"
+          Icon={ZapIcon}
+          accentClass="text-figurative"
+          delay={140}
+          glow="border-figurative/60 shadow-[0_0_28px_-6px_var(--color-figurative)]"
+        >
           {canRevealAll ? (
             <ul className="flex flex-col gap-2">
               {attempt.skillsSpotted.map((s) => {
@@ -716,14 +682,11 @@ function Feedback({
               lesson behind each.
             </p>
           )}
-        </div>
+        </ReviewSection>
       )}
 
       {settled && (
-      <div className="coach-cue" style={{ animationDelay: "150ms" }}>
-        <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-ink-faint">
-          {attempt.strengths ? "For next time - do more of this" : "Focus on next"}
-        </h3>
+        <ReviewSection image="/sections/streak.jpg" title={attempt.strengths ? "For next time - do more of this" : "Focus on next"} Icon={TrendingUpIcon} accentClass="text-structure" delay={150}>
         <ul className="flex flex-col gap-2">
           {attempt.focus.map((note, i) => (
             <FeedbackNoteRow
@@ -735,7 +698,7 @@ function Feedback({
             />
           ))}
         </ul>
-      </div>
+        </ReviewSection>
       )}
 
       {settled && (
@@ -909,6 +872,40 @@ function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => v
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * One part of the review under its own plate - the section's image,
+ * icon and title, as the dashboard's panels are - so the review reads
+ * as rooms to walk through rather than one long page of text.
+ */
+function ReviewSection({
+  image,
+  title,
+  Icon,
+  accentClass,
+  delay = 0,
+  glow,
+  children,
+}: {
+  image: string;
+  title: string;
+  Icon: (props: { className?: string }) => React.ReactNode;
+  accentClass: string;
+  delay?: number;
+  /** Border and shadow classes for a section that should shine. */
+  glow?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section
+      className={`coach-cue flex flex-col overflow-hidden rounded-2xl border bg-navy-900/40 ${glow ?? "border-navy-600"}`}
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      <SectionBanner image={image} title={title} Icon={Icon} accentClass={accentClass} />
+      <div className="p-4">{children}</div>
+    </section>
   );
 }
 
