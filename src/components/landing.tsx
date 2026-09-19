@@ -400,19 +400,22 @@ export function Landing() {
 
         <div className="flex max-w-md flex-col gap-3 text-center sm:text-left">
           <h2 className="text-2xl font-semibold tracking-tight text-balance">
-            A mentor in your pocket
+            Two mentors in your pocket
           </h2>
           <p className="text-sm leading-relaxed text-ink-muted">
-            The lessons are filmed in landscape, but life happens in portrait.
-            One tap on the zoom control and the coach fills your phone&apos;s
-            tall screen - close enough to read the hand gestures, the posture,
-            the eye contact that a letterboxed strip would shrink away. A
-            course that teaches physical expression has to make physical
-            expression easy to <em>see</em>, on the device you actually carry.
+            One of the ideas behind the app was to give you the experience of having a mentor in your
+            pocket. Now you have two: <b className="font-semibold text-ink">Tariq</b>, delivering every
+            lesson, and <b className="font-semibold text-ink">the lion coach</b>, giving you feedback on
+            every take.
+          </p>
+          <p className="text-sm leading-relaxed text-ink-muted">
+            Every lesson is recorded in the studio in landscape, so you get the full picture on a monitor,
+            a TV or a laptop. On your phone there&apos;s a portrait zoom button: one tap and the lesson fills
+            the tall screen, close enough to see the hand gestures, the eye contact, and the small details
+            a letterboxed strip would shrink away.
           </p>
           <p className="text-xs text-ink-faint">
-            Works on every lesson and every challenge video, and the whole app
-            installs to your home screen.
+            Works on every lesson and every challenge video, and the whole app installs to your home screen.
           </p>
         </div>
       </section>
