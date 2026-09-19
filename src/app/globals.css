@@ -1475,3 +1475,37 @@ svg.soundwave-c {
     animation: none;
   }
 }
+
+/* The streak's days lit one after another: a neon glow that runs along
+   the run, oldest day to today, then rests and runs again. Each cell's
+   delay is its place in the run; the duration is the whole run plus
+   the rest, so the cascade reads as one wave. */
+.streak-glow {
+  opacity: 0;
+  will-change: opacity;
+  animation-name: streak-glow;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes streak-glow {
+  0% {
+    opacity: 0;
+  }
+  6% {
+    opacity: 1;
+  }
+  22% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .streak-glow {
+    animation: none;
+    opacity: 0.45;
+  }
+}

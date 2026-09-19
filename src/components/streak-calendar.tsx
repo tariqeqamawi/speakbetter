@@ -40,8 +40,23 @@ export function StreakCalendar({ state }: { state: AppState }) {
       practiced: days.has(key),
       wasFrozen: frozen.has(key),
       dayOfMonth: new Date(ts).getUTCDate(),
+      /** Position in the running streak, 0 at its first day; -1 outside it. */
+      inStreak: -1,
     };
   });
+  // The running streak's days, oldest first: walking back from today
+  // (or yesterday, if today isn't done yet) over practiced or frozen
+  // days. A glow cascades along them, one to the next.
+  let streakLen = 0;
+  {
+    let end = cells.findIndex((c) => c.isToday);
+    if (end >= 0 && !cells[end].practiced && !cells[end].wasFrozen) end -= 1;
+    for (let i = end; i >= 0 && streakLen < streak; i--) {
+      if (!cells[i].practiced && !cells[i].wasFrozen) break;
+      streakLen++;
+    }
+    for (let k = 0; k < streakLen; k++) cells[end - streakLen + 1 + k].inStreak = k;
+  }
 
   return (
     <div className="flex flex-col overflow-hidden rounded-2xl border border-navy-600 bg-navy-800">
@@ -90,7 +105,7 @@ export function StreakCalendar({ state }: { state: AppState }) {
             <span
               key={cell.key}
               title={`${cell.key}${cell.wasFrozen ? " - freeze used" : cell.practiced ? " - practiced" : ""}`}
-              className={`flex aspect-square items-center justify-center rounded-lg border text-[0.6rem] tabular-nums ${
+              className={`relative flex aspect-square items-center justify-center rounded-lg border text-[0.6rem] tabular-nums ${
                 cell.inFuture
                   ? "border-navy-700 text-navy-600"
                   : cell.wasFrozen
@@ -100,6 +115,18 @@ export function StreakCalendar({ state }: { state: AppState }) {
                       : "border-navy-700 bg-navy-900 text-ink-faint"
               } ${cell.isToday ? "ring-1 ring-ink-faint" : ""}`}
             >
+              {cell.inStreak >= 0 && (
+                <span
+                  aria-hidden
+                  className={`streak-glow pointer-events-none absolute inset-0 rounded-lg ${
+                    cell.wasFrozen ? "shadow-[0_0_14px_2px_var(--color-body-language)]" : "shadow-[0_0_14px_2px_var(--color-mindset)]"
+                  }`}
+                  style={{
+                    animationDelay: `${cell.inStreak * 0.16}s`,
+                    animationDuration: `${Math.max(2.4, streakLen * 0.16 + 1.8)}s`,
+                  }}
+                />
+              )}
               {cell.practiced && !cell.wasFrozen ? (
                 <CheckIcon className="size-3.5" />
               ) : (
