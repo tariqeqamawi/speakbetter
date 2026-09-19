@@ -9,7 +9,8 @@ import { RoaringLion } from "@/components/roaring-lion";
 import { VideoStill } from "@/components/video-still";
 import { useCurrentPhaseIndex } from "@/components/journey-map";
 import { useStore } from "@/lib/store";
-import { playCelebration, hapticCelebrate } from "@/lib/feedback-fx";
+import { playRankUp, hapticCelebrate } from "@/lib/feedback-fx";
+import { Confetti } from "@/components/confetti";
 
 // Graduating from one STORY phase to the next deserves a moment, not a
 // number ticking over: a takeover with the student's own face, neon
@@ -57,7 +58,7 @@ export function PhaseGraduation() {
         })),
       );
       setShow(currentIndex - 1);
-      playCelebration();
+      playRankUp();
       hapticCelebrate();
     }, 700);
     return () => clearTimeout(t);
@@ -80,6 +81,7 @@ export function PhaseGraduation() {
       role="dialog"
       aria-label="Level complete"
     >
+      <Confetti count={120} />
       {/* Neon confetti, falling for as long as they want to bask */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
         {pieces.map((p, i) => (

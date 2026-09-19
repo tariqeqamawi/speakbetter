@@ -7,7 +7,8 @@ import { GRACE_SECONDS, maxSecondsFor, storyPhases, type Challenge } from "@/dat
 import { XP, challengeXp, challengeXpFor, phaseGate } from "@/lib/progress";
 import { LockIcon } from "@/components/icons";
 import { ZapIcon } from "@/components/icons";
-import { hapticCelebrate, playCelebration } from "@/lib/feedback-fx";
+import { hapticPass, hapticTap, playMiss, playPass, playReviewReady, playSend, playXpDing } from "@/lib/feedback-fx";
+import { Confetti } from "@/components/confetti";
 import { lessonByVimeoId } from "@/data/lessons";
 import { categoryById, type CategoryId } from "@/data/categories";
 import Link from "next/link";
@@ -134,6 +135,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
   };
 
   const submit = async (file: File, url: string, durationSec: number) => {
+    playSend();
     setStage({ kind: "uploading", file, url, durationSec, percent: 0 });
     // A frame for the shelf, taken while the coach is watching - the
     // wait is there anyway.
@@ -225,6 +227,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
         mock: result.mock || undefined,
       };
       recordAttempt(attempt);
+      playReviewReady();
       setStage({ kind: "reviewed", url, attempt });
       // The feedback is recorded; now the video, on this device only.
       // If the browser won't keep it, nothing is lost but the replay.
@@ -978,9 +981,15 @@ function XpSplash({
   const earned = attempt.passed ? challengeXpFor(challenge, attempt.score) : 0;
   useEffect(() => {
     if (attempt.passed) {
-      playCelebration();
-      hapticCelebrate();
+      playPass();
+      hapticPass();
+    } else {
+      playMiss();
+      hapticTap();
     }
+    // The XP lands a beat after the verdict's sound.
+    const t = window.setTimeout(playXpDing, 700);
+    return () => window.clearTimeout(t);
   }, [attempt.passed]);
   return (
     <div
@@ -990,6 +999,7 @@ function XpSplash({
       className="fixed inset-0 z-50 flex items-center justify-center bg-navy-950/70 p-4 backdrop-blur-sm"
       onClick={onClose}
     >
+      {attempt.passed && <Confetti />}
       <div
         className="celebration-pop flex w-full max-w-sm flex-col items-center gap-3 rounded-2xl border border-navy-600 bg-navy-800 p-6 text-center shadow-2xl shadow-navy-950/80"
         onClick={(e) => e.stopPropagation()}

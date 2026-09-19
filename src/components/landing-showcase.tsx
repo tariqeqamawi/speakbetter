@@ -97,12 +97,30 @@ export function LandingShowcase() {
         <Phone label="Thirty seconds of the real thing">
           <PhoneFilm src="/film/record-to-review.mp4" poster="/film/record-to-review.jpg" label="A take sent and reviewed" />
         </Phone>
-        <div className="flex max-w-md flex-col gap-3">
-          <h2 className="text-2xl font-semibold tracking-tight text-balance">Record. Send. Hear it back.</h2>
+        <div className="flex max-w-md flex-col gap-4">
+          <ol className="flex flex-col gap-2">
+            {[
+              ["Record yourself speaking", "text-acting"],
+              ["Upload your take for the lion", "text-body-language"],
+              ["Receive detailed feedback", "text-mindset"],
+            ].map(([step, color], i) => (
+              <li key={step} className="flex items-center gap-3">
+                <span className={`grid size-8 shrink-0 place-items-center rounded-full border border-current text-sm font-bold ${color}`}>
+                  {i + 1}
+                </span>
+                <span className="text-lg font-semibold text-ink">{step}</span>
+              </li>
+            ))}
+          </ol>
           <p className="text-ink-muted">
-            A take goes straight from your phone to your coach. While it watches, your own still sits beside the lion.
-            Then the score lands, the colors light one by one, the notes follow with the lesson behind each, and the
-            verdict comes last - said aloud, with the words on screen.
+            Every recorded attempt goes from your phone to your lion coach, and is actually watched. The coach
+            watches your physical delivery - what you&apos;re wearing, the props you use, how you deliver your
+            stories, your body language and gestures, your eye contact - tells you which lessons you&apos;re using,
+            and shows you which colors you&apos;re lighting across the spectrum of speaking skills. Then it gives a
+            verdict - passed or not - and awards XP for every challenge completed.
+          </p>
+          <p className="text-ink-muted">
+            It makes public speaking not only fun, but effective and efficient.
           </p>
           <ul className="flex flex-col gap-1.5 text-sm text-ink-muted">
             <li className="flex items-center gap-2"><TrophyIcon className="size-4 text-storytelling" />A pass pays by score - a better take is worth more.</li>

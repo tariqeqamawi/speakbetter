@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CheckIcon, VideoIcon, XIcon } from "@/components/icons";
-import { hapticTap } from "@/lib/feedback-fx";
+import { hapticTap, playRecordStart, playRecordStop } from "@/lib/feedback-fx";
 
 // Recording a take inside the app, with the clock in view. The phone's
 // own camera app can't show one, and the limit is part of the
@@ -122,6 +122,7 @@ export function TakeRecorder({
     if (!rec || rec.state === "inactive") return;
     setPhase("finishing");
     if (tickRef.current) window.clearInterval(tickRef.current);
+    playRecordStop();
     rec.stop();
   }, []);
 
@@ -147,6 +148,7 @@ export function TakeRecorder({
     setLeft(limitSec);
     setPhase("recording");
     hapticTap();
+    playRecordStart();
     rec.start(1000);
     // The clock, and the stop at the limit - to the second, from the
     // wall clock rather than a counter, so a slow tick can't drift it.
