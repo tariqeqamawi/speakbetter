@@ -156,8 +156,10 @@ export function Landing() {
               </li>
               <li className="flex items-start gap-3">
                 <CheckIcon className="mt-0.5 size-4 shrink-0 text-body-language" />
-                An AI coach watches every attempt - gestures, eye contact,
-                story
+                A fully interactive AI coach, trained on the Speak Better system,
+                watches every take - body language, gesture, eye contact, voice -
+                and gives you detailed feedback on your specific performance and
+                delivery
               </li>
               <li className="flex items-start gap-3">
                 <CheckIcon className="mt-0.5 size-4 shrink-0 text-mindset" />
@@ -170,12 +172,14 @@ export function Landing() {
 
       {/* The coach, actually coaching */}
       <section className="flex flex-col items-center gap-4">
-        <h2 className="text-2xl font-semibold tracking-tight text-balance">
-          Watch your coach at work
+        <h2 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+          Watch your coach in action
         </h2>
-        <p className="max-w-lg text-center text-ink-muted">
-          Record a challenge and this is what comes back, in a minute or two, on every attempt: a coach that watched
-          - the hands, the eyes, the voice, the story - and says what it saw, aloud, with the words on screen.
+        <p className="max-w-2xl text-center text-lg text-ink-muted text-balance">
+          The whole course turns on this. Record a challenge and, in a minute or two, a coach that actually watched
+          - the hands, the eyes, the voice, the story - tells you what it saw and what to do next, aloud, with the
+          words on screen. Praise that names what earned it; a miss said plainly, with the one turn that would have
+          made it.
         </p>
         <CoachDemo />
       </section>

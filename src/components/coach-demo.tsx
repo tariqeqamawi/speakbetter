@@ -128,24 +128,25 @@ export function CoachDemo() {
   const scored = stage === "scored";
 
   return (
-    <div className="grid w-full gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
-      {/* the coach */}
-      <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-navy-600 bg-navy-800 p-5">
+    <div className="flex w-full max-w-3xl flex-col gap-6 rounded-3xl border border-navy-600 bg-navy-800 p-5 shadow-[0_0_80px_-40px_var(--color-advanced)] sm:p-8">
+      {/* the coach, large - the feature of the page */}
+      <div className="flex flex-col items-center gap-3">
         <TalkingLion
           text={SPOKEN}
           audioSrc="/coach/sample-review.mp3"
           cues={CUES}
           captions
+          large
         />
-        <p className="text-center text-xs text-ink-faint">
+        <p className="max-w-lg text-center text-xs text-ink-faint">
           A sample review, spoken aloud by the coach - the words as captions,
           each skill named as it comes up. This is the voice, the lion, and the
           kind of feedback every take gets.
         </p>
       </div>
 
-      {/* the review */}
-      <div className="flex flex-col gap-4 rounded-2xl border border-navy-600 bg-navy-800 p-5">
+      {/* the review, beneath */}
+      <div className="flex flex-col gap-4 rounded-2xl border border-navy-600 bg-navy-900/50 p-5">
         {stage === "idle" && (
           <div className="flex flex-1 flex-col items-center justify-center gap-4 py-6 text-center">
             <SpectrumIcon className="size-8 text-body-language" />

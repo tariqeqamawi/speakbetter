@@ -88,6 +88,8 @@ export const TalkingLion = forwardRef<
     captions?: boolean;
     /** The page has its own play control - don't draw the lion's. */
     controls?: boolean;
+    /** Drawn large - the landing page's feature. */
+    large?: boolean;
     /** Speak as soon as an audio source arrives - for a page where the
      *  tap that fetched the audio is the tap that meant "play". */
     autoPlay?: boolean;
@@ -95,7 +97,7 @@ export const TalkingLion = forwardRef<
     className?: string;
   }
 >(function TalkingLion(
-  { text, audioSrc, cues, captions = false, controls = true, autoPlay = false, onEnded, className = "" },
+  { text, audioSrc, cues, captions = false, controls = true, large = false, autoPlay = false, onEnded, className = "" },
   ref,
 ) {
   const [level, setLevel] = useState(0); // 0..1 live amplitude, smoothed
@@ -394,8 +396,8 @@ export const TalkingLion = forwardRef<
   const caption = captionIndex >= 0 ? phrases[captionIndex] : undefined;
 
   return (
-    <div className={`flex flex-col items-center gap-4 ${className}`}>
-      <div className="relative w-full max-w-xs">
+    <div className={`flex w-full flex-col items-center gap-4 ${className}`}>
+      <div className={`relative w-full ${large ? "max-w-lg" : "max-w-xs"}`}>
         <LionMouth level={mouth} className="relative w-full" />
         {/* The logo's wave, alive: the same ribbons as the mark, drawn
             by the Soundwave the header uses, breathing with the level -
@@ -489,10 +491,12 @@ export const TalkingLion = forwardRef<
         type="button"
         onClick={speaking ? stop : speak}
         disabled={!supported}
-        className={`flex min-h-11 items-center rounded-lg border px-5 py-2.5 text-sm font-semibold text-ink transition-colors disabled:opacity-50 ${
-          blocked
-            ? "border-ink-faint bg-navy-700 hover:bg-navy-600"
-            : "border-navy-600 bg-navy-800 hover:bg-navy-700"
+        className={`flex min-h-11 items-center rounded-full border font-semibold transition-colors disabled:opacity-50 ${
+          large
+            ? "border-transparent bg-advanced px-8 py-3 text-base text-navy-950 shadow-[0_0_32px_-6px_var(--color-advanced)] hover:opacity-90"
+            : blocked
+              ? "border-ink-faint bg-navy-700 px-5 py-2.5 text-sm text-ink hover:bg-navy-600"
+              : "border-navy-600 bg-navy-800 px-5 py-2.5 text-sm text-ink hover:bg-navy-700"
         }`}
       >
         {speaking ? "Stop" : blocked ? "Tap to listen to the coach" : "Listen to the coach"}
