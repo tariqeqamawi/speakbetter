@@ -1,8 +1,9 @@
 # The lion mouth sprite
 
-`public/lion-mouth.webp` is ten frames of the brand animation
+`public/lion-mouth.webp` is twenty-eight frames of the brand animation
 (`SpeakBetter1.mov`, 2.5 s, 75 frames, 1920 × 1080, QuickTime Animation
-with alpha), laid out vertically, 440 × 343 each.
+with alpha) - ten real frames and two synthesised in-betweens after
+each - laid out vertically, 440 × 343 each.
 
 The clip is a roar in three parts: the lion draws in (frames 1–16, the
 face contracting, mouth shut), opens and lunges out (17–40), and settles
@@ -20,11 +21,15 @@ To rebuild from a new MOV:
    build can).
 2. Take the draw-in-to-opening run (frames 11–20 in this cut), clear
    the wave, crop to their common bounding box.
-3. Resize to 440 × 343, stack vertically, save as WebP with alpha, and
-   set MOUTH_FRAMES and MOUTH_ASPECT in lion-mouth.tsx to match.
+3. Interpolate to three frames per real one with ffmpeg's
+   `minterpolate` (motion-compensated, so edges move rather than
+   cross-fade), RGB and alpha separately, and recombine.
+4. Resize to 440 × 343, stack vertically, save as WebP with alpha, and
+   set MOUTH_FRAMES, MOUTH_TOP and MOUTH_ASPECT in lion-mouth.tsx to
+   match.
 
-Steps 2 and 3 are `build-lion-mouth.py` (Pillow + numpy), which also
-closes the mouth: the mark is drawn with the lips slightly parted, so
+Steps 2 to 4 are `build-lion-mouth.py` (Pillow + numpy + ffmpeg), which
+also closes the mouth: the mark is drawn with the lips slightly parted, so
 the resting frame has its dark wedge shrunk to 40% of its height by
 extending the chin over it (the outline is untouched), and the edit
 tapers out over the next three frames - 45%, 30%, 15% - so the opening

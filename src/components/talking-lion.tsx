@@ -18,6 +18,13 @@ import {
 const SILENCE =
   "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=";
 
+/** How long a rise holds the mouth before it closes - about two
+ *  syllables at the coach's pace, so a word is one or two opens, not
+ *  one per syllable - and how long the close after it takes. */
+const HOLD_MS = 300;
+const OPEN_MS = 70; // the start of the hold, when the mouth is still opening
+const CLOSE_MS = 70;
+
 export interface TalkingLionHandle {
   /**
    * Call inside a click or tap, before fetching audio. Browsers only
@@ -93,6 +100,8 @@ export const TalkingLion = forwardRef<
   const [mouth, setMouth] = useState(0);
   const mouthRef = useRef(0);
   const loudRef = useRef(0); // the loudest RMS heard lately - the mouth's ceiling
+  const holdUntilRef = useRef(0); // the mouth holds until this time...
+  const closeUntilRef = useRef(0); // ...then closes until this one
   const [speaking, setSpeaking] = useState(false);
   // The browser refused to start the clip - a tap on the button will.
   const [blocked, setBlocked] = useState(false);
@@ -119,6 +128,8 @@ export const TalkingLion = forwardRef<
     setMouth(0);
     mouthRef.current = 0;
     loudRef.current = 0;
+    holdUntilRef.current = 0;
+    closeUntilRef.current = 0;
     setCueIndex(-1);
     smoothedRef.current = 0;
     envelopeRef.current = 0;
@@ -164,14 +175,29 @@ export const TalkingLion = forwardRef<
         1,
         Math.max(0, rms - floor) / (loudRef.current * 0.6 - floor),
       );
-      // Shaped to a word, not a syllable: the mouth opens fast at the
-      // start of a word, holds open across its syllables - the release
-      // rides through the dip between them - and shuts promptly in the
-      // gap before the next word; a slow close read as the lion
-      // trailing off after every word. Closed, open, closed, once per
-      // word, which is what speech looks like from across a room.
-      mouthRef.current +=
-        (want - mouthRef.current) * (want > mouthRef.current ? 0.45 : 0.3);
+      // Shaped to a beat of speech, not a syllable. A rise opens the
+      // mouth fast and starts a hold, and for the length of the hold -
+      // about two syllables at the coach's pace - the mouth stays
+      // where it is, riding through the dips and peaks of the
+      // syllables inside it instead of flapping on each. Then it
+      // closes, promptly, and the next sound opens it again. So
+      // "momentary" is two opens - "moment", "tary" - which is what
+      // speech looks like from across a room.
+      const now = performance.now();
+      if (now < holdUntilRef.current) {
+        // Opening fast for the first beat of the hold, then holding.
+        const opening = now < holdUntilRef.current - HOLD_MS + OPEN_MS && want > mouthRef.current;
+        mouthRef.current += (want - mouthRef.current) * (opening ? 0.45 : want > mouthRef.current ? 0.03 : 0.02);
+      } else if (now < closeUntilRef.current) {
+        mouthRef.current -= mouthRef.current * 0.35;
+      } else {
+        if (want > mouthRef.current + 0.08) {
+          holdUntilRef.current = now + HOLD_MS;
+          closeUntilRef.current = holdUntilRef.current + CLOSE_MS;
+        }
+        mouthRef.current +=
+          (want - mouthRef.current) * (want > mouthRef.current ? 0.45 : 0.3);
+      }
       if (want === 0 && mouthRef.current < 0.06) mouthRef.current = 0;
       setMouth(mouthRef.current);
 
