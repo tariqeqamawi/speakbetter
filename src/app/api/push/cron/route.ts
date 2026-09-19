@@ -1,15 +1,17 @@
 import { NextResponse } from "next/server";
 import { allPush, localNow, pushConfigured, savePush, sendPush, type Note, type PushRecord } from "@/lib/server/push";
 
-// Runs every hour (vercel.json). For each subscribed device it works
-// out the local time and sends at most one note, and only one that is
-// true of what the device last reported:
+// Runs once a day (vercel.json - the plan allows one run a day; hourly
+// would let each note land at a local hour, and the rules below are
+// written so that's a one-line change). For each subscribed device it
+// sends at most one note, and only one that is true of what the device
+// last reported:
 //
-//   19:00 local  streak nudge, if today's practice hasn't happened and
-//                there's a streak worth keeping (or a day already gone)
-//   Monday 09:00 the week's recap
-//   any hour     next rank within 60 XP (once per rank)
-//   any hour     improving on a challenge (once per challenge)
+//   the streak    if today's practice hasn't happened and there's a
+//                 streak worth keeping (or a day already gone)
+//   Monday        the week's recap
+//   any day       next rank within 60 XP (once per rank)
+//   any day       improving on a challenge (once per challenge)
 //
 // Rationing: one note a day at most, per device, whatever the kind.
 
@@ -25,11 +27,11 @@ function sentToday(record: PushRecord, day: string): boolean {
 
 function pick(record: PushRecord): { kind: keyof PushRecord["sent"]; note: Note } | null {
   const r = record.reported;
-  const { hour, day, weekday } = today(record);
+  const { day, weekday } = today(record);
   if (sentToday(record, day)) return null;
 
-  // Monday morning: the recap.
-  if (weekday === 1 && hour === 9 && record.sent.recap?.slice(0, 10) !== new Date().toISOString().slice(0, 10)) {
+  // Monday: the recap.
+  if (weekday === 1 && record.sent.recap?.slice(0, 10) !== new Date().toISOString().slice(0, 10)) {
     return {
       kind: "recap",
       note: {
@@ -43,8 +45,8 @@ function pick(record: PushRecord): { kind: keyof PushRecord["sent"]; note: Note 
     };
   }
 
-  // Evening: the streak, if today isn't done.
-  if (hour === 19 && r.lastPracticeDay !== day && (r.streak >= 2 || r.lastPracticeDay)) {
+  // The streak, if today isn't done.
+  if (r.lastPracticeDay !== day && (r.streak >= 2 || r.lastPracticeDay)) {
     return {
       kind: "streak",
       note: {
