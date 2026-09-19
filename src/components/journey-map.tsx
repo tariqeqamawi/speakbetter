@@ -17,6 +17,8 @@ import { challengeXp, openPhaseCount, phaseGate, type PhaseGate } from "@/lib/pr
 import { XpBadge } from "@/components/xp-badge";
 import { useStore } from "@/lib/store";
 import { VideoStill } from "@/components/video-still";
+import { OwnTake, usePeek } from "@/components/own-take";
+import { listAllVideos, type StoredVideoMeta } from "@/lib/attempt-videos";
 import { CheckIcon, LockIcon, ProfileIcon } from "@/components/icons";
 import { StudentsHere } from "@/components/students-here";
 
@@ -138,6 +140,39 @@ export function JourneyMap() {
     };
   }, []);
 
+  // The student's own recordings, one per passed challenge where this
+  // device still holds one - the newest. Read once; posters only.
+  const [takes, setTakes] = useState<Map<string, StoredVideoMeta>>(new Map());
+  useEffect(() => {
+    let alive = true;
+    listAllVideos().then((rows) => {
+      if (!alive) return;
+      const byChallenge = new Map<string, StoredVideoMeta>();
+      for (const r of rows) if (r.poster && !byChallenge.has(r.challengeSlug)) byChallenge.set(r.challengeSlug, r);
+      setTakes(byChallenge);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+  // The passed node held under a finger, playing its take. The hold
+  // starts after a beat, so a tap is still a tap.
+  const [held, setHeld] = useState<string | null>(null);
+  const holdTimer = useRef<number | null>(null);
+  const playedRef = useRef(false);
+  const beginHold = (slug: string) => {
+    if (holdTimer.current) window.clearTimeout(holdTimer.current);
+    holdTimer.current = window.setTimeout(() => {
+      setHeld(slug);
+      playedRef.current = true;
+    }, 220);
+  };
+  const endHold = () => {
+    if (holdTimer.current) window.clearTimeout(holdTimer.current);
+    holdTimer.current = null;
+    setHeld(null);
+  };
+
   // Lay the trail out top to bottom, phase by phase.
   const nodes: Node[] = [];
   const banners: { phase: StoryPhase; y: number; locked: boolean; gate: PhaseGate }[] = [];
@@ -172,6 +207,7 @@ export function JourneyMap() {
       step++;
     }
   }
+  const peeking = usePeek(nodes.filter((n) => n.passed && takes.has(n.slug)).map((n) => n.slug));
   const finishY = y + 48;
   const height = finishY + 104;
   const done = nodes.filter((n) => n.passed).length;
@@ -470,6 +506,14 @@ export function JourneyMap() {
                     <span className="flex size-full items-center justify-center text-ink-faint">
                       <LockIcon className="size-4" />
                     </span>
+                  ) : node.passed && takes.has(node.slug) ? (
+                    // Their own take in the circle - a frame of it, and
+                    // a few seconds of it under a held finger or when
+                    // the map picks it to peek.
+                    <OwnTake
+                      take={takes.get(node.slug)!}
+                      playing={held === node.slug || peeking === node.slug}
+                    />
                   ) : (
                     <>
                       <VideoStill
@@ -617,13 +661,32 @@ export function JourneyMap() {
             );
             const cls = "map-row group absolute -translate-x-1/2 -translate-y-1/2";
             const pos = { left: `${node.x}%`, top: node.y };
+            const hasTake = node.passed && takes.has(node.slug);
             return clickable ? (
               <Link
                 key={node.slug}
                 href={`/challenges/${node.slug}`}
                 aria-label={node.title}
                 className={cls}
-                style={pos}
+                style={{ ...pos, WebkitTouchCallout: "none" } as React.CSSProperties}
+                // Hold a passed node and its take plays; let go and it
+                // stops. A hold that played isn't a tap, so it doesn't
+                // also open the challenge.
+                onPointerDown={hasTake ? () => beginHold(node.slug) : undefined}
+                onPointerUp={hasTake ? endHold : undefined}
+                onPointerLeave={hasTake ? endHold : undefined}
+                onPointerCancel={hasTake ? endHold : undefined}
+                onContextMenu={hasTake ? (e) => e.preventDefault() : undefined}
+                onClick={
+                  hasTake
+                    ? (e) => {
+                        if (playedRef.current) {
+                          e.preventDefault();
+                          playedRef.current = false;
+                        }
+                      }
+                    : undefined
+                }
               >
                 {body}
               </Link>
