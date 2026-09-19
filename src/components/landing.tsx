@@ -43,16 +43,22 @@ export function Landing() {
           />
           <Soundwave variant="hero" className="-mt-1 h-16 w-full sm:h-24" />
         </div>
-        {/* What this is, before the line - the visitor should know what
-            they're looking at before it starts persuading them. */}
-        <div className="flex max-w-2xl flex-col items-center gap-2">
-          <span className="text-[0.7rem] font-bold uppercase tracking-[0.35em] text-structure">
-            A new system for mastering public speaking
+        {/* The manifesto, before the line - who this is for, and what's
+            on the other side of it. */}
+        <div className="flex max-w-2xl flex-col items-center gap-3">
+          <span className="text-[0.7rem] font-bold uppercase tracking-[0.35em] text-figurative">
+            Step into your true colors
           </span>
-          <p className="text-lg text-ink text-balance sm:text-xl">
-            Overcome fear and shyness in minutes rather than months, in a fully gamified,
-            interactive app: short lessons from one teacher, on-camera challenges, and a coach
-            who watches every take.
+          <p className="text-xl font-medium leading-snug text-ink text-balance sm:text-2xl">
+            There&apos;s a lion waiting to roar. That&apos;s you in your fullest expression - no fear, no
+            hesitation, full confidence, and the ability to deliver at a level of mastery with no notes
+            and no notice.
+          </p>
+          <p className="text-lg text-ink-muted text-balance">
+            That is what&apos;s waiting on the other side of Speak Better: a new system for mastering public
+            speaking, unlike anything you&apos;ve tried before. Overcome fear and shyness in minutes rather
+            than months, in a fully gamified, interactive app - short lessons from one teacher, on-camera
+            challenges, and a coach who watches every take.
           </p>
         </div>
         <h1 className="grid max-w-2xl text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
@@ -292,8 +298,8 @@ export function Landing() {
       </section>
 
       {/* Who's teaching */}
-      <section className="flex flex-col gap-5 rounded-2xl border border-navy-600 bg-navy-800 p-6 sm:flex-row sm:items-center sm:gap-8 sm:p-8">
-        <div className="relative aspect-video w-full shrink-0 overflow-hidden rounded-xl bg-navy-950 sm:w-64">
+      <section className="flex flex-col gap-5 rounded-2xl border border-navy-600 bg-navy-800 p-6 sm:flex-row sm:items-start sm:gap-8 sm:p-8">
+        <div className="relative aspect-[4/5] w-full shrink-0 overflow-hidden rounded-xl bg-navy-950 sm:sticky sm:top-24 sm:w-72">
           {/* A mid-gesture still from the library - the intro video (1080326796)
               has no captured still; its embed won't play headlessly. */}
           <Image
@@ -304,20 +310,38 @@ export function Landing() {
             className="object-cover"
           />
         </div>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
           <span className="text-xs font-semibold uppercase tracking-wider text-ink-faint">
             Who&apos;s teaching this
           </span>
-          <h2 className="text-2xl font-semibold tracking-tight">
-            A decade of watching the best, distilled
-          </h2>
-          <p className="text-sm leading-relaxed text-ink-muted">
-            Every lesson here is a tool of the trade - the things nobody taught
-            me, picked up over more than a decade of studying the best speakers
-            at their craft, and cut down to one or two minutes each. No hour-long
-            recordings. No theory you&apos;ll never use. Just the skill, and then
-            your turn to try it.
-          </p>
+          <h2 className="text-2xl font-semibold tracking-tight">How Speak Better came to be</h2>
+          <div className="flex flex-col gap-3 text-sm leading-relaxed text-ink-muted">
+            <p>
+              Tariq&apos;s very first public speech was a TEDx talk, in 2011. After diving deep into what made
+              the most memorable speeches so memorable, he built his talk out of stories, poetic turns of
+              phrase, mic-drop moments, and a moral worth keeping - and it went on to gather more than ten
+              times the views of every other talk at the conference.
+            </p>
+            <p>
+              Then people started writing. <em>I watched your talk and quit my job. I watched your talk and
+              bought a plane ticket. I watched your talk and proposed.</em> That was when Tariq understood
+              what speaking is: not something you listen to, but something you experience - a transformation
+              - and he set out to deepen the craft and teach others to do on stage what he had done.
+            </p>
+            <p>
+              The result: hundreds of students going from shy and nervous on camera to speaking confidently
+              and competently within weeks - starting podcasts, getting booked to speak. He has helped others
+              to standing ovations, and has been the speechwriter behind talks given to rooms of eight
+              thousand. He is the coach people trust to get them ready for the stage, and he is passionate
+              about helping others unlock the superpower that changed his life.
+            </p>
+            <p>
+              After running live cohort after live cohort, giving feedback on every take, the Speak Better
+              methodology was born. Now, thanks to what technology makes possible, Tariq has trained an AI coach
+              on that methodology so he can serve many. Welcome to the fastest, most effective way to master
+              public speaking - for the stage, or for the screen.
+            </p>
+          </div>
         </div>
       </section>
 

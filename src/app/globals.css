@@ -1683,3 +1683,25 @@ html.bare .demo-banner {
     animation: none;
   }
 }
+
+/* A lesson stepping into the middle of the library's shelf. */
+.gallery-in {
+  animation: gallery-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes gallery-in {
+  from {
+    opacity: 0;
+    transform: translateX(0.6rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gallery-in {
+    animation: none;
+  }
+}
