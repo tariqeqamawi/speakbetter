@@ -366,8 +366,10 @@ export function Landing() {
           Your STORY journey
         </h2>
         <p className="max-w-lg text-center text-ink-muted">
-          Twenty-four challenges across five phases. Pick a phase, then a challenge, and see its page the way
-          you&apos;ll find it inside - the brief, the lessons behind it, and the record button.
+          Twenty-four challenges across five phases, drawn as a road - your face on the challenge you&apos;re
+          at, your own takes in the circles you&apos;ve passed, your trophies pinned where you won them, and
+          the other students walking it beside you. Scroll it, pinch to look closer, and tap a stop to see
+          its page the way you&apos;ll find it inside.
         </p>
         <StoryPreview />
       </section>
