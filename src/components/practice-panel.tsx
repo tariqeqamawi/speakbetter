@@ -1066,6 +1066,30 @@ function catName(id: CategoryId): string {
   return categoryById.get(id)?.name ?? id;
 }
 
+/** The lesson behind a note, as a small card: its still with a play
+ *  mark, its name, and the way there - so it reads as a video lesson
+ *  a tap away rather than a citation. */
+export function LessonLink({ lesson, href }: { lesson: { vimeoId: string; title: string; category: string }; href?: string }) {
+  return (
+    <Link
+      href={href ?? `/skills/${lesson.category}/${lesson.vimeoId}`}
+      className="group inline-flex max-w-full items-center gap-2 rounded-lg border border-navy-600 bg-navy-900/60 py-1 pl-1 pr-3 text-xs font-medium text-ink-muted transition-colors hover:border-ink-faint hover:text-ink"
+    >
+      <span className="relative h-9 w-14 shrink-0 overflow-hidden rounded-md bg-navy-950">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={`/thumbs/${lesson.vimeoId}.jpg`} alt="" loading="lazy" decoding="async" className="size-full object-cover" />
+        <span className="absolute inset-0 grid place-items-center bg-navy-950/30 text-ink transition-colors group-hover:bg-navy-950/10">
+          <PlayIcon className="size-3.5" />
+        </span>
+      </span>
+      <span className="flex min-w-0 flex-col">
+        <span className="text-[0.6rem] uppercase tracking-wider text-ink-faint">Watch the lesson</span>
+        <span className="truncate">{lesson.title}</span>
+      </span>
+    </Link>
+  );
+}
+
 function FeedbackNoteRow({
   note,
   showLessons = false,
@@ -1099,16 +1123,9 @@ function FeedbackNoteRow({
           {note.note}
         </span>
         {lessons.length > 0 && (
-          <span className="flex flex-wrap gap-x-3 gap-y-1">
+          <span className="flex flex-wrap gap-2">
             {lessons.map((lesson) => (
-              <Link
-                key={lesson.vimeoId}
-                href={`/skills/${lesson.category}/${lesson.vimeoId}`}
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-muted underline decoration-navy-500 underline-offset-4 transition-colors hover:text-ink"
-              >
-                <PlayIcon className="size-3 shrink-0" />
-                Watch the lesson: {lesson.title}
-              </Link>
+              <LessonLink key={lesson.vimeoId} lesson={lesson} />
             ))}
           </span>
         )}
