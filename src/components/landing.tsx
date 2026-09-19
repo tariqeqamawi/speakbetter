@@ -15,6 +15,7 @@ import {
 import { UnlockButton } from "@/components/unlock-button";
 import { Pricing } from "@/components/pricing";
 import { LandingShowcase } from "@/components/landing-showcase";
+import { OriginStory } from "@/components/origin-story";
 import Link from "next/link";
 import { CoachDemo } from "@/components/coach-demo";
 import { SpectrumDemo } from "@/components/spectrum-demo";
@@ -297,53 +298,8 @@ export function Landing() {
         </p>
       </section>
 
-      {/* Who's teaching */}
-      <section className="flex flex-col gap-5 rounded-2xl border border-navy-600 bg-navy-800 p-6 sm:flex-row sm:items-start sm:gap-8 sm:p-8">
-        <div className="relative aspect-[4/5] w-full shrink-0 overflow-hidden rounded-xl bg-navy-950 sm:sticky sm:top-24 sm:w-72">
-          {/* A mid-gesture still from the library - the intro video (1080326796)
-              has no captured still; its embed won't play headlessly. */}
-          <Image
-            src="/thumbs/1080612884.jpg"
-            alt="Your instructor"
-            fill
-            sizes="(min-width: 640px) 256px, 100vw"
-            className="object-cover"
-          />
-        </div>
-        <div className="flex flex-col gap-3">
-          <span className="text-xs font-semibold uppercase tracking-wider text-ink-faint">
-            Who&apos;s teaching this
-          </span>
-          <h2 className="text-2xl font-semibold tracking-tight">How Speak Better came to be</h2>
-          <div className="flex flex-col gap-3 text-sm leading-relaxed text-ink-muted">
-            <p>
-              Tariq&apos;s very first public speech was a TEDx talk, in 2011. After diving deep into what made
-              the most memorable speeches so memorable, he built his talk out of stories, poetic turns of
-              phrase, mic-drop moments, and a moral worth keeping - and it went on to gather more than ten
-              times the views of every other talk at the conference.
-            </p>
-            <p>
-              Then people started writing. <em>I watched your talk and quit my job. I watched your talk and
-              bought a plane ticket. I watched your talk and proposed.</em> That was when Tariq understood
-              what speaking is: not something you listen to, but something you experience - a transformation
-              - and he set out to deepen the craft and teach others to do on stage what he had done.
-            </p>
-            <p>
-              The result: hundreds of students going from shy and nervous on camera to speaking confidently
-              and competently within weeks - starting podcasts, getting booked to speak. He has helped others
-              to standing ovations, and has been the speechwriter behind talks given to rooms of eight
-              thousand. He is the coach people trust to get them ready for the stage, and he is passionate
-              about helping others unlock the superpower that changed his life.
-            </p>
-            <p>
-              After running live cohort after live cohort, giving feedback on every take, the Speak Better
-              methodology was born. Now, thanks to what technology makes possible, Tariq has trained an AI coach
-              on that methodology so he can serve many. Welcome to the fastest, most effective way to master
-              public speaking - for the stage, or for the screen.
-            </p>
-          </div>
-        </div>
-      </section>
+      {/* How Speak Better came to be - four moments, zigzagging */}
+      <OriginStory />
 
       {/* A mentor in your pocket - the portrait zoom, demonstrated */}
       <section className="flex flex-col items-center gap-8 rounded-2xl border border-navy-600 bg-navy-800 p-6 sm:flex-row sm:justify-center sm:gap-14 sm:p-10">
