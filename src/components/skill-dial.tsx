@@ -190,7 +190,7 @@ export function SkillDial() {
             : "border-navy-600 shadow-[0_0_0_0_transparent]"
         }`}
       >
-        <RoaringLion className="w-[82%] translate-y-[3%]" />
+        <RoaringLion className="w-[92%] translate-y-[4%]" />
       </div>
 
       {/* The nodes */}

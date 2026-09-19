@@ -283,13 +283,13 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
         className="relative mx-auto aspect-square w-full max-w-xl select-none touch-pan-y"
       >
         <div
-          className={`absolute left-1/2 top-1/2 flex aspect-square w-[46%] -translate-x-1/2 -translate-y-1/2 items-center justify-center overflow-hidden rounded-full border bg-navy-800/90 transition-[border-color,box-shadow,color] duration-300 ${
+          className={`absolute left-1/2 top-1/2 flex aspect-square w-[52%] -translate-x-1/2 -translate-y-1/2 items-center justify-center overflow-hidden rounded-full border bg-navy-800/90 transition-[border-color,box-shadow,color] duration-300 ${
             active
               ? `border-current ${active.textClass} shadow-[0_0_36px_-6px_currentColor]`
               : "border-navy-600"
           }`}
         >
-          <RoaringLion className="w-[82%] translate-y-[3%]" />
+          <RoaringLion className="w-[92%] translate-y-[4%]" />
         </div>
 
         {categories.map((cat, i) => {
