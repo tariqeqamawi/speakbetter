@@ -10,6 +10,31 @@
 
 export type Plan = "trial" | "foundations" | "coached" | "founders";
 
+/** Everything that's on offer, in the order the tiers fill it in. */
+export interface Feature {
+  id: string;
+  label: string;
+}
+
+export const features: Feature[] = [
+  { id: "lessons", label: "All 81 skill lessons, in the seven colors" },
+  { id: "deck", label: "The full deck of 79 cards, in the app" },
+  { id: "journey", label: "The STORY journey - 24 challenges, five phases" },
+  { id: "written", label: "Written feedback on every take from the standing coach" },
+  { id: "loop", label: "XP, ranks, trophies, streaks - the whole practice loop" },
+  { id: "device", label: "Recordings kept on your own phone, never on a server" },
+  { id: "coach", label: "The AI coach watches every take - gestures, eyes, voice, the story" },
+  { id: "spoken", label: "Spoken feedback from the lion, with captions" },
+  { id: "ask", label: "Ask your coach anything about how you're developing" },
+  { id: "board", label: "This week's board, and notes when your review is ready" },
+  { id: "reviews", label: "Up to 20 reviews a month - more than a take a day" },
+  { id: "live", label: "A monthly live group session with the teacher" },
+  { id: "cohort", label: "A live cohort: start together, finish together" },
+  { id: "printed", label: "The printed card deck, posted to you" },
+  { id: "book", label: "The book, when it ships" },
+  { id: "first", label: "First access to every new lesson and challenge" },
+];
+
 export interface Tier {
   id: Exclude<Plan, "trial">;
   name: string;
@@ -20,14 +45,18 @@ export interface Tier {
   term: string;
   /** The default choice at checkout - drawn larger. */
   featured?: boolean;
-  /** Everything it includes, in order. */
-  includes: string[];
-  /** What it doesn't, said plainly - the honest version of a tier table. */
-  excludes?: string[];
+  /** Which of the features it has - the rest show struck out. */
+  has: string[];
+  /** The tier's own colour, for its ticks. */
+  accent: "mindset" | "structure" | "storytelling";
   cta: string;
   /** Limited seats, a cohort start - the note under the button. */
   note?: string;
 }
+
+const foundations = ["lessons", "deck", "journey", "written", "loop", "device"];
+const coached = [...foundations, "coach", "spoken", "ask", "board", "reviews"];
+const founders = [...coached, "live", "cohort", "printed", "book", "first"];
 
 export const tiers: Tier[] = [
   {
@@ -36,15 +65,8 @@ export const tiers: Tier[] = [
     tagline: "The method, yours for good.",
     price: "$149",
     term: "one payment, lifetime access",
-    includes: [
-      "All 81 skill lessons, in the seven colors",
-      "The full deck of 79 cards",
-      "The STORY journey - 24 challenges, five phases",
-      "Written feedback on every take from the standing coach",
-      "XP, ranks, trophies, streaks - the whole practice loop",
-      "Recordings kept on your own phone, never on a server",
-    ],
-    excludes: ["Video reviews by the AI coach", "Ask your coach", "This week's board"],
+    has: foundations,
+    accent: "mindset",
     cta: "Get Foundations",
   },
   {
@@ -54,14 +76,8 @@ export const tiers: Tier[] = [
     price: "$29",
     term: "a month - or $249 a year, two months free",
     featured: true,
-    includes: [
-      "Everything in Foundations",
-      "The AI coach watches every take - gestures, eyes, voice, the story",
-      "Spoken feedback from the lion, with captions",
-      "Ask your coach anything about how you're developing",
-      "This week's board, and notes when your review is ready",
-      "Up to 20 reviews a month - more than a take a day",
-    ],
+    has: coached,
+    accent: "structure",
     cta: "Start Coached",
     note: "Cancel any time. Foundations stays yours.",
   },
@@ -71,14 +87,8 @@ export const tiers: Tier[] = [
     tagline: "The whole system, with the teacher in the room.",
     price: "$599",
     term: "one payment - a year of Coached included",
-    includes: [
-      "A year of Coached",
-      "A monthly live group session with the teacher",
-      "A live cohort: start together, finish together",
-      "The printed card deck, posted to you",
-      "The book, when it ships",
-      "First access to every new lesson and challenge",
-    ],
+    has: founders,
+    accent: "storytelling",
     cta: "Join the Founders cohort",
     note: "Limited seats per cohort.",
   },

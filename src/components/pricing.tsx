@@ -1,4 +1,4 @@
-import { tiers, trial } from "@/data/pricing";
+import { features, tiers, trial } from "@/data/pricing";
 import { UnlockButton } from "@/components/unlock-button";
 import { CheckIcon, XIcon } from "@/components/icons";
 
@@ -7,7 +7,7 @@ import { CheckIcon, XIcon } from "@/components/icons";
 // side, the membership drawn larger because it's the product. Used on
 // the landing page and on /pricing.
 
-export function Pricing({ compact = false }: { compact?: boolean }) {
+export function Pricing() {
   return (
     <div className="flex flex-col gap-6">
       {/* The free baseline */}
@@ -50,20 +50,24 @@ export function Pricing({ compact = false }: { compact?: boolean }) {
               <span className="text-4xl font-bold tracking-tight text-ink">{tier.price}</span>
               <span className="text-xs text-ink-faint">{tier.term}</span>
             </div>
+            {/* Every tier lists everything: what it has, lit in its
+                colour; what it doesn't, greyed and struck - so the
+                columns visibly fill in from left to right. */}
             <ul className="flex flex-1 flex-col gap-2 text-sm">
-              {tier.includes.map((line) => (
-                <li key={line} className="flex items-start gap-2 text-ink">
-                  <CheckIcon className={`mt-0.5 size-4 shrink-0 ${tier.featured ? "text-structure" : "text-mindset"}`} />
-                  {line}
-                </li>
-              ))}
-              {!compact &&
-                tier.excludes?.map((line) => (
-                  <li key={line} className="flex items-start gap-2 text-ink-faint">
-                    <XIcon className="mt-0.5 size-4 shrink-0" />
-                    {line}
+              {features.map((f) => {
+                const has = tier.has.includes(f.id);
+                const tick = { mindset: "text-mindset", structure: "text-structure", storytelling: "text-storytelling" }[tier.accent];
+                return (
+                  <li key={f.id} className={`flex items-start gap-2 ${has ? "text-ink" : "text-ink-faint/60"}`}>
+                    {has ? (
+                      <CheckIcon className={`mt-0.5 size-4 shrink-0 ${tick} drop-shadow-[0_0_5px_currentColor]`} />
+                    ) : (
+                      <XIcon className="mt-0.5 size-4 shrink-0 opacity-50" />
+                    )}
+                    <span className={has ? "" : "line-through decoration-ink-faint/50"}>{f.label}</span>
                   </li>
-                ))}
+                );
+              })}
             </ul>
             <div className="flex flex-col items-start gap-2">
               <UnlockButton plan={tier.id} quiet={!tier.featured}>

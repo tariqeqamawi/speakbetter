@@ -349,7 +349,7 @@ export function Landing() {
           </p>
         </div>
         <div className="w-full">
-          <Pricing compact />
+          <Pricing />
         </div>
         <Link href="/pricing" className="text-xs font-semibold text-ink-muted underline-offset-4 hover:text-ink hover:underline">
           Compare the tiers in full →
