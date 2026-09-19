@@ -114,6 +114,29 @@ export function SkillDial() {
   );
 
   return (
+    <div className="flex flex-col items-center gap-3">
+      {/* The name of whatever the pointer is on, above the dial and in
+          its color - so the hub keeps its shape whatever the length of
+          the name. Held to a fixed height so the dial doesn't shift. */}
+      <div className="flex h-12 flex-col items-center justify-center text-center" aria-live="polite">
+        {active ? (
+          <>
+            <span className={`text-lg font-semibold leading-tight sm:text-xl ${active.textClass}`}>
+              {active.short}
+            </span>
+            <span className="text-xs text-ink-muted">
+              {activeLessons.length} lessons
+              {activeWatched > 0 && ` · ${activeWatched} watched`}
+              <span className="text-ink-faint"> · tap to open</span>
+            </span>
+          </>
+        ) : (
+          <>
+            <span className="text-lg font-semibold text-ink sm:text-xl">Seven colors</span>
+            <span className="text-xs text-ink-muted">{totalLessons} lessons · pick where to dip in</span>
+          </>
+        )}
+      </div>
     <div
       ref={dialRef}
       className="relative mx-auto aspect-square w-full max-w-xl select-none touch-pan-y"
@@ -144,15 +167,15 @@ export function SkillDial() {
         })}
       </svg>
 
-      {/* The hub: names whatever the pointer is on. */}
+      {/* The hub: the lion, ringed in the color the pointer is on. It
+          holds its shape - the naming happens above the dial. */}
       <div
-        className={`absolute left-1/2 top-1/2 flex aspect-square w-[52%] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1.5 rounded-full border bg-navy-800/90 p-6 text-center transition-colors duration-300 ${
-          active ? `border-current ${active.textClass}` : "border-navy-600"
+        className={`absolute left-1/2 top-1/2 flex aspect-square w-[52%] -translate-x-1/2 -translate-y-1/2 items-center justify-center overflow-hidden rounded-full border bg-navy-800/90 transition-[border-color,box-shadow,color] duration-300 ${
+          active
+            ? `border-current ${active.textClass} shadow-[0_0_36px_-6px_currentColor]`
+            : "border-navy-600 shadow-[0_0_0_0_transparent]"
         }`}
       >
-        {/* The lion holds the center whatever the pointer does - it's
-            the brand's hub, not a slot the categories take turns in.
-            The words beneath it are what change. */}
         <Image
           src="/logo-mark.png"
           alt=""
@@ -160,31 +183,6 @@ export function SkillDial() {
           height={256}
           className="h-20 w-auto sm:h-28"
         />
-        {active ? (
-          <>
-            <span
-              className={`text-base font-semibold leading-tight sm:text-lg ${active.textClass}`}
-            >
-              {active.name}
-            </span>
-            <span className="text-xs text-ink-muted">
-              {activeLessons.length} lessons
-              {activeWatched > 0 && ` · ${activeWatched} watched`}
-            </span>
-            <span className="text-[0.65rem] uppercase tracking-wider text-ink-faint">
-              Click to open
-            </span>
-          </>
-        ) : (
-          <>
-            <span className="text-base font-semibold text-ink sm:text-lg">
-              Seven colors
-            </span>
-            <span className="text-xs text-ink-muted">
-              {totalLessons} lessons · pick where to dip in
-            </span>
-          </>
-        )}
       </div>
 
       {/* The nodes */}
@@ -218,6 +216,7 @@ export function SkillDial() {
         );
       })}
     </div>
+    </div>
   );
 }
 
@@ -235,7 +234,7 @@ export function CategoryChips() {
             className={`flex min-h-9 items-center gap-2 rounded-full border border-navy-600 px-3 py-1.5 text-xs transition-colors hover:border-current ${cat.textClass}`}
           >
             <CategoryIcon category={cat.id} className="size-4" />
-            <span className="font-medium text-ink-muted">{cat.name}</span>
+            <span className="font-medium text-ink-muted">{cat.short}</span>
             <span className="tabular-nums text-ink-faint">
               {lessonsInCategory(cat.id).length}
             </span>

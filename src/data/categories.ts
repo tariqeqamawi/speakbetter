@@ -21,6 +21,9 @@ export interface Category {
    * shorthand, which is what a student ends up calling them anyway.
    */
   code: string;
+  /** The name at a glance - what fits a dial label or a tab without
+   *  wrapping: "Storytelling", "Figurative", "Speaker's mindset". */
+  short: string;
   colorName: string;
   blurb: string;
   bgClass: string;
@@ -32,6 +35,7 @@ export const categories: Category[] = [
   {
     id: "storytelling",
     name: "Storytelling techniques",
+    short: "Storytelling",
     code: "STORY",
     colorName: "Neon yellow",
     blurb: "Relive experiences instead of reporting them - scenes, morals, and stories that sell.",
@@ -42,6 +46,7 @@ export const categories: Category[] = [
   {
     id: "figurative",
     name: "Figurative language",
+    short: "Figurative",
     code: "IMAGE",
     colorName: "Bright orange",
     blurb: "Metaphor, simile, hyperbole, analogy - language that paints instead of describes.",
@@ -52,6 +57,7 @@ export const categories: Category[] = [
   {
     id: "acting",
     name: "Acting skills for speakers",
+    short: "Acting skills",
     code: "ACT",
     colorName: "Bright red",
     blurb: "Voice, character, emotion, and scene work - deliver the experience, don't just say it.",
@@ -62,6 +68,7 @@ export const categories: Category[] = [
   {
     id: "structure",
     name: "Structure & framing",
+    short: "Structure",
     code: "FRAME",
     colorName: "Magenta",
     blurb: "Openings, frameworks, open loops, and payoffs - the architecture of a talk.",
@@ -72,6 +79,7 @@ export const categories: Category[] = [
   {
     id: "mindset",
     name: "Speaker's mindset & psychology",
+    short: "Speaker's mindset",
     code: "MIND",
     colorName: "Neon green",
     blurb: "Fear, confidence, and conviction - the inner game that everything else stands on.",
@@ -82,6 +90,7 @@ export const categories: Category[] = [
   {
     id: "body-language",
     name: "Body language & physical expression",
+    short: "Body & physical",
     code: "BODY",
     colorName: "Bright cyan",
     blurb: "Gestures, posture, movement - expressing visually what you say verbally.",
@@ -92,6 +101,7 @@ export const categories: Category[] = [
   {
     id: "advanced",
     name: "Advanced tips & tricks",
+    short: "Advanced",
     code: "PRO",
     colorName: "Deep crimson",
     blurb: "Slides, mic drops, going live, memorization - the professional's toolkit.",
