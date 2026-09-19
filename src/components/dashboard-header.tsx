@@ -15,6 +15,46 @@ const levelOrder: Level[] = ["beginner", "intermediate", "advanced"];
 
 const MAX_DIM = 256;
 
+/**
+ * The student in one line, for the top of the phone dashboard: avatar,
+ * name, level, rank and the bar to the next one. Tapping it opens the
+ * full card below.
+ */
+export function DashboardHeaderCompact() {
+  const { state } = useStore();
+  const rank = standing(state);
+  const level = state.level ?? "beginner";
+  return (
+    <span className="flex items-center gap-3 p-3">
+      <span className="relative size-12 shrink-0 overflow-hidden rounded-full border border-navy-500 bg-navy-900">
+        {state.avatar ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={state.avatar} alt="" className="size-full object-cover" />
+        ) : (
+          <span className="grid size-full place-items-center text-ink-faint">
+            <ProfileIcon className="size-5" />
+          </span>
+        )}
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col gap-1">
+        <span className="flex items-baseline justify-between gap-2">
+          <span className="truncate text-sm font-semibold text-ink">{state.displayName || "You"}</span>
+          <span className="shrink-0 text-xs tabular-nums text-ink-muted">{rank.xp.toLocaleString()} XP</span>
+        </span>
+        <span className="flex items-center gap-2 text-[0.65rem] uppercase tracking-wider text-ink-faint">
+          <span className={level === "beginner" ? "text-storytelling" : level === "intermediate" ? "text-figurative" : "text-acting"}>{level}</span>
+          <span>·</span>
+          <span>{rank.rank.name}</span>
+          {rank.next && <span className="ml-auto normal-case tracking-normal">{rank.toNext} to {rank.next.name}</span>}
+        </span>
+        <span className="h-1 overflow-hidden rounded-full bg-navy-900">
+          <span className="spectrum-rule block h-full rounded-full" style={{ width: `${rank.progress * 100}%` }} />
+        </span>
+      </span>
+    </span>
+  );
+}
+
 export function DashboardHeader() {
   const { state, setProfile, setIntention, setLevel } = useStore();
   const fileRef = useRef<HTMLInputElement>(null);

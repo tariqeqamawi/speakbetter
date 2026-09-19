@@ -159,6 +159,21 @@ export async function listVideos(
 }
 
 /** The video itself, for playing. Null if it's no longer on this device. */
+/** Every kept recording on this device, newest first - for the
+ *  dashboard's thumbnails. Posters only; the files aren't read. */
+export async function listAllVideos(): Promise<StoredVideoMeta[]> {
+  if (!canKeepVideos()) return [];
+  try {
+    const db = await open();
+    const tx = db.transaction(META, "readonly");
+    const rows = await request(tx.objectStore(META).getAll());
+    db.close();
+    return (rows as StoredVideoMeta[]).sort((a, b) => (a.at < b.at ? 1 : -1));
+  } catch {
+    return [];
+  }
+}
+
 export async function loadVideo(id: string): Promise<Blob | null> {
   if (!canKeepVideos()) return null;
   try {

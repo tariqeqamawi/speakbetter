@@ -36,6 +36,11 @@ const lessonSeconds = lengths as Record<string, number>;
  * course still has something to teach, and the spread stays narrow
  * enough that nobody is steered toward long lessons over useful ones.
  */
+/** A lesson's length in minutes, from the same table the XP uses. */
+export function lessonMinutes(vimeoId: string): number {
+  return (lessonSeconds[vimeoId] ?? 0) / 60;
+}
+
 export function lessonXp(vimeoId: string): number {
   const seconds = lessonSeconds[vimeoId];
   if (!seconds) return 10;

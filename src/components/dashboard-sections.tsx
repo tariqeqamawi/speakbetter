@@ -53,50 +53,67 @@ export function useIsPhone(): boolean {
   return phone;
 }
 
-export function DashboardPanel({ sections }: { sections: DashboardSection[] }) {
+export function DashboardPanel({
+  sections,
+  you,
+}: {
+  sections: DashboardSection[];
+  /** The student's own card: a compact line above the strip, and the
+   *  full card as the open panel when that line is tapped. */
+  you: { compact: ReactNode; content: ReactNode };
+}) {
   const [openId, setOpenId] = useState(sections[0]?.id);
   // A section can come and go - "recent attempts" only exists once
   // there are some - so never hold a tab that isn't there any more.
-  const open = sections.find((s) => s.id === openId) ?? sections[0];
-  if (!open) return null;
+  const open = sections.find((s) => s.id === openId) ?? (openId === "you" ? undefined : sections[0]);
+  const showingYou = openId === "you";
 
   return (
     <div className="flex flex-col gap-3">
+      <button
+        type="button"
+        onClick={() => setOpenId("you")}
+        aria-current={showingYou ? "true" : undefined}
+        className={`rounded-2xl border text-left transition-colors ${
+          showingYou ? "border-ink-faint bg-navy-800" : "border-navy-600 bg-navy-800 hover:border-ink-faint"
+        }`}
+      >
+        {you.compact}
+      </button>
+
+      {/* Two rows of three, so every section is a tap away without a
+          scroll - what a rail down the side and a strip along the top
+          both failed at. */}
       <nav
         aria-label="Dashboard sections"
-        className="sticky-under-header -mx-4 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="sticky-under-header grid grid-cols-3 gap-1 rounded-2xl border border-navy-600 bg-navy-800 p-1.5"
       >
-        <div className="flex w-max gap-1 rounded-2xl border border-navy-600 bg-navy-800 p-1.5">
-          {sections.map((section) => {
-            const on = section.id === open.id;
-            return (
-              <button
-                key={section.id}
-                type="button"
-                onClick={(e) => {
-                  setOpenId(section.id);
-                  e.currentTarget.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
-                }}
-                aria-current={on ? "true" : undefined}
-                className={`flex h-10 shrink-0 items-center gap-1.5 rounded-xl px-3 text-xs font-semibold transition-colors ${
-                  on
-                    ? `bg-navy-700 ${section.accentClass}`
-                    : "text-ink-faint hover:bg-navy-850 hover:text-ink-muted"
-                }`}
-              >
-                <section.Icon className="size-4" />
-                {section.name}
-              </button>
-            );
-          })}
-        </div>
+        {sections.map((section) => {
+          const on = section.id === open?.id;
+          return (
+            <button
+              key={section.id}
+              type="button"
+              onClick={() => setOpenId(section.id)}
+              aria-current={on ? "true" : undefined}
+              className={`flex h-11 items-center justify-center gap-1.5 rounded-xl px-2 text-[0.7rem] font-semibold transition-colors ${
+                on
+                  ? `bg-navy-700 ${section.accentClass}`
+                  : "text-ink-faint hover:bg-navy-850 hover:text-ink-muted"
+              }`}
+            >
+              <section.Icon className="size-4 shrink-0" />
+              <span className="truncate">{section.name}</span>
+            </button>
+          );
+        })}
       </nav>
 
       {/* min-w-0 so a wide child - a chart, a table of attempts - scrolls
           inside the panel instead of widening the page. Every panel
           names itself in its own banner, so the strip doesn't say it
           again above them. */}
-      <div className="flex min-w-0 flex-col">{open.content}</div>
+      <div className="flex min-w-0 flex-col">{showingYou ? you.content : open?.content}</div>
     </div>
   );
 }
