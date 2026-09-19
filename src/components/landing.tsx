@@ -193,7 +193,7 @@ export function Landing() {
       {/* The coach, actually coaching */}
       <section className="flex flex-col items-center gap-4">
         <h2 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-          Watch your coach in action
+          Experience your Speak Better coach now
         </h2>
         <div className="flex max-w-2xl flex-col items-center gap-4 text-center">
           <p className="text-lg text-ink-muted text-balance">
