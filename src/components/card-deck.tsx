@@ -495,17 +495,22 @@ function ColorCarousel({
   const onPointerDown = (e: React.PointerEvent) => {
     drag.current = e.clientX;
     dragged.current = false;
+    // Hold the pointer: on a phone the thumb wanders over the cards
+    // (each a button) and off the fan, and without capture the moves
+    // stop arriving here the moment it does.
+    e.currentTarget.setPointerCapture?.(e.pointerId);
   };
   const onPointerMove = (e: React.PointerEvent) => {
     if (drag.current === null) return;
     const dx = e.clientX - drag.current;
-    if (Math.abs(dx) < 44) return;
+    if (Math.abs(dx) < 36) return;
     drag.current = e.clientX;
     dragged.current = true;
     go(dx < 0 ? 1 : -1);
   };
-  const endDrag = () => {
+  const endDrag = (e: React.PointerEvent) => {
     drag.current = null;
+    e.currentTarget.releasePointerCapture?.(e.pointerId);
   };
 
   if (!card) return null;
@@ -553,7 +558,6 @@ function ColorCarousel({
         onPointerMove={onPointerMove}
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
-        onPointerLeave={endDrag}
       >
         {cards.map((c, i) => {
           const d = i - index;
