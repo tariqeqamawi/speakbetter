@@ -55,7 +55,7 @@ export const GEMINI_VOICES: { name: string; character: string; gender: "male" | 
  * British before the lion is settled on one.
  */
 export const DEFAULT_STYLE =
-  "in a very deep, low, rumbling, gravelly baritone - a lion's voice - calm and even, steady in tone with little rise and fall, at a natural conversational pace";
+  "in an extremely deep, low, rumbling, gravelly bass-baritone - a lion's voice, rough and resonant, right down in the chest - calm and even, with little rise and fall, at a natural conversational pace";
 
 /** Directions worth trying against each other on the audition page. */
 export const STYLE_PRESETS: { label: string; style: string }[] = [
@@ -89,19 +89,13 @@ export const DEFAULT_VOICE = "Charon";
 const KEY = "speak-better-coach-voice";
 
 /**
- * How much faster than the model's own delivery the coach plays back.
+ * How much faster than the model's own delivery the coach speaks.
  * Pace in the direction is a suggestion Gemini takes loosely; this is
- * the exact part. Pitch is preserved, so the gravel stays.
+ * the exact part, applied on the server (lib/coach/stretch.ts) so the
+ * clip arrives at pace and the browser plays it straight. Pitch is
+ * preserved, so the gravel stays.
  */
 export const COACH_RATE = 1.43;
-
-/** Set the coach's pace on an element. Both rates, because loading a
- *  new src resets playbackRate to the default. */
-export function paceAudio(el: HTMLAudioElement): void {
-  el.defaultPlaybackRate = COACH_RATE;
-  el.playbackRate = COACH_RATE;
-  (el as HTMLAudioElement & { preservesPitch?: boolean }).preservesPitch = true;
-}
 
 /** The chosen voice on this browser: { voice, style }. */
 export function chosenVoice(): { voice: string; style: string } {

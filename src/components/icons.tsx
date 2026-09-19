@@ -102,6 +102,37 @@ export function SpectrumIcon({ className = "size-5" }: IconProps) {
   );
 }
 
+/** An arrow up out of a tray - a video from the library. */
+export function UploadIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M12 15.5V4.25M7.5 8.75 12 4.25l4.5 4.5" />
+      <path d="M3.75 15.5v2.25a2 2 0 0 0 2 2h12.5a2 2 0 0 0 2-2V15.5" />
+    </svg>
+  );
+}
+
+/** A paper plane - send it to the coach. */
+export function SendIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M21 3.5 3.75 10.25l7.5 2.5 2.5 7.5L21 3.5Z" />
+      <path d="m11.25 12.75 9.75-9.25" />
+    </svg>
+  );
+}
+
+/** An ear with sound arriving - listen to the feedback. */
+export function ListenIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M6.5 9.5a5.5 5.5 0 1 1 9.25 4c-1.4 1.25-2.25 2.3-2.25 4.25a2.5 2.5 0 0 1-5 0" />
+      <path d="M9.75 9.5a2.25 2.25 0 1 1 3.75 1.7" />
+      <path d="M18.5 5.25a7 7 0 0 1 1.5 4.25M20.75 3a10 10 0 0 1 2 6.5" />
+    </svg>
+  );
+}
+
 export function FilmIcon({ className = "size-5" }: IconProps) {
   return (
     <svg {...base} className={className}>

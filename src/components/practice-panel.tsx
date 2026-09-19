@@ -8,7 +8,17 @@ import { lessonByVimeoId } from "@/data/lessons";
 import { categoryById, type CategoryId } from "@/data/categories";
 import Link from "next/link";
 import { SpectrumBars, SpectrumStrip } from "@/components/spectrum";
-import { CheckIcon, CircleIcon, FilmIcon, PlayIcon, VideoIcon } from "@/components/icons";
+import {
+  CheckIcon,
+  CircleIcon,
+  ListenIcon,
+  PlayIcon,
+  RepeatIcon,
+  SendIcon,
+  UploadIcon,
+  VideoIcon,
+} from "@/components/icons";
+import { LionMouth } from "@/components/lion-mouth";
 import { RecordingsShelf } from "@/components/recordings-shelf";
 import { capturePoster, keepVideo } from "@/lib/attempt-videos";
 import { TalkingLion, type TalkingLionHandle } from "@/components/talking-lion";
@@ -32,7 +42,7 @@ type Stage =
   | { kind: "idle" }
   | { kind: "selected"; file: File; url: string; durationSec: number }
   | { kind: "uploading"; file: File; url: string; durationSec: number; percent: number }
-  | { kind: "reviewing"; file: File; url: string; durationSec: number }
+  | { kind: "reviewing"; file: File; url: string; durationSec: number; poster?: string }
   | { kind: "reviewed"; url: string; attempt: Attempt }
   | { kind: "error"; message: string };
 
@@ -123,6 +133,11 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
       }
 
       setStage({ kind: "reviewing", file, url, durationSec });
+      // The still for the watching scene, once it's ready - it was
+      // captured while the upload ran.
+      poster.then((p) => {
+        if (p) setStage((s) => (s.kind === "reviewing" ? { ...s, poster: p } : s));
+      });
       const res = await fetch("/api/review", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -241,15 +256,15 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
               className="inline-flex items-center gap-2 rounded-lg bg-ink px-5 py-2.5 text-sm font-semibold text-navy-900 transition-opacity hover:opacity-90"
             >
               <VideoIcon className="size-4" />
-              {attempts.length > 0 ? "Record another attempt" : "Record now"}
+              Record
             </button>
             <button
               type="button"
               onClick={() => pickRef.current?.click()}
               className="inline-flex items-center gap-2 rounded-lg border border-navy-600 px-5 py-2.5 text-sm font-semibold text-ink-muted transition-colors hover:text-ink"
             >
-              <FilmIcon className="size-4" />
-              Choose from library
+              <UploadIcon className="size-4" />
+              Upload
             </button>
           </div>
           <p className="text-xs text-ink-faint">
@@ -281,20 +296,24 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
             <span className="text-xs text-ink-faint">
               {fmt(stage.durationSec)} - looks good
             </span>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setStage({ kind: "idle" })}
-                className="rounded-lg border border-navy-600 px-4 py-2 text-sm font-semibold text-ink-muted transition-colors hover:text-ink"
+                aria-label="Start over"
+                title="Start over"
+                className="grid size-10 place-items-center rounded-full border border-navy-600 text-ink-muted transition-colors hover:text-ink"
               >
-                Re-record
+                <RepeatIcon className="size-4" />
               </button>
               <button
                 type="button"
                 onClick={() => submit(stage.file, stage.url, stage.durationSec)}
-                className="rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-navy-900 transition-opacity hover:opacity-90"
+                aria-label="Send to your coach"
+                title="Send to your coach"
+                className="grid size-11 place-items-center rounded-full bg-ink text-navy-900 transition-opacity hover:opacity-90"
               >
-                Submit for review
+                <SendIcon className="size-5" />
               </button>
             </div>
           </div>
@@ -315,18 +334,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
         </div>
       )}
 
-      {stage.kind === "reviewing" && (
-        <div className="flex flex-col items-center gap-3 rounded-xl border border-navy-600 bg-navy-800 p-8 text-center">
-          <div className="spectrum-rule h-1 w-24 animate-pulse rounded-full" />
-          <p className="text-sm text-ink-muted">
-            Your coach is watching your performance…
-          </p>
-          <p className="text-xs text-ink-faint text-balance">
-            Watching and listening properly takes a minute or two. Stay on
-            this page.
-          </p>
-        </div>
-      )}
+      {stage.kind === "reviewing" && <WatchingCoach poster={stage.poster} />}
 
       {stage.kind === "reviewed" && (
         <Feedback
@@ -739,11 +747,16 @@ function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => v
       if (u) {
         setUrl(u);
         setState("ready");
-      } else setState("failed");
+      } else {
+        // No voice - the text stands in, and the verdict follows it.
+        setState("failed");
+        onVerdict();
+      }
     });
     return () => {
       alive = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spoken]);
 
   const hear = () => {
@@ -764,16 +777,18 @@ function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => v
         }}
         className="scale-90"
       />
-      {state === "loading" && (
-        <p className="text-xs text-ink-faint">Your coach is getting ready to talk you through it…</p>
-      )}
-      {state === "ready" && (
+      {(state === "loading" || state === "ready") && (
         <button
           type="button"
           onClick={hear}
-          className="rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-navy-900 transition-opacity hover:opacity-90"
+          disabled={state === "loading"}
+          className="inline-flex items-center gap-2.5 rounded-full bg-ink py-2 pl-2 pr-5 text-sm font-semibold text-navy-900 transition-opacity hover:opacity-90 disabled:opacity-60"
         >
-          Hear your review
+          <span className="grid size-8 place-items-center overflow-hidden rounded-full bg-navy-900/10">
+            <LionMouth level={0} className="w-8 translate-y-0.5" />
+          </span>
+          <ListenIcon className="size-4" />
+          {state === "loading" ? "Getting your feedback…" : "Play feedback"}
         </button>
       )}
       {(state === "playing" || state === "done") && (
@@ -782,15 +797,40 @@ function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => v
       {state === "failed" && (
         <p className="max-w-prose text-center text-sm text-ink-muted">{spoken}</p>
       )}
-      {state !== "done" && (
-        <button
-          type="button"
-          onClick={onVerdict}
-          className="text-xs font-medium text-ink-faint underline-offset-4 hover:text-ink hover:underline"
-        >
-          Skip to the verdict
-        </button>
-      )}
+    </div>
+  );
+}
+
+/**
+ * The wait while the coach watches: the lion beside a still from the
+ * student's own upload, eyes going side to side. It makes the minute
+ * feel like what it is - someone watching - rather than a spinner.
+ */
+function WatchingCoach({ poster }: { poster?: string }) {
+  return (
+    <div className="flex flex-col items-center gap-4 rounded-xl border border-navy-600 bg-navy-800 p-6 text-center">
+      <div className="flex items-center justify-center gap-4">
+        <div className="relative h-36 w-24 overflow-hidden rounded-lg bg-navy-950 ring-1 ring-navy-600">
+          {poster ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={poster} alt="A still from your recording" className="size-full object-cover" />
+          ) : (
+            <div className="size-full animate-pulse bg-navy-700" />
+          )}
+          <div className="watching-scan absolute inset-x-0 h-8" />
+        </div>
+        <div className="watching-eyes" aria-hidden>
+          <span className="watching-eye"><span className="watching-pupil" /></span>
+          <span className="watching-eye"><span className="watching-pupil" /></span>
+        </div>
+        <div className="watching-lion w-28">
+          <LionMouth level={0} className="w-full" />
+        </div>
+      </div>
+      <p className="text-sm text-ink">Your coach is watching your video…</p>
+      <p className="text-xs text-ink-faint text-balance">
+        Watching and listening properly takes a minute or two. Stay on this page.
+      </p>
     </div>
   );
 }

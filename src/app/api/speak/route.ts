@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { createHash } from "node:crypto";
 import { GoogleGenAI } from "@google/genai";
-import { DEFAULT_DIRECTION, DEFAULT_VOICE, GEMINI_VOICES } from "@/lib/coach/voice";
+import { COACH_RATE, DEFAULT_DIRECTION, DEFAULT_VOICE, GEMINI_VOICES } from "@/lib/coach/voice";
+import { timeStretch } from "@/lib/coach/stretch";
 
 // The coach speaks: a line of feedback as audio, in the chosen stock
 // voice, directed in words. Gemini's TTS returns raw 24 kHz 16-bit PCM;
-// it goes back as a WAV so an <audio> element plays it without help.
+// it's brought up to the coach's pace here (lib/coach/stretch.ts - the
+// browser's own playbackRate chopped words on a phone) and goes back as
+// a WAV so an <audio> element plays it without help.
 //
 // A line is billed once per function instance: the same text in the
 // same voice comes from a small cache, so replaying a review, or the
@@ -54,7 +57,7 @@ export async function POST(request: Request) {
   const voice = GEMINI_VOICES.some((v) => v.name === body.voice) ? body.voice! : DEFAULT_VOICE;
   const style = String(body.style ?? DEFAULT_DIRECTION).trim().slice(0, 320);
 
-  const key = createHash("sha1").update(`${MODEL}|${voice}|${style}|${text}`).digest("hex");
+  const key = createHash("sha1").update(`${MODEL}|${voice}|${style}|${COACH_RATE}|${text}`).digest("hex");
   const hit = cache.get(key);
   if (hit) return audio(hit, true);
 
@@ -73,7 +76,10 @@ export async function POST(request: Request) {
     if (!data) throw new Error("no audio");
     const mime = part?.inlineData?.mimeType ?? "audio/L16;rate=24000";
     const rate = Number(/rate=(\d+)/.exec(mime)?.[1] ?? 24000);
-    const out = wav(Buffer.from(data, "base64"), rate);
+    const raw = Buffer.from(data, "base64");
+    const pcm = new Int16Array(raw.buffer, raw.byteOffset, Math.floor(raw.length / 2));
+    const paced = timeStretch(pcm, COACH_RATE);
+    const out = wav(Buffer.from(paced.buffer, paced.byteOffset, paced.length * 2), rate);
     if (cache.size >= CACHE_MAX) cache.delete(cache.keys().next().value!);
     cache.set(key, out);
     return audio(out, false);

@@ -1,7 +1,6 @@
 "use client";
 
 import { LionMouth } from "@/components/lion-mouth";
-import { paceAudio } from "@/lib/coach/voice";
 import { Soundwave } from "@/components/soundwave";
 import {
   forwardRef,
@@ -288,7 +287,6 @@ export const TalkingLion = forwardRef<
       if (!el || !ctx) return;
       await ctx.resume().catch(() => {});
       if (el.src !== audioSrc) el.src = audioSrc;
-      paceAudio(el);
       el.muted = false;
       el.currentTime = 0;
       setFinished(false); // a replay clears the summary until it's earned

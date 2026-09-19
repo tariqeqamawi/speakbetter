@@ -7,7 +7,7 @@ import type { CategoryId } from "@/data/categories";
 import type { Level } from "@/lib/store";
 import { categories } from "@/data/categories";
 import { lessonByVimeoId } from "@/data/lessons";
-import { passBar, type CoachVerdict } from "./rubric";
+import { levelAllowance, passBar, type CoachVerdict } from "./rubric";
 
 export interface ReviewNote {
   category: CategoryId;
@@ -112,7 +112,10 @@ export function shapeVerdict(
     evidence: String(c.evidence ?? ""),
   }));
   const allMet = criteria.length > 0 && criteria.every((c) => c.met);
-  const score = clamp(verdict.score);
+  // The model's score is level-blind; the level's allowance goes on
+  // here, and a brief not met keeps the model's own ceiling.
+  const lifted = clamp(verdict.score) + levelAllowance(level);
+  const score = allMet ? Math.min(100, lifted) : Math.min(55, lifted);
   const passed = allMet && score >= passBar(level);
 
   // The verdict is the app's to give, and it's given last - the whole

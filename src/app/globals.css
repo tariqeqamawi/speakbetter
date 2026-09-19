@@ -1299,3 +1299,74 @@ svg.soundwave-c {
     var(--color-advanced)
   );
 }
+
+/* The coach watching: a scan line down the student's still, a pair of
+   eyes tracking side to side, the lion leaning in and out. */
+.watching-scan {
+  background: linear-gradient(180deg, transparent, color-mix(in oklab, var(--color-mindset) 35%, transparent), transparent);
+  animation: watching-scan 2.8s ease-in-out infinite;
+}
+
+@keyframes watching-scan {
+  0% {
+    top: -2rem;
+  }
+  100% {
+    top: 100%;
+  }
+}
+
+.watching-eyes {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.watching-eye {
+  display: grid;
+  place-items: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 9999px;
+  background: var(--color-ink);
+}
+
+.watching-pupil {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 9999px;
+  background: var(--color-navy-900);
+  animation: watching-look 2.4s ease-in-out infinite;
+}
+
+@keyframes watching-look {
+  0%,
+  100% {
+    transform: translateX(-0.22rem);
+  }
+  45%,
+  55% {
+    transform: translateX(0.22rem);
+  }
+}
+
+.watching-lion {
+  animation: watching-lean 2.4s ease-in-out infinite;
+}
+
+@keyframes watching-lean {
+  0%,
+  100% {
+    transform: translateX(-3px) rotate(-1.5deg);
+  }
+  50% {
+    transform: translateX(3px) rotate(1.5deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .watching-scan,
+  .watching-pupil,
+  .watching-lion {
+    animation: none;
+  }
+}

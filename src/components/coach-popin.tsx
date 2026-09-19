@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useStore } from "@/lib/store";
 import { buildContext } from "@/lib/encouragement";
 import { hapticTap } from "@/lib/feedback-fx";
-import { paceAudio, speakUrl } from "@/lib/coach/voice";
+import { speakUrl } from "@/lib/coach/voice";
 
 // The coach, dropping in unprompted to say something true about how the
 // student is doing. Deliberately rationed - at most once a day, only
@@ -128,7 +128,6 @@ export function CoachPopIn() {
     if (url && audioRef.current === el) {
       el.pause();
       el.src = url;
-      paceAudio(el);
       el.muted = false;
       el.onended = () => {
         settle();
