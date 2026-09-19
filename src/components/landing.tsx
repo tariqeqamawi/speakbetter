@@ -43,6 +43,18 @@ export function Landing() {
           />
           <Soundwave variant="hero" className="-mt-1 h-16 w-full sm:h-24" />
         </div>
+        {/* What this is, before the line - the visitor should know what
+            they're looking at before it starts persuading them. */}
+        <div className="flex max-w-2xl flex-col items-center gap-2">
+          <span className="text-[0.7rem] font-bold uppercase tracking-[0.35em] text-structure">
+            A new system for mastering public speaking
+          </span>
+          <p className="text-lg text-ink text-balance sm:text-xl">
+            Overcome fear and shyness in minutes rather than months, in a fully gamified,
+            interactive app: short lessons from one teacher, on-camera challenges, and a coach
+            who watches every take.
+          </p>
+        </div>
         <h1 className="grid max-w-2xl text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
           <span className="hero-line hero-line-first">
             You don&apos;t learn to sing by going to concerts.
