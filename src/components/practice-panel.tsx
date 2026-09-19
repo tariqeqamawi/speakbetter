@@ -272,13 +272,13 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
       {trialBlocked && (
         <UpgradePanel
           title="This challenge is part of the course"
-          body="The free baseline covers the two baseline challenges. The rest of the STORY journey - all twenty-four challenges, every lesson, the deck - comes with Foundations, and the coach who watches every take with Coached."
+          body="The free baseline covers the two baseline challenges. The rest of the STORY journey - all twenty-four challenges, every lesson, the deck - comes with Starter, and the coach who watches every take with the Full Experience."
         />
       )}
       {trialSpent && !trialBlocked && stage.kind === "idle" && (
         <UpgradePanel
           title="Your free review is used"
-          body="That was the coach watching your take - the score, the spectrum, what to do next. Every take gets that with Coached; the method itself is one payment with Foundations."
+          body="That was the coach watching your take - the score, the spectrum, what to do next. Every take gets that with the Full Experience; the method itself is one payment with Starter."
           cta="Unlock the rest of the journey"
         />
       )}

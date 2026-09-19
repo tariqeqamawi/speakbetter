@@ -22,7 +22,7 @@ export interface Category {
    */
   code: string;
   /** The name at a glance - what fits a dial label or a tab without
-   *  wrapping: "Storytelling", "Figurative", "Speaker's mindset". */
+   *  wrapping: "Storytelling", "Acting skills", "Speaker's mindset". */
   short: string;
   colorName: string;
   blurb: string;
@@ -46,7 +46,7 @@ export const categories: Category[] = [
   {
     id: "figurative",
     name: "Figurative language",
-    short: "Figurative",
+    short: "Figurative language",
     code: "IMAGE",
     colorName: "Bright orange",
     blurb: "Metaphor, simile, hyperbole, analogy - language that paints instead of describes.",

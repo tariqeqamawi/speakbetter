@@ -72,12 +72,12 @@ export function LandingShowcase() {
         </ul>
       </section>
 
-      {/* The app, in your hand - three short films of the real pages */}
+      {/* A preview of the app - three short films of the real pages */}
       <section className="flex flex-col items-center gap-4">
-        <h2 className="text-2xl font-semibold tracking-tight">The app, in your hand</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">A preview of how the app looks and feels</h2>
         <p className="max-w-lg text-center text-ink-muted">
-          The real pages, with a worked-in student behind them: the journey, the skills dial into a color&apos;s
-          lessons, and the dashboard tab by tab.
+          Your STORY challenge journey; the skills and lesson videos, reached through a colour-coded dial; and
+          your gamified student dashboard - your trophies, your streak, the speaking spectrum, and more.
         </p>
         <div className="-mx-4 flex w-[calc(100%+2rem)] gap-6 overflow-x-auto px-4 pb-2 sm:mx-0 sm:w-full sm:justify-center sm:overflow-visible sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <Phone label="The journey">

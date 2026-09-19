@@ -118,6 +118,7 @@ export const challenges: Challenge[] = [
     baseline: true,
     title: "Record Your Speaking Baseline",
     vimeoId: "1081200493",
+    maxSeconds: 120,
     brief:
       "Speak your truth to the camera for up to two minutes - no preparation, no polish. This is your starting point on the map.",
     criteria: [

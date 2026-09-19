@@ -153,7 +153,7 @@ export function AskCoach() {
         <SectionBanner image="/sections/trophies-lion.jpg" title="Ask your coach" Icon={ListenIcon} accentClass="text-advanced" large />
         <div className="p-5">
           <UpgradePanel
-            title="Ask your coach comes with Coached"
+            title="Ask your coach comes with the Full Experience"
             body="Hold to ask how your speaking is developing and the coach answers from your own record - every take, every note - aloud. It's part of the membership, with the coach who watches every take."
           />
         </div>

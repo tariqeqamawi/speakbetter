@@ -12,13 +12,16 @@ import {
   SpeedIcon,
   ZoomPortraitIcon,
 } from "@/components/player-icons";
-import { UnlockButton } from "@/components/unlock-button";
 import { Pricing } from "@/components/pricing";
 import { LandingShowcase } from "@/components/landing-showcase";
 import { OriginStory } from "@/components/origin-story";
 import Link from "next/link";
 import { CoachDemo } from "@/components/coach-demo";
 import { SpectrumDemo } from "@/components/spectrum-demo";
+import { HeroBeat } from "@/components/hero-beat";
+import { RoarMark } from "@/components/roar-mark";
+import { LionMouth } from "@/components/lion-mouth";
+import { FirstChallenge } from "@/components/first-challenge";
 
 // The landing page (master plan §15): promo video as centerpiece,
 // pay-to-unlock, straight into the app. Promo video choice is an open
@@ -32,47 +35,48 @@ export function Landing() {
 
       {/* Hero */}
       <section className="flex flex-col items-center gap-6 text-center">
-        {/* The mark, with its soundwave alive rather than printed */}
+        {/* The mark, alive: the lion roars every ten seconds (the brand
+            clip, lion and mic only - the wave beneath is the live one),
+            and holds still for anyone who asked for less motion. */}
         <div className="flex w-full max-w-md flex-col items-center">
-          <Image
-            src="/logo-mark.png"
-            alt="Speak Better"
-            width={320}
-            height={256}
-            priority
-            className="h-24 w-auto sm:h-32"
-          />
-          <Soundwave variant="hero" className="-mt-1 h-16 w-full sm:h-24" />
+          <RoarMark className="h-44 w-auto sm:h-64 lg:h-72" />
+          <Soundwave variant="hero" className="-mt-3 h-16 w-full sm:-mt-4 sm:h-24" />
         </div>
-        {/* The manifesto, before the line - who this is for, and what's
-            on the other side of it. */}
+
+        {/* The promise, in one breath - then the rest in one more. */}
         <div className="flex max-w-2xl flex-col items-center gap-3">
-          <span className="text-[0.7rem] font-bold uppercase tracking-[0.35em] text-figurative">
-            Step into your true colors
-          </span>
-          <p className="text-xl font-medium leading-snug text-ink text-balance sm:text-2xl">
-            There&apos;s a lion waiting to roar. That&apos;s you in your fullest expression - no fear, no
-            hesitation, full confidence, and the ability to deliver at a level of mastery with no notes
-            and no notice.
+          <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
+            Master public speaking in minutes, not months.
+          </h1>
+          <p className="text-xl font-medium text-figurative text-balance sm:text-2xl">
+            Step into your true power as a speaker. Let your true colors shine and roar from screen or stage.
           </p>
-          <p className="text-lg text-ink-muted text-balance">
-            That is what&apos;s waiting on the other side of Speak Better: a new system for mastering public
-            speaking, unlike anything you&apos;ve tried before. Overcome fear and shyness in minutes rather
-            than months, in a fully gamified, interactive app - short lessons from one teacher, on-camera
-            challenges, and a coach who watches every take.
+          <p className="max-w-xl text-lg text-ink-muted text-balance">
+            Overcome fears, nerves and shyness in a fully gamified, interactive app. Watch short one-to-two-minute
+            lessons and upload one-to-two-minute challenges. Now you don&apos;t only get to learn - you get to
+            practice, and a space to do it in.
           </p>
         </div>
-        <h1 className="grid max-w-2xl text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
-          <span className="hero-line hero-line-first">
-            You don&apos;t learn to sing by going to concerts.
-          </span>
-          <span className="hero-line hero-line-second">
-            So you won&apos;t become a speaker by only watching videos.
-          </span>
-        </h1>
-        <p className="max-w-xl text-lg text-ink-muted text-balance">
-          Speak Better is built on practice: short lessons, real on-camera
-          challenges, and feedback in full color.
+
+        {/* The premise and its punchline, each with its picture: the
+            concert you watch from your seat, the lecture that ticks by. */}
+        <HeroBeat />
+
+        {/* The other side of it. */}
+        <p className="max-w-2xl text-xl font-medium leading-snug text-ink text-balance sm:text-2xl">
+          Imagine the cameras are rolling, the audience is waiting, the stage is set - and you have no fear, no
+          nerves, just full confidence and the ability to deliver at a level of mastery with no notes and no
+          notice.{" "}
+          <span className="text-figurative">This is the reality waiting for you on the other side of Speak Better.</span>
+        </p>
+        <p className="max-w-2xl text-lg text-ink-muted text-balance">
+          Master public speaking - overcome fear and shyness in minutes rather than months - in a fully
+          gamified, interactive learning experience like no other: short nano lessons, on-camera challenges,
+          and a coach trained in the methodology that watches your every take and gives you detailed feedback.
+        </p>
+        <p className="max-w-xl text-sm text-ink-faint text-balance">
+          Speak Better is built on practice: short lessons, real on-camera challenges, and true interactive
+          feedback based on your physical and spoken performance.
         </p>
         {/* The value, counted - what's in the box, before the box is
             opened below. */}
@@ -104,7 +108,10 @@ export function Landing() {
           />
         </div>
         <div className="flex flex-col items-center gap-2">
-          <UnlockButton plan="trial">Start with the free baseline</UnlockButton>
+          <a href="#try" className="cta-neon-wrap rounded-xl">
+            <span className="cta-neon-glow rounded-xl" aria-hidden />
+            <span className="cta-neon block rounded-xl px-7 py-3.5 text-sm">Try the first challenge free</span>
+          </a>
           <a href="#pricing" className="text-xs font-medium text-ink-faint underline-offset-4 hover:text-ink hover:underline">
             See what&apos;s included
           </a>
@@ -190,7 +197,7 @@ export function Landing() {
               </li>
               <li className="flex items-start gap-3">
                 <CheckIcon className="mt-0.5 size-4 shrink-0 text-mindset" />
-                Feedback in full color, minutes after you try
+                True interactive feedback on your physical and spoken performance, minutes after you try
               </li>
             </ul>
           </div>
@@ -276,85 +283,62 @@ export function Landing() {
         <LessonGallery />
       </section>
 
-      {/* Why the lion */}
-      <section className="flex flex-col items-center gap-6 rounded-2xl border border-navy-600 bg-navy-800 p-6 text-center sm:p-10">
-        <Image
-          src="/logo-full.png"
-          alt="The Speak Better lion, its mane in full color above a soundwave"
-          width={1000}
-          height={972}
-          className="h-40 w-auto sm:h-52"
-        />
-        <blockquote className="max-w-xl text-xl font-semibold leading-relaxed text-balance sm:text-2xl">
-          Fear and falsity ring flat. Step into your full expression, and your
-          true colors roar.
-        </blockquote>
-        <p className="max-w-lg text-sm leading-relaxed text-ink-muted">
-          That&apos;s the whole ethos behind the mark. The lion is the voice
-          that stopped apologizing for itself; the mane is every color of
-          speaking you have in you, all of it showing at once; the wave beneath
-          is the sound it makes in a room. A flat talk is a mane with one color
-          in it - and you were never one color.
-        </p>
-      </section>
-
       {/* How Speak Better came to be - four moments, zigzagging */}
       <OriginStory />
 
-      {/* A mentor in your pocket - the portrait zoom, demonstrated */}
-      <section className="flex flex-col items-center gap-8 rounded-2xl border border-navy-600 bg-navy-800 p-6 sm:flex-row sm:justify-center sm:gap-14 sm:p-10">
-        {/* The phone. Inside it, the same lesson twice: letterboxed the
-            way landscape video normally plays on a phone, then zoomed to
-            portrait the way this player can - cycling so the difference
-            demonstrates itself. */}
-        <div className="relative w-52 shrink-0 rounded-[2.5rem] border-4 border-navy-600 bg-navy-950 p-1.5 shadow-2xl shadow-navy-950">
-          <span className="absolute left-1/2 top-3 z-10 h-1.5 w-16 -translate-x-1/2 rounded-full bg-navy-700" />
-          <div className="relative aspect-[9/19] overflow-hidden rounded-[2rem] bg-navy-950">
-            {/* letterboxed */}
-            <span className="pz-a absolute inset-0 flex items-center">
-              <span className="relative aspect-video w-full">
-                <Image
-                  src="/thumbs/1080612884.jpg"
-                  alt=""
-                  fill
-                  sizes="200px"
-                  className="object-cover"
-                />
+      {/* Two mentors in your pocket - the coach on one phone, the
+          teacher zoomed to portrait on the other */}
+      <section className="flex flex-col items-center gap-8 rounded-2xl border border-navy-600 bg-navy-800 p-6 sm:p-10 lg:flex-row lg:justify-center lg:gap-14">
+        <div className="flex shrink-0 items-end gap-4 sm:gap-6">
+          {/* The lion, as the coach page shows it: large, a line of its
+              review beneath in the colour of the skill it names. */}
+          <div className="relative w-44 shrink-0 rounded-[2.2rem] border-4 border-navy-600 bg-navy-950 p-1.5 shadow-2xl shadow-navy-950 sm:w-52">
+            <span className="absolute left-1/2 top-3 z-10 h-1.5 w-14 -translate-x-1/2 rounded-full bg-navy-700" />
+            <div className="relative flex aspect-[9/19] flex-col items-center justify-center gap-3 overflow-hidden rounded-[1.8rem] bg-navy-950 px-3">
+              <span className="absolute inset-x-0 top-6 text-center text-[0.55rem] font-semibold uppercase tracking-wider text-advanced">
+                Your coach
               </span>
-              <span className="absolute inset-x-0 top-6 text-center text-[0.55rem] uppercase tracking-wider text-ink-faint">
-                Landscape on a phone
+              <LionMouth level={0} className="w-[82%]" />
+              <p className="text-center text-[0.7rem] leading-snug text-ink">
+                Your hands drew the loaf - <span className="font-semibold text-body-language">the gesture</span> was
+                doing the describing with you.
+              </p>
+              <span className="absolute inset-x-3 bottom-3 flex items-center justify-center gap-1.5 rounded-full border border-advanced/50 bg-navy-900 py-1.5 text-[0.6rem] font-semibold text-advanced">
+                <PlayFillIcon className="size-2.5" />
+                Listen to your coach
               </span>
-            </span>
-            {/* zoomed to portrait */}
-            <span className="pz-b absolute inset-0">
+            </div>
+          </div>
+          {/* The teacher, zoomed to portrait, the zoom button lit. */}
+          <div className="relative w-44 shrink-0 rounded-[2.2rem] border-4 border-navy-600 bg-navy-950 p-1.5 shadow-2xl shadow-navy-950 sm:w-52">
+            <span className="absolute left-1/2 top-3 z-10 h-1.5 w-14 -translate-x-1/2 rounded-full bg-navy-700" />
+            <div className="relative aspect-[9/19] overflow-hidden rounded-[1.8rem] bg-navy-950">
               <Image
                 src="/thumbs/1080612884.jpg"
-                alt=""
+                alt="Tariq, teaching a lesson, zoomed to fill a phone held upright"
                 fill
-                sizes="200px"
-                className="scale-[1.15] object-cover"
+                sizes="208px"
+                className="scale-[1.15] object-cover object-[50%_30%]"
               />
               <span className="absolute inset-x-0 top-6 text-center text-[0.55rem] font-semibold uppercase tracking-wider text-body-language">
                 Zoomed to portrait
               </span>
-            </span>
-
-            {/* the player's own controls, portrait zoom lit */}
-            <span className="absolute inset-x-2 bottom-2 z-10 flex flex-col gap-1.5 rounded-xl border border-navy-600 bg-navy-900/90 p-2">
-              <span className="spectrum-rule h-0.5 w-full rounded-full opacity-70" />
-              <span className="flex items-center justify-between px-1 text-ink-muted">
-                <PlayFillIcon className="size-3.5" />
-                <SpeedIcon className="size-3.5" />
-                <span className="rounded-md bg-navy-700 p-1 text-body-language ring-1 ring-body-language/50">
-                  <ZoomPortraitIcon className="size-3.5" />
+              <span className="absolute inset-x-2 bottom-2 z-10 flex flex-col gap-1.5 rounded-xl border border-navy-600 bg-navy-900/90 p-2">
+                <span className="spectrum-rule h-0.5 w-full rounded-full opacity-70" />
+                <span className="flex items-center justify-between px-1 text-ink-muted">
+                  <PlayFillIcon className="size-3.5" />
+                  <SpeedIcon className="size-3.5" />
+                  <span className="rounded-md bg-navy-700 p-1 text-body-language ring-1 ring-body-language/50">
+                    <ZoomPortraitIcon className="size-3.5" />
+                  </span>
+                  <FullscreenIcon className="size-3.5" />
                 </span>
-                <FullscreenIcon className="size-3.5" />
               </span>
-            </span>
+            </div>
           </div>
         </div>
 
-        <div className="flex max-w-md flex-col gap-3 text-center sm:text-left">
+        <div className="flex max-w-md flex-col gap-3 text-center lg:text-left">
           <h2 className="text-2xl font-semibold tracking-tight text-balance">
             Two mentors in your pocket
           </h2>
@@ -382,23 +366,27 @@ export function Landing() {
           Your STORY journey
         </h2>
         <p className="max-w-lg text-center text-ink-muted">
-          Twenty-one challenges across five phases. Hover a letter to see
-          exactly what you&apos;ll be asked to do.
+          Twenty-four challenges across five phases. Pick a phase, then a challenge, and see its page the way
+          you&apos;ll find it inside - the brief, the lessons behind it, and the record button.
         </p>
         <StoryPreview />
       </section>
+
+      {/* The first challenge, live - the free baseline as the thing
+          itself rather than a description of it */}
+      <FirstChallenge />
 
       {/* Pricing */}
       <section id="pricing" className="flex flex-col items-center gap-6">
         <div className="flex flex-col items-center gap-2 text-center">
           <div className="spectrum-rule h-1 w-16 rounded-full" />
-          <h2 className="text-2xl font-semibold tracking-tight">Start free. Keep the method. Add the coach.</h2>
+          <h2 className="text-2xl font-semibold tracking-tight">Keep the method. Add the coach.</h2>
           <p className="max-w-md text-sm text-ink-muted">
-            Record your baseline for nothing and get one real review. Then choose how far to take it.
+            The first challenge above is free. Then choose how far to take it.
           </p>
         </div>
         <div className="w-full">
-          <Pricing />
+          <Pricing hideTrial />
         </div>
         <Link href="/pricing" className="text-xs font-semibold text-ink-muted underline-offset-4 hover:text-ink hover:underline">
           Compare the tiers in full →

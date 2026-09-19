@@ -38,6 +38,8 @@ export const features: Feature[] = [
 export interface Tier {
   id: Exclude<Plan, "trial">;
   name: string;
+  /** A qualifier under the name, in brackets - what "Ultimate" means. */
+  sub?: string;
   /** What it's for, in a line. */
   tagline: string;
   price: string;
@@ -61,32 +63,33 @@ const founders = [...coached, "live", "cohort", "printed", "book", "first"];
 export const tiers: Tier[] = [
   {
     id: "foundations",
-    name: "Foundations",
+    name: "Starter",
     tagline: "The method, yours for good.",
     price: "$149",
     term: "one payment, lifetime access",
     has: foundations,
     accent: "mindset",
-    cta: "Get Foundations",
+    cta: "Get Starter",
   },
   {
     id: "coached",
-    name: "Coached",
+    name: "Full Experience",
     tagline: "A coach who watches every take.",
     price: "$29",
     term: "a month - or $249 a year, two months free",
     featured: true,
     has: coached,
     accent: "structure",
-    cta: "Start Coached",
-    note: "Cancel any time. Foundations stays yours.",
+    cta: "Start the Full Experience",
+    note: "Cancel any time. Starter stays yours.",
   },
   {
     id: "founders",
-    name: "Founders",
+    name: "Ultimate",
+    sub: "Founders complete set, including the physical card deck and the physical book",
     tagline: "The whole system, with the teacher in the room.",
     price: "$599",
-    term: "one payment - a year of Coached included",
+    term: "one payment - a year of the Full Experience included",
     has: founders,
     accent: "storytelling",
     cta: "Join the Founders cohort",
@@ -96,11 +99,12 @@ export const tiers: Tier[] = [
 
 /** What the free baseline lets a student do before paying. */
 export const trial = {
-  name: "The free baseline",
+  name: "Experience Speak Better",
   includes: [
-    "Record the two baseline challenges - the 'before' you'll be measured against",
+    "The first challenge, live: upload a video of yourself speaking and get the feedback directly from the coach",
     "One real review from the AI coach: your score, your seven-color spectrum, what to do next",
-    "The lessons those challenges lean on",
+    "The lessons that challenge leans on",
+    "See it in action before you ever pull out your card",
   ],
-  cta: "Start with the free baseline",
+  cta: "Try the first challenge free",
 } as const;

@@ -4,8 +4,8 @@ import { challenges, type Challenge } from "@/data/challenges";
 
 // What a student's plan lets them do (data/pricing.ts). The free
 // baseline: the two baseline challenges, the lessons they lean on, and
-// one real review. Foundations: the whole course with the standing
-// coach's written feedback, no video review. Coached and Founders:
+// one real review. Foundations ("Starter"): the whole course with the standing
+// coach's written feedback, no video review. Coached ("Full Experience") and Founders ("Ultimate"):
 // everything. States from before plans existed count as Coached.
 
 export function planOf(state: Pick<AppState, "plan" | "unlocked">): Plan {

@@ -15,7 +15,7 @@ export function LessonGate({ vimeoId, children }: { vimeoId: string; children: R
     return (
       <UpgradePanel
         title="This lesson is part of the course"
-        body="The free baseline includes the lessons your baseline challenges lean on. All eighty-one - the seven colors, the deck, every challenge - come with Foundations, one payment, yours for good."
+        body="The free baseline includes the lessons your baseline challenges lean on. All eighty-one - the seven colors, the deck, every challenge - come with Starter, one payment, yours for good."
       />
     );
   return <>{children}</>;
