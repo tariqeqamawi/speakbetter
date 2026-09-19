@@ -33,6 +33,7 @@ import { SectionBanner } from "@/components/section-banner";
 import { setPendingReview } from "@/lib/push-client";
 import { studentId } from "@/lib/student-id";
 import { PushPrompt } from "@/components/push-prompt";
+import { TakeRecorder, canRecordInApp } from "@/components/take-recorder";
 import { RecordingsShelf } from "@/components/recordings-shelf";
 import { capturePoster, keepVideo } from "@/lib/attempt-videos";
 import { TalkingLion, type TalkingLionHandle } from "@/components/talking-lion";
@@ -81,6 +82,8 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
   // one without it makes the camera a second tap away.
   const recordRef = useRef<HTMLInputElement>(null);
   const pickRef = useRef<HTMLInputElement>(null);
+  // The in-app recorder, with the clock; the camera app is the fallback.
+  const [recorder, setRecorder] = useState(false);
 
   if (!ready) return null;
   if (challenge.passive) return <PassiveProgress challenge={challenge} />;
@@ -89,6 +92,14 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
   const best = bestAttempt(challenge.slug);
   const latest = latestAttempt(challenge.slug);
   const limit = maxSecondsFor(challenge);
+
+  // A take recorded in the app arrives with its length known - a
+  // MediaRecorder file often reports none - so it skips the probe.
+  const onRecorded = (file: File, durationSec: number) => {
+    setRecorder(false);
+    const url = URL.createObjectURL(file);
+    setStage({ kind: "selected", file, url, durationSec });
+  };
 
   const onFile = (file: File | undefined) => {
     if (!file) return;
@@ -276,6 +287,18 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
         />
       )}
 
+      {recorder && (
+        <TakeRecorder
+          limitSec={limit}
+          onDone={onRecorded}
+          onFallback={() => {
+            setRecorder(false);
+            recordRef.current?.click();
+          }}
+          onClose={() => setRecorder(false)}
+        />
+      )}
+
       {stage.kind === "idle" && (!gate || gate.open) && (
         <div className="flex flex-col items-start gap-3 rounded-xl border border-navy-600 bg-navy-800 p-5">
           <p className="text-sm text-ink-muted">
@@ -303,7 +326,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={() => recordRef.current?.click()}
+              onClick={() => (canRecordInApp() ? setRecorder(true) : recordRef.current?.click())}
               className="inline-flex items-center gap-2 rounded-lg bg-acting px-5 py-2.5 text-sm font-semibold text-navy-900 shadow-[0_0_22px_-4px_var(--color-acting)] transition-[box-shadow,opacity] hover:opacity-90 hover:shadow-[0_0_28px_-2px_var(--color-acting)]"
             >
               <VideoIcon className="size-4" />

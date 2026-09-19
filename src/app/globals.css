@@ -1509,3 +1509,40 @@ svg.soundwave-c {
     opacity: 0.45;
   }
 }
+
+/* The take's clock: a live dot while recording, and the whole clock
+   pulsing in the last ten seconds. */
+.take-rec-dot {
+  animation: take-rec-dot 1.2s ease-in-out infinite;
+}
+
+@keyframes take-rec-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.take-clock-alarm {
+  animation: take-clock-alarm 1s ease-in-out infinite;
+}
+
+@keyframes take-clock-alarm {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  50% {
+    box-shadow: 0 0 18px 2px var(--color-acting);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .take-rec-dot,
+  .take-clock-alarm {
+    animation: none;
+  }
+}
