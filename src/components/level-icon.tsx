@@ -7,13 +7,15 @@ import type { Level } from "@/lib/store";
 
 export const levelMeta: Record<
   Level,
-  { label: string; feeling: string; detail: string; accentClass: string }
+  { label: string; feeling: string; detail: string; looksFor: string; accentClass: string }
 > = {
   beginner: {
     label: "Beginner",
     feeling: "Nervous and shy",
     detail:
       "Focused feedback - just the two or three things that matter most right now.",
+    looksFor:
+      "Coach looks for the basic implementation of the lessons and skills each challenge asks for. Did you attempt them? Two or three notes, and the pass bar is within reach.",
     accentClass: "text-storytelling",
   },
   intermediate: {
@@ -21,6 +23,8 @@ export const levelMeta: Record<
     feeling: "Fairly confident",
     detail:
       "The same focused feedback, plus the full set of coach notes whenever you want them.",
+    looksFor:
+      "You're expected to show up with more of the spectrum of speaking skills - more colours in every take, for more dynamic performances. Coach names the techniques you used without being asked, and reaches into other lessons that would lift the next take.",
     accentClass: "text-figurative",
   },
   advanced: {
@@ -28,6 +32,8 @@ export const levelMeta: Record<
     feeling: "Very confident - give me a stage",
     detail:
       "The hardest thresholds. Near full-spectrum talks are the bar.",
+    looksFor:
+      "Coach listens for nuance and detail: how you project your voice and whether it's resonant - speaking from the belly, in your dropped-in register, holding the level to the end of every line - your eye contact with the lens, whether your hand gestures accurately describe what you're saying, and whether you paint visually what you're describing in words.",
     accentClass: "text-acting",
   },
 };

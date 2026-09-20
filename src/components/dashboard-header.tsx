@@ -181,7 +181,7 @@ export function DashboardHeader() {
               {levelOpen && (
                 <div
                   role="listbox"
-                  className="absolute left-0 top-full z-30 mt-2 w-72 overflow-hidden rounded-xl border border-navy-500 bg-navy-900 shadow-2xl shadow-navy-950/80"
+                  className="absolute left-0 top-full z-30 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-navy-500 bg-navy-900 shadow-2xl shadow-navy-950/80"
                 >
                   {levelOrder.map((option) => {
                     const meta = levelMeta[option];
@@ -215,6 +215,7 @@ export function DashboardHeader() {
                           <span className="text-[0.7rem] leading-snug text-ink-muted">
                             {meta.detail}
                           </span>
+                          <span className="mt-1 text-[0.65rem] leading-snug text-ink-faint">{meta.looksFor}</span>
                         </span>
                       </button>
                     );

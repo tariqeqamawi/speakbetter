@@ -84,6 +84,7 @@ export default function WelcomePage() {
                     </b>{" "}
                     - {meta.detail}
                   </span>
+                  <span className="text-xs leading-snug text-ink-faint">{meta.looksFor}</span>
                 </span>
               </button>
             );

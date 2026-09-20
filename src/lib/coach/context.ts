@@ -13,6 +13,7 @@ import { contentFor } from "@/data/card-content";
 import { takeaways } from "@/data/takeaways";
 import transcripts from "@/data/transcripts.json";
 import type { Level } from "@/lib/store";
+import { describeVoice, type VoiceProfile } from "@/lib/voice-profile";
 import { COACH_BRIEF, categoryGuide, levelGuide } from "./rubric";
 
 const transcriptById = new Map(
@@ -92,6 +93,7 @@ export function buildContext(
   level: Level,
   attemptNumber: number,
   durationSec: number,
+  voice?: VoiceProfile,
 ): CoachContext | null {
   const challenge = challengeBySlug.get(slug);
   if (!challenge) return null;
@@ -132,6 +134,8 @@ export function buildContext(
         ? " This take is shorter than the challenge expects: credit the time given, then say plainly what length it would take (see LENGTH)."
         : ""
     }`,
+    "",
+    ...(voice ? ["", describeVoice(voice)] : []),
     "",
     "## Success criteria (judge each one)",
     ...challenge.criteria.map((c, i) => `${i + 1}. ${c}`),

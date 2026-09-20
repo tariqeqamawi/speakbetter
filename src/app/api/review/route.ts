@@ -8,6 +8,7 @@ import { coachAvailable, coachModel, review } from "@/lib/coach/gemini";
 import { mockReview } from "@/lib/coach/mock";
 import { shapeVerdict } from "@/lib/coach/shape";
 import type { Level } from "@/lib/store";
+import type { VoiceProfile } from "@/lib/voice-profile";
 
 // ─────────────────────────────────────────────────────────────────────
 // The AI review - build plan Phase 4, master plan §07.
@@ -43,6 +44,8 @@ interface ReviewRequest {
    *  for them if they've left the page, and a note sent (lib/server/push). */
   studentId?: string;
   attemptId?: string;
+  /** Measured on the phone from the recording's audio (lib/voice-profile). */
+  voice?: VoiceProfile | null;
 }
 
 /** What's configured - true/false only, never the values. */
@@ -79,7 +82,7 @@ export async function POST(request: Request) {
     return NextResponse.json(mock);
   }
 
-  const context = buildContext(body.challengeSlug, level, body.attemptNumber ?? 1, Math.round(body.durationSec));
+  const context = buildContext(body.challengeSlug, level, body.attemptNumber ?? 1, Math.round(body.durationSec), body.voice ?? undefined);
   if (!context) return NextResponse.json({ error: "Unknown challenge" }, { status: 400 });
 
   // The recording, from the private store.

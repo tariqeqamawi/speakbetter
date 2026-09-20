@@ -24,6 +24,7 @@ import {
   SkillsIcon,
   SpectrumIcon,
   TrendingUpIcon,
+  TrophyIcon,
   XIcon,
   RepeatIcon,
   SendIcon,
@@ -39,6 +40,7 @@ import { UpgradePanel } from "@/components/upgrade-panel";
 import { TRIAL_REVIEWS, hasCoach, onTrial, trialAllowsChallenge, trialReviewsUsed } from "@/lib/plan";
 import { RecordingsShelf } from "@/components/recordings-shelf";
 import { capturePoster, keepVideo } from "@/lib/attempt-videos";
+import { measureVoice } from "@/lib/voice-profile";
 import { TalkingLion, type TalkingLionHandle } from "@/components/talking-lion";
 import { speakUrl } from "@/lib/coach/voice";
 
@@ -140,6 +142,10 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
     // A frame for the shelf, taken while the coach is watching - the
     // wait is there anyway.
     const poster = capturePoster(url, durationSec);
+    // What the microphone can measure - pitch, its range, how the
+    // ends of phrases fall, where the weight of the voice sits -
+    // worked out here while the file uploads, and sent up with it.
+    const voice = measureVoice(file).catch(() => null);
     try {
       // The recording goes phone-to-store; the server only issues the
       // permission. Where uploads aren't configured (a preview without
@@ -197,6 +203,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
           contentType: file.type || undefined,
           studentId: studentId(),
           attemptId,
+          voice: await voice,
         }),
       });
       if (!res.ok) {
@@ -698,27 +705,23 @@ export function Feedback({
               if (!lesson) return null;
               const cat = categoryById.get(lesson.category);
               return (
-                <li key={l.lessonId} className="flex flex-col gap-1 text-sm">
-                  <span className="flex items-center gap-2">
-                    <span className={`size-2 shrink-0 rounded-full ${cat?.bgClass ?? ""}`} />
-                    <Link
-                      href={lessonHref(lesson)}
-                      className="flex-1 font-medium text-ink underline-offset-4 hover:underline"
-                    >
-                      {lesson.title}
-                    </Link>
-                    <span className="h-1.5 w-16 shrink-0 overflow-hidden rounded-full bg-navy-700">
-                      <span
-                        className={`block h-full rounded-full ${cat?.bgClass ?? "bg-ink"} ${l.used ? "" : "opacity-30"}`}
-                        style={{ width: `${l.used ? Math.max(8, l.quality * 10) : 0}%` }}
-                      />
-                    </span>
-                    <span className="w-9 shrink-0 text-right text-xs tabular-nums text-ink-faint">
-                      {l.used ? `${l.quality}/10` : "–"}
+                <li key={l.lessonId} className="flex flex-col gap-1.5 text-sm">
+                  <span className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                    <LessonLink lesson={lesson} />
+                    <span className="ml-auto flex shrink-0 items-center gap-2">
+                      <span className="h-1.5 w-16 overflow-hidden rounded-full bg-navy-700">
+                        <span
+                          className={`block h-full rounded-full ${cat?.bgClass ?? "bg-ink"} ${l.used ? "" : "opacity-30"}`}
+                          style={{ width: `${l.used ? Math.max(8, l.quality * 10) : 0}%` }}
+                        />
+                      </span>
+                      <span className="w-9 text-right text-xs tabular-nums text-ink-faint">
+                        {l.used ? `${l.quality}/10` : "–"}
+                      </span>
                     </span>
                   </span>
                   {l.evidence && (
-                    <span className="pl-4 text-xs text-ink-faint">{l.evidence}</span>
+                    <span className="text-xs text-ink-faint">{l.evidence}</span>
                   )}
                 </li>
               );
@@ -747,23 +750,19 @@ export function Feedback({
                 if (!lesson) return null;
                 const cat = categoryById.get(lesson.category);
                 return (
-                  <li key={s.lessonId} className="flex flex-col gap-0.5 text-sm">
-                    <span className="flex items-center gap-2">
-                      <span className={`size-2 shrink-0 rounded-full ${cat?.bgClass ?? ""}`} />
-                      {s.at && (
-                        <span className="rounded bg-navy-700 px-1 py-0.5 text-[0.65rem] font-semibold tabular-nums text-ink-muted">
-                          {s.at}
-                        </span>
-                      )}
-                      <Link
-                        href={lessonHref(lesson)}
-                        className="flex-1 font-medium text-ink underline-offset-4 hover:underline"
-                      >
-                        {lesson.title}
-                      </Link>
-                      <span className="text-xs tabular-nums text-ink-faint">{s.quality}/10</span>
+                  <li key={s.lessonId} className="flex flex-col gap-1.5 text-sm">
+                    <span className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                      <LessonLink lesson={lesson} />
+                      <span className="ml-auto flex shrink-0 items-center gap-2">
+                        {s.at && (
+                          <span className="rounded bg-navy-700 px-1 py-0.5 text-[0.65rem] font-semibold tabular-nums text-ink-muted">
+                            {s.at}
+                          </span>
+                        )}
+                        <span className={`text-xs tabular-nums ${cat?.textClass ?? "text-ink-faint"}`}>{s.quality}/10</span>
+                      </span>
                     </span>
-                    {s.evidence && <span className="pl-4 text-xs text-ink-faint">{s.evidence}</span>}
+                    {s.evidence && <span className="text-xs text-ink-faint">{s.evidence}</span>}
                   </li>
                 );
               })}
@@ -803,14 +802,20 @@ export function Feedback({
 
       {settled && (
         <div
-          className={`coach-cue rounded-xl border p-4 transition-opacity ${
+          className={`coach-cue relative overflow-hidden rounded-xl border p-4 transition-opacity ${
             verdictShown ? "opacity-100" : "opacity-0"
           } ${attempt.passed ? "border-mindset/40 bg-mindset/10" : "border-storytelling/40 bg-storytelling/10"}`}
           aria-live="polite"
         >
           {verdictShown && (
             <>
-              <p className={`text-sm font-semibold ${attempt.passed ? "text-mindset" : "text-storytelling"}`}>
+              {attempt.passed && <BarConfetti />}
+              <p className={`relative flex items-center gap-2 text-sm font-semibold ${attempt.passed ? "text-mindset" : "text-storytelling"}`}>
+                {attempt.passed ? (
+                  <TrophyIcon className="size-5 shrink-0 drop-shadow-[0_0_6px_currentColor]" />
+                ) : (
+                  <RepeatIcon className="size-4 shrink-0" />
+                )}
                 {attempt.passed ? "Congratulations - you've passed this challenge." : "Didn't pass this time."}
               </p>
               <p className="mt-1 text-sm text-ink-muted">
@@ -1182,6 +1187,38 @@ function WatchingCoach({ poster }: { poster?: string }) {
         Watching and listening properly takes a minute or two - {percent}% of the usual wait. Stay on this page.
       </p>
     </div>
+  );
+}
+
+/** A little confetti inside the verdict bar - a few dozen pieces in the
+ *  seven colours falling through the box for a few seconds, so the
+ *  pass has its own small celebration even when the splash has gone.
+ *  CSS only; each piece is a span. */
+function BarConfetti() {
+  const pieces = Array.from({ length: 28 }, (_, i) => ({
+    left: (i * 37) % 100,
+    delay: ((i * 53) % 100) / 100,
+    dur: 2.6 + ((i * 29) % 100) / 60,
+    color: ["storytelling", "figurative", "acting", "structure", "mindset", "body-language", "advanced"][i % 7],
+    w: 4 + (i % 3) * 2,
+  }));
+  return (
+    <span aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+      {pieces.map((p, i) => (
+        <span
+          key={i}
+          className="bar-confetti absolute -top-3 block rounded-[1px]"
+          style={{
+            left: `${p.left}%`,
+            width: p.w,
+            height: p.w * 1.6,
+            background: `var(--color-${p.color})`,
+            animationDelay: `${p.delay}s`,
+            animationDuration: `${p.dur}s`,
+          }}
+        />
+      ))}
+    </span>
   );
 }
 

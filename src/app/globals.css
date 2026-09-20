@@ -1797,6 +1797,36 @@ html.bare .demo-banner {
   }
 }
 
+/* Confetti inside the verdict bar: a piece falls the height of the box,
+ * tumbling, and fades - four passes, then still. */
+.bar-confetti {
+  opacity: 0;
+  animation: bar-confetti 3s ease-in 4;
+}
+
+@keyframes bar-confetti {
+  0% {
+    opacity: 0;
+    transform: translateY(0) rotate(0deg);
+  }
+  8% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(6rem) rotate(540deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar-confetti {
+    animation: none;
+  }
+}
+
 /* A lesson stepping into the middle of the library's shelf. */
 .gallery-in {
   animation: gallery-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
