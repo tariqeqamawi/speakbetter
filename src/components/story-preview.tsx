@@ -163,7 +163,7 @@ export function StoryPreview() {
           <div className="flex flex-col items-start gap-2.5 rounded-xl border border-navy-600 bg-navy-800 p-4">
             <p className="text-xs text-ink-muted">
               Record yourself here - selfie mode, {limitLabel} at most - or choose one you&apos;ve already recorded,
-              and your coach will review it.
+              and Coach will review it.
             </p>
             <div className="flex flex-wrap gap-2">
               <a

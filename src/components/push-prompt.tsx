@@ -62,7 +62,7 @@ export function PushPrompt() {
         ) : (
           <>
             <p className="text-sm text-ink">
-              Want a note when your review is ready? Your coach would also send an evening nudge if a streak is
+              Want a note when your review is ready? Coach would also send an evening nudge if a streak is
               on the line, and a word when you&apos;re close to the next rank. Nothing else.
             </p>
             <div className="flex gap-2">

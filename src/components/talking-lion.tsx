@@ -499,7 +499,7 @@ export const TalkingLion = forwardRef<
               : "border-navy-600 bg-navy-800 px-5 py-2.5 text-sm text-ink hover:bg-navy-700"
         }`}
       >
-        {speaking ? "Stop" : blocked ? "Tap to listen to the coach" : "Listen to the coach"}
+        {speaking ? "Stop" : blocked ? "Tap to listen to Coach" : "Listen to Coach"}
       </button>
       )}
       {blocked && (

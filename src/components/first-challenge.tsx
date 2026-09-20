@@ -57,7 +57,7 @@ export function FirstChallenge() {
         <h2 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">Experience Speak Better</h2>
         <p className="text-lg text-ink-muted text-balance">
           For free, here is the first challenge: upload a video of yourself speaking and get the feedback directly
-          from the coach. See it in action before you ever pull out your card.
+          from &ldquo;Coach&rdquo; - the lion. See it in action before you ever pull out your card.
         </p>
       </div>
 

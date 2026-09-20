@@ -3,7 +3,7 @@ import { AskCoach } from "@/components/ask-coach";
 import { CoachHistory } from "@/components/coach-history";
 
 export const metadata: Metadata = {
-  title: "Your coach",
+  title: "Coach",
 };
 
 // The coach's own page (master plan §07): talk to the coach, and read
@@ -14,9 +14,9 @@ export default function CoachPage() {
   return (
     <div className="flex flex-col gap-6 py-6">
       <header className="flex flex-col gap-2">
-        <h1 className="text-3xl font-semibold tracking-tight">Your coach</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">Meet &ldquo;Coach&rdquo;</h1>
         <p className="max-w-lg text-ink-muted">
-          Ask how your speaking is developing, and read back every review your coach has given you.
+          The lion who watches every take. Ask how your speaking is developing, and read back every review Coach has given you.
         </p>
       </header>
       <AskCoach />

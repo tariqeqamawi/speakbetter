@@ -77,6 +77,47 @@ export function AskCoach() {
     };
   };
 
+  // Coach speaks first. Once per opening of the page: how many times
+  // today is counted on the device, the greeting is written live from
+  // the record, and the lion says it - autoplay where the browser
+  // allows it (the tap on the pill usually counts), a tap otherwise.
+  const greeted = useRef(false);
+  useEffect(() => {
+    if (!ready || greeted.current) return;
+    greeted.current = true;
+    let visits = 1;
+    try {
+      const key = `speak-better-coach-visits:${new Date().toISOString().slice(0, 10)}`;
+      visits = Number(window.localStorage.getItem(key) ?? 0) + 1;
+      window.localStorage.setItem(key, String(visits));
+    } catch {}
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ greeting: { visitsToday: visits }, record: record(), displayName: state.displayName, level: state.level }),
+        });
+        const json = (await res.json()) as { answer?: string };
+        if (!alive || !res.ok || !json.answer) return;
+        setAnswer(json.answer);
+        const spoken = await speakUrl(json.answer);
+        if (!alive) return;
+        if (spoken) {
+          setUrl(spoken);
+          setPhase("answering");
+        }
+      } catch {
+        // A greeting that fails is no greeting - the page works without it.
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready]);
+
   const ask = async (payload: { audio?: { data: string; mimeType: string }; question?: string }) => {
     setPhase("thinking");
     setError(null);
@@ -102,11 +143,11 @@ export function AskCoach() {
         setPhase("answering");
       } else {
         setPhase("failed");
-        setError("Your coach lost its voice for a moment - the answer is written below.");
+        setError("Coach lost his voice for a moment - the answer is written below.");
       }
     } catch (e) {
       setPhase("failed");
-      setError(e instanceof Error && e.message !== "no answer" ? e.message : "Your coach didn't catch that - try asking again.");
+      setError(e instanceof Error && e.message !== "no answer" ? e.message : "Coach didn't catch that - try asking again.");
     }
   };
 
@@ -150,11 +191,11 @@ export function AskCoach() {
   if (!hasCoach(state))
     return (
       <section className="flex flex-col overflow-hidden rounded-2xl border border-navy-600 bg-navy-800">
-        <SectionBanner image="/sections/trophies-lion.jpg" title="Ask your coach" Icon={ListenIcon} accentClass="text-advanced" large />
+        <SectionBanner image="/sections/trophies-lion.jpg" title="Ask Coach" Icon={ListenIcon} accentClass="text-advanced" large />
         <div className="p-5">
           <UpgradePanel
-            title="Ask your coach comes with the Full Experience"
-            body="Hold to ask how your speaking is developing and the coach answers from your own record - every take, every note - aloud. It's part of the membership, with the coach who watches every take."
+            title="Ask Coach comes with the Full Experience"
+            body="Hold to ask how your speaking is developing and Coach answers from your own record - every take, every note - aloud. It's part of the membership, with the coach who watches every take."
           />
         </div>
       </section>
@@ -162,11 +203,11 @@ export function AskCoach() {
 
   return (
     <section className="flex flex-col overflow-hidden rounded-2xl border border-navy-600 bg-navy-800">
-      <SectionBanner image="/sections/trophies-lion.jpg" title="Ask your coach" Icon={ListenIcon} accentClass="text-advanced" large />
+      <SectionBanner image="/sections/trophies-lion.jpg" title="Ask Coach" Icon={ListenIcon} accentClass="text-advanced" large />
       <div className="flex flex-col gap-4 p-5">
         <p className="text-sm text-ink-muted">
           Ask how your speaking is developing - &ldquo;how have I been improving over my last few takes?&rdquo;,
-          &ldquo;what keeps coming up?&rdquo; - and your coach answers from your own record: every take, every note.
+          &ldquo;what keeps coming up?&rdquo; - and Coach answers from your own record: every take, every note.
         </p>
 
         <TalkingLion
@@ -226,9 +267,9 @@ export function AskCoach() {
               {phase === "listening"
                 ? "Listening… let go when you're done"
                 : phase === "thinking"
-                  ? "Your coach is looking at your record…"
+                  ? "Coach is looking at your record…"
                   : phase === "answering"
-                    ? "Your coach is answering"
+                    ? "Coach is answering"
                     : "Hold to ask"}
             </button>
           )}
@@ -245,7 +286,7 @@ export function AskCoach() {
             <input
               value={typed}
               onChange={(e) => setTyped(e.target.value)}
-              placeholder={canTalk ? "Or type a question" : "Type a question for your coach"}
+              placeholder={canTalk ? "Or type a question" : "Type a question for Coach"}
               maxLength={300}
               className="min-w-0 flex-1 rounded-lg border border-navy-600 bg-navy-950 px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:border-ink-faint focus:outline-none"
             />

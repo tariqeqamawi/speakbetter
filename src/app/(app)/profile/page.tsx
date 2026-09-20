@@ -318,7 +318,7 @@ export default function DashboardPage() {
             return (
               <li key={attempt.id}>
                 <Link
-                  href={`/challenges/${attempt.challengeSlug}`}
+                  href={`/review/${attempt.id}`}
                   className="flex items-center gap-3 rounded-lg border border-navy-600 bg-navy-800 px-3 py-2.5 transition-colors hover:bg-navy-700"
                 >
                   {/* A frame of the recording, from this device's own

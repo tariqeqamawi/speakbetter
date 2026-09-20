@@ -23,7 +23,7 @@ export function CoachHistory() {
     <section className="flex flex-col overflow-hidden rounded-2xl border border-navy-600 bg-navy-800">
       <SectionBanner
         image="/sections/challenges.jpg"
-        title="What your coach has said"
+        title="What Coach has said"
         Icon={FilmIcon}
         accentClass="text-structure"
         right={
@@ -35,7 +35,7 @@ export function CoachHistory() {
       <div className="flex flex-col gap-3 p-5">
         {attempts.length === 0 && (
           <p className="text-sm text-ink-muted">
-            Nothing yet - record a challenge and your coach&apos;s review lands here, to read back any time.
+            Nothing yet - record a challenge and Coach&apos;s review lands here, to read back any time.
           </p>
         )}
         {attempts.map((a) => {
@@ -84,12 +84,20 @@ export function CoachHistory() {
                       ))}
                     </ul>
                   )}
-                  <Link
-                    href={`/challenges/${a.challengeSlug}`}
-                    className="self-start text-xs font-semibold text-ink-muted underline-offset-4 hover:text-ink hover:underline"
-                  >
-                    Go to this challenge →
-                  </Link>
+                  <span className="flex flex-wrap gap-3">
+                    <Link
+                      href={`/review/${a.id}`}
+                      className="rounded-lg bg-ink px-3 py-1.5 text-xs font-semibold text-navy-900 transition-opacity hover:opacity-90"
+                    >
+                      Open the full review
+                    </Link>
+                    <Link
+                      href={`/challenges/${a.challengeSlug}`}
+                      className="self-center text-xs font-semibold text-ink-muted underline-offset-4 hover:text-ink hover:underline"
+                    >
+                      Go to this challenge →
+                    </Link>
+                  </span>
                 </div>
               )}
             </article>

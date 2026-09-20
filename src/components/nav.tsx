@@ -59,7 +59,7 @@ function CoachButton() {
   return (
     <Link
       href="/coach"
-      title="Your AI coach - ask a question, read back your reviews"
+      title="Coach - ask a question, read back your reviews"
       className={`coach-pill flex min-h-11 items-center gap-2 rounded-full py-1 pl-1 pr-3.5 hover:scale-[1.03] active:scale-[0.98] ${
         on ? "ring-2 ring-ink/70" : ""
       }`}
@@ -67,7 +67,7 @@ function CoachButton() {
       <span className="grid size-9 place-items-center overflow-hidden rounded-full bg-navy-950/25">
         <LionMouth level={0} className="w-10 translate-y-0.5" />
       </span>
-      <span className="text-xs font-bold tracking-wide text-navy-950">AI Coach</span>
+      <span className="text-xs font-bold tracking-wide text-navy-950">Coach</span>
     </Link>
   );
 }

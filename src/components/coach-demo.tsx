@@ -1,7 +1,6 @@
 "use client";
 
 import { categories, categoryById, type CategoryId } from "@/data/categories";
-import { SectionBanner } from "@/components/section-banner";
 import { SpectrumBars } from "@/components/spectrum";
 import { LessonLink } from "@/components/practice-panel";
 import { TalkingLion, type SpokenCue } from "@/components/talking-lion";
@@ -141,21 +140,32 @@ const SPOKEN =
   "Well done for getting this recorded - a full ninety seconds, standing, to a lens. That's not nothing. Two things worked. You dropped us straight into the kitchen, no build-up: that's the life-scene lesson, the scene not the story, and it's why we were with you from the first line. And when you described the bread, your hands drew the loaf - the width of it, the weight - so the gesture was doing the describing with you. Nice shirt, by the way. The blue works on camera. For next time: the middle third stayed at one volume. Your hands went quiet there too, right at the line that mattered. Drop to almost a whisper on that line, and bring one hand back up to paint it, and the rest will sound louder for it. The brief asked for one story with a beginning and an end - you had both. And that means... congratulations. You've passed this challenge.";
 
 function DemoSection({
-  image,
   title,
   Icon,
   accentClass,
   children,
 }: {
-  image: string;
   title: string;
   Icon: (props: { className?: string }) => React.ReactNode;
   accentClass: string;
   children: React.ReactNode;
 }) {
+  // The same header the review wears inside: the icon in a tinted
+  // ring, a large plain title, a rule in the section's colour - no
+  // picture competing with the data.
+  const accentVar = `var(--color-${accentClass.replace("text-", "")})`;
   return (
-    <section className="flex flex-col overflow-hidden rounded-2xl border border-navy-600 bg-navy-900/40">
-      <SectionBanner image={image} title={title} Icon={Icon} accentClass={accentClass} />
+    <section className="flex flex-col overflow-hidden rounded-2xl border border-navy-600 bg-navy-900/60">
+      <div className="flex items-center gap-3">
+        <span
+          className={`ml-4 grid size-10 shrink-0 place-items-center rounded-full border ${accentClass}`}
+          style={{ borderColor: `color-mix(in oklab, ${accentVar} 45%, transparent)`, background: `color-mix(in oklab, ${accentVar} 12%, transparent)` }}
+        >
+          <Icon className="size-5" />
+        </span>
+        <h3 className="py-3.5 pl-1 text-lg font-semibold tracking-tight text-ink sm:text-xl">{title}</h3>
+      </div>
+      <span aria-hidden className="mx-4 h-px" style={{ background: `linear-gradient(90deg, ${accentVar}, transparent)`, opacity: 0.5 }} />
       <div className="p-4">{children}</div>
     </section>
   );
@@ -197,7 +207,7 @@ export function CoachDemo() {
           </span>
         </div>
 
-        <DemoSection image="/sections/challenges.jpg" title="What worked" Icon={CheckCircleIcon} accentClass="text-mindset">
+        <DemoSection title="What worked" Icon={CheckCircleIcon} accentClass="text-mindset">
           <ul className="flex flex-col gap-3">
             {SAMPLE_WORKED.map((n) => (
               <li key={n.note} className="flex items-start gap-2 text-sm text-ink">
@@ -214,11 +224,11 @@ export function CoachDemo() {
           </ul>
         </DemoSection>
 
-        <DemoSection image="/sections/spectrum.jpg" title={`Your color spectrum - ${lit} of 7 lit up`} Icon={SpectrumIcon} accentClass="text-body-language">
+        <DemoSection title={`Your color spectrum - ${lit} of 7 lit up`} Icon={SpectrumIcon} accentClass="text-body-language">
           <SpectrumBars spectrum={SAMPLE_SPECTRUM} required={["storytelling", "mindset"]} />
         </DemoSection>
 
-        <DemoSection image="/sections/lessons.jpg" title="The lessons this challenge asked for" Icon={SkillsIcon} accentClass="text-storytelling">
+        <DemoSection title="The lessons this challenge asked for" Icon={SkillsIcon} accentClass="text-storytelling">
           <ul className="flex flex-col gap-3">
             {SAMPLE_LESSONS.map((l) => (
               <li key={l.lesson.vimeoId} className="flex flex-col gap-1.5 text-sm">
@@ -233,7 +243,7 @@ export function CoachDemo() {
           </ul>
         </DemoSection>
 
-        <DemoSection image="/sections/streak.jpg" title="For next time - do more of this" Icon={TrendingUpIcon} accentClass="text-structure">
+        <DemoSection title="For next time - do more of this" Icon={TrendingUpIcon} accentClass="text-structure">
           <ul className="flex flex-col gap-3">
             {SAMPLE_NOTES.map((n) => (
               <li key={n.category} className="flex items-start gap-2 text-sm text-ink">

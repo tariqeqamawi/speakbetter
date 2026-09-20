@@ -312,7 +312,7 @@ export function TakeRecorder({
                 can only score what it can see. */}
             {!recording && phase === "ready" && (
               <p className="rounded-full border border-body-language/40 bg-navy-900/80 px-3 py-1 text-center text-[0.65rem] font-medium text-body-language">
-                Prop the phone up so your hands and body are in frame - the coach scores what it can see
+                Prop the phone up so your hands and body are in frame - Coach scores what he can see
               </p>
             )}
             <div className="relative grid size-24 place-items-center">

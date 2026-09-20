@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useId, useRef, useState } from "react";
 import { upload } from "@vercel/blob/client";
 import { useStore, type Attempt, type FeedbackNote } from "@/lib/store";
 import { GRACE_SECONDS, maxSecondsFor, storyPhases, type Challenge } from "@/data/challenges";
@@ -278,7 +278,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
       {trialSpent && !trialBlocked && stage.kind === "idle" && (
         <UpgradePanel
           title="Your free review is used"
-          body="That was the coach watching your take - the score, the spectrum, what to do next. Every take gets that with the Full Experience; the method itself is one payment with Starter."
+          body="That was Coach watching your take - the score, the spectrum, what to do next. Every take gets that with the Full Experience; the method itself is one payment with Starter."
           cta="Unlock the rest of the journey"
         />
       )}
@@ -335,7 +335,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
             {limit >= 120
               ? `${limitLabel(limit)} at most, and shorter is better`
               : `${limitLabel(limit)} at most`}
-            {" "}- or choose one you&apos;ve already recorded, and your coach will review it.
+            {" "}- or choose one you&apos;ve already recorded, and Coach will review it.
           </p>
           <input
             ref={recordRef}
@@ -371,7 +371,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
             </button>
           </div>
           <p className="text-xs text-ink-faint">
-            Your video goes to your coach for review and is deleted the
+            Your video goes to Coach for review and is deleted the
             moment the review is back - it&apos;s never stored by us. The
             feedback is what&apos;s kept, and your last three recordings
             stay on this device so you can watch them back.
@@ -395,28 +395,26 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
       {stage.kind === "selected" && (
         <div className="flex flex-col gap-3 rounded-xl border border-navy-600 bg-navy-800 p-5">
           <video src={stage.url} controls playsInline className="w-full rounded-lg bg-navy-950" />
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <span className="text-xs text-ink-faint">
-              {fmt(stage.durationSec)} - looks good
+              {fmt(stage.durationSec)} recorded - happy with it?
             </span>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setStage({ kind: "idle" })}
-                aria-label="Start over"
-                title="Start over"
-                className="grid size-10 place-items-center rounded-full border border-navy-600 text-ink-muted transition-colors hover:text-ink"
+                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-navy-600 px-4 text-sm font-semibold text-ink-muted transition-colors hover:text-ink"
               >
                 <RepeatIcon className="size-4" />
+                Redo
               </button>
               <button
                 type="button"
                 onClick={() => submit(stage.file, stage.url, stage.durationSec)}
-                aria-label="Send to your coach"
-                title="Send to your coach"
-                className="grid size-11 place-items-center rounded-full bg-ink text-navy-900 transition-opacity hover:opacity-90"
+                className="inline-flex min-h-11 items-center gap-2 rounded-full bg-acting px-5 text-sm font-bold text-navy-950 shadow-[0_0_22px_-4px_var(--color-acting)] transition-[box-shadow,opacity] hover:opacity-90 hover:shadow-[0_0_28px_-2px_var(--color-acting)]"
               >
-                <SendIcon className="size-5" />
+                <SendIcon className="size-4" />
+                Send it
               </button>
             </div>
           </div>
@@ -425,14 +423,10 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
 
       {stage.kind === "uploading" && (
         <div className="flex flex-col items-center gap-3 rounded-xl border border-navy-600 bg-navy-800 p-8 text-center">
-          <div className="h-1 w-48 overflow-hidden rounded-full bg-navy-700">
-            <div
-              className="spectrum-rule h-full rounded-full transition-[width] duration-300"
-              style={{ width: `${Math.max(4, stage.percent)}%` }}
-            />
-          </div>
+          <p className="working-word text-lg font-bold tracking-tight">Sending it</p>
+          <NeonBar percent={stage.percent} />
           <p className="text-sm text-ink-muted">
-            Sending your video to your coach… {stage.percent}%
+            Your video is on its way to Coach - {stage.percent}%
           </p>
         </div>
       )}
@@ -467,7 +461,10 @@ function AttemptCard({
   required: CategoryId[];
 }) {
   return (
-    <div className="flex flex-col gap-2 rounded-xl border border-navy-600 bg-navy-800 p-4">
+    <Link
+      href={`/review/${attempt.id}`}
+      className="flex flex-col gap-2 rounded-xl border border-navy-600 bg-navy-800 p-4 transition-colors hover:border-ink-faint"
+    >
       <div className="flex items-baseline justify-between">
         <span className="text-xs font-medium uppercase tracking-wider text-ink-faint">
           {label}
@@ -481,13 +478,25 @@ function AttemptCard({
         <SpectrumWave values={attempt.spectrum} className="h-20 w-full" animate={false} highlight={required} />
       </span>
       <SpectrumKey spectrum={attempt.spectrum} required={required} />
-      <span className="text-xs text-ink-faint">
-        {new Date(attempt.at).toLocaleDateString()} ·{" "}
-        {attempt.passed ? "passed" : "not passed"}
+      <span className="flex items-center justify-between text-xs text-ink-faint">
+        <span>
+          {new Date(attempt.at).toLocaleDateString()} · {attempt.passed ? "passed" : "not passed"}
+        </span>
+        <span className="font-semibold text-ink-muted">Open the review →</span>
       </span>
-    </div>
+    </Link>
   );
 }
+
+/**
+ * Where a lesson named in a review leads. Inside a review, a lesson
+ * opens on the review's own lesson page - the lessons the coach named,
+ * and a way back - rather than in the library, where the review would
+ * be lost behind it. Provided by Feedback; the default is the library.
+ */
+export const LessonHrefContext = createContext<(lesson: { vimeoId: string; category: string }) => string>(
+  (l) => `/skills/${l.category}/${l.vimeoId}`,
+);
 
 export function Feedback({
   attempt,
@@ -495,6 +504,7 @@ export function Feedback({
   challenge,
   onDone,
   preview = false,
+  revisit = false,
 }: {
   attempt: Attempt;
   videoUrl: string;
@@ -502,12 +512,14 @@ export function Feedback({
   /** A sample review shown for its own sake (/demo/review): no XP
    *  splash, no push prompt, no "try again". */
   preview?: boolean;
+  /** A review opened again later (/review/[id]): everything already
+   *  landed, so no reveal, no splash, no "try again". */
+  revisit?: boolean;
   onDone: () => void;
 }) {
   const challengeTitle = challenge.title;
   const { state } = useStore();
   const canRevealAll = state.level !== "beginner"; // §08/§09: nested reveal
-  const [reviewStyle, setReviewStyle] = useReviewStyle();
   const litCount = categories.filter((c) => (attempt.spectrum[c.id] ?? 0) >= 40).length;
   const neededLit = challenge.targetSkills.filter((c) => (attempt.spectrum[c] ?? 0) >= 40).length;
 
@@ -515,8 +527,9 @@ export function Feedback({
   // the score counts up, the verdict arrives, the notes follow. Same
   // data throughout - the anticipation is the reward, and it's free.
   const reduceMotion =
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    revisit ||
+    (typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   const [barsShown, setBarsShown] = useState(reduceMotion ? 7 : 0);
   const [shownScore, setShownScore] = useState(reduceMotion ? attempt.score : 0);
   const barsDone = barsShown >= 7;
@@ -543,7 +556,7 @@ export function Feedback({
   // The verdict comes last - the whole review first, then the line
   // they were waiting for. Where there's a spoken review it lands
   // when the coach reaches it; otherwise a beat after the notes.
-  const [verdictShown, setVerdictShown] = useState(reduceMotion || preview || !attempt.spoken);
+  const [verdictShown, setVerdictShown] = useState(reduceMotion || preview || revisit || !attempt.spoken);
   useEffect(() => {
     if (!settled || verdictShown || attempt.spoken) return;
     const t = setTimeout(() => setVerdictShown(true), 1400);
@@ -552,7 +565,7 @@ export function Feedback({
 
   // The XP splash, a beat after the verdict: what this take earned,
   // and what a better one would. Once per review.
-  const [splash, setSplash] = useState<"pending" | "shown" | "done" | "off">(preview ? "off" : "pending");
+  const [splash, setSplash] = useState<"pending" | "shown" | "done" | "off">(preview || revisit ? "off" : "pending");
   useEffect(() => {
     if (!verdictShown || splash !== "pending") return;
     const t = setTimeout(() => setSplash("shown"), 900);
@@ -582,7 +595,7 @@ export function Feedback({
       `Focus on next:`,
       ...attempt.focus.map(noteLine),
       ...(canRevealAll
-        ? [``, `Everything the coach noticed:`, ...attempt.fullNotes.map(noteLine)]
+        ? [``, `Everything Coach noticed:`, ...attempt.fullNotes.map(noteLine)]
         : []),
     ];
     const blob = new Blob([lines.join("\n")], { type: "text/plain" });
@@ -593,7 +606,11 @@ export function Feedback({
     URL.revokeObjectURL(a.href);
   };
 
+  const lessonHref = (l: { vimeoId: string; category: string }) =>
+    preview ? `/skills/${l.category}/${l.vimeoId}` : `/review/${attempt.id}/lessons/${l.vimeoId}`;
+
   return (
+    <LessonHrefContext.Provider value={lessonHref}>
     <div className="flex flex-col gap-4 rounded-xl border border-navy-600 bg-navy-800 p-5">
       <div className="flex items-center justify-between">
         <div className="flex flex-col">
@@ -641,17 +658,13 @@ export function Feedback({
         />
       )}
 
-      {settled && <ReviewStylePicker style={reviewStyle} onChange={setReviewStyle} />}
-
       {settled && attempt.strengths && attempt.strengths.length > 0 && (
         <ReviewSection
-          image="/sections/challenges.jpg"
           title="What worked"
-          summary={`${attempt.strengths.length} thing${attempt.strengths.length === 1 ? "" : "s"} your coach saw working`}
+          summary={`${attempt.strengths.length} thing${attempt.strengths.length === 1 ? "" : "s"} Coach saw working`}
           Icon={CheckCircleIcon}
           accentClass="text-mindset"
           delay={100}
-          style={reviewStyle}
         >
           <ul className="flex flex-col gap-2">
             {attempt.strengths.map((note, i) => (
@@ -662,26 +675,22 @@ export function Feedback({
       )}
 
       <ReviewSection
-        image="/sections/spectrum.jpg"
         title="Your color spectrum"
         summary={settled ? `${litCount} of 7 colors lit - ${neededLit} of the ${challenge.targetSkills.length} this challenge needed` : "Landing now…"}
         Icon={SpectrumIcon}
         accentClass="text-body-language"
         open
-        style={reviewStyle}
       >
         <SpectrumBars spectrum={attempt.spectrum} revealCount={barsShown} required={challenge.targetSkills} />
       </ReviewSection>
 
       {settled && attempt.lessonsUsed && attempt.lessonsUsed.length > 0 && (
         <ReviewSection
-          image="/sections/lessons.jpg"
           title="The lessons this challenge asked for"
           summary={`${attempt.lessonsUsed.filter((l) => l.used).length} of ${attempt.lessonsUsed.length} used - how well, and where`}
           Icon={SkillsIcon}
           accentClass="text-storytelling"
           delay={120}
-          style={reviewStyle}
         >
           <ul className="flex flex-col gap-2">
             {attempt.lessonsUsed.map((l) => {
@@ -693,7 +702,7 @@ export function Feedback({
                   <span className="flex items-center gap-2">
                     <span className={`size-2 shrink-0 rounded-full ${cat?.bgClass ?? ""}`} />
                     <Link
-                      href={`/skills/${lesson.category}/${lesson.vimeoId}`}
+                      href={lessonHref(lesson)}
                       className="flex-1 font-medium text-ink underline-offset-4 hover:underline"
                     >
                       {lesson.title}
@@ -724,14 +733,12 @@ export function Feedback({
           that the list is waiting at the next level. */}
       {settled && attempt.skillsSpotted && attempt.skillsSpotted.length > 0 && (
         <ReviewSection
-          image="/sections/trophies-lion.jpg"
           title="Skills you used without being asked"
           summary={`${attempt.skillsSpotted.length} technique${attempt.skillsSpotted.length === 1 ? "" : "s"} from other lessons, spotted in this take`}
           Icon={ZapIcon}
           accentClass="text-figurative"
           delay={140}
           glow="border-figurative/50"
-          style={reviewStyle}
         >
           {canRevealAll ? (
             <ul className="flex flex-col gap-2">
@@ -749,7 +756,7 @@ export function Feedback({
                         </span>
                       )}
                       <Link
-                        href={`/skills/${lesson.category}/${lesson.vimeoId}`}
+                        href={lessonHref(lesson)}
                         className="flex-1 font-medium text-ink underline-offset-4 hover:underline"
                       >
                         {lesson.title}
@@ -763,7 +770,7 @@ export function Feedback({
             </ul>
           ) : (
             <p className="text-sm text-ink-muted">
-              Your coach spotted {attempt.skillsSpotted.length}{" "}
+              Coach spotted {attempt.skillsSpotted.length}{" "}
               {attempt.skillsSpotted.length === 1 ? "technique" : "techniques"} from other
               lessons in this take. At Intermediate they&apos;re named, with the
               lesson behind each.
@@ -774,13 +781,11 @@ export function Feedback({
 
       {settled && (
         <ReviewSection
-          image="/sections/streak.jpg"
           title={attempt.strengths ? "For next time" : "Focus on next"}
           summary={`${attempt.focus.length} thing${attempt.focus.length === 1 ? "" : "s"} to do more of - each with the line to try`}
           Icon={TrendingUpIcon}
           accentClass="text-structure"
           delay={150}
-          style={reviewStyle}
         >
         <ul className="flex flex-col gap-2">
           {attempt.focus.map((note, i) => (
@@ -821,12 +826,12 @@ export function Feedback({
       {splash === "shown" && (
         <XpSplash attempt={attempt} challenge={challenge} onClose={() => setSplash("done")} />
       )}
-      {splash === "done" && !preview && <PushPrompt />}
+      {splash === "done" && !preview && !revisit && <PushPrompt />}
 
       {settled && canRevealAll && attempt.fullNotes.length > 0 && (
         <details className="rounded-lg border border-navy-600">
           <summary className="cursor-pointer select-none px-3 py-2.5 text-sm font-medium text-ink-muted transition-colors hover:text-ink">
-            Everything your coach noticed ({attempt.fullNotes.length})
+            Everything Coach noticed ({attempt.fullNotes.length})
           </summary>
           <ul className="flex flex-col gap-2 px-3 pb-3">
             {attempt.fullNotes.map((note, i) => (
@@ -851,7 +856,7 @@ export function Feedback({
       </details>
       )}
 
-      {!preview && (
+      {!preview && !revisit && (
         <button
           type="button"
           onClick={onDone}
@@ -861,6 +866,7 @@ export function Feedback({
         </button>
       )}
     </div>
+    </LessonHrefContext.Provider>
   );
 }
 
@@ -923,13 +929,13 @@ function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => v
           type="button"
           onClick={hear}
           disabled={state === "loading"}
-          className="inline-flex items-center gap-2.5 rounded-full bg-ink py-2 pl-2 pr-5 text-sm font-semibold text-navy-900 transition-opacity hover:opacity-90 disabled:opacity-60"
+          className="coach-pill inline-flex min-h-11 items-center gap-2.5 rounded-full py-1.5 pl-1.5 pr-5 text-sm font-bold text-navy-950 hover:scale-[1.03] active:scale-[0.98] disabled:opacity-70"
         >
-          <span className="grid size-8 place-items-center overflow-hidden rounded-full bg-navy-900/10">
-            <LionMouth level={0} className="w-8 translate-y-0.5" />
+          <span className="grid size-9 place-items-center overflow-hidden rounded-full bg-navy-950/25">
+            <LionMouth level={0} className="w-10 translate-y-0.5" />
           </span>
           <ListenIcon className="size-4" />
-          {state === "loading" ? "Getting your feedback…" : "Listen to your coach's feedback"}
+          {state === "loading" ? "Coach is getting ready…" : "Coach's review"}
         </button>
       )}
       {state === "failed" && (
@@ -948,7 +954,7 @@ function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => v
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Your coach's feedback, written out"
+          aria-label="Coach's feedback, written out"
           className="fixed inset-0 z-50 flex items-end justify-center bg-navy-950/80 p-0 backdrop-blur-sm sm:items-center sm:p-6"
           onClick={() => setTranscript(false)}
         >
@@ -957,7 +963,7 @@ function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => v
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-[0.3em] text-ink-faint">Your coach said</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.3em] text-ink-faint">Coach said</span>
               <button
                 type="button"
                 onClick={() => setTranscript(false)}
@@ -979,68 +985,13 @@ function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => v
  * One part of the review, as a card that opens. The feedback arrived
  * with each section under a full-colour plate - the fire of the streak,
  * the neon lion - and the pictures competed with the data, which is
- * also in colour. So each section is now a folded card with a large,
- * plain title and a one-line summary, and the student opens the ones
- * they want to read. Three treatments of the header are here to choose
- * between (see ReviewStylePicker; the choice is kept on the device):
- *
- *   plate - the picture stays but muted: drained of most of its colour,
- *           darkened, the card colour climbing higher over it.
- *   clean - no picture: the icon in a tinted ring, the title, a rule in
- *           the section's colour.
- *   thumb - the picture shrunk to a small muted square beside the title,
- *           as a mark rather than a scene.
- *
- * Whichever wins, the plate-with-everything-on version is gone.
+ * also in colour. So each section is a folded card with a large, plain
+ * title, a one-line summary readable while folded, and no picture: the
+ * icon in a ring tinted the section's colour, and a rule in it. (Three
+ * treatments were tried - a muted plate, this, a thumbnail - and this
+ * one was chosen.)
  */
-export type ReviewStyle = "plate" | "clean" | "thumb";
-const REVIEW_STYLE_KEY = "speak-better-review-style";
-
-export function useReviewStyle(): [ReviewStyle, (s: ReviewStyle) => void] {
-  // Read on the client after mount, the sync-from-external-store way.
-  const [style, setStyleState] = useState<ReviewStyle>("plate");
-  useEffect(() => {
-    const t = window.setTimeout(() => {
-      try {
-        const saved = window.localStorage.getItem(REVIEW_STYLE_KEY) as ReviewStyle | null;
-        if (saved === "plate" || saved === "clean" || saved === "thumb") setStyleState(saved);
-      } catch {}
-    }, 0);
-    return () => window.clearTimeout(t);
-  }, []);
-  const setStyle = (next: ReviewStyle) => {
-    setStyleState(next);
-    try {
-      window.localStorage.setItem(REVIEW_STYLE_KEY, next);
-    } catch {}
-  };
-  return [style, setStyle];
-}
-
-/** A row of three to try - temporary, while the treatment is chosen. */
-export function ReviewStylePicker({ style, onChange }: { style: ReviewStyle; onChange: (s: ReviewStyle) => void }) {
-  return (
-    <div className="flex items-center gap-1.5 self-end rounded-full border border-navy-600 bg-navy-900 p-0.5 text-[0.65rem] font-semibold">
-      <span className="pl-2 pr-1 text-ink-faint">Try a look</span>
-      {(["plate", "clean", "thumb"] as const).map((s) => (
-        <button
-          key={s}
-          type="button"
-          onClick={() => onChange(s)}
-          aria-pressed={style === s}
-          className={`rounded-full px-2.5 py-1 capitalize transition-colors ${
-            style === s ? "bg-navy-700 text-ink" : "text-ink-muted hover:text-ink"
-          }`}
-        >
-          {s === "plate" ? "Muted plate" : s === "clean" ? "Clean" : "Thumbnail"}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 export function ReviewSection({
-  image,
   title,
   summary,
   Icon,
@@ -1048,10 +999,8 @@ export function ReviewSection({
   delay = 0,
   glow,
   open: openProp,
-  style = "plate",
   children,
 }: {
-  image: string;
   title: string;
   /** One line under the title - what's inside, readable while folded. */
   summary?: string;
@@ -1062,7 +1011,6 @@ export function ReviewSection({
   glow?: string;
   /** Open to begin with (the spectrum is; the rest fold). */
   open?: boolean;
-  style?: ReviewStyle;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(openProp ?? false);
@@ -1080,44 +1028,21 @@ export function ReviewSection({
         aria-controls={id}
         className="relative flex w-full items-center gap-3 text-left transition-colors hover:bg-navy-800/40"
       >
-        {style === "plate" && (
-          <span aria-hidden className="absolute inset-0 overflow-hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element -- decorative, already sized */}
-            <img src={image} alt="" className="size-full object-cover opacity-30 saturate-[0.35] brightness-75" />
-            <span className="absolute inset-0 bg-gradient-to-r from-navy-900 via-navy-900/85 to-navy-900/60" />
-          </span>
-        )}
-        {style === "thumb" && (
-          <span className="relative ml-3 block size-12 shrink-0 overflow-hidden rounded-xl border border-navy-600">
-            {/* eslint-disable-next-line @next/next/no-img-element -- decorative, already sized */}
-            <img src={image} alt="" className="size-full object-cover saturate-[0.5] brightness-90" />
-            <span className={`absolute inset-0 grid place-items-center bg-navy-950/40 ${accentClass}`}>
-              <Icon className="size-5" />
-            </span>
-          </span>
-        )}
-        {style === "clean" && (
-          <span
-            className={`ml-4 grid size-10 shrink-0 place-items-center rounded-full border ${accentClass}`}
-            style={{ borderColor: `color-mix(in oklab, ${accentVar} 45%, transparent)`, background: `color-mix(in oklab, ${accentVar} 12%, transparent)` }}
-          >
-            <Icon className="size-5" />
-          </span>
-        )}
-        <span className={`relative flex min-w-0 flex-1 flex-col py-3.5 ${style === "plate" ? "pl-4" : "pl-1"}`}>
-          <span className="flex items-center gap-2">
-            {style === "plate" && <Icon className={`size-5 shrink-0 ${accentClass}`} />}
-            <span className="text-lg font-semibold tracking-tight text-ink sm:text-xl">{title}</span>
-          </span>
+        <span
+          className={`ml-4 grid size-10 shrink-0 place-items-center rounded-full border ${accentClass}`}
+          style={{ borderColor: `color-mix(in oklab, ${accentVar} 45%, transparent)`, background: `color-mix(in oklab, ${accentVar} 12%, transparent)` }}
+        >
+          <Icon className="size-5" />
+        </span>
+        <span className="relative flex min-w-0 flex-1 flex-col py-3.5 pl-1">
+          <span className="text-lg font-semibold tracking-tight text-ink sm:text-xl">{title}</span>
           {summary && <span className="text-xs text-ink-muted">{summary}</span>}
         </span>
         <ChevronDownIcon
           className={`relative mr-4 size-5 shrink-0 text-ink-faint transition-transform duration-300 ${open ? "rotate-180" : ""}`}
         />
       </button>
-      {style === "clean" && (
-        <span aria-hidden className="mx-4 h-px" style={{ background: `linear-gradient(90deg, ${accentVar}, transparent)`, opacity: 0.5 }} />
-      )}
+      <span aria-hidden className="mx-4 h-px" style={{ background: `linear-gradient(90deg, ${accentVar}, transparent)`, opacity: 0.5 }} />
       <div
         id={id}
         className="grid transition-[grid-template-rows] duration-300 ease-out"
@@ -1213,6 +1138,18 @@ function XpSplash({
  * feel like what it is - someone watching - rather than a spinner.
  */
 function WatchingCoach({ poster }: { poster?: string }) {
+  // The watching takes a minute or two and nothing arrives until it's
+  // done, so the bar is honest about time rather than progress: it
+  // fills fast at first and slows toward the end, reaching ninety
+  // before the review typically lands. The review's arrival replaces
+  // this panel, which is the bar finishing.
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    const t0 = performance.now();
+    const id = window.setInterval(() => setElapsed((performance.now() - t0) / 1000), 500);
+    return () => window.clearInterval(id);
+  }, []);
+  const percent = Math.round(92 * (1 - Math.exp(-elapsed / 45)));
   return (
     <div className="flex flex-col items-center gap-4 rounded-xl border border-navy-600 bg-navy-800 p-6 text-center">
       {/* The lion on the left, facing the take on the right - it looks
@@ -1235,10 +1172,24 @@ function WatchingCoach({ poster }: { poster?: string }) {
           <div className="watching-scan absolute inset-x-0 h-8" />
         </div>
       </div>
-      <p className="text-sm text-ink">Your coach is watching your video…</p>
+      <p className="working-word text-lg font-bold tracking-tight">Coach is watching your video</p>
+      <NeonBar percent={percent} />
       <p className="text-xs text-ink-faint text-balance">
-        Watching and listening properly takes a minute or two. Stay on this page.
+        Watching and listening properly takes a minute or two - {percent}% of the usual wait. Stay on this page.
       </p>
+    </div>
+  );
+}
+
+/** A bar that fills in the seven colours, with a glow at its tip - the
+ *  same bar the lesson player draws as a video plays. */
+function NeonBar({ percent }: { percent: number }) {
+  return (
+    <div className="relative h-1.5 w-56 overflow-hidden rounded-full bg-navy-700" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100}>
+      <div
+        className="spectrum-rule absolute inset-y-0 left-0 rounded-full shadow-[0_0_10px_1px_rgba(255,255,255,0.35)] transition-[width] duration-500 ease-out"
+        style={{ width: `${Math.max(3, percent)}%` }}
+      />
     </div>
   );
 }
@@ -1251,9 +1202,10 @@ function catName(id: CategoryId): string {
  *  mark, its name, and the way there - so it reads as a video lesson
  *  a tap away rather than a citation. */
 export function LessonLink({ lesson, href }: { lesson: { vimeoId: string; title: string; category: string }; href?: string }) {
+  const hrefOf = useContext(LessonHrefContext);
   return (
     <Link
-      href={href ?? `/skills/${lesson.category}/${lesson.vimeoId}`}
+      href={href ?? hrefOf(lesson)}
       className="group inline-flex max-w-full items-center gap-2 rounded-lg border border-navy-600 bg-navy-900/60 py-1 pl-1 pr-3 text-xs font-medium text-ink-muted transition-colors hover:border-ink-faint hover:text-ink"
     >
       <span className="relative h-9 w-14 shrink-0 overflow-hidden rounded-md bg-navy-950">
