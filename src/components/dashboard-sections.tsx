@@ -73,7 +73,7 @@ export function DashboardPanel({
   const showingYou = openId === "you";
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-5">
       <button
         type="button"
         onClick={() => setOpenId("you")}

@@ -78,7 +78,7 @@ export default function DashboardPage() {
           </span>
         }
       />
-      <div className="flex flex-col gap-4 p-5">
+      <div className="flex flex-col gap-6 p-5">
       {/* What's been done, in figures a student feels: tried, passed,
           and minutes actually spent speaking to a lens. */}
       <div className="grid grid-cols-3 gap-2">
@@ -213,12 +213,12 @@ export default function DashboardPage() {
           </span>
         }
       />
-      <div className="flex flex-col gap-4 p-5">
+      <div className="flex flex-col gap-6 p-5">
       <div className="grid grid-cols-2 gap-2">
         <Stat value={watched} label="lessons watched" accent="text-storytelling" />
         <Stat value={watchedMinutes} label={watchedMinutes === 1 ? "minute watched" : "minutes watched"} />
       </div>
-      <ul className="flex flex-col gap-3">
+      <ul className="flex flex-col gap-5">
         {categories.map((cat) => {
           const inCat = lessons.filter((l) => l.category === cat.id);
           const seen = inCat.filter((l) =>
@@ -234,15 +234,17 @@ export default function DashboardPage() {
                 <span className={`w-28 shrink-0 truncate text-xs font-medium ${cat.textClass}`}>
                   {cat.short}
                 </span>
-                {/* One square per lesson, the watched ones in the color:
-                    the count is the picture, not a sliver of a bar. */}
+                {/* One square per lesson, the count lit from the left:
+                    it doesn't matter which lessons were watched, only
+                    how many - two watched is two lit squares, not two
+                    lit somewhere in a row of dark ones. */}
                 <span className="flex flex-1 flex-wrap gap-[3px]" aria-hidden>
-                  {inCat.map((l) => {
-                    const done = state.watchedLessons.includes(l.vimeoId);
+                  {inCat.map((l, i) => {
+                    const lit = i < seen;
                     return (
                       <span
                         key={l.vimeoId}
-                        className={`h-2.5 w-2.5 rounded-[3px] ${done ? `${cat.bgClass} shadow-[0_0_6px_-1px_currentColor] ${cat.textClass}` : "bg-navy-950 ring-1 ring-inset ring-navy-600"}`}
+                        className={`h-2.5 w-2.5 rounded-[3px] ${lit ? `${cat.bgClass} shadow-[0_0_6px_-1px_currentColor] ${cat.textClass}` : "bg-navy-950 ring-1 ring-inset ring-navy-600"}`}
                       />
                     );
                   })}
@@ -251,37 +253,28 @@ export default function DashboardPage() {
                   <b className={`font-semibold ${cat.textClass}`}>{seen}</b>/{inCat.length}
                 </span>
               </span>
-              {/* The section's lessons as a strip of stills - not links,
-                  a look at what's in there. A watched one is lit and
-                  carries a tick in the color; the rest wait, dimmed. */}
-              <span className="-mx-5 flex gap-1.5 overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                {inCat.map((l) => {
-                  const done = state.watchedLessons.includes(l.vimeoId);
-                  return (
-                    <span
-                      key={l.vimeoId}
-                      title={l.title}
-                      className="relative aspect-video w-16 shrink-0 overflow-hidden rounded-md bg-navy-900"
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={`/thumbs/${l.vimeoId}.jpg`}
-                        alt=""
-                        loading="lazy"
-                        decoding="async"
-                        className={`size-full object-cover ${done ? "" : "opacity-30"}`}
-                      />
-                      {done && (
-                        <span
-                          className={`absolute bottom-0.5 right-0.5 grid size-4 place-items-center rounded-full bg-navy-950/85 ${cat.textClass}`}
-                        >
+              {/* The lessons watched in this colour, as stills with a
+                  tick - only the watched ones: a row of dimmed stills
+                  for the unwatched was clutter, not information. */}
+              {seen > 0 && (
+                <span className="-mx-5 flex gap-1.5 overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  {inCat
+                    .filter((l) => state.watchedLessons.includes(l.vimeoId))
+                    .map((l) => (
+                      <span
+                        key={l.vimeoId}
+                        title={l.title}
+                        className="relative aspect-video w-16 shrink-0 overflow-hidden rounded-md bg-navy-900"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={`/thumbs/${l.vimeoId}.jpg`} alt="" loading="lazy" decoding="async" className="size-full object-cover" />
+                        <span className={`absolute bottom-0.5 right-0.5 grid size-4 place-items-center rounded-full bg-navy-950/85 ${cat.textClass}`}>
                           <CheckIcon className="size-2.5" />
                         </span>
-                      )}
-                    </span>
-                  );
-                })}
-              </span>
+                      </span>
+                    ))}
+                </span>
+              )}
             </li>
           );
         })}
