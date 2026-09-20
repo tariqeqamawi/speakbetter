@@ -489,15 +489,19 @@ function AttemptCard({
   );
 }
 
-function Feedback({
+export function Feedback({
   attempt,
   videoUrl,
   challenge,
   onDone,
+  preview = false,
 }: {
   attempt: Attempt;
   videoUrl: string;
   challenge: Challenge;
+  /** A sample review shown for its own sake (/demo/review): no XP
+   *  splash, no push prompt, no "try again". */
+  preview?: boolean;
   onDone: () => void;
 }) {
   const challengeTitle = challenge.title;
@@ -539,7 +543,7 @@ function Feedback({
   // The verdict comes last - the whole review first, then the line
   // they were waiting for. Where there's a spoken review it lands
   // when the coach reaches it; otherwise a beat after the notes.
-  const [verdictShown, setVerdictShown] = useState(reduceMotion || !attempt.spoken);
+  const [verdictShown, setVerdictShown] = useState(reduceMotion || preview || !attempt.spoken);
   useEffect(() => {
     if (!settled || verdictShown || attempt.spoken) return;
     const t = setTimeout(() => setVerdictShown(true), 1400);
@@ -548,7 +552,7 @@ function Feedback({
 
   // The XP splash, a beat after the verdict: what this take earned,
   // and what a better one would. Once per review.
-  const [splash, setSplash] = useState<"pending" | "shown" | "done">("pending");
+  const [splash, setSplash] = useState<"pending" | "shown" | "done" | "off">(preview ? "off" : "pending");
   useEffect(() => {
     if (!verdictShown || splash !== "pending") return;
     const t = setTimeout(() => setSplash("shown"), 900);
@@ -817,7 +821,7 @@ function Feedback({
       {splash === "shown" && (
         <XpSplash attempt={attempt} challenge={challenge} onClose={() => setSplash("done")} />
       )}
-      {splash === "done" && <PushPrompt />}
+      {splash === "done" && !preview && <PushPrompt />}
 
       {settled && canRevealAll && attempt.fullNotes.length > 0 && (
         <details className="rounded-lg border border-navy-600">
@@ -832,6 +836,7 @@ function Feedback({
         </details>
       )}
 
+      {videoUrl && (
       <details className="rounded-lg border border-navy-600">
         <summary className="cursor-pointer select-none px-3 py-2.5 text-sm font-medium text-ink-muted transition-colors hover:text-ink">
           Watch your attempt back
@@ -844,14 +849,17 @@ function Feedback({
           </p>
         </div>
       </details>
+      )}
 
-      <button
-        type="button"
-        onClick={onDone}
-        className="self-start rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-navy-900 transition-opacity hover:opacity-90"
-      >
-        {attempt.passed ? "Continue" : "Try again"}
-      </button>
+      {!preview && (
+        <button
+          type="button"
+          onClick={onDone}
+          className="self-start rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-navy-900 transition-opacity hover:opacity-90"
+        >
+          {attempt.passed ? "Continue" : "Try again"}
+        </button>
+      )}
     </div>
   );
 }
