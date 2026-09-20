@@ -389,6 +389,17 @@ The skill dial and the deck's dial share one hub: **the lion holds the centre an
 
 One button — *Listen to your coach's feedback*, with the lion's head and a listening icon. As the lion speaks, **the words come up as captions** a phrase at a time, over the wave, so the feedback is heard and seen together the way a reel's captions are followed; the spoken text isn't printed under the lion, and *Read the transcript* opens it full screen. The review then reads as rooms rather than a page of text: the brief isn't read back (it's at the top of the page), and each part sits under its own plate — *What worked*, *Your color spectrum*, *The lessons this challenge asked for*, *Skills you used without being asked* (with a glowing border), *For next time — do more of this* — and the verdict last, said plainly: *"Didn't pass this time."* A miss is named in the spoken review too, after the credit: the criterion, and the one turn that would have made it.
 
+### The review, folded
+
+The review arrived as sections under full-colour plates — the streak's fire, the neon lion — and the pictures competed with the data, which is also in colour. Now each section is a card that opens: a large plain title, a one-line summary readable while folded (*3 things your coach saw working*, *5 of 7 colours lit — 2 of the 2 this challenge needed*), the spectrum open to begin with and the rest closed, so a student reads what they choose rather than everything at once. Three header treatments are live to choose between — a muted plate (the picture drained and darkened), clean (icon in a tinted ring, a rule in the section's colour), and a thumbnail (the picture as a small square beside the title) — picked from a row at the top and kept on the device. One is chosen, the picker goes.
+
+### What the coach's brief learned from a real upload (20 September 2026)
+
+- **What the camera couldn't see isn't scored.** A selfie-mode take that shows head and shoulders can only light body language and acting for what the face and voice did, and the review says why in the coach's words and puts the fix — prop the phone up, whole body in frame — near the top of the improvements. The recorder says it before the first take.
+- **Expected length.** `expectedSecondsFor` — a minute for the baselines, two for a story, most of a short limit — goes to the coach with the brief; a short take is credited for its time and told plainly what it would take, and cannot pass a brief that asks for a complete story.
+- **Show the line.** Every improvement gives the example itself, in quotation marks, in the student's own story: reliving a moment shown the teacher's way (present tense, the senses, the dialogue, the turn), a missing metaphor written for them, any asked-for skill demonstrated at the moment it belonged — the line written out or the move described beat by beat.
+- **Filler words**, counted and coached: one or two is natural, more than a handful is named, with the fix — close your mouth while you think.
+
 ### The review's colours
 
 On the review's spectrum and the attempt cards, the colours a challenge needs to pass **glow and pulse softly**, marked *needed*; the rest are marked *bonus*. The attempt cards draw the same resonance wave the dashboard does, with a key beneath — each colour's score and short code, in its colour — so a wave reads as clearly as the bars, and the score is written out of a hundred. Record is a neon red button; Upload a neon cyan edge; sending a take is a round send icon; while the coach watches, the student's own still sits beside the lion with a pair of eyes tracking side to side; and the feedback is one button, *Play feedback*, with the lion's head and a listening icon.
@@ -464,7 +475,7 @@ The landing page opens on the mark, roaring: the brand clip as an animated WebP 
 
 ### The offer — course + membership
 
-The shape is course plus membership, because the method deserves a price that says *this is the method*, and the coach costs something every time it's used. Three tiers, on the landing page and at `/pricing`:
+The shape is course plus membership, because the method deserves a price that says *this is the method*, and the coach costs something every time it's used. Three tiers, on the landing page and at `/pricing` — side by side on a desktop, as tabs on a phone (`tier-tabs.tsx`):
 
 | Tier | Price | What it is |
 |---|---|---|
