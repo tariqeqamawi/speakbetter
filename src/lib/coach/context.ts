@@ -6,7 +6,7 @@
 // words, not from what a model happens to believe about public
 // speaking.
 
-import { challengeBySlug, type Challenge } from "@/data/challenges";
+import { challengeBySlug, type Challenge, expectedSecondsFor, maxSecondsFor } from "@/data/challenges";
 import { lessons, lessonByVimeoId, lessonsInCategory } from "@/data/lessons";
 import { categories } from "@/data/categories";
 import { contentFor } from "@/data/card-content";
@@ -127,7 +127,11 @@ export function buildContext(
     `# The challenge: ${challenge.title}`,
     `Phase ${challenge.phase}. Brief: ${challenge.brief}`,
     `Target skills: ${challenge.targetSkills.join(", ")}`,
-    `This is the student's attempt number ${attemptNumber} at this challenge. The recording is ${durationSec} seconds long.`,
+    `This is the student's attempt number ${attemptNumber} at this challenge. The recording is ${durationSec} seconds long. Expected length to satisfy this challenge: at least ${expectedSecondsFor(challenge)} seconds (the limit is ${maxSecondsFor(challenge)}).${
+      durationSec < expectedSecondsFor(challenge)
+        ? " This take is shorter than the challenge expects: credit the time given, then say plainly what length it would take (see LENGTH)."
+        : ""
+    }`,
     "",
     "## Success criteria (judge each one)",
     ...challenge.criteria.map((c, i) => `${i + 1}. ${c}`),

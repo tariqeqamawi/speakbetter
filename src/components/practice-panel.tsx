@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { upload } from "@vercel/blob/client";
 import { useStore, type Attempt, type FeedbackNote } from "@/lib/store";
 import { GRACE_SECONDS, maxSecondsFor, storyPhases, type Challenge } from "@/data/challenges";
@@ -10,12 +10,13 @@ import { ZapIcon } from "@/components/icons";
 import { hapticPass, hapticTap, playMiss, playPass, playReviewReady, playSend, playXpDing } from "@/lib/feedback-fx";
 import { Confetti } from "@/components/confetti";
 import { lessonByVimeoId } from "@/data/lessons";
-import { categoryById, type CategoryId } from "@/data/categories";
+import { categories, categoryById, type CategoryId } from "@/data/categories";
 import Link from "next/link";
 import { SpectrumBars, SpectrumKey } from "@/components/spectrum";
 import { SpectrumWave } from "@/components/spectrum-wave";
 import {
   CheckCircleIcon,
+  ChevronDownIcon,
   CheckIcon,
   CircleIcon,
   ListenIcon,
@@ -30,7 +31,6 @@ import {
   VideoIcon,
 } from "@/components/icons";
 import { LionMouth } from "@/components/lion-mouth";
-import { SectionBanner } from "@/components/section-banner";
 import { setPendingReview } from "@/lib/push-client";
 import { studentId } from "@/lib/student-id";
 import { PushPrompt } from "@/components/push-prompt";
@@ -503,6 +503,9 @@ function Feedback({
   const challengeTitle = challenge.title;
   const { state } = useStore();
   const canRevealAll = state.level !== "beginner"; // §08/§09: nested reveal
+  const [reviewStyle, setReviewStyle] = useReviewStyle();
+  const litCount = categories.filter((c) => (attempt.spectrum[c.id] ?? 0) >= 40).length;
+  const neededLit = challenge.targetSkills.filter((c) => (attempt.spectrum[c] ?? 0) >= 40).length;
 
   // The reveal is a sequence, not a page load: bars land one at a time,
   // the score counts up, the verdict arrives, the notes follow. Same
@@ -634,8 +637,18 @@ function Feedback({
         />
       )}
 
+      {settled && <ReviewStylePicker style={reviewStyle} onChange={setReviewStyle} />}
+
       {settled && attempt.strengths && attempt.strengths.length > 0 && (
-        <ReviewSection image="/sections/challenges.jpg" title="What worked" Icon={CheckCircleIcon} accentClass="text-mindset" delay={100}>
+        <ReviewSection
+          image="/sections/challenges.jpg"
+          title="What worked"
+          summary={`${attempt.strengths.length} thing${attempt.strengths.length === 1 ? "" : "s"} your coach saw working`}
+          Icon={CheckCircleIcon}
+          accentClass="text-mindset"
+          delay={100}
+          style={reviewStyle}
+        >
           <ul className="flex flex-col gap-2">
             {attempt.strengths.map((note, i) => (
               <FeedbackNoteRow key={i} note={note} showLessons={canRevealAll} />
@@ -644,12 +657,28 @@ function Feedback({
         </ReviewSection>
       )}
 
-      <ReviewSection image="/sections/spectrum.jpg" title="Your color spectrum" Icon={SpectrumIcon} accentClass="text-body-language">
+      <ReviewSection
+        image="/sections/spectrum.jpg"
+        title="Your color spectrum"
+        summary={settled ? `${litCount} of 7 colors lit - ${neededLit} of the ${challenge.targetSkills.length} this challenge needed` : "Landing now…"}
+        Icon={SpectrumIcon}
+        accentClass="text-body-language"
+        open
+        style={reviewStyle}
+      >
         <SpectrumBars spectrum={attempt.spectrum} revealCount={barsShown} required={challenge.targetSkills} />
       </ReviewSection>
 
       {settled && attempt.lessonsUsed && attempt.lessonsUsed.length > 0 && (
-        <ReviewSection image="/sections/lessons.jpg" title="The lessons this challenge asked for" Icon={SkillsIcon} accentClass="text-storytelling" delay={120}>
+        <ReviewSection
+          image="/sections/lessons.jpg"
+          title="The lessons this challenge asked for"
+          summary={`${attempt.lessonsUsed.filter((l) => l.used).length} of ${attempt.lessonsUsed.length} used - how well, and where`}
+          Icon={SkillsIcon}
+          accentClass="text-storytelling"
+          delay={120}
+          style={reviewStyle}
+        >
           <ul className="flex flex-col gap-2">
             {attempt.lessonsUsed.map((l) => {
               const lesson = lessonByVimeoId.get(l.lessonId);
@@ -693,10 +722,12 @@ function Feedback({
         <ReviewSection
           image="/sections/trophies-lion.jpg"
           title="Skills you used without being asked"
+          summary={`${attempt.skillsSpotted.length} technique${attempt.skillsSpotted.length === 1 ? "" : "s"} from other lessons, spotted in this take`}
           Icon={ZapIcon}
           accentClass="text-figurative"
           delay={140}
-          glow="border-figurative/60 shadow-[0_0_28px_-6px_var(--color-figurative)]"
+          glow="border-figurative/50"
+          style={reviewStyle}
         >
           {canRevealAll ? (
             <ul className="flex flex-col gap-2">
@@ -738,7 +769,15 @@ function Feedback({
       )}
 
       {settled && (
-        <ReviewSection image="/sections/streak.jpg" title={attempt.strengths ? "For next time - do more of this" : "Focus on next"} Icon={TrendingUpIcon} accentClass="text-structure" delay={150}>
+        <ReviewSection
+          image="/sections/streak.jpg"
+          title={attempt.strengths ? "For next time" : "Focus on next"}
+          summary={`${attempt.focus.length} thing${attempt.focus.length === 1 ? "" : "s"} to do more of - each with the line to try`}
+          Icon={TrendingUpIcon}
+          accentClass="text-structure"
+          delay={150}
+          style={reviewStyle}
+        >
         <ul className="flex flex-col gap-2">
           {attempt.focus.map((note, i) => (
             <FeedbackNoteRow
@@ -929,35 +968,157 @@ function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => v
 }
 
 /**
- * One part of the review under its own plate - the section's image,
- * icon and title, as the dashboard's panels are - so the review reads
- * as rooms to walk through rather than one long page of text.
+ * One part of the review, as a card that opens. The feedback arrived
+ * with each section under a full-colour plate - the fire of the streak,
+ * the neon lion - and the pictures competed with the data, which is
+ * also in colour. So each section is now a folded card with a large,
+ * plain title and a one-line summary, and the student opens the ones
+ * they want to read. Three treatments of the header are here to choose
+ * between (see ReviewStylePicker; the choice is kept on the device):
+ *
+ *   plate - the picture stays but muted: drained of most of its colour,
+ *           darkened, the card colour climbing higher over it.
+ *   clean - no picture: the icon in a tinted ring, the title, a rule in
+ *           the section's colour.
+ *   thumb - the picture shrunk to a small muted square beside the title,
+ *           as a mark rather than a scene.
+ *
+ * Whichever wins, the plate-with-everything-on version is gone.
  */
-function ReviewSection({
+export type ReviewStyle = "plate" | "clean" | "thumb";
+const REVIEW_STYLE_KEY = "speak-better-review-style";
+
+export function useReviewStyle(): [ReviewStyle, (s: ReviewStyle) => void] {
+  // Read on the client after mount, the sync-from-external-store way.
+  const [style, setStyleState] = useState<ReviewStyle>("plate");
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      try {
+        const saved = window.localStorage.getItem(REVIEW_STYLE_KEY) as ReviewStyle | null;
+        if (saved === "plate" || saved === "clean" || saved === "thumb") setStyleState(saved);
+      } catch {}
+    }, 0);
+    return () => window.clearTimeout(t);
+  }, []);
+  const setStyle = (next: ReviewStyle) => {
+    setStyleState(next);
+    try {
+      window.localStorage.setItem(REVIEW_STYLE_KEY, next);
+    } catch {}
+  };
+  return [style, setStyle];
+}
+
+/** A row of three to try - temporary, while the treatment is chosen. */
+export function ReviewStylePicker({ style, onChange }: { style: ReviewStyle; onChange: (s: ReviewStyle) => void }) {
+  return (
+    <div className="flex items-center gap-1.5 self-end rounded-full border border-navy-600 bg-navy-900 p-0.5 text-[0.65rem] font-semibold">
+      <span className="pl-2 pr-1 text-ink-faint">Try a look</span>
+      {(["plate", "clean", "thumb"] as const).map((s) => (
+        <button
+          key={s}
+          type="button"
+          onClick={() => onChange(s)}
+          aria-pressed={style === s}
+          className={`rounded-full px-2.5 py-1 capitalize transition-colors ${
+            style === s ? "bg-navy-700 text-ink" : "text-ink-muted hover:text-ink"
+          }`}
+        >
+          {s === "plate" ? "Muted plate" : s === "clean" ? "Clean" : "Thumbnail"}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export function ReviewSection({
   image,
   title,
+  summary,
   Icon,
   accentClass,
   delay = 0,
   glow,
+  open: openProp,
+  style = "plate",
   children,
 }: {
   image: string;
   title: string;
+  /** One line under the title - what's inside, readable while folded. */
+  summary?: string;
   Icon: (props: { className?: string }) => React.ReactNode;
   accentClass: string;
   delay?: number;
   /** Border and shadow classes for a section that should shine. */
   glow?: string;
+  /** Open to begin with (the spectrum is; the rest fold). */
+  open?: boolean;
+  style?: ReviewStyle;
   children: React.ReactNode;
 }) {
+  const [open, setOpen] = useState(openProp ?? false);
+  const id = useId();
+  const accentVar = `var(--color-${accentClass.replace("text-", "")})`;
   return (
     <section
-      className={`coach-cue flex flex-col overflow-hidden rounded-2xl border bg-navy-900/40 ${glow ?? "border-navy-600"}`}
+      className={`coach-cue flex flex-col overflow-hidden rounded-2xl border bg-navy-900/60 ${glow ?? "border-navy-600"}`}
       style={{ animationDelay: `${delay}ms` }}
     >
-      <SectionBanner image={image} title={title} Icon={Icon} accentClass={accentClass} />
-      <div className="p-4">{children}</div>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        aria-controls={id}
+        className="relative flex w-full items-center gap-3 text-left transition-colors hover:bg-navy-800/40"
+      >
+        {style === "plate" && (
+          <span aria-hidden className="absolute inset-0 overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element -- decorative, already sized */}
+            <img src={image} alt="" className="size-full object-cover opacity-30 saturate-[0.35] brightness-75" />
+            <span className="absolute inset-0 bg-gradient-to-r from-navy-900 via-navy-900/85 to-navy-900/60" />
+          </span>
+        )}
+        {style === "thumb" && (
+          <span className="relative ml-3 block size-12 shrink-0 overflow-hidden rounded-xl border border-navy-600">
+            {/* eslint-disable-next-line @next/next/no-img-element -- decorative, already sized */}
+            <img src={image} alt="" className="size-full object-cover saturate-[0.5] brightness-90" />
+            <span className={`absolute inset-0 grid place-items-center bg-navy-950/40 ${accentClass}`}>
+              <Icon className="size-5" />
+            </span>
+          </span>
+        )}
+        {style === "clean" && (
+          <span
+            className={`ml-4 grid size-10 shrink-0 place-items-center rounded-full border ${accentClass}`}
+            style={{ borderColor: `color-mix(in oklab, ${accentVar} 45%, transparent)`, background: `color-mix(in oklab, ${accentVar} 12%, transparent)` }}
+          >
+            <Icon className="size-5" />
+          </span>
+        )}
+        <span className={`relative flex min-w-0 flex-1 flex-col py-3.5 ${style === "plate" ? "pl-4" : "pl-1"}`}>
+          <span className="flex items-center gap-2">
+            {style === "plate" && <Icon className={`size-5 shrink-0 ${accentClass}`} />}
+            <span className="text-lg font-semibold tracking-tight text-ink sm:text-xl">{title}</span>
+          </span>
+          {summary && <span className="text-xs text-ink-muted">{summary}</span>}
+        </span>
+        <ChevronDownIcon
+          className={`relative mr-4 size-5 shrink-0 text-ink-faint transition-transform duration-300 ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+      {style === "clean" && (
+        <span aria-hidden className="mx-4 h-px" style={{ background: `linear-gradient(90deg, ${accentVar}, transparent)`, opacity: 0.5 }} />
+      )}
+      <div
+        id={id}
+        className="grid transition-[grid-template-rows] duration-300 ease-out"
+        style={{ gridTemplateRows: open ? "1fr" : "0fr" }}
+      >
+        <div className="min-h-0 overflow-hidden">
+          <div className="p-4">{children}</div>
+        </div>
+      </div>
     </section>
   );
 }

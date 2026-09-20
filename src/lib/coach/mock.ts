@@ -7,6 +7,7 @@
 // with `mock: true` - the client shows a stub notice when it sees it.
 
 import { challengeBySlug } from "@/data/challenges";
+import { lessons } from "@/data/lessons";
 import { categories, type CategoryId } from "@/data/categories";
 import type { ReviewResponse } from "./shape";
 
@@ -260,12 +261,47 @@ export function mockReview(body: MockRequest): ReviewResponse | null {
       }`
     : `Not there yet - but ${litColors} of 7 colors showed up, and every attempt is compounding. Focus on the notes below and go again.`;
 
+  // The rest of the review's shape, so the page can be seen whole in
+  // development: what worked (the three strongest colours), the cited
+  // lessons judged, a technique or two from elsewhere, and a spoken
+  // review that stops before the verdict, as the real one does.
+  const strongest = [...categories].sort((a, b) => spectrum[b.id] - spectrum[a.id]).slice(0, 3);
+  const strengthNotes: Note[] = strongest.map((cat) => toNote(cat.id, pick(rand, strengths[cat.id])));
+  const lessonsUsed = challenge.relatedLessonIds.map((lessonId, i) => {
+    const used = rand() > 0.3 || i === 0;
+    return {
+      lessonId,
+      used,
+      quality: used ? 3 + Math.floor(rand() * 6) : 0,
+      evidence: used
+        ? "About a third of the way in - the moment you slowed down and named the room you were in."
+        : "Not this time - the story went straight to what happened, without a scene to stand in.",
+    };
+  });
+  const cited = new Set(challenge.relatedLessonIds);
+  const skillsSpotted = lessons
+    .filter((l) => !cited.has(l.vimeoId) && challenge.targetSkills.includes(l.category))
+    .slice(0, 2)
+    .map((l, i) => ({
+      lessonId: l.vimeoId,
+      quality: 4 + Math.floor(rand() * 4),
+      at: i === 0 ? "0:38" : "1:12",
+      evidence: "A rhetorical question, and a beat of silence after it, before you answered it yourself.",
+    }));
+  const spoken = `Well done for getting this recorded - ${Math.round(body.durationSec)} seconds, to a lens, in one go. That's not nothing. Two things worked. You opened inside the moment, no build-up, and when you described the room your hands drew it for us. Nice shirt, by the way. For next time, the middle stayed at one volume - drop to almost a whisper on the line that matters and the rest will sound louder for it. The brief asked for one story with a beginning and an end, and ${
+    passed ? "you gave us both." : "this one had a beginning and then it stopped - give it the turn, and the ending, and it passes."
+  }`;
+
   return {
     passed,
     score,
     spectrum,
     focus,
     fullNotes,
+    strengths: strengthNotes,
+    lessonsUsed,
+    skillsSpotted,
+    spoken,
     summary,
     mock: true,
   };

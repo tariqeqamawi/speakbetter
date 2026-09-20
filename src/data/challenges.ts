@@ -110,6 +110,16 @@ export function maxSecondsFor(challenge: Pick<Challenge, "maxSeconds">): number 
   return challenge.maxSeconds ?? DEFAULT_MAX_SECONDS;
 }
 
+/** How long a take should be to really satisfy the challenge - what the
+ *  coach expects, as opposed to the most it will accept. The baselines
+ *  are satisfied by a minute; a story challenge wants two; a challenge
+ *  with a short limit wants most of it. */
+export function expectedSecondsFor(challenge: Pick<Challenge, "maxSeconds" | "baseline">): number {
+  if (challenge.baseline) return 60;
+  const max = maxSecondsFor(challenge);
+  return max >= DEFAULT_MAX_SECONDS ? 120 : Math.round((max * 2) / 3);
+}
+
 export const challenges: Challenge[] = [
   // ── S - Start With Awareness ────────────────────────────────────────
   {
