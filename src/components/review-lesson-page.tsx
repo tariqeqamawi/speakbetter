@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useStore } from "@/lib/store";
+import { useStore, type Attempt } from "@/lib/store";
 import { challengeBySlug } from "@/data/challenges";
 import { lessonByVimeoId } from "@/data/lessons";
 import { categoryById, type CategoryId } from "@/data/categories";
@@ -17,10 +17,21 @@ import { ChevronDownIcon } from "@/components/icons";
 // top and the bottom. A student who follows a note into a lesson should
 // come out where they went in.
 
-export function ReviewLessonPage({ id, vimeoId }: { id: string; vimeoId: string }) {
+export function ReviewLessonPage({
+  id,
+  vimeoId,
+  sample,
+}: {
+  id: string;
+  vimeoId: string;
+  /** The sample review's attempt (/demo/review), with its page's path. */
+  sample?: { attempt: Attempt; backHref: string };
+}) {
   const { state, ready } = useStore();
   if (!ready) return null;
-  const attempt = state.attempts.find((a) => a.id === id);
+  const attempt = sample?.attempt ?? state.attempts.find((a) => a.id === id);
+  const reviewHref = sample?.backHref ?? `/review/${id}`;
+  const lessonHref = (lid: string) => (sample ? `${sample.backHref}/lessons/${lid}` : `/review/${id}/lessons/${lid}`);
   const lesson = lessonByVimeoId.get(vimeoId);
   const challenge = attempt && challengeBySlug.get(attempt.challengeSlug);
   if (!attempt || !lesson || !challenge) {
@@ -62,7 +73,7 @@ export function ReviewLessonPage({ id, vimeoId }: { id: string; vimeoId: string 
 
   const back = (
     <Link
-      href={`/review/${attempt.id}`}
+      href={reviewHref}
       className="flex min-h-11 w-fit items-center gap-2 rounded-lg bg-ink px-5 py-2.5 text-sm font-semibold text-navy-900 transition-opacity hover:opacity-90"
     >
       <ChevronDownIcon className="size-4 rotate-90" />
@@ -101,7 +112,7 @@ export function ReviewLessonPage({ id, vimeoId }: { id: string; vimeoId: string 
           <h2 className="text-sm font-medium uppercase tracking-wider text-ink-faint">The other lessons in this review</h2>
           <div className="flex flex-wrap gap-2">
             {others.map((l) => (
-              <LessonLink key={l.vimeoId} lesson={l} href={`/review/${attempt.id}/lessons/${l.vimeoId}`} />
+              <LessonLink key={l.vimeoId} lesson={l} href={lessonHref(l.vimeoId)} />
             ))}
           </div>
         </section>

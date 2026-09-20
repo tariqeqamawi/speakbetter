@@ -606,8 +606,8 @@ export function Feedback({
     URL.revokeObjectURL(a.href);
   };
 
-  const lessonHref = (l: { vimeoId: string; category: string }) =>
-    preview ? `/skills/${l.category}/${l.vimeoId}` : `/review/${attempt.id}/lessons/${l.vimeoId}`;
+  const lessonHref = (l: { vimeoId: string }) =>
+    preview ? `/demo/review/lessons/${l.vimeoId}` : `/review/${attempt.id}/lessons/${l.vimeoId}`;
 
   return (
     <LessonHrefContext.Provider value={lessonHref}>
@@ -934,8 +934,12 @@ function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => v
           <span className="grid size-9 place-items-center overflow-hidden rounded-full bg-navy-950/25">
             <LionMouth level={0} className="w-10 translate-y-0.5" />
           </span>
-          <ListenIcon className="size-4" />
-          {state === "loading" ? "Coach is getting ready…" : "Coach's review"}
+          {/* Its own colour: the pill paints its text in the drifting
+              colour, which is the background. */}
+          <span className="flex items-center gap-2 text-navy-950">
+            <ListenIcon className="size-4" />
+            {state === "loading" ? "Coach is getting ready…" : "Coach's review"}
+          </span>
         </button>
       )}
       {state === "failed" && (
