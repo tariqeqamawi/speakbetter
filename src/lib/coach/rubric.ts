@@ -75,6 +75,9 @@ Listen to the instrument, not only the tune. A voice supported from the belly an
 EYE CONTACT - AT EVERY LEVEL
 Where were they looking? To whoever is watching, the lens is the eyes, and a speaker who looks off to the side, at their notes, at the screen, or past the camera is a speaker who isn't looking at them. This is a staple of speaking, not an advanced skill: a Beginner gets this note as surely as an Advanced student. Note where the eyes went and how much of the time - "most of the time", "every few seconds", "only on the last line" - and say what it did to you, the one watching, after the praise and never instead of it: "Most of the time you weren't looking at the lens, so I didn't feel you were looking at me. Next time, try looking at the lens more, so I feel you're looking me in the eye - it'll make the whole talk feel more present, more immediate, more resonant, and your audience will feel it exactly the way I do." When the eye line was steady, credit it in the same words: "you held the lens the whole way through, and it felt like you were talking straight to me." Category body-language, one note; it goes in the improvements when the eyes were away more than they were on you, and in what worked when they held.
 
+PROGRESS OVER TIME
+When you are given the student's earlier takes, part of this review is what has shifted since they started - because a student who is coached across time, not take by take, feels coached. Compare like with like: the filler-word counts, where the eyes were, the framing, the voice, which colors lit and how strongly, the scores. Name the improvements with the numbers and celebrate them plainly: "Did you know that when you started you were using three to five filler words a take, and this one had one? That's real improvement." "When we started, your eyes were away from the lens most of the time. In this take you were looking straight at me. Well done - that's presence, and it's yours now." Where something has slipped - more fillers, the voice thinner than it was, the eyes away again - say it gently, as awareness and never as scolding: "In your earlier challenges you were projecting more, and the voice was fuller and more resonant; lately it's thinned a little. Not a big thing - I'm pointing it out so you can be aware of it for the next one." Two to four sentences, in the progress field, and one line of it in the spoken review after the credit. Only what the record shows: never claim a change you can't point to in the earlier takes' observations, and with a single earlier take say so lightly ("early days - one take to compare with"). With no earlier takes, leave the progress field empty and say nothing about it.
+
 FILLER WORDS
 Count them - the ums, ahs, likes, you knows, so's at the start of sentences - and say the number, because the student cannot hear their own. One or two across a story is natural and conversational: credit it ("only two ums in the whole story - that's natural; you'd be stronger still with none"). More than a handful, and it made the delivery feel less polished and more hesitant: say so after the praise, never instead of it, name roughly where they clustered, and give the fix the teacher gives - close your mouth while you think about what comes next, let the silence sit, so the filler has nowhere to come out. Category acting (the vocal side), one note, with the count in it.
 
@@ -217,6 +220,35 @@ export const RESPONSE_SCHEMA = {
         required: ["category", "note", "lessonIds"],
       },
     },
+    observations: {
+      type: "object",
+      description: "The same few things measured in every review, so takes can be compared over time.",
+      properties: {
+        fillerWords: { type: "integer", description: "How many ums, ahs, likes, you-knows you counted." },
+        eyeContact: {
+          type: "string",
+          enum: ["held", "mostly", "half", "rarely", "unseen"],
+          description: "How much of the time the eyes were on the lens; unseen if the face wasn't readable.",
+        },
+        framing: {
+          type: "string",
+          enum: ["face", "head-and-shoulders", "upper-body", "full-body"],
+          description: "How much of the student the frame showed.",
+        },
+        handsVisible: { type: "boolean" },
+        voice: {
+          type: "string",
+          description: "One clause on the voice: its fullness and support, whether the ends of lines held or dropped, thin or resonant.",
+        },
+        pace: { type: "string", enum: ["rushed", "brisk", "measured", "slow"] },
+      },
+      required: ["fillerWords", "eyeContact", "framing", "handsVisible", "voice", "pace"],
+    },
+    progress: {
+      type: "string",
+      description:
+        "Only when earlier takes are given: two to four sentences on what has shifted since they started - filler words, eye contact, the voice, the colours, the scores - improvements celebrated with the numbers, a slip named gently as awareness. Empty string when there are no earlier takes.",
+    },
     score: { type: "integer", description: "0-100 overall." },
     summary: { type: "string" },
     spoken: {
@@ -233,6 +265,8 @@ export const RESPONSE_SCHEMA = {
     "spectrum",
     "strengths",
     "improvements",
+    "observations",
+    "progress",
     "score",
     "summary",
     "spoken",
@@ -248,9 +282,22 @@ export interface CoachVerdict {
   spectrum: { category: string; score: number; evidence: string }[];
   strengths: { category: string; note: string; lessonIds: string[]; at?: string }[];
   improvements: { category: string; note: string; lessonIds: string[]; at?: string }[];
+  observations?: Observations;
+  progress?: string;
   score: number;
   summary: string;
   spoken: string;
+}
+
+/** The few things every review measures the same way, so a student's
+ *  takes can be laid side by side over time. */
+export interface Observations {
+  fillerWords: number;
+  eyeContact: "held" | "mostly" | "half" | "rarely" | "unseen";
+  framing: "face" | "head-and-shoulders" | "upper-body" | "full-body";
+  handsVisible: boolean;
+  voice: string;
+  pace: "rushed" | "brisk" | "measured" | "slow";
 }
 
 /** The pass bar by level - what the overall score has to reach when

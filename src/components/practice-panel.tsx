@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useId, useRef, useState } from "react";
 import { upload } from "@vercel/blob/client";
 import { useStore, type Attempt, type FeedbackNote } from "@/lib/store";
-import { GRACE_SECONDS, maxSecondsFor, storyPhases, type Challenge } from "@/data/challenges";
+import { GRACE_SECONDS, challengeBySlug, maxSecondsFor, storyPhases, type Challenge } from "@/data/challenges";
 import { XP, challengeXp, challengeXpFor, phaseGate } from "@/lib/progress";
 import { LockIcon } from "@/components/icons";
 import { ZapIcon } from "@/components/icons";
@@ -204,6 +204,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
           studentId: studentId(),
           attemptId,
           voice: await voice,
+          history: takeHistory(state.attempts),
         }),
       });
       if (!res.ok) {
@@ -231,6 +232,9 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
         skillsSpotted: result.skillsSpotted,
         strengths: result.strengths,
         spoken: result.spoken,
+        observations: result.observations,
+        progress: result.progress,
+        voice: (await voice) ?? undefined,
         mock: result.mock || undefined,
       };
       recordAttempt(attempt);
@@ -450,6 +454,34 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
       )}
     </section>
   );
+}
+
+/** The earlier takes, compact, for Coach to compare this one with:
+ *  the last eight, oldest first - what each measured, what the voice
+ *  measured, which colours lit, the score. */
+export function takeHistory(attempts: Attempt[]) {
+  return [...attempts]
+    .sort((a, b) => (a.at < b.at ? -1 : 1))
+    .slice(-8)
+    .map((a) => ({
+      date: a.at.slice(0, 10),
+      challenge: challengeBySlug.get(a.challengeSlug)?.title ?? a.challengeSlug,
+      seconds: a.durationSec,
+      score: a.score,
+      passed: a.passed,
+      spectrum: a.spectrum,
+      observations: a.observations,
+      voice: a.voice
+        ? {
+            pitchRangeSemitones: a.voice.pitchRangeSemitones,
+            endLoudnessDropDb: a.voice.endLoudnessDropDb,
+            trailingOffShare: a.voice.trailingOffShare,
+            lowBandShare: a.voice.lowBandShare,
+            loudnessSpreadDb: a.voice.loudnessSpreadDb,
+          }
+        : undefined,
+      nextTime: a.focus.slice(0, 2).map((n) => n.note),
+    }));
 }
 
 function fmt(sec: number): string {
@@ -775,6 +807,19 @@ export function Feedback({
               lesson behind each.
             </p>
           )}
+        </ReviewSection>
+      )}
+
+      {settled && attempt.progress && (
+        <ReviewSection
+          title="Since you started"
+          summary="What's shifted across your takes - and what to keep an eye on"
+          Icon={TrendingUpIcon}
+          accentClass="text-advanced"
+          delay={145}
+          open
+        >
+          <p className="text-sm leading-relaxed text-ink">{attempt.progress}</p>
         </ReviewSection>
       )}
 

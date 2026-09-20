@@ -46,6 +46,8 @@ interface ReviewRequest {
   attemptId?: string;
   /** Measured on the phone from the recording's audio (lib/voice-profile). */
   voice?: VoiceProfile | null;
+  /** The student's earlier takes, compact (practice-panel's takeHistory). */
+  history?: unknown[];
 }
 
 /** What's configured - true/false only, never the values. */
@@ -82,7 +84,14 @@ export async function POST(request: Request) {
     return NextResponse.json(mock);
   }
 
-  const context = buildContext(body.challengeSlug, level, body.attemptNumber ?? 1, Math.round(body.durationSec), body.voice ?? undefined);
+  const context = buildContext(
+    body.challengeSlug,
+    level,
+    body.attemptNumber ?? 1,
+    Math.round(body.durationSec),
+    body.voice ?? undefined,
+    Array.isArray(body.history) ? body.history.slice(-8) : undefined,
+  );
   if (!context) return NextResponse.json({ error: "Unknown challenge" }, { status: 400 });
 
   // The recording, from the private store.

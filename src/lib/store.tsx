@@ -16,6 +16,8 @@ import { evaluateBadges, type EarnedBadge } from "@/data/badges";
 import type { Plan } from "@/data/pricing";
 import { standing } from "@/lib/progress";
 import { demoState } from "@/lib/demo-state";
+import type { Observations } from "@/lib/coach/rubric";
+import type { VoiceProfile } from "@/lib/voice-profile";
 
 // ─────────────────────────────────────────────────────────────────────
 // Local-first state layer.
@@ -65,6 +67,13 @@ export interface Attempt {
   strengths?: FeedbackNote[];
   /** The review as the coach says it aloud, verdict last. */
   spoken?: string;
+  /** The same few things measured in every review, for comparing takes
+   *  over time (lib/coach/rubric.ts). */
+  observations?: Observations;
+  /** What Coach said has shifted since earlier takes. */
+  progress?: string;
+  /** What the phone measured of the voice (lib/voice-profile.ts). */
+  voice?: VoiceProfile;
   /** True while the stand-in coach answered rather than Gemini. */
   mock?: boolean;
 }

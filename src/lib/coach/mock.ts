@@ -302,6 +302,18 @@ export function mockReview(body: MockRequest): ReviewResponse | null {
     lessonsUsed,
     skillsSpotted,
     spoken,
+    observations: {
+      fillerWords: Math.max(0, 4 - body.attemptNumber),
+      eyeContact: body.attemptNumber >= 3 ? "mostly" : "half",
+      framing: "upper-body",
+      handsVisible: true,
+      voice: "Full through the middle; the last words of a few lines dropped away.",
+      pace: "measured",
+    },
+    progress:
+      body.attemptNumber > 1
+        ? `Did you know that when you started you were using three or four filler words a take, and this one had ${Math.max(0, 4 - body.attemptNumber)}? That's real improvement. Your eyes are on the lens more than they were, too - in the first take they were away half the time, and this time I felt you looking at me for most of it. One thing to keep an eye on: the ends of your lines dropped a little more than in your earlier takes. Not a big thing - hold the last word as full as the first and it's gone.`
+        : "",
     summary,
     mock: true,
   };

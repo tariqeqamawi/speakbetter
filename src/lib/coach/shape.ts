@@ -7,7 +7,7 @@ import type { CategoryId } from "@/data/categories";
 import type { Level } from "@/lib/store";
 import { categories } from "@/data/categories";
 import { lessonByVimeoId } from "@/data/lessons";
-import { levelAllowance, passBar, type CoachVerdict } from "./rubric";
+import { levelAllowance, passBar, type CoachVerdict, type Observations } from "./rubric";
 
 export interface ReviewNote {
   category: CategoryId;
@@ -31,6 +31,10 @@ export interface ReviewResponse {
   /** The review as the coach says it aloud, verdict last. Absent from
    *  the mock. */
   spoken?: string;
+  /** The same few things measured in every review (rubric.ts). */
+  observations?: Observations;
+  /** What has shifted since earlier takes - only with a history. */
+  progress?: string;
   summary: string;
   /** The brief, judged. Absent from the mock. */
   briefVerdict?: string;
@@ -151,6 +155,8 @@ export function shapeVerdict(
         at: s.at ? String(s.at) : undefined,
         evidence: String(s.evidence ?? ""),
       })),
+    observations: verdict.observations,
+    progress: String(verdict.progress ?? "").trim() || undefined,
     mock: false,
     model,
   };

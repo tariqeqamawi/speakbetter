@@ -94,6 +94,7 @@ export function buildContext(
   attemptNumber: number,
   durationSec: number,
   voice?: VoiceProfile,
+  history?: unknown[],
 ): CoachContext | null {
   const challenge = challengeBySlug.get(slug);
   if (!challenge) return null;
@@ -136,6 +137,13 @@ export function buildContext(
     }`,
     "",
     ...(voice ? ["", describeVoice(voice)] : []),
+    ...(history && history.length > 0
+      ? [
+          "",
+          `## The student's earlier takes, oldest first (for PROGRESS OVER TIME - compare this take's observations with these)`,
+          JSON.stringify(history).slice(0, 12_000),
+        ]
+      : []),
     "",
     "## Success criteria (judge each one)",
     ...challenge.criteria.map((c, i) => `${i + 1}. ${c}`),
