@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import { useChallengeComplete } from "@/components/story-progress";
 import { CategoryIcon } from "@/components/category-icons";
 import { JourneyPhases } from "@/components/journey-phases";
+import { SpeakingTime } from "@/components/speaking-time";
 import { SectionBanner } from "@/components/section-banner";
 import {
   ChallengesIcon,
@@ -98,19 +99,16 @@ export default function DashboardPage() {
         }
       />
       <div className="flex flex-col gap-6 p-5">
-      {/* What's been done, in figures a student feels: tried, passed,
-          and minutes actually spent speaking to a lens. */}
-      <div className="grid grid-cols-3 gap-2">
+      {/* The minutes are the headline: of the three figures it is the
+          one that is purely theirs - a score is a judgement and a count
+          of passes is a gate, but time spent speaking is just what they
+          did. See speaking-time.tsx. */}
+      <SpeakingTime minutes={spokenMinutes} />
+
+      <div className="grid grid-cols-2 gap-2">
         <Stat value={attempted} label="attempted" />
         <Stat value={completed} label="complete" accent="text-mindset" />
-        <Stat value={spokenMinutes} label={spokenMinutes === 1 ? "minute spoken" : "minutes spoken"} accent="text-structure" />
       </div>
-      {spokenMinutes > 0 && (
-        <p className="text-sm text-ink-muted">
-          <b className="font-semibold tabular-nums text-ink">{spokenMinutes} {spokenMinutes === 1 ? "minute" : "minutes"}</b> of speaking
-          practiced and uploaded. Well done - every minute in front of the lens counts.
-        </p>
-      )}
       {/* The journey: five letters that always read S T O R Y, and the
           challenges of whichever one is open, named and described.
           journey-phases.tsx says why. */}

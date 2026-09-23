@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { badgeDefs } from "@/data/badges";
 import { CoinIdea, CupIdea, MedalIdea } from "@/components/trophy-ideas";
 import { PlinthMount, RingMount, SpotlightMount, WedgeMount } from "@/components/trophy-mounts";
+import { ShapeInRing, ShapeOnPlinth, ShapeUnderLight } from "@/components/trophy-shapes";
 
 export const metadata: Metadata = { title: "Trophy ideas" };
 
@@ -10,6 +11,29 @@ export const metadata: Metadata = { title: "Trophy ideas" };
 // point is to choose one.
 
 const SAMPLE = [badgeDefs[0], badgeDefs[6], badgeDefs[12], badgeDefs[18]].filter(Boolean);
+
+// The badge's own symbol AS the trophy - each one a different
+// silhouette, which is the thing a disc can never be.
+const SHAPES = [
+  {
+    key: "shape-plinth",
+    name: "H - The symbol, on a plinth",
+    note: "The badge's own symbol cut out large, given thickness by stacking copies of itself into shadow, lit from the top left and stood on a block. A shelf of these is forty-four different shapes rather than forty-four circles.",
+    Big: ShapeOnPlinth,
+  },
+  {
+    key: "shape-ring",
+    name: "I - The symbol, in a ring",
+    note: "The same cut-out held inside an open ring on a post. The silhouette still reads, and the ring gives every trophy a shared frame so a shelf of them lines up instead of jostling.",
+    Big: ShapeInRing,
+  },
+  {
+    key: "shape-light",
+    name: "J - The symbol, under a light",
+    note: "On a tapered column with a cone coming down over it - for the one trophy standing alone in the case, where the shape gets to be the only thing on screen.",
+    Big: ShapeUnderLight,
+  },
+] as const;
 
 // The medallions that already exist, mounted four ways. The art is
 // untouched: only what it stands in changes.
@@ -65,7 +89,7 @@ export default function TrophyIdeasPage() {
   return (
     <main className="mx-auto flex max-w-4xl flex-col gap-10 px-4 py-10">
       <header className="flex flex-col gap-2">
-        <h1 className="text-3xl font-semibold tracking-tight">Seven trophies</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">Ten trophies</h1>
         <p className="max-w-xl text-sm text-ink-muted">
           Two families. The first four take the badge art that already exists and ask what it should stand in. The
           last three draw a disc from scratch with the lion on it. Everything here is CSS - a real perspective, a real
@@ -75,6 +99,34 @@ export default function TrophyIdeasPage() {
       </header>
 
       <section className="flex flex-col gap-1 border-b border-navy-600 pb-3">
+        <h2 className="text-2xl font-bold tracking-tight text-ink">The symbol is the trophy</h2>
+        <p className="max-w-xl text-sm text-ink-muted">
+          A disc is a disc whatever is printed on it, and the thing that makes one trophy different from another has
+          to be read rather than seen. A flame, a microphone, a star, a pair of hands have their own silhouettes - so
+          here the badge&apos;s own symbol is cut out large, given real thickness, lit, and stood on something.
+        </p>
+      </section>
+
+      {SHAPES.map(({ key, name, note, Big }) => (
+        <section key={key} className="flex flex-col gap-4 rounded-2xl border border-navy-600 bg-navy-800 p-5">
+          <div className="flex flex-col gap-1">
+            <h3 className="text-xl font-bold tracking-tight text-ink">{name}</h3>
+            <p className="max-w-2xl text-sm text-ink-muted">{note}</p>
+          </div>
+          <div className="flex flex-wrap items-end justify-center gap-8 rounded-xl bg-navy-950/60 p-6">
+            {SAMPLE.map((b) => (
+              <Big key={b.id} id={b.id} icon={b.icon} won />
+            ))}
+          </div>
+          <div className="flex flex-wrap items-end justify-center gap-6 rounded-xl bg-navy-950/60 p-5">
+            {SAMPLE.map((b, i) => (
+              <Big key={b.id} id={b.id} icon={b.icon} won={i === 0} size={58} />
+            ))}
+          </div>
+        </section>
+      ))}
+
+      <section className="flex flex-col gap-1 border-b border-navy-600 pb-3 pt-6">
         <h2 className="text-2xl font-bold tracking-tight text-ink">The medallions, mounted</h2>
         <p className="max-w-xl text-sm text-ink-muted">
           The art for all forty-four badges already exists and is the most characterful thing in the app - each one
