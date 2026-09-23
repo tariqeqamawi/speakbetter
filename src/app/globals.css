@@ -2255,6 +2255,24 @@ html.bare .demo-banner {
   }
 }
 
+/* The dial's tracer: the head of light sweeps to whatever the thumb
+ * is on rather than jumping there, so moving between colors draws a
+ * line round the ring instead of blinking from one place to another.
+ * The tail follows because it is part of the same rotated group. */
+.dial-comet {
+  transition:
+    transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 300ms ease,
+    color 300ms ease;
+  filter: drop-shadow(0 0 3px currentColor);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dial-comet {
+    transition: opacity 200ms ease;
+  }
+}
+
 /* The gleam travelling across a medallion's face - the one thing that
  * makes a flat disc read as polished metal rather than as a picture of
  * a disc. Skewed, so it crosses like light off a curved surface, and

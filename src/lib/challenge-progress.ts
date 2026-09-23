@@ -34,7 +34,8 @@ export function challengeProgress(
   );
   const passed = attemptsFor.some((a) => a.passed);
 
-  // The passive Mindset Toolbox is completed purely by watching.
+  // The one passive challenge - Confidence & Presence - is completed
+  // purely by watching.
   if (challenge.passive) {
     const ratio = warmUpTotal === 0 ? 0 : warmUpWatched / warmUpTotal;
     return {

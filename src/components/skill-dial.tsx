@@ -4,7 +4,7 @@ import { RoaringLion } from "@/components/roaring-lion";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { categories, type CategoryId } from "@/data/categories";
 import { lessonsInCategory } from "@/data/lessons";
 import { CategoryIcon } from "@/components/category-icons";
@@ -24,6 +24,16 @@ const ARC_R = 41;
 /** The ring's circumference and one color's length of it. */
 const CIRC = 2 * Math.PI * ARC_R;
 const SEGMENT = CIRC / categories.length;
+
+/** The tail behind the head: short arcs, each a little fainter and a
+ *  little thinner than the one in front of it. Segments rather than a
+ *  gradient stroke, because a gradient along a curved path has to be
+ *  approximated anyway and six arcs are exact. */
+const TAIL = Array.from({ length: 7 }, (_, i) => ({
+  from: i * 7.5,
+  to: (i + 1) * 7.5,
+  opacity: 0.62 * Math.pow(0.72, i),
+}));
 
 function polar(angleDeg: number, r: number): { x: number; y: number } {
   const rad = ((angleDeg - 90) * Math.PI) / 180;
@@ -48,8 +58,21 @@ export function SkillDial() {
   const router = useRouter();
   const prefix = useSkillsPrefix();
   const { state } = useStore();
-  const [hovered, setHovered] = useState<CategoryId | null>(null);
+  const [hovered, setHoveredRaw] = useState<CategoryId | null>(null);
   const dialRef = useRef<HTMLDivElement>(null);
+  /** Where the head of the tracer sits - the middle of the live
+   *  color's arc. It holds its last angle when nothing is hovered, so
+   *  the light fades out where the thumb left rather than snapping
+   *  back to the top. */
+  const [headAngle, setHeadAngle] = useState(0);
+  /** Set the live color, and remember the angle the tracer should be
+   *  at - here rather than during render, which may not touch a ref. */
+  const setHovered = useCallback((id: CategoryId | null) => {
+    setHoveredRaw(id);
+    if (!id) return;
+    const i = categories.findIndex((c) => c.id === id);
+    if (i >= 0) setHeadAngle(i * NODE_ANGLE + NODE_ANGLE / 2);
+  }, []);
 
   // On touch, the dial works like a real dial: press a color and it
   // lights, slide the thumb and the highlight follows, release over a
@@ -104,7 +127,7 @@ export function SkillDial() {
       dial.removeEventListener("touchend", onEnd);
       dial.removeEventListener("touchcancel", onCancel);
     };
-  }, [router, prefix]);
+  }, [router, prefix, setHovered]);
 
   const active = hovered ? categories.find((c) => c.id === hovered) : null;
   const activeIndex = active ? categories.indexOf(active) : -1;
@@ -171,6 +194,37 @@ export function SkillDial() {
           transform="rotate(-90 50 50)"
           className="dial-sweep"
         />
+
+        {/* The tracer: a head of light where the thumb is, with a tail
+            trailing behind it round the ring. The whole group rotates
+            to the live angle and the rotation is transitioned, so
+            moving between colors sweeps rather than jumps - and the
+            tail points back the way you came. */}
+        <g
+          className="dial-comet"
+          style={{
+            transform: `rotate(${headAngle}deg)`,
+            transformOrigin: "50px 50px",
+            opacity: active ? 1 : 0,
+            color: active ? `var(--color-${active.id})` : "transparent",
+          }}
+        >
+          {TAIL.map((t, i) => (
+            <path
+              key={i}
+              d={arcPath(-t.from, -t.to, ARC_R)}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.6 - i * 0.22}
+              strokeLinecap="round"
+              opacity={t.opacity}
+            />
+          ))}
+          {/* the head, and the light it throws */}
+          <circle cx="50" cy={50 - ARC_R} r="4.6" fill="currentColor" opacity="0.18" />
+          <circle cx="50" cy={50 - ARC_R} r="2.6" fill="currentColor" opacity="0.45" />
+          <circle cx="50" cy={50 - ARC_R} r="1.5" fill="#fff" opacity="0.92" />
+        </g>
       </svg>
 
       {/* The hub: the lion, ringed in the color the pointer is on. It

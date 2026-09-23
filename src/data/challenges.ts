@@ -77,7 +77,7 @@ export interface Challenge {
   title: string;
   /** Vimeo id of the challenge explainer video; null for the passive item */
   vimeoId: string | null;
-  /** Passive items are watched, not recorded (the Mindset Toolbox) */
+  /** Passive items are watched, not recorded (Confidence & Presence) */
   passive?: boolean;
   /**
    * A baseline is the "before": the student as they arrived, recorded
@@ -158,12 +158,12 @@ export const challenges: Challenge[] = [
   {
     slug: "mindset-toolbox",
     phase: "S",
-    title: "Watch the Mindset Toolbox",
+    title: "Watch All The Confidence & Presence Skills",
     vimeoId: null,
     passive: true,
     brief:
-      "The one challenge you complete by watching: work through the green Mindset & Psychology lessons in Skills. Everything else in the course stands on this foundation.",
-    criteria: ["Watch the Mindset & Psychology lessons in Skills"],
+      "The one challenge you complete by watching: work through the green Confidence & Presence lessons in Skills. Everything else in the course stands on this foundation.",
+    criteria: ["Watch the Confidence & Presence lessons in Skills"],
     targetSkills: ["mindset"],
     relatedLessonIds: [
       "1081029629",

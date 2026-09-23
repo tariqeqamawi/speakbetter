@@ -565,7 +565,18 @@ export function JourneyMap({
                       height: h + 90,
                       "--grid-max": locked ? 0.09 : 0.24,
                       animationDelay: `${i * 2.6}s`,
-                      backgroundImage: `repeating-linear-gradient(180deg, ${color} 0 1px, transparent 1px 30px), repeating-linear-gradient(90deg, ${color} 0 1px, transparent 1px 30px)`,
+                      // Contours, not graph paper. Three families of
+                      // rings from three different centres, at
+                      // different ellipse ratios and spacings: where
+                      // they cross they read as the contour lines of
+                      // hills, which is what a road through territory
+                      // should be drawn on. A square grid said
+                      // "spreadsheet" underneath a map.
+                      backgroundImage: [
+                        `repeating-radial-gradient(ellipse 62% 38% at 16% 24%, ${color} 0 1px, transparent 1px 26px)`,
+                        `repeating-radial-gradient(ellipse 78% 54% at 82% 58%, ${color} 0 1px, transparent 1px 34px)`,
+                        `repeating-radial-gradient(ellipse 48% 72% at 44% 92%, ${color} 0 1px, transparent 1px 29px)`,
+                      ].join(", "),
                     } as React.CSSProperties
                   }
                 />
