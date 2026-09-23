@@ -62,13 +62,16 @@ export function CoachUpgrade() {
         ))}
       </ul>
 
-      <UnlockButton plan="coached" upgrade className="w-full max-w-xs">
-        {upgradeOffer.cta}
-      </UnlockButton>
+      <div className="flex w-full flex-col items-center gap-1.5">
+        <UnlockButton plan="coached" upgrade className="w-full max-w-xs">
+          {upgradeOffer.cta}
+        </UnlockButton>
+        <span className="text-xs font-medium text-ink-faint">{upgradeOffer.term}</span>
+      </div>
 
       <p className="text-center text-xs text-ink-faint text-balance">
-        One payment. Everything you&apos;ve already recorded stays exactly where it is - and Coach goes back through
-        it the moment he can speak.
+        One payment, and it&apos;s the difference only - you&apos;re not charged twice. Everything you&apos;ve already
+        recorded stays exactly where it is, and Coach goes back through it the moment he can speak.
       </p>
     </section>
   );

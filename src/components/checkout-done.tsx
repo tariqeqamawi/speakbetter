@@ -50,8 +50,8 @@ export function CheckoutDone({ plan, email }: { plan: string; email: string | nu
         </h1>
         <p className="text-sm text-ink-muted text-balance">
           {returning
-            ? "Every review from here is spoken in his voice, and you can ask him anything, any time."
-            : `You have ${tier?.name ?? "the course"} - the lessons, the deck, and the whole STORY journey. Let's find out where you're starting from.`}
+            ? "For the rest of your six weeks every review is spoken in his voice, and you can ask him anything, any time."
+            : `Six weeks of ${tier?.name ?? "the course"} - the lessons, the deck, and the whole STORY journey. Let's find out where you're starting from.`}
         </p>
         {email && <p className="text-xs text-ink-faint">Receipt on its way to {email}.</p>}
       </div>

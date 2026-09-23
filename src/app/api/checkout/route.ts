@@ -15,22 +15,22 @@ export const maxDuration = 30;
 const WHAT: Record<Purchase, { name: string; blurb: string; cents: number }> = {
   foundations: {
     name: "Speak Better - Starter",
-    blurb: "All 81 lessons, the deck, the 24-challenge journey, and Coach's written review on every take.",
+    blurb: "Six weeks of access: all 81 lessons, the deck, the 24-challenge journey, and Coach's written review on every take.",
     cents: priceCents.foundations,
   },
   coached: {
     name: "Speak Better - Full Experience",
-    blurb: "Everything in Starter, plus Coach's spoken review with captions and Coach on call, 24/7.",
+    blurb: "Six weeks of access: everything in Starter, plus Coach's spoken review with captions and Coach on call, 24/7.",
     cents: priceCents.coached,
   },
   founders: {
     name: "Speak Better - Ultimate",
-    blurb: "The Full Experience, the live cohort, the monthly session with the teacher, the printed deck and the book.",
+    blurb: "Six weeks of the Full Experience, the live cohort, the session with the teacher, and the printed deck and book to keep.",
     cents: priceCents.founders,
   },
   upgrade: {
     name: "Speak Better - upgrade to the Full Experience",
-    blurb: "Coach out loud, and Coach on call. The difference between Starter and the Full Experience.",
+    blurb: "Coach out loud, and Coach on call, for the rest of your six weeks. The difference between Starter and the Full Experience.",
     cents: UPGRADE_CENTS,
   },
 };

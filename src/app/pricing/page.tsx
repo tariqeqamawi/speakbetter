@@ -18,7 +18,7 @@ export default function PricingPage() {
         </Link>
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Start free. Keep the method. Add the coach.</h1>
         <p className="max-w-xl text-ink-muted">
-          Record your baseline for nothing and get one real review. Then the method is one payment, for good - and the
+          Record your baseline for nothing and get one real review. Then the cohort is one payment for six weeks - and the
           coach who watches every take is a membership you can stop any time.
         </p>
       </header>

@@ -331,7 +331,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
       {trialSpent && !trialBlocked && stage.kind === "idle" && (
         <UpgradePanel
           title="Your free review is used"
-          body="That was Coach watching your take - the score, the spectrum, what to do next. Every take gets that with the Full Experience; the method itself is one payment with Starter."
+          body="That was Coach watching your take - the score, the spectrum, what to do next. Every take gets that with the Full Experience; Starter is the same method and the same review, written. One payment, six weeks."
           cta="Unlock the rest of the journey"
         />
       )}

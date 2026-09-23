@@ -60,10 +60,13 @@ const foundations = ["lessons", "deck", "journey", "written", "loop", "device"];
 const coached = [...foundations, "coach", "spoken", "ask", "board", "reviews"];
 const founders = [...coached, "live", "cohort", "printed", "book", "first"];
 
-// The first cohort's prices: three one-off payments, no subscription.
-// A cohort starts and finishes together, so a monthly plan would be
-// asking somebody to keep paying for a thing that has already ended -
-// and the gap between Starter and the Full Experience is exactly the
+// The first cohort's prices: three one-off payments for SIX WEEKS of
+// access, not a subscription and not lifetime. A cohort starts and
+// finishes together, so the thing being bought is a run of the course
+// with everybody else on it - and that has to be said everywhere the
+// price is, not buried in terms.
+//
+// The gap between Starter and the Full Experience is exactly the
 // UPGRADE price below, so upgrading mid-cohort costs the difference
 // and nothing more.
 export const tiers: Tier[] = [
@@ -72,23 +75,23 @@ export const tiers: Tier[] = [
     name: "Starter",
     tagline: "The method, and Coach in writing.",
     price: "$300",
-    term: "one payment, lifetime access",
+    term: "one payment - six weeks of access",
     has: foundations,
     accent: "mindset",
     cta: "Get Starter",
-    note: "Upgrade to the Full Experience any time for $200.",
+    note: "Six weeks. Upgrade to the Full Experience any time for $200.",
   },
   {
     id: "coached",
     name: "Full Experience",
     tagline: "Coach watches every take, and answers you out loud.",
     price: "$500",
-    term: "one payment, lifetime access",
+    term: "one payment - six weeks of access",
     featured: true,
     has: coached,
     accent: "structure",
     cta: "Get the Full Experience",
-    note: "Coach on call, 24/7.",
+    note: "Six weeks, with Coach on call 24/7.",
   },
   {
     id: "founders",
@@ -96,11 +99,11 @@ export const tiers: Tier[] = [
     sub: "Founders complete set, including the physical card deck and the physical book",
     tagline: "The whole system, with the teacher in the room.",
     price: "$1,000",
-    term: "one payment - everything, and the cohort",
+    term: "one payment - six weeks, and the deck and book are yours to keep",
     has: founders,
     accent: "storytelling",
     cta: "Join the Founders cohort",
-    note: "Limited seats per cohort.",
+    note: "Six weeks, live. Limited seats per cohort.",
   },
 ];
 
@@ -124,6 +127,8 @@ export const upgradeOffer = {
   body:
     "Coach already watches every take you record and writes you the review. The Full Experience is him out loud - the review spoken in his voice with the words on screen - and him on call: ask him anything about how you are developing, any time, and he answers from your own record.",
   cta: "Upgrade for $200",
+  /** Said under the button: what the $200 buys, and for how long. */
+  term: "For the rest of your six weeks.",
 } as const;
 
 /** What the free baseline lets a student do before paying. */
