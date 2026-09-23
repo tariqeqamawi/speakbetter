@@ -104,7 +104,7 @@ export const lessons: Lesson[] = [
   { vimeoId: "1081198604", title: "How To Memorize Your Talks", category: "advanced" },
   { vimeoId: "1081165164", title: "Memorized Inserts", category: "advanced" },
   { vimeoId: "1081200223", title: "Staying Succinct: Pro Tip", category: "advanced" },
-  { vimeoId: "1081032074", title: "How To Speak Naturally To a Phone or Camera", category: "advanced" },
+  { vimeoId: "1081032074", title: "How To Speak Naturally To a Phone or Camera", category: "mindset" },
   { vimeoId: "1081032253", title: "Keep The Light Source In Front", category: "advanced" },
 ];
 

@@ -62,7 +62,7 @@ for (const { id, body } of lines) {
   });
   if (!res.ok) {
     failed.push(id);
-    console.error(`${id} failed: ${res.status}`);
+    console.error(`${id} failed: ${res.status}${res.status === 429 ? " - voice quota spent, try again later" : ""}`);
     // The voice model rate-limits a run of calls; waiting longer lets
     // the next pass pick up whatever this one missed.
     await new Promise((r) => setTimeout(r, 8000));

@@ -91,7 +91,20 @@ export async function POST(request: Request) {
     return audio(out, false);
   } catch (err) {
     console.error("[speak] failed", err);
-    return NextResponse.json({ error: "The coach lost its voice for a moment." }, { status: 502 });
+    // A spent quota is not "a moment" and should never be reported as
+    // one: told that the coach lost his voice, the next person to see
+    // this goes looking at the text they sent. Say which it is.
+    const detail = err instanceof Error ? err.message : String(err);
+    const out = /RESOURCE_EXHAUSTED|429|quota/i.test(detail);
+    return NextResponse.json(
+      {
+        error: out
+          ? "The coach's voice has hit its quota for now - the words are still here."
+          : "The coach lost its voice for a moment.",
+        reason: out ? "quota" : "failed",
+      },
+      { status: out ? 429 : 502 },
+    );
   }
 }
 

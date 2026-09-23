@@ -80,3 +80,38 @@ export function pickHold(): { text: string; src: string } {
   const i = Math.floor(Math.random() * HOLDS.length);
   return { text: HOLDS[i], src: holdClip(i) };
 }
+
+// ── At the record button ─────────────────────────────────────────────
+//
+// The moment a student scrolls down to "Ready for the challenge?" is
+// the moment they are deciding whether to do it today, and it is the
+// one moment in the app where a coach would actually say something.
+// So he does - once, when the card comes into view, and never again on
+// that visit.
+//
+// Fixed lines, from files, for the same reasons as everything else he
+// says: instant, free, and still there when the voice model is not.
+
+export const ROARS: string[] = [
+  "Ready for the challenge?",
+  "Let's go. Hit record.",
+  "You've got this.",
+  "Upload your challenge now.",
+  "I'm ready for you.",
+  "Lights, camera, action.",
+  "Let's get those cameras rolling.",
+  "You were born for this.",
+  "Let me hear you roar.",
+  "Show me your true colors.",
+];
+
+/** The clip for a line at the record button, by its place in the list. */
+export function roarClip(index: number): string {
+  return `/coach/roar-${String(index + 1).padStart(2, "0")}.mp3`;
+}
+
+/** One at random, with the file that says it. */
+export function pickRoar(): { text: string; src: string } {
+  const i = Math.floor(Math.random() * ROARS.length);
+  return { text: ROARS[i], src: roarClip(i) };
+}

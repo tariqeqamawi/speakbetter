@@ -33,7 +33,11 @@ function linesFrom(text, name, prefix) {
 }
 
 const source = readFileSync("src/data/greetings.ts", "utf8");
-const GREETINGS = [...linesFrom(source, "GREETINGS", "greet"), ...linesFrom(source, "HOLDS", "hold")];
+const GREETINGS = [
+  ...linesFrom(source, "GREETINGS", "greet"),
+  ...linesFrom(source, "HOLDS", "hold"),
+  ...linesFrom(source, "ROARS", "roar"),
+];
 
 if (!GREETINGS.length) throw new Error("no greetings found in src/data/greetings.ts");
 
@@ -52,7 +56,7 @@ for (const { line, name: n } of GREETINGS) {
     body: JSON.stringify({ text: line }),
   });
   if (!res.ok) {
-    console.error(`${n} failed: ${res.status} ${(await res.text()).slice(0, 160)}`);
+    console.error(`${n} failed: ${res.status}${res.status === 429 ? " - voice quota spent, try again later" : " " + (await res.text()).slice(0, 120)}`);
     // The voice model rate-limits a run of calls; wait longer and the
     // next pass picks up whatever this one missed.
     await new Promise((r) => setTimeout(r, 8000));

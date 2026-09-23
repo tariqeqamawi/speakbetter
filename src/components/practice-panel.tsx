@@ -42,6 +42,7 @@ import { capturePoster, keepVideo } from "@/lib/attempt-videos";
 import { measureVoice } from "@/lib/voice-profile";
 import { TalkingLion, type TalkingLionHandle } from "@/components/talking-lion";
 import { speakUrl } from "@/lib/coach/voice";
+import { ReadyCard } from "@/components/ready-card";
 import { pickHold } from "@/data/greetings";
 
 // The practice loop (master plan §06, steps 3–7; build plan Phase 4).
@@ -383,9 +384,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
       )}
 
       {stage.kind === "idle" && (!gate || gate.open) && !trialBlocked && !trialSpent && (
-        <div data-tour="record" className="flex flex-col items-center gap-4 rounded-2xl border border-navy-600 bg-navy-800 p-6 text-center">
-          <p className="text-lg font-semibold tracking-tight text-ink">Ready for the challenge?</p>
-          <LionMouth level={0} className="w-28" />
+        <ReadyCard>
           <input
             ref={recordRef}
             type="file"
@@ -429,7 +428,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
             Your video goes to Coach for review and is deleted the moment the review is back - it&apos;s never stored by
             us. The feedback is what&apos;s kept, and your last three recordings stay on this device.
           </p>
-        </div>
+        </ReadyCard>
       )}
 
       {stage.kind === "uploading" && (
