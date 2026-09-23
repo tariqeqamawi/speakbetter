@@ -2215,6 +2215,40 @@ html.bare .demo-banner {
   }
 }
 
+/* The gleam travelling across a medallion's face - the one thing that
+ * makes a flat disc read as polished metal rather than as a picture of
+ * a disc. Skewed, so it crosses like light off a curved surface, and
+ * long gaps between passes so it never becomes a strobe. */
+.trophy-gleam {
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 30%,
+    rgba(255, 255, 255, 0.55) 50%,
+    rgba(255, 255, 255, 0.05) 70%,
+    transparent 100%
+  );
+  transform: skewX(-18deg);
+  animation: trophy-gleam 4.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes trophy-gleam {
+  0% {
+    transform: translateX(0) skewX(-18deg);
+  }
+  55%,
+  100% {
+    transform: translateX(420%) skewX(-18deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trophy-gleam {
+    animation: none;
+    opacity: 0.25;
+  }
+}
+
 /* The light running across a cup, as though it were turning. */
 .trophy-sheen {
   animation: trophy-sheen 5.5s ease-in-out infinite;
