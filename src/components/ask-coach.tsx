@@ -47,6 +47,22 @@ const EXAMPLES = [
   "What did you notice in my last take?",
 ];
 
+/** What Coach says when the page opens. Fixed lines, no name in them:
+ *  a greeting is the one thing in this app that should never be
+ *  assembled from the record, and a lion who says your name every
+ *  single time you open a page stops sounding like a greeting. */
+const GREETINGS = [
+  "Welcome back.",
+  "Back for more, I see.",
+  "How can I help?",
+  "Ready for more?",
+  "You're back.",
+  "Ask me anything.",
+  "What can I do for you today?",
+  "Hey there.",
+  "Look who returns.",
+];
+
 function ExampleQuestion() {
   const [i, setI] = useState(0);
   useEffect(() => {
@@ -128,11 +144,7 @@ export function AskCoach() {
   useEffect(() => {
     if (!ready || greeted.current) return;
     greeted.current = true;
-    const first = state.displayName.trim().split(" ")[0];
-    const lines = first
-      ? [`Hey, ${first}.`, "Welcome back.", "Nice to see you.", "How can I help?", `Good to see you, ${first}.`]
-      : ["Hey.", "Welcome back.", "Nice to see you.", "How can I help?"];
-    const line = lines[Math.floor(Math.random() * lines.length)];
+    const line = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
     let alive = true;
     (async () => {
       try {
@@ -147,7 +159,7 @@ export function AskCoach() {
     return () => {
       alive = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [ready]);
 
   const ask = async (payload: { audio?: { data: string; mimeType: string }; question?: string }) => {
@@ -256,7 +268,11 @@ export function AskCoach() {
           : "Ask Coach";
 
   return (
-    <section className="flex flex-col items-center gap-3">
+    // An explicit width, not a shrink-to-fit one: this column is a flex
+    // item, so without it the width came from whatever was longest
+    // inside - and the lion, sized at 100% of it, changed with every
+    // example question and every button label.
+    <section className="flex w-full max-w-md flex-col items-center gap-3">
       <ExampleQuestion />
 
       {/* The lion is the page. Everything else is one button and two

@@ -37,7 +37,7 @@ export default function CoachPage() {
       </header>
 
       {/* The lion, centered in whatever room is left. */}
-      <div className="flex flex-1 items-center justify-center">
+      <div className="flex w-full flex-1 items-center justify-center">
         <AskCoach />
       </div>
 

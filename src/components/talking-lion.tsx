@@ -406,14 +406,14 @@ export const TalkingLion = forwardRef<
 
   return (
     <div className={`flex w-full flex-col items-center gap-4 ${className}`}>
-      <div className={`relative w-full ${large ? "max-w-lg" : "max-w-xs"}`}>
-        <LionMouth level={mouth} className="relative w-full" />
+      <div className={`relative w-full shrink-0 ${large ? "max-w-lg" : "max-w-xs"}`}>
+        <LionMouth level={mouth} className="relative w-full shrink-0" />
         {/* The logo's wave, alive: the same ribbons as the mark, drawn
             by the Soundwave the header uses, breathing with the level -
             flat and faint in silence, full when the coach is speaking. */}
         <div
           aria-hidden
-          className="-mx-[6%] -mt-4 w-[112%] will-change-transform"
+          className="-mx-[6%] -mt-4 w-[112%] shrink-0 will-change-transform"
           style={{
             // At rest the wave used to squash to a third of its height,
             // which read as a thin line under the lion rather than as
@@ -429,8 +429,8 @@ export const TalkingLion = forwardRef<
         {/* The captions: the phrase being said, over the wave, so the
             words are heard and seen together. The box keeps its height
             so the lion doesn't shift as phrases come and go. */}
-        {captions && phrases.length > 0 && (
-          <div className="pointer-events-none -mt-2 flex min-h-11 items-center justify-center px-1" aria-live="off">
+        {captions && (
+          <div className="pointer-events-none -mt-2 flex min-h-11 shrink-0 items-center justify-center px-1" aria-live="off">
             {caption && (
               <p
                 key={captionIndex}
