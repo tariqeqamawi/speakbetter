@@ -7,6 +7,7 @@ import { nextUp, continueWatching } from "@/lib/next-up";
 import { challenges, storyPhases } from "@/data/challenges";
 import { categories } from "@/data/categories";
 import { SpectrumWave } from "@/components/spectrum-wave";
+import { TodayCommunity } from "@/components/today-community";
 import { challengeProgress } from "@/lib/challenge-progress";
 import { categoryById } from "@/data/categories";
 import { VideoStill } from "@/components/video-still";
@@ -192,6 +193,11 @@ export function Today() {
           </Link>
         </section>
       )}
+
+      {/* Who else is on the road - the question a student asks here,
+          on the page where they ask it. The Community tab is gone; its
+          board and its faces live in Today, with the rest a tap away. */}
+      <TodayCommunity />
 
       {recent.length > 0 && (
         <section className="flex flex-col gap-3">

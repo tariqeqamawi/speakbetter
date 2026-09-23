@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { TopBar, BottomTabs } from "@/components/nav";
+import { TopBar, BottomTabs, Sidebar } from "@/components/nav";
+import { AppShell } from "@/components/app-shell";
 import { GuidedTour } from "@/components/guided-tour";
 import { StoreProvider } from "@/lib/store";
 import { AmbientBackground } from "@/components/ambient-background";
@@ -75,9 +76,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {/* Phones and tablets keep the narrow, readable column; a laptop
               has room to spare, so the container opens up rather than
               leaving half the screen as gutter. */}
-          <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-24 pt-8 sm:pb-12 xl:max-w-[96rem] xl:px-8">
-            {children}
-          </main>
+          <Sidebar />
+          <AppShell>{children}</AppShell>
           <BottomTabs />
           <CelebrationHost />
           <PushSync />

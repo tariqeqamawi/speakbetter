@@ -400,3 +400,23 @@ export function ZoomIcon({ className = "size-5" }: IconProps) {
     </svg>
   );
 }
+
+/** A house - Today, the place you start from. */
+export function HomeIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <path d="M4 10.5 12 4l8 6.5" />
+      <path d="M6 10v9a1 1 0 0 0 1 1h3.5v-5h3v5H17a1 1 0 0 0 1-1v-9" />
+    </svg>
+  );
+}
+
+/** A magnifier with a cursor - jump to any lesson or challenge. */
+export function SearchIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="M20 20l-4.6-4.6" />
+    </svg>
+  );
+}

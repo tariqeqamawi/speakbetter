@@ -29,7 +29,7 @@ function savedName(): string {
   }
 }
 
-export function WeeklyBoard() {
+export function WeeklyBoard({ compact = false }: { compact?: boolean }) {
   const { state, ready } = useStore();
   // The saved name is read after mount - it lives in localStorage, and
   // the server renders the same blank the client first shows.
@@ -112,9 +112,11 @@ export function WeeklyBoard() {
             <TrophyIcon className="size-4 text-storytelling" />
             This week&apos;s board
           </h2>
-          <p className="text-xs text-ink-muted">
-            XP earned since Monday. It resets every week, so the top is whoever practiced most in the last seven days.
-          </p>
+          {!compact && (
+            <p className="text-xs text-ink-muted">
+              XP earned since Monday. It resets every week, so the top is whoever practiced most in the last seven days.
+            </p>
+          )}
         </div>
         {board && (
           <span className="shrink-0 text-xs tabular-nums text-ink-faint">
@@ -177,7 +179,7 @@ export function WeeklyBoard() {
 
       {board && board.top.length > 0 ? (
         <ol className="flex flex-col gap-1">
-          {board.top.map((row) => (
+          {(compact ? board.top.slice(0, 3) : board.top).map((row) => (
             <li
               key={row.rank}
               className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm ${
