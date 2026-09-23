@@ -80,6 +80,8 @@ export interface Attempt {
   spoken?: string;
   /** The same few things measured in every review, for comparing takes
    *  over time (lib/coach/rubric.ts). */
+  /** Every instance Coach put a time on, for the replay (§14). */
+  moments?: { at: string; kind: string; category: string; what: string }[];
   observations?: Observations;
   /** What Coach said has shifted since earlier takes. */
   progress?: string;

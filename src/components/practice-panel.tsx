@@ -251,6 +251,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
         skillsSpotted: result.skillsSpotted,
         strengths: result.strengths,
         spoken: result.spoken,
+        moments: result.moments,
         observations: result.observations,
         progress: result.progress,
         voice: (await voice) ?? undefined,
@@ -469,6 +470,8 @@ export function takeHistory(attempts: Attempt[]) {
       score: a.score,
       passed: a.passed,
       spectrum: a.spectrum,
+      // moments are for the replay, not for comparing takes - eight
+      // takes of them would be most of the payload and none of the use.
       observations: a.observations,
       voice: a.voice
         ? {
@@ -896,15 +899,21 @@ export function Feedback({
 
       {settled && (
         <div
-          className={`coach-cue relative overflow-hidden rounded-xl border transition-opacity ${
-            verdictShown ? "opacity-100" : "opacity-0"
-          } ${
-            attempt.passed
-              ? "border-mindset/50 bg-mindset/10 px-4 py-6 shadow-[0_0_44px_-16px_var(--color-mindset)]"
-              : "border-storytelling/40 bg-storytelling/10 p-4"
+          className={`coach-cue relative overflow-hidden rounded-xl border transition-colors duration-500 ${
+            !verdictShown
+              ? "border-navy-600 bg-navy-900/60 p-4"
+              : attempt.passed
+                ? "border-mindset/50 bg-mindset/10 px-4 py-6 shadow-[0_0_44px_-16px_var(--color-mindset)]"
+                : "border-storytelling/40 bg-storytelling/10 p-4"
           }`}
           aria-live="polite"
         >
+          {!verdictShown && (
+            <p className="flex items-center justify-center gap-2 text-center text-sm font-medium text-ink-muted">
+              <ListenIcon className="size-4 shrink-0 text-ink-faint" />
+              Listen to Coach&apos;s feedback to find out whether you passed.
+            </p>
+          )}
           {verdictShown && (
             <>
               {attempt.passed && (
@@ -1076,7 +1085,7 @@ function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => v
         }}
         className="scale-90"
       />
-      {(state === "loading" || state === "ready") && (
+      {(state === "loading" || state === "ready" || state === "done") && (
         <button
           type="button"
           onClick={hear}
@@ -1090,7 +1099,11 @@ function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => v
               color, which is the background. */}
           <span className="flex items-center gap-2 text-navy-950">
             <ListenIcon className="size-4" />
-            {state === "loading" ? "Coach is putting his thoughts together…" : "Coach's review"}
+            {state === "loading"
+              ? "Coach is putting his thoughts together…"
+              : state === "done"
+                ? "Hear it again"
+                : "Coach's review"}
           </span>
         </button>
       )}

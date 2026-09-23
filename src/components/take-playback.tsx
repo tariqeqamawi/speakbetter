@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { categoryById, type CategoryId } from "@/data/categories";
 import { lessonByVimeoId } from "@/data/lessons";
-import { CategoryIcon } from "@/components/category-icons";
+import { MomentIcon } from "@/components/moment-icon";
 import type { Attempt } from "@/lib/store";
 
 // Watching your own take back, with what Coach saw floating up as it
@@ -23,6 +23,8 @@ interface Cue {
   at: number;
   category: CategoryId;
   label: string;
+  /** What the technique was, so its own symbol can be drawn. */
+  kind?: string;
 }
 
 function seconds(stamp: string | undefined): number | null {
@@ -32,9 +34,19 @@ function seconds(stamp: string | undefined): number | null {
   return Number(m[1]) * 60 + Number(m[2]);
 }
 
-/** Everything Coach put a time on, as cues in order. */
+/** Everything Coach put a time on, as cues in order.
+ *
+ *  `moments` is the real source: one entry per INSTANCE, so a student
+ *  who gestured five times sees the hand rise five times - which is
+ *  the thing a score cannot tell them. The older sources are kept for
+ *  reviews written before Coach was asked for them. */
 function cuesOf(attempt: Attempt): Cue[] {
   const out: Cue[] = [];
+  for (const m of attempt.moments ?? []) {
+    const at = seconds(m.at);
+    if (at === null) continue;
+    out.push({ at, category: m.category as CategoryId, label: m.what, kind: m.kind });
+  }
   for (const s of attempt.skillsSpotted ?? []) {
     const at = seconds(s.at);
     const lesson = lessonByVimeoId.get(s.lessonId);
@@ -47,13 +59,14 @@ function cuesOf(attempt: Attempt): Cue[] {
     const name = categoryById.get(note.category)?.short ?? "";
     out.push({ at, category: note.category, label: name });
   }
-  // One per second at most, earliest first - two icons in the same
-  // instant is confetti, not information.
-  const seen = new Set<number>();
+  // Earliest first, and one of each KIND per second: a gesture and a
+  // held lens in the same breath are two true things and both should
+  // rise, but the same thing twice in one second is confetti.
+  const seen = new Set<string>();
   return out
     .sort((a, b) => a.at - b.at)
     .filter((c) => {
-      const key = Math.round(c.at);
+      const key = `${Math.round(c.at)}:${c.kind ?? c.category}`;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
@@ -106,7 +119,7 @@ export function TakePlayback({ url, attempt }: { url: string; attempt: Attempt }
                 style={{ left: `${12 + ((i * 23) % 55)}%` }}
               >
                 <span className="grid size-10 place-items-center rounded-full border border-current bg-navy-950/80 shadow-[0_0_18px_-2px_currentColor] backdrop-blur-sm">
-                  <CategoryIcon category={cue.category} className="size-5" />
+                  <MomentIcon kind={cue.kind} category={cue.category} className="size-5" />
                 </span>
                 <span className="max-w-[9rem] truncate rounded-full bg-navy-950/80 px-2 py-0.5 text-[0.65rem] font-semibold backdrop-blur-sm">
                   {cue.label}
@@ -118,8 +131,8 @@ export function TakePlayback({ url, attempt }: { url: string; attempt: Attempt }
       </div>
       {cues.length > 0 && (
         <p className="text-xs text-ink-faint">
-          Watch it back and the colors you lit float up as they happen - {cues.length} moment
-          {cues.length === 1 ? "" : "s"} Coach put a time on.
+          Watch it back and everything Coach saw rises through the frame as it happens - {cues.length} moment
+          {cues.length === 1 ? "" : "s"}, each at the second it landed.
         </p>
       )}
     </div>
