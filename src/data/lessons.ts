@@ -73,7 +73,7 @@ export const lessons: Lesson[] = [
   { vimeoId: "1081198957", title: "Framework: Hook, Story, Close", category: "structure" },
   { vimeoId: "1080635988", title: "Speak As If To a Room of 9 Year Olds", category: "structure" },
 
-  // ── Speaker's mindset & psychology (green) ──────────────────────────
+  // ── Confidence & Presence (green) ───────────────────────────────────
   { vimeoId: "1081029629", title: "Why You Have a Fear of Public Speaking", category: "mindset" },
   { vimeoId: "1081029780", title: "You Are One Talk Away From Changing Your Life", category: "mindset" },
   { vimeoId: "1081029881", title: "Imagine Your Heart Is The One Speaking", category: "mindset" },

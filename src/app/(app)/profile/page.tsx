@@ -12,7 +12,6 @@ import { DashboardHeader, DashboardHeaderCompact } from "@/components/dashboard-
 import { challengeXp, challengeXpFor, lessonMinutes, phaseGate } from "@/lib/progress";
 import { listAllVideos, type StoredVideoMeta } from "@/lib/attempt-videos";
 import { useEffect, useState } from "react";
-import { SpectrumStrip } from "@/components/spectrum";
 import { useChallengeComplete } from "@/components/story-progress";
 import { CategoryIcon } from "@/components/category-icons";
 import { SectionBanner } from "@/components/section-banner";
@@ -47,11 +46,10 @@ import {
 // once, here, and placed by whichever layout is on.
 
 export default function DashboardPage() {
-  const { state, ready, attemptsFor } = useStore();
+  const { state, ready } = useStore();
   const isComplete = useChallengeComplete();
   const phone = useIsPhone();
   const posters = useAttemptPosters();
-  const takes = useKeptTakes();
 
   if (!ready) return null;
 
@@ -124,10 +122,11 @@ export default function DashboardPage() {
         })}
       </div>
 
-      {/* Phase by phase: one square per challenge, passed ones in the
-          phase's colour - the count is the picture - and the XP each
-          phase has paid so far against what it can. */}
-      <ul className="flex flex-col gap-2.5">
+      {/* Phase by phase: the challenges as stills - passed ones lit
+          with a tick, the rest dark beside them, the same way the
+          lessons read - and the XP each phase has paid against what it
+          can pay. */}
+      <ul className="flex flex-col gap-4">
         {storyPhases.map((phase, i) => {
           const inPhase = challenges.filter((c) => c.phase === phase.id);
           const done = inPhase.filter((c) => isComplete(c.slug)).length;
@@ -138,55 +137,113 @@ export default function DashboardPage() {
           const worth = inPhase.reduce((sum, c) => sum + challengeXp(c), 0);
           const gate = phaseGate(state, i);
           return (
-            <li key={phase.id} className="flex items-center gap-2.5">
-              <span className={`w-4 text-xs font-bold ${gate.open ? phase.textClass : "text-ink-faint"}`}>
-                {phase.id}
+            <li key={phase.id} className="flex flex-col gap-1.5">
+              <span className="flex items-center gap-2.5">
+                <span className={`w-4 text-xs font-bold ${gate.open ? phase.textClass : "text-ink-faint"}`}>
+                  {phase.id}
+                </span>
+                <span className="min-w-0 flex-1 truncate text-xs text-ink-muted">{phase.name}</span>
+                <span className="shrink-0 text-right text-[0.65rem] tabular-nums text-ink-faint">
+                  <b className={`font-semibold ${paid > 0 ? phase.textClass : ""}`}>{paid}</b>/{worth} XP
+                  <span className="pl-1.5">{done}/{inPhase.length} passed</span>
+                </span>
               </span>
-              <span className="w-24 shrink-0 truncate text-xs text-ink-muted">{phase.name}</span>
-              <span className="flex flex-1 flex-wrap gap-[3px]" aria-hidden>
-                {inPhase.map((c) => {
-                  const passed = isComplete(c.slug);
-                  return (
-                    <span
-                      key={c.slug}
-                      title={c.title}
-                      className={`h-2.5 w-2.5 rounded-[3px] ${
-                        passed ? `${phase.bgClass} shadow-[0_0_6px_-1px_currentColor] ${phase.textClass}` : "bg-navy-950 ring-1 ring-inset ring-navy-600"
-                      }`}
-                    />
-                  );
-                })}
-              </span>
-              <span className="w-20 shrink-0 text-right text-[0.65rem] tabular-nums text-ink-faint">
-                <b className={`font-semibold ${paid > 0 ? phase.textClass : ""}`}>{paid}</b>/{worth} XP
-                <span className="block text-[0.6rem]">{done}/{inPhase.length} passed</span>
+              <span className="-mx-5 flex gap-1.5 overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {[...inPhase]
+                  .sort((a, b) => Number(isComplete(b.slug)) - Number(isComplete(a.slug)))
+                  .map((c) => {
+                    const passed = isComplete(c.slug);
+                    return (
+                      <Link
+                        key={c.slug}
+                        href={`/challenges/${c.slug}`}
+                        title={passed ? c.title : gate.open ? `${c.title} - not passed yet` : `${c.title} - locked`}
+                        className={`relative aspect-video w-16 shrink-0 overflow-hidden rounded-md bg-navy-950 ${passed ? "" : "ring-1 ring-inset ring-navy-600"}`}
+                      >
+                        {c.vimeoId ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={`/thumbs/${c.vimeoId}.jpg`}
+                            alt=""
+                            loading="lazy"
+                            decoding="async"
+                            className={`size-full object-cover transition-[filter,opacity] ${passed ? "" : "opacity-25 grayscale"}`}
+                          />
+                        ) : (
+                          <span className={`block size-full ${phase.tintClass} ${passed ? "" : "opacity-40"}`} />
+                        )}
+                        {passed ? (
+                          <span className={`absolute bottom-0.5 right-0.5 grid size-4 place-items-center rounded-full bg-navy-950/85 ${phase.textClass}`}>
+                            <CheckIcon className="size-2.5" />
+                          </span>
+                        ) : (
+                          !gate.open && (
+                            <span className="absolute bottom-0.5 right-0.5 grid size-4 place-items-center rounded-full bg-navy-950/85 text-ink-faint">
+                              <LockIcon className="size-2.5" />
+                            </span>
+                          )
+                        )}
+                      </Link>
+                    );
+                  })}
               </span>
             </li>
           );
         })}
       </ul>
 
-      {/* Frames of the takes this device still holds, newest first -
-          the student's own face along the road. */}
-      {takes.length > 0 && (
-        <div className="flex flex-col gap-1.5">
-          <span className="text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint">Your takes</span>
-          <div className="-mx-5 flex gap-1.5 overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {takes.map((t) => {
-              const c = challenges.find((x) => x.slug === t.challengeSlug);
-              return (
-                <Link
-                  key={t.id}
-                  href={`/challenges/${t.challengeSlug}`}
-                  title={c?.title}
-                  className="relative h-20 w-14 shrink-0 overflow-hidden rounded-md bg-navy-950 ring-1 ring-navy-600"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={t.poster} alt="" className="size-full object-cover" />
-                </Link>
-              );
-            })}
-          </div>
+      {/* Your attempts and reviews - what used to be its own dashboard
+          tab. A take belongs beside the challenges it was for: the
+          frame this device still holds, and the review it earned. */}
+      {state.attempts.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <span className="text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint">
+            Your attempts and reviews
+          </span>
+          <ul className="flex flex-col gap-2">
+            {[...state.attempts]
+              .sort((a, b) => (a.at < b.at ? 1 : -1))
+              .slice(0, 6)
+              .map((attempt) => {
+                const challenge = challenges.find((c) => c.slug === attempt.challengeSlug);
+                const poster = posters.get(attempt.id);
+                return (
+                  <li key={attempt.id}>
+                    <Link
+                      href={`/review/${attempt.id}`}
+                      className="flex items-center gap-3 rounded-lg border border-navy-600 bg-navy-900/60 p-2 transition-colors hover:border-ink-faint"
+                    >
+                      <span className="relative h-12 w-9 shrink-0 overflow-hidden rounded-md bg-navy-950 ring-1 ring-navy-600">
+                        {poster ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={poster} alt="" className="size-full object-cover" />
+                        ) : (
+                          <span className="grid size-full place-items-center text-ink-faint">
+                            <FilmIcon className="size-4" />
+                          </span>
+                        )}
+                      </span>
+                      <span className="flex min-w-0 flex-1 flex-col">
+                        <span className="truncate text-sm font-medium text-ink">
+                          {challenge?.title ?? attempt.challengeSlug}
+                        </span>
+                        <span className="text-[0.65rem] text-ink-faint">
+                          {new Date(attempt.at).toLocaleDateString(undefined, { day: "numeric", month: "short" })} ·{" "}
+                          <span className={attempt.passed ? "text-mindset" : "text-storytelling"}>
+                            {attempt.passed ? "passed" : "didn't pass"}
+                          </span>{" "}
+                          · Coach&apos;s review →
+                        </span>
+                      </span>
+                      <span className="shrink-0 text-right text-base font-bold tabular-nums text-ink">
+                        {attempt.score}
+                        <span className="text-[0.6rem] font-medium text-ink-faint">/100</span>
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+          </ul>
         </div>
       )}
       <Link
@@ -253,28 +310,42 @@ export default function DashboardPage() {
                   <b className={`font-semibold ${cat.textClass}`}>{seen}</b>/{inCat.length}
                 </span>
               </span>
-              {/* The lessons watched in this colour, as stills with a
-                  tick - only the watched ones: a row of dimmed stills
-                  for the unwatched was clutter, not information. */}
-              {seen > 0 && (
-                <span className="-mx-5 flex gap-1.5 overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                  {inCat
-                    .filter((l) => state.watchedLessons.includes(l.vimeoId))
-                    .map((l) => (
+              {/* The colour's lessons as stills: the watched ones lit
+                  with a tick, the rest dark beside them - so what's done
+                  and what's waiting read in the same glance. Watched
+                  first, so the lit ones lead. */}
+              <span className="-mx-5 flex gap-1.5 overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {[...inCat]
+                  .sort((a, b) => {
+                    const sa = state.watchedLessons.includes(a.vimeoId) ? 0 : 1;
+                    const sb = state.watchedLessons.includes(b.vimeoId) ? 0 : 1;
+                    return sa - sb;
+                  })
+                  .map((l) => {
+                    const done = state.watchedLessons.includes(l.vimeoId);
+                    return (
                       <span
                         key={l.vimeoId}
-                        title={l.title}
-                        className="relative aspect-video w-16 shrink-0 overflow-hidden rounded-md bg-navy-900"
+                        title={done ? l.title : `${l.title} - not watched yet`}
+                        className={`relative aspect-video w-16 shrink-0 overflow-hidden rounded-md bg-navy-950 ${done ? "" : "ring-1 ring-inset ring-navy-600"}`}
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={`/thumbs/${l.vimeoId}.jpg`} alt="" loading="lazy" decoding="async" className="size-full object-cover" />
-                        <span className={`absolute bottom-0.5 right-0.5 grid size-4 place-items-center rounded-full bg-navy-950/85 ${cat.textClass}`}>
-                          <CheckIcon className="size-2.5" />
-                        </span>
+                        <img
+                          src={`/thumbs/${l.vimeoId}.jpg`}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                          className={`size-full object-cover transition-[filter,opacity] ${done ? "" : "opacity-25 grayscale"}`}
+                        />
+                        {done && (
+                          <span className={`absolute bottom-0.5 right-0.5 grid size-4 place-items-center rounded-full bg-navy-950/85 ${cat.textClass}`}>
+                            <CheckIcon className="size-2.5" />
+                          </span>
+                        )}
                       </span>
-                    ))}
-                </span>
-              )}
+                    );
+                  })}
+              </span>
             </li>
           );
         })}
@@ -292,59 +363,6 @@ export default function DashboardPage() {
   const signaturePanel = <SpectrumSignature state={state} />;
   const streakPanel = <StreakCalendar state={state} />;
   const badgesPanel = <BadgeCollection state={state} />;
-
-  const attemptsPanel = state.attempts.length > 0 && (
-    <section className="flex flex-col gap-3">
-      <h2 className="text-sm font-medium uppercase tracking-wider text-ink-faint">
-        Recent attempts
-      </h2>
-      <ul className="flex flex-col gap-2">
-        {[...state.attempts]
-          .reverse()
-          .slice(0, 8)
-          .map((attempt) => {
-            const challenge = challenges.find(
-              (c) => c.slug === attempt.challengeSlug,
-            );
-            const tries = attemptsFor(attempt.challengeSlug).length;
-            const poster = posters.get(attempt.id);
-            return (
-              <li key={attempt.id}>
-                <Link
-                  href={`/review/${attempt.id}`}
-                  className="flex items-center gap-3 rounded-lg border border-navy-600 bg-navy-800 px-3 py-2.5 transition-colors hover:bg-navy-700"
-                >
-                  {/* A frame of the recording, from this device's own
-                      copy - nothing is stored by us - where one is kept. */}
-                  <span className="relative h-14 w-10 shrink-0 overflow-hidden rounded-md bg-navy-950 ring-1 ring-navy-600">
-                    {poster ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={poster} alt="" className="size-full object-cover" />
-                    ) : (
-                      <span className="grid size-full place-items-center text-ink-faint">
-                        <FilmIcon className="size-4" />
-                      </span>
-                    )}
-                  </span>
-                  <span className="flex-1 text-sm font-medium text-ink">
-                    {challenge?.title ?? attempt.challengeSlug}
-                    <span className="ml-2 text-xs font-normal text-ink-faint">
-                      {tries > 1 ? `${tries} attempts` : "1 attempt"}
-                    </span>
-                  </span>
-                  <span className="hidden w-32 sm:block">
-                    <SpectrumStrip spectrum={attempt.spectrum} />
-                  </span>
-                  <span className="w-10 text-right text-sm font-bold tabular-nums text-ink">
-                    {attempt.score}
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
-      </ul>
-    </section>
-  );
 
   const headerPanel = <DashboardHeader />;
 
@@ -384,17 +402,6 @@ export default function DashboardPage() {
       accentClass: "text-mindset",
       content: badgesPanel,
     },
-    ...(attemptsPanel
-      ? [
-          {
-            id: "attempts",
-            name: "Attempts",
-            Icon: FilmIcon,
-            accentClass: "text-figurative",
-            content: attemptsPanel,
-          },
-        ]
-      : []),
   ];
 
   return (
@@ -421,7 +428,6 @@ export default function DashboardPage() {
           </div>
 
           {badgesPanel}
-          {attemptsPanel}
         </>
       )}
     </div>
@@ -439,19 +445,6 @@ function Stat({ value, label, accent = "text-ink" }: { value: number; label: str
 }
 
 /** The recordings this device still holds, newest first, with a frame each. */
-function useKeptTakes(): StoredVideoMeta[] {
-  const [takes, setTakes] = useState<StoredVideoMeta[]>([]);
-  useEffect(() => {
-    let alive = true;
-    listAllVideos().then((rows) => {
-      if (alive) setTakes(rows.filter((r) => r.poster));
-    });
-    return () => {
-      alive = false;
-    };
-  }, []);
-  return takes;
-}
 
 /** Attempt id -> a frame of its recording, for the recordings this
  *  device still holds (the last three per challenge). */

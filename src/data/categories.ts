@@ -22,7 +22,7 @@ export interface Category {
    */
   code: string;
   /** The name at a glance - what fits a dial label or a tab without
-   *  wrapping: "Storytelling", "Acting skills", "Speaker's mindset". */
+   *  wrapping: "Storytelling", "Acting skills", "Confidence & Presence". */
   short: string;
   colorName: string;
   blurb: string;
@@ -78,8 +78,8 @@ export const categories: Category[] = [
   },
   {
     id: "mindset",
-    name: "Speaker's mindset & psychology",
-    short: "Speaker's mindset",
+    name: "Confidence & Presence",
+    short: "Confidence & Presence",
     code: "MIND",
     colorName: "Neon green",
     blurb: "Fear, confidence, and conviction - the inner game that everything else stands on.",

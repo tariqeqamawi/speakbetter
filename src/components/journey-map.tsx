@@ -7,6 +7,7 @@ import {
   challenges,
   challengesInPhase,
   storyPhases,
+  type PhaseId,
   type StoryPhase,
 } from "@/data/challenges";
 import { categoryById, type CategoryId } from "@/data/categories";
@@ -126,11 +127,15 @@ const ZOOM_DETAIL = 1.35;
 export function JourneyMap({
   preview,
   onPick,
+  only,
 }: {
   /** Render this state instead of the store's - a worked-in sample. */
   preview?: AppState;
   /** In preview, a tap on a node reports its slug instead of navigating. */
   onPick?: (slug: string) => void;
+  /** Draw one phase's stretch of the road rather than all five - the
+   *  challenges page shows a phase at a time, chosen above the map. */
+  only?: PhaseId;
 } = {}) {
   const store = useStore();
   const state = preview ?? store.state;
@@ -332,8 +337,12 @@ export function JourneyMap({
   let y = 24;
   let step = 0;
   let firstUnpassedSeen = false;
-  for (let pi = 0; pi < storyPhases.length; pi++) {
-    const phase = storyPhases[pi];
+  // One phase, or all of them - the indices stay the phase's real
+  // place in the journey either way, because the gates depend on it.
+  const walk = storyPhases
+    .map((phase, index) => ({ phase, index }))
+    .filter(({ phase }) => !only || phase.id === only);
+  for (const { phase, index: pi } of walk) {
     const locked = pi > currentIndex;
     const gate = ready ? phaseGate(state, pi) : { open: pi === 0, reason: null, rank: null, xpToGo: 0 };
     banners.push({ phase, y, locked, gate });
@@ -415,7 +424,7 @@ export function JourneyMap({
     return d;
   };
   const indexed = nodes.map((n, gi) => ({ n, gi }));
-  const segments = storyPhases.map((phase, pi) => {
+  const segments = walk.map(({ phase, index: pi }) => {
     const own = indexed.filter(({ n }) => n.phaseIndex === pi);
     const prev = indexed.filter(({ n }) => n.phaseIndex === pi - 1).at(-1);
     const pts = (prev ? [prev, ...own] : own).map(({ n, gi }) => ({
@@ -680,7 +689,10 @@ export function JourneyMap({
             const labelLeft = node.x >= 60; // the name sits away from the bend
             // Beyond the next locked phase the road is too far to read:
             // titles stay garbled until the journey gets nearer.
-            const veiled = node.phaseIndex > currentIndex + 1;
+            // Far-off challenges keep their names garbled on the full
+            // road - but when a student has deliberately opened that
+            // phase from STORY above, they asked to see it.
+            const veiled = !only && node.phaseIndex > currentIndex + 1;
             const shownTitle = veiled ? garble(node.title) : node.title;
             const body = (
               <span className="map-pin relative block">

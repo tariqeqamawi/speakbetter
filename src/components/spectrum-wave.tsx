@@ -39,11 +39,16 @@ function smooth(points: Pt[]): string {
 
 export function SpectrumWave({
   values,
+  ghost,
   className = "h-48 w-full sm:h-56",
   animate = true,
   highlight,
 }: {
   values: Record<CategoryId, number>;
+  /** A second trace behind the first, drawn as a faint dashed outline -
+   *  where the student started, under where they are now. Scaled on the
+   *  same ceiling as the main trace, so the two can be compared. */
+  ghost?: Record<CategoryId, number>;
   className?: string;
   animate?: boolean;
   /** Colors to make glow - the ones a challenge needs. Their column of
@@ -52,19 +57,26 @@ export function SpectrumWave({
 }) {
   // Unique per instance, so two waves on one page don't share defs.
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
-  const top = Math.max(...categories.map((c) => values[c.id] ?? 0), 1);
+  const top = Math.max(
+    ...categories.map((c) => values[c.id] ?? 0),
+    ...(ghost ? categories.map((c) => ghost[c.id] ?? 0) : []),
+    1,
+  );
 
   const step = W / categories.length;
+  const traceOf = (vals: Record<CategoryId, number>) => {
+    const peaks: Pt[] = categories.map((cat, i) => ({
+      x: step * (i + 0.5),
+      y: FLOOR - ((vals[cat.id] ?? 0) / top) * (FLOOR - CEILING),
+    }));
+    return smooth([{ x: -step * 0.6, y: FLOOR }, ...peaks, { x: W + step * 0.6, y: FLOOR }]);
+  };
   const peaks: Pt[] = categories.map((cat, i) => ({
     x: step * (i + 0.5),
     y: FLOOR - ((values[cat.id] ?? 0) / top) * (FLOOR - CEILING),
   }));
-  const points: Pt[] = [
-    { x: -step * 0.6, y: FLOOR },
-    ...peaks,
-    { x: W + step * 0.6, y: FLOOR },
-  ];
-  const line = smooth(points);
+  const line = traceOf(values);
+  const ghostLine = ghost ? traceOf(ghost) : null;
   const area = `${line} L ${W + step} ${FLOOR + 40} L ${-step} ${FLOOR + 40} Z`;
 
   const defs = (
@@ -135,6 +147,19 @@ export function SpectrumWave({
           strokeWidth="2.5"
           strokeLinecap="round"
         />
+        {/* Where they started, behind: the same shape, dashed and pale,
+            so the distance travelled is the gap between the two lines. */}
+        {ghostLine && (
+          <path
+            d={ghostLine}
+            fill="none"
+            stroke="var(--color-ink-faint)"
+            strokeWidth="2"
+            strokeDasharray="10 9"
+            strokeLinecap="round"
+            opacity="0.75"
+          />
+        )}
       </svg>
 
       {/* The colors this challenge needs, lit from within: a pool of

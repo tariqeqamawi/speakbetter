@@ -1491,22 +1491,60 @@ svg.soundwave-c {
   perspective: 900px;
 }
 
-.trophy-turn {
-  display: block;
+/* The trophy as a coin: the medal on one face, the mark on the other.
+ * It holds on the trophy, turns a half-turn to the lion, holds, and
+ * completes the turn back to the trophy. */
+.trophy-coin {
+  display: grid;
   transform-style: preserve-3d;
-  animation: trophy-turn 6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  animation: trophy-coin 8s cubic-bezier(0.55, 0, 0.45, 1) infinite;
   filter: drop-shadow(0 18px 24px rgba(3, 7, 18, 0.7));
 }
 
-@keyframes trophy-turn {
-  0% {
-    transform: rotateY(-28deg) rotateX(6deg);
+.trophy-face {
+  grid-area: 1 / 1;
+  position: relative;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.trophy-face-back {
+  transform: rotateY(180deg);
+}
+
+@keyframes trophy-coin {
+  0%,
+  32% {
+    transform: rotateY(0deg) rotateX(5deg);
   }
-  50% {
-    transform: rotateY(28deg) rotateX(-4deg);
+  50%,
+  82% {
+    transform: rotateY(180deg) rotateX(-3deg);
   }
   100% {
-    transform: rotateY(-28deg) rotateX(6deg);
+    transform: rotateY(360deg) rotateX(5deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trophy-coin {
+    animation: none;
+  }
+}
+
+/* A dark box with a neon edge that drifts through the seven colours -
+ * the pill's colour cycle, as a border rather than a fill. */
+.neon-edge {
+  border: 1.5px solid var(--pill);
+  box-shadow:
+    0 0 14px -4px var(--pill),
+    inset 0 0 18px -12px var(--pill);
+  animation: coach-pill 42s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neon-edge {
+    animation: none;
   }
 }
 
@@ -1542,7 +1580,7 @@ svg.soundwave-c {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .trophy-turn,
+  .trophy-coin,
   .trophy-shine {
     animation: none;
   }
@@ -1684,7 +1722,7 @@ html.bare .spectrum-needed,
 html.bare .eq-wave,
 html.bare .map-pulse::after,
 html.bare .community-pop,
-html.bare .trophy-turn,
+html.bare .trophy-coin,
 html.bare .trophy-shine {
   animation: none !important;
 }

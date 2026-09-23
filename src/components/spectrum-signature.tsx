@@ -8,7 +8,7 @@ import { SectionBanner } from "@/components/section-banner";
 import { SpectrumIcon } from "@/components/icons";
 import { spectrumShare } from "@/lib/progress";
 import { SpectrumWave } from "@/components/spectrum-wave";
-import type { AppState } from "@/lib/store";
+import type { AppState, Attempt } from "@/lib/store";
 
 // The student's speaking signature, drawn the way a resonance trace is:
 // one continuous wave whose peaks sit over the colors they belong to,
@@ -19,13 +19,35 @@ import type { AppState } from "@/lib/store";
 /** Below this share, a color is a trace rather than a presence. */
 const MEANINGFUL = 5;
 
+/** The spectrum of one attempt, as shares that add to 100 - the same
+ *  shape spectrumShare gives for the whole record, so a single take and
+ *  the running total can be drawn on the same trace. */
+function shareOfAttempt(attempt: Attempt): Record<CategoryId, number> {
+  const total = categories.reduce((sum, c) => sum + (attempt.spectrum[c.id] ?? 0), 0);
+  const out = {} as Record<CategoryId, number>;
+  for (const c of categories) out[c.id] = total > 0 ? Math.round(((attempt.spectrum[c.id] ?? 0) / total) * 100) : 0;
+  return out;
+}
+
+const TABS = ["where you started", "now", "over time"] as const;
+type Tab = (typeof TABS)[number];
+
 export function SpectrumSignature({ state }: { state: AppState }) {
-  const [tab, setTab] = useState<"now" | "over time">("now");
+  const [tab, setTab] = useState<Tab>("now");
   // A thumb has no hover: tapping a channel opens its label, tapping it
   // again (or another channel) closes it.
   const [openChannel, setOpenChannel] = useState<string | null>(null);
   const share = spectrumShare(state);
   const hasData = share.some((s) => s.percent > 0);
+  // The first take on the map is where they started; everything since
+  // is "now". With one attempt they are the same picture, and the tab
+  // says so rather than pretending to a journey.
+  const ordered = [...state.attempts].sort((a, b) => (a.at < b.at ? -1 : 1));
+  const firstTake = ordered[0];
+  const startedValues = firstTake ? shareOfAttempt(firstTake) : null;
+  const nowValues = Object.fromEntries(share.map((s) => [s.id, s.percent])) as Record<CategoryId, number>;
+  const litOf = (vals: Record<CategoryId, number> | null) =>
+    vals ? categories.filter((c) => (vals[c.id] ?? 0) >= MEANINGFUL).length : 0;
   const ranked = [...share].sort((a, b) => b.percent - a.percent);
   const top = ranked[0];
   const quiet = ranked.filter((s) => s.percent < MEANINGFUL);
@@ -63,13 +85,13 @@ export function SpectrumSignature({ state }: { state: AppState }) {
           // Now and over time are the same question asked twice - they
           // belong in one readout, not two sections apart.
           <span className="flex rounded-lg border border-navy-600 bg-navy-900/80 p-0.5">
-            {(["now", "over time"] as const).map((t) => (
+            {TABS.map((t) => (
               <button
                 key={t}
                 type="button"
                 onClick={() => setTab(t)}
                 aria-pressed={tab === t}
-                className={`rounded-md px-2.5 py-1 text-[0.7rem] font-semibold capitalize transition-colors ${
+                className={`rounded-md px-2 py-1 text-[0.65rem] font-semibold capitalize transition-colors sm:text-[0.7rem] ${
                   tab === t
                     ? "bg-navy-700 text-ink"
                     : "text-ink-faint hover:text-ink-muted"
@@ -82,6 +104,24 @@ export function SpectrumSignature({ state }: { state: AppState }) {
         }
       />
       <div className="flex flex-1 flex-col gap-4 p-5">
+        {tab === "over time" && startedValues && state.attempts.length >= 2 && (
+          // Both traces at once: where they started, dashed and pale,
+          // under where they are now. The distance between the lines is
+          // the whole promise of the course, drawn.
+          <div className="relative overflow-hidden rounded-xl bg-navy-950/70 p-4">
+            <SpectrumWave values={nowValues} ghost={startedValues} />
+            <div className="mt-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-[0.7rem]">
+              <span className="flex items-center gap-2 text-ink-faint">
+                <span aria-hidden className="inline-block h-0 w-6 border-t-2 border-dashed border-ink-faint" />
+                Where you started - {litOf(startedValues)} of 7 colours
+              </span>
+              <span className="flex items-center gap-2 text-ink">
+                <span aria-hidden className="spectrum-rule inline-block h-0.5 w-6 rounded-full" />
+                Now - {litOf(nowValues)} of 7
+              </span>
+            </div>
+          </div>
+        )}
         {tab === "over time" ? (
           <SpectrumHistory attempts={state.attempts} />
         ) : (
@@ -103,18 +143,15 @@ export function SpectrumSignature({ state }: { state: AppState }) {
             </div>
           </div>
 
-          <SpectrumWave
-            values={Object.fromEntries(
-              share.map((s) => [s.id, s.percent]),
-            ) as Record<CategoryId, number>}
-          />
+          <SpectrumWave values={tab === "where you started" && startedValues ? startedValues : nowValues} />
 
           {/* The hard numbers. The curve is the feel; this is the fact. */}
           {/* Each channel names itself on hover - seven colors is a
               vocabulary, and a readout you can't name is just decoration. */}
           <ul className="relative mt-1 flex items-start justify-between gap-1">
             {categories.map((cat) => {
-              const percent = share.find((s) => s.id === cat.id)?.percent ?? 0;
+              const shown = tab === "where you started" && startedValues ? startedValues : nowValues;
+              const percent = shown[cat.id] ?? 0;
               return (
                 <li
                   key={cat.id}
@@ -150,13 +187,21 @@ export function SpectrumSignature({ state }: { state: AppState }) {
         </div>
         )}
 
-        <p className="text-sm text-ink-muted">
-          Your speaking runs{" "}
-          <b className={categoryById.get(top.id)?.textClass}>
-            {categoryById.get(top.id)?.name.toLowerCase()}
-          </b>{" "}
-          - {top.percent}% of everything you&apos;ve recorded.
-        </p>
+        {tab === "where you started" ? (
+          <p className="text-sm text-ink-muted">
+            {firstTake
+              ? `Your first take, ${new Date(firstTake.at).toLocaleDateString(undefined, { day: "numeric", month: "long" })} - ${litOf(startedValues)} of 7 colours, scored ${firstTake.score}. This is the before.`
+              : "Record your first challenge and this becomes your before."}
+          </p>
+        ) : (
+          <p className="text-sm text-ink-muted">
+            Your speaking runs{" "}
+            <b className={categoryById.get(top.id)?.textClass}>
+              {categoryById.get(top.id)?.name.toLowerCase()}
+            </b>{" "}
+            - {top.percent}% of everything you&apos;ve recorded.
+          </p>
+        )}
 
         {/* A color scraping 1% isn't "present" in any way a listener would
             notice, so it doesn't earn the full-spectrum line. */}

@@ -17,6 +17,9 @@ function iso(d: number) {
   return new Date(d).toISOString().slice(0, 10);
 }
 
+/** The cascade, in the spectrum's order. */
+const STREAK_COLORS = ["mindset", "body-language", "storytelling", "figurative", "acting", "structure", "advanced"] as const;
+
 export function StreakCalendar({ state }: { state: AppState }) {
   const days = practiceDays(state);
   const frozen = new Set(state.frozenDays);
@@ -101,27 +104,40 @@ export function StreakCalendar({ state }: { state: AppState }) {
           ))}
         </div>
         <div className="grid grid-cols-7 gap-1.5">
-          {cells.map((cell) => (
+          {cells.map((cell) => {
+            // A day inside the running streak wears the next colour of
+            // the spectrum, so a long streak reads as a cascade through
+            // all seven rather than a block of green - the streak is the
+            // student widening, and the calendar can say so.
+            const hue = cell.inStreak >= 0 ? STREAK_COLORS[cell.inStreak % STREAK_COLORS.length] : null;
+            const color = cell.wasFrozen ? "var(--color-body-language)" : hue ? `var(--color-${hue})` : "var(--color-mindset)";
+            return (
             <span
               key={cell.key}
               title={`${cell.key}${cell.wasFrozen ? " - freeze used" : cell.practiced ? " - practiced" : ""}`}
+              style={
+                cell.inFuture || (!cell.practiced && !cell.wasFrozen)
+                  ? undefined
+                  : {
+                      color,
+                      borderColor: `color-mix(in oklab, ${color} 55%, transparent)`,
+                      background: `color-mix(in oklab, ${color} 18%, transparent)`,
+                    }
+              }
               className={`relative flex aspect-square items-center justify-center rounded-lg border text-[0.6rem] tabular-nums ${
                 cell.inFuture
                   ? "border-navy-700 text-navy-600"
-                  : cell.wasFrozen
-                    ? "border-body-language/40 bg-body-language/15 text-body-language"
-                    : cell.practiced
-                      ? "border-mindset/50 bg-mindset/20 text-mindset"
-                      : "border-navy-700 bg-navy-900 text-ink-faint"
+                  : cell.practiced || cell.wasFrozen
+                    ? ""
+                    : "border-navy-700 bg-navy-900 text-ink-faint"
               } ${cell.isToday ? "ring-1 ring-ink-faint" : ""}`}
             >
               {cell.inStreak >= 0 && (
                 <span
                   aria-hidden
-                  className={`streak-glow pointer-events-none absolute inset-0 rounded-lg ${
-                    cell.wasFrozen ? "shadow-[0_0_14px_2px_var(--color-body-language)]" : "shadow-[0_0_14px_2px_var(--color-mindset)]"
-                  }`}
+                  className="streak-glow pointer-events-none absolute inset-0 rounded-lg"
                   style={{
+                    boxShadow: `0 0 14px 2px ${color}`,
                     animationDelay: `${cell.inStreak * 0.16}s`,
                     animationDuration: `${Math.max(2.4, streakLen * 0.16 + 1.8)}s`,
                   }}
@@ -133,12 +149,13 @@ export function StreakCalendar({ state }: { state: AppState }) {
                 cell.dayOfMonth
               )}
             </span>
-          ))}
+            );
+          })}
         </div>
       </div>
 
       <p className="text-xs text-ink-faint">
-        A green check is a day you practiced. Cyan is a day a freeze covered
+        Every day you practise takes the next colour of the spectrum. Cyan is a day a freeze covered
         for you - one missed day never costs the streak.
       </p>
       </div>

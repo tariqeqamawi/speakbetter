@@ -146,11 +146,22 @@ function TrophyDetail({
           <XIcon className="size-4" />
         </button>
         <span className="spectrum-rule h-1 w-16 rounded-full" />
+        {/* A coin: the trophy on one face, the mark on the other. It
+            holds on the trophy, turns to show the lion, holds, and
+            turns back. */}
         <span className={`trophy-stage ${won ? "" : "opacity-60"}`} aria-hidden>
-          <span className="trophy-turn">
-            <BadgeMedal id={badge.id} icon={badge.icon} earned={!!won} className="size-44 sm:size-52" />
+          <span className="trophy-coin">
+            <span className="trophy-face">
+              <BadgeMedal id={badge.id} icon={badge.icon} earned={!!won} className="size-44 sm:size-52" />
+              {won && <span className="trophy-shine" />}
+            </span>
+            <span className="trophy-face trophy-face-back">
+              <span className="grid size-44 place-items-center rounded-full border border-navy-600 bg-navy-950 sm:size-52">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/logo-mark.png" alt="" className={`w-2/3 ${won ? "" : "opacity-40 grayscale"}`} />
+              </span>
+            </span>
           </span>
-          {won && <span className="trophy-shine" />}
         </span>
         <span className="flex flex-col gap-1">
           <span className="text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-ink-faint">
@@ -169,8 +180,8 @@ function TrophyDetail({
           {won ? badge.message : (badge.how ?? "Hidden achievement - you'll know it when you get it.")}
         </p>
         {won && badge.how && (
-          <p className="rounded-xl border border-navy-600 bg-navy-900/60 px-4 py-3 text-xs text-ink-faint text-balance">
-            <b className="block pb-0.5 font-semibold text-ink-muted">How you unlocked it</b>
+          <p className="neon-edge rounded-xl bg-navy-900 px-4 py-3 text-xs text-ink-muted text-balance">
+            <b className="block pb-0.5 font-semibold text-ink">How you unlocked it</b>
             {badge.how}
           </p>
         )}
