@@ -16,6 +16,17 @@ import { evaluateBadges, type EarnedBadge } from "@/data/badges";
 import type { Plan } from "@/data/pricing";
 import { standing } from "@/lib/progress";
 import { demoState } from "@/lib/demo-state";
+import { supabase } from "@/lib/supabase/client";
+import { supabaseConfigured } from "@/lib/supabase/config";
+import {
+  pullState,
+  pushAttempt,
+  pushBadges,
+  pushFrozenDay,
+  pushProfile,
+  pushShare,
+  pushWatched,
+} from "@/lib/supabase/sync";
 import type { Observations } from "@/lib/coach/rubric";
 import type { VoiceProfile } from "@/lib/voice-profile";
 
@@ -241,8 +252,15 @@ function StoreCore({
 }) {
   const [state, setState] = useState<AppState>(seed ?? EMPTY);
   const [ready, setReady] = useState(false);
+  // Who's signed in, when accounts are switched on. Null means this
+  // device is the record, which is how the app has always worked and
+  // how it still works with Supabase unconfigured.
+  const [account, setAccount] = useState<string | null>(null);
   const [celebrations, setCelebrations] = useState<EarnedBadge[]>([]);
   const stateRef = useRef(state);
+  // The last state written to the account, so persist() can tell what
+  // is new without every caller having to say so.
+  const syncedRef = useRef<AppState>(EMPTY);
 
   useEffect(() => {
     stateRef.current = state;
@@ -278,6 +296,54 @@ function StoreCore({
     setReady(true);
   }, [ephemeral]);
 
+  // With Supabase configured and somebody signed in, their record is
+  // pulled over the device's and followed from then on. The local copy
+  // stays the working copy - every screen reads it, and it's what makes
+  // the app usable on a train - but the account is where it lives.
+  useEffect(() => {
+    if (ephemeral || !supabaseConfigured()) return;
+    const db = supabase();
+    if (!db) return;
+    let alive = true;
+
+    const adopt = async (userId: string | null) => {
+      setAccount(userId);
+      if (!userId) return;
+      const pulled = await pullState();
+      if (!alive || !pulled) return;
+      // Their account wins where it has anything to say; anything
+      // recorded on this device before signing in is kept beside it.
+      const merged: AppState = {
+        ...stateRef.current,
+        ...pulled,
+        attempts: mergeById([...stateRef.current.attempts, ...(pulled.attempts ?? [])]),
+        watchedLessons: [...new Set([...stateRef.current.watchedLessons, ...(pulled.watchedLessons ?? [])])],
+        frozenDays: [...new Set([...stateRef.current.frozenDays, ...(pulled.frozenDays ?? [])])],
+        questChests: [...new Set([...stateRef.current.questChests, ...(pulled.questChests ?? [])])],
+        // The words on a badge are the app's own; the account keeps
+        // which and when.
+        badges: mergeBadges(stateRef.current.badges, pulled.badges ?? []),
+      };
+      setState(merged);
+      stateRef.current = merged;
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+      } catch {}
+      // Anything this device had and the account didn't goes up.
+      for (const attempt of merged.attempts) void pushAttempt(attempt);
+      void pushProfile(merged);
+    };
+
+    void db.auth.getUser().then((res: { data: { user: { id: string } | null } }) => adopt(res.data.user?.id ?? null));
+    const { data: sub } = db.auth.onAuthStateChange((_event: string, session: { user?: { id: string } } | null) => {
+      void adopt(session?.user?.id ?? null);
+    });
+    return () => {
+      alive = false;
+      sub.subscription.unsubscribe();
+    };
+  }, [ephemeral]);
+
   const persist = useCallback(
     (next: AppState) => {
       setState(next);
@@ -287,8 +353,36 @@ function StoreCore({
       } catch {
         // storage full/unavailable - state still lives in memory
       }
+      // And up to the account, if there is one. What changed is worked
+      // out by comparing with what was there a moment ago, so callers
+      // don't each have to remember to sync.
+      if (!account) return;
+      const before = syncedRef.current;
+      syncedRef.current = next;
+      if (next.attempts.length > before.attempts.length) {
+        for (const a of next.attempts.slice(before.attempts.length)) void pushAttempt(a);
+      }
+      const newLessons = next.watchedLessons.filter((id) => !before.watchedLessons.includes(id));
+      for (const id of newLessons) void pushWatched(id);
+      const newBadges = next.badges.filter((b) => !before.badges.some((o) => o.id === b.id));
+      if (newBadges.length > 0) void pushBadges(newBadges.map((b) => ({ id: b.id, earnedAt: b.earnedAt })));
+      const newFrozen = next.frozenDays.filter((d) => !before.frozenDays.includes(d));
+      for (const day of newFrozen) void pushFrozenDay(day, (next.xpSpent ?? 0) > (before.xpSpent ?? 0));
+      const newShares = next.sharedReels.filter((r) => !before.sharedReels.some((o) => o.id === r.id));
+      for (const reel of newShares) void pushShare(reel);
+      if (
+        next.displayName !== before.displayName ||
+        next.intention !== before.intention ||
+        next.level !== before.level ||
+        next.plan !== before.plan ||
+        next.avatar !== before.avatar ||
+        next.freezesRemaining !== before.freezesRemaining ||
+        (next.xpSpent ?? 0) !== (before.xpSpent ?? 0)
+      ) {
+        void pushProfile(next);
+      }
     },
-    [ephemeral],
+    [ephemeral, account],
   );
 
   // Apply a state change, then check whether it earned any new badges;
@@ -380,4 +474,21 @@ export function useStore(): StoreApi {
   const ctx = useContext(StoreContext);
   if (!ctx) throw new Error("useStore must be used within StoreProvider");
   return ctx;
+}
+
+/** Attempts from two places, newest copy of each id, oldest first. */
+function mergeById(list: Attempt[]): Attempt[] {
+  const by = new Map<string, Attempt>();
+  for (const a of list) by.set(a.id, a);
+  return [...by.values()].sort((a, b) => (a.at < b.at ? -1 : 1));
+}
+
+/** Badges from the account, wearing the app's own words for them. */
+function mergeBadges(mine: EarnedBadge[], theirs: EarnedBadge[]): EarnedBadge[] {
+  const by = new Map(mine.map((b) => [b.id, b]));
+  for (const b of theirs) {
+    const known = by.get(b.id);
+    by.set(b.id, known ? { ...known, earnedAt: b.earnedAt } : b);
+  }
+  return [...by.values()];
 }

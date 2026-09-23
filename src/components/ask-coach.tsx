@@ -224,8 +224,8 @@ export function AskCoach() {
         <SectionBanner image="/sections/trophies-lion.jpg" title="Ask Coach" Icon={ListenIcon} accentClass="text-advanced" large />
         <div className="p-5">
           <UpgradePanel
-            title="Ask Coach comes with the Full Experience"
-            body="Hold to ask how your speaking is developing and Coach answers from your own record - every take, every note - aloud. It's part of the membership, with the coach who watches every take."
+            title="Coach on call is the Full Experience"
+            body="Upgrade now for the full 24/7 coach experience: ask him anything, any time, and he answers aloud from your own record - every take, every note. He already watches your takes and writes your reviews; this is him on call."
           />
         </div>
       </section>

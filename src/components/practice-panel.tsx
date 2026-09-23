@@ -36,7 +36,7 @@ import { studentId } from "@/lib/student-id";
 import { PushPrompt } from "@/components/push-prompt";
 import { TakeRecorder, canRecordInApp } from "@/components/take-recorder";
 import { UpgradePanel } from "@/components/upgrade-panel";
-import { TRIAL_REVIEWS, hasCoach, onTrial, trialAllowsChallenge, trialReviewsUsed } from "@/lib/plan";
+import { TRIAL_REVIEWS, coachWatches, hasCoach, onTrial, trialAllowsChallenge, trialReviewsUsed } from "@/lib/plan";
 import { RecordingsShelf } from "@/components/recordings-shelf";
 import { capturePoster, keepVideo } from "@/lib/attempt-videos";
 import { measureVoice } from "@/lib/voice-profile";
@@ -168,9 +168,10 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
       // the store) the review runs without a video and the stand-in
       // coach answers.
       let blobUrl: string | undefined;
-      // Foundations has the standing coach's written feedback and no
-      // video review: nothing is uploaded, the stand-in answers.
-      const watch = hasCoach(state) || onTrial(state);
+      // Every plan gets the take watched (lib/plan.ts); what Starter
+      // doesn't get is Coach's voice, which is decided in the review
+      // below rather than here.
+      const watch = coachWatches(state);
       try {
         if (!watch) throw new Error("standing coach");
         const ext = (file.name.split(".").pop() || "mp4").toLowerCase();
@@ -597,6 +598,9 @@ export function Feedback({
   const challengeTitle = challenge.title;
   const { state } = useStore();
   const canRevealAll = state.level !== "beginner"; // §08/§09: nested reveal
+  // Coach's voice is the Full Experience; Starter reads the same
+  // review instead, with the way to hear it beside it.
+  const spokenPlan = preview || hasCoach(state);
   const litCount = categories.filter((c) => (attempt.spectrum[c.id] ?? 0) >= 40).length;
   const neededLit = challenge.targetSkills.filter((c) => (attempt.spectrum[c] ?? 0) >= 40).length;
 
@@ -728,12 +732,11 @@ export function Feedback({
         )}
       </div>
 
-      {settled && attempt.spoken && (
-        <ReviewVoice
-          spoken={attempt.spoken}
-          onVerdict={() => setVerdictShown(true)}
-        />
-      )}
+      {settled && attempt.spoken && (spokenPlan ? (
+        <ReviewVoice spoken={attempt.spoken} onVerdict={() => setVerdictShown(true)} />
+      ) : (
+        <WrittenReview spoken={attempt.spoken} />
+      ))}
 
       {settled && attempt.strengths && attempt.strengths.length > 0 && (
         <ReviewSection
@@ -955,6 +958,33 @@ export function Feedback({
       )}
     </div>
     </LessonHrefContext.Provider>
+  );
+}
+
+/**
+ * The review as Starter gets it: Coach's face, his words in full, and
+ * the one thing the Full Experience adds - his voice, and him on call.
+ */
+function WrittenReview({ spoken }: { spoken: string }) {
+  return (
+    <div className="coach-cue flex flex-col items-center gap-3 rounded-xl border border-navy-600 bg-navy-900/60 p-4">
+      <LionMouth level={0} className="w-24" />
+      <span className="text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-ink-faint">Coach said</span>
+      <p className="max-w-prose text-center text-sm leading-relaxed text-ink">{spoken}</p>
+      <Link
+        href="/pricing"
+        className="coach-pill inline-flex min-h-11 items-center gap-2.5 rounded-full py-1.5 pl-1.5 pr-5 text-sm font-bold text-navy-950"
+      >
+        <span className="grid size-9 place-items-center overflow-hidden rounded-full bg-navy-950/25">
+          <LionMouth level={0} className="w-10 translate-y-0.5" />
+        </span>
+        <span className="text-navy-950">Hear this in his voice - upgrade</span>
+      </Link>
+      <p className="max-w-prose text-center text-[0.65rem] text-ink-faint">
+        Upgrade now for the full 24/7 coach experience: every review spoken aloud with the words on screen, and Coach
+        on call whenever you want to ask him something.
+      </p>
+    </div>
   );
 }
 
