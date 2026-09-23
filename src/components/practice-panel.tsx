@@ -732,6 +732,14 @@ export function Feedback({
         )}
       </div>
 
+      {/* A stand-in review is never dressed as the real thing. */}
+      {attempt.mock && (
+        <p className="rounded-lg border border-figurative/40 bg-figurative/10 px-3 py-2 text-xs text-figurative">
+          This is the stand-in coach, not Coach himself - it happens in previews and when the studio is closed. The
+          words are a sample; your score and colours aren&apos;t a real reading.
+        </p>
+      )}
+
       {settled && attempt.spoken && (spokenPlan ? (
         <ReviewVoice spoken={attempt.spoken} onVerdict={() => setVerdictShown(true)} />
       ) : (

@@ -152,9 +152,18 @@ export async function POST(request: Request) {
     return NextResponse.json(shaped);
   } catch (err) {
     console.error("[coach] review failed", err);
+    // Out of credit or over the rate limit is not the student's fault
+    // and not a broken take - say which it is, plainly, rather than
+    // asking them to try a take that was fine.
+    const message = err instanceof Error ? err.message : String(err);
+    const outOfCredit = /402|RESOURCE_EXHAUSTED|quota|credits are depleted|billing/i.test(message);
     return NextResponse.json(
-      { error: "Your coach couldn't watch that one - give it another try in a moment." },
-      { status: 502 },
+      {
+        error: outOfCredit
+          ? "Coach can't watch right now - the studio is out of hours. Your recording is still on your device; try again a little later."
+          : "Your coach couldn't watch that one - give it another try in a moment.",
+      },
+      { status: outOfCredit ? 503 : 502 },
     );
   } finally {
     // Gone from the store whatever happened.
