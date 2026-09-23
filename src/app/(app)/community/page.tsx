@@ -12,14 +12,14 @@ export default function CommunityPage() {
       <header className="flex flex-col gap-2">
         <h1 className="text-3xl font-semibold tracking-tight">Community</h1>
         <p className="max-w-lg text-ink-muted">
-          See how your speaking is progressing alongside other students - and
-          next to your own earlier self.
+          Everyone&apos;s distance travelled, drawn the way yours is: where they started, under where they are now.
+          Three boards, because there&apos;s more than one way to be getting better - and one bar you all fill together.
         </p>
       </header>
       {/* The feed is the community's before-and-afters; the rest of the
           layer (§12) arrives with Phase 6. */}
-      <WeeklyBoard />
       <CommunityFeed />
+      <WeeklyBoard />
     </div>
   );
 }

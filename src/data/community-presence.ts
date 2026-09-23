@@ -98,6 +98,16 @@ export interface SharedProgress {
   nowScore: number;
   thenSpectrum: Record<CategoryId, number>;
   nowSpectrum: Record<CategoryId, number>;
+  /** How many of each phase's challenges they've passed, S to Y - the
+   *  five letters under their name. */
+  phases: number[];
+  /** The challenge they're on now. */
+  onChallenge: string;
+  /** Takes recorded this week, and colours gained since their baseline
+   *  - the two boards that aren't about XP. */
+  weekTakes: number;
+  /** Cheers their last share has collected. */
+  cheers: number;
 }
 
 function spectrumWith(rand: () => number, lit: number): Record<CategoryId, number> {
@@ -116,14 +126,29 @@ export function sampleShares(now = new Date()): SharedProgress[] {
   return names.map((name, i) => {
     const thenScore = 42 + Math.round(rand() * 22);
     const nowScore = Math.min(97, thenScore + 12 + Math.round(rand() * 26));
+    const passed = 10 + Math.round(rand() * 13);
+    // Their letters: the passes spread along the road, oldest phase
+    // first, so the five circles read as a journey rather than a total.
+    const perPhase = [3, 5, 8, 4, 4];
+    let left = passed;
+    const phases = perPhase.map((size) => {
+      const got = Math.min(size, left);
+      left -= got;
+      return got;
+    });
+    const road = challenges.filter((c) => !c.passive);
     return {
       name,
       daysAgo: i === 0 ? 0 : Math.round(1 + rand() * 12 * i),
-      passed: 10 + Math.round(rand() * 13),
+      passed,
       thenScore,
       nowScore,
       thenSpectrum: spectrumWith(rand, 2 + Math.round(rand())),
       nowSpectrum: spectrumWith(rand, 4 + Math.round(rand() * 3)),
+      phases,
+      onChallenge: road[Math.min(road.length - 1, passed)]?.title ?? road[0].title,
+      weekTakes: 1 + Math.round(rand() * 8),
+      cheers: Math.round(rand() * 14),
     };
   });
 }
