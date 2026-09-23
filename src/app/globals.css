@@ -1897,6 +1897,27 @@ html.bare .demo-banner {
   }
 }
 
+/* The tour's ring: it breathes, so the eye goes to it before the card. */
+.tour-ring {
+  animation: tour-ring 1.8s ease-in-out infinite;
+}
+
+@keyframes tour-ring {
+  0%,
+  100% {
+    box-shadow: 0 0 24px -6px var(--color-storytelling);
+  }
+  50% {
+    box-shadow: 0 0 34px 0 var(--color-storytelling);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tour-ring {
+    animation: none;
+  }
+}
+
 /* A lesson stepping into the middle of the library's shelf. */
 .gallery-in {
   animation: gallery-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -1917,4 +1938,63 @@ html.bare .demo-banner {
   .gallery-in {
     animation: none;
   }
+}
+
+/* The finish line's flags, waving. A skew on the cloth, cheap enough
+ * to run on two small SVGs forever. */
+.finish-flag {
+  transform-origin: 9px 5px;
+  animation: finish-flag 2.6s ease-in-out infinite;
+}
+
+@keyframes finish-flag {
+  0%,
+  100% {
+    transform: skewY(0deg) scaleY(1);
+  }
+  35% {
+    transform: skewY(-4deg) scaleY(0.96);
+  }
+  70% {
+    transform: skewY(3deg) scaleY(1.03);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .finish-flag {
+    animation: none;
+  }
+}
+
+/* ── Glass ─────────────────────────────────────────────────────────────
+ * Cards as panes rather than boxes: the surface lets the page's own
+ * light through, a hairline catches along the top edge, and the big
+ * panels blur what's behind them. Applied by matching the class every
+ * card already carries, so the whole app changes at once rather than a
+ * hundred files. Cheap where it's everywhere (translucency, a 1px
+ * inset highlight) and expensive only where it's rare (the blur, on
+ * the large rounded panels).
+ */
+[class*="bg-navy-800"]:not(.no-glass) {
+  background-color: color-mix(in oklab, var(--color-navy-800) 76%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(231, 233, 242, 0.06),
+    0 1px 0 rgba(2, 5, 11, 0.4);
+}
+
+[class*="bg-navy-850"]:not(.no-glass) {
+  background-color: color-mix(in oklab, var(--color-navy-850) 82%, transparent);
+}
+
+/* The panes big enough to be worth blurring behind. */
+[class*="bg-navy-800"][class*="rounded-2xl"]:not(.no-glass),
+[class*="bg-navy-800"][class*="rounded-3xl"]:not(.no-glass) {
+  backdrop-filter: blur(14px) saturate(1.12);
+  -webkit-backdrop-filter: blur(14px) saturate(1.12);
+}
+
+/* A card that shouldn't be see-through - anything drawn over video, or
+ * a surface that has to stay legible on its own. */
+.no-glass {
+  background-color: var(--color-navy-800);
 }

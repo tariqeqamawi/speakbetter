@@ -85,32 +85,28 @@ export function DashboardPanel({
         {you.compact}
       </button>
 
-      {/* Two rows of three, so every section is a tap away without a
-          scroll - what a rail down the side and a strip along the top
-          both failed at. */}
+      {/* One bar, the same shape as every other "switch the view of
+          this page" control in the app - under the title, full width,
+          scrolling sideways rather than wrapping into rows. A student
+          should learn one place to look. */}
       <nav
         aria-label="Dashboard sections"
-        className="sticky-under-header grid grid-cols-3 gap-1 rounded-2xl border border-navy-600 bg-navy-800 p-1.5"
+        className="sticky-under-header -mx-4 flex gap-1 overflow-x-auto rounded-none border-y border-navy-600 bg-navy-900/95 px-4 py-1.5 backdrop-blur sm:mx-0 sm:rounded-xl sm:border sm:bg-navy-900/60 sm:px-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
-        {sections.map((section, i) => {
+        {sections.map((section) => {
           const on = section.id === open?.id;
-          // Seven sections in rows of three: the first - the coach -
-          // takes a whole row, the six below sit two rows of three.
-          const wide = sections.length % 3 === 1 && i === 0;
           return (
             <button
               key={section.id}
               type="button"
               onClick={() => setOpenId(section.id)}
               aria-current={on ? "true" : undefined}
-              className={`flex h-11 items-center justify-center gap-1.5 rounded-xl px-2 text-[0.7rem] font-semibold transition-colors ${wide ? "col-span-3" : ""} ${
-                on
-                  ? `bg-navy-700 ${section.accentClass}`
-                  : "text-ink-faint hover:bg-navy-850 hover:text-ink-muted"
+              className={`flex h-10 shrink-0 items-center gap-1.5 rounded-lg px-3 text-[0.75rem] font-semibold transition-colors ${
+                on ? `bg-navy-700 ${section.accentClass}` : "text-ink-faint hover:text-ink-muted"
               }`}
             >
               <section.Icon className="size-4 shrink-0" />
-              <span className="truncate">{section.name}</span>
+              {section.name}
             </button>
           );
         })}

@@ -109,6 +109,9 @@ export interface AppState {
   /** Days (yyyy-mm-dd) a freeze covered, so a streak survives one miss */
   frozenDays: string[];
   freezesRemaining: number;
+  /** XP spent - on buying back a missed day, so far. Subtracted from
+   *  the earned total by standing() in lib/progress. */
+  xpSpent?: number;
   /** When each lesson was watched (vimeo id → yyyy-mm-dd). The watched
    *  list predates this, so older entries may be absent - anything that
    *  reads it must treat missing as "not today". */
@@ -138,6 +141,7 @@ const EMPTY: AppState = {
   badges: [],
   frozenDays: [],
   freezesRemaining: STARTING_FREEZES,
+  xpSpent: 0,
   watchedOn: {},
   questChests: [],
   intention: "",
@@ -167,6 +171,9 @@ interface StoreApi {
   bestAttempt: (challengeSlug: string) => Attempt | undefined;
   latestAttempt: (challengeSlug: string) => Attempt | undefined;
   isChallengeComplete: (challengeSlug: string) => boolean;
+  /** Pay XP to cover a missed day and keep the streak alive. Returns
+   *  false when the day isn't the one at risk, or the XP isn't there. */
+  keepStreak: (day: string, price: number) => boolean;
 }
 
 /**
@@ -348,6 +355,21 @@ function StoreCore({
         ),
       latestAttempt: (slug) => attemptsFor(slug).at(-1),
       isChallengeComplete: (slug) => attemptsFor(slug).some((a) => a.passed),
+      // Buying a day back: the day joins frozenDays (so the streak
+      // counts it) and the price goes on the ledger. Refused if the
+      // day is already covered or the XP isn't there - the check is
+      // here rather than in the button, so it can't be clicked twice.
+      keepStreak: (day, price) => {
+        const current = stateRef.current;
+        if (current.frozenDays.includes(day)) return false;
+        if (standing(current).xp < price) return false;
+        applyWithBadges((p) => ({
+          ...p,
+          frozenDays: [...p.frozenDays, day],
+          xpSpent: (p.xpSpent ?? 0) + price,
+        }));
+        return true;
+      },
     };
   }, [state, ready, celebrations, applyWithBadges]);
 

@@ -291,20 +291,13 @@ export default function DashboardPage() {
                 <span className={`w-28 shrink-0 truncate text-xs font-medium ${cat.textClass}`}>
                   {cat.short}
                 </span>
-                {/* One square per lesson, the count lit from the left:
-                    it doesn't matter which lessons were watched, only
-                    how many - two watched is two lit squares, not two
-                    lit somewhere in a row of dark ones. */}
-                <span className="flex flex-1 flex-wrap gap-[3px]" aria-hidden>
-                  {inCat.map((l, i) => {
-                    const lit = i < seen;
-                    return (
-                      <span
-                        key={l.vimeoId}
-                        className={`h-2.5 w-2.5 rounded-[3px] ${lit ? `${cat.bgClass} shadow-[0_0_6px_-1px_currentColor] ${cat.textClass}` : "bg-navy-950 ring-1 ring-inset ring-navy-600"}`}
-                      />
-                    );
-                  })}
+                {/* One bar, filled to the share watched - a row of
+                    squares was a count nobody was counting. */}
+                <span className={`h-2.5 flex-1 overflow-hidden rounded-full bg-navy-950 ring-1 ring-inset ring-navy-600 ${cat.textClass}`} aria-hidden>
+                  <span
+                    className={`block h-full rounded-full transition-[width] duration-500 ${cat.bgClass} ${seen > 0 ? "shadow-[0_0_8px_currentColor]" : ""}`}
+                    style={{ width: `${(seen / inCat.length) * 100}%` }}
+                  />
                 </span>
                 <span className="w-10 shrink-0 text-right text-xs tabular-nums text-ink-muted">
                   <b className={`font-semibold ${cat.textClass}`}>{seen}</b>/{inCat.length}

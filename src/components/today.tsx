@@ -8,6 +8,7 @@ import { challenges, storyPhases } from "@/data/challenges";
 import { categories } from "@/data/categories";
 import { SpectrumWave } from "@/components/spectrum-wave";
 import { TodayCommunity } from "@/components/today-community";
+import { StreakRescue } from "@/components/streak-rescue";
 import { challengeProgress } from "@/lib/challenge-progress";
 import { categoryById } from "@/data/categories";
 import { VideoStill } from "@/components/video-still";
@@ -45,6 +46,9 @@ export function Today() {
           <LevelIcon level={state.level} className="h-12 w-auto shrink-0" />
         )}
       </header>
+
+      {/* A missed day, while it can still be bought back. */}
+      <StreakRescue />
 
       {/* the daily goal, and the streak it protects */}
       <section
@@ -131,7 +135,7 @@ export function Today() {
                   />
                 </div>
               )}
-              <span className="mt-auto flex min-h-11 w-fit items-center rounded-lg bg-ink px-5 py-2.5 text-sm font-semibold text-navy-900 transition-opacity group-hover:opacity-90">
+              <span className="mt-auto flex min-h-11 w-fit items-center rounded-full bg-acting px-5 py-2.5 text-sm font-bold text-navy-950 shadow-[0_0_22px_-6px_var(--color-acting)] transition-[box-shadow,opacity] group-hover:opacity-95 group-hover:shadow-[0_0_28px_-4px_var(--color-acting)]">
                 {up.action === "start"
                   ? "Start challenge"
                   : up.action === "resume"

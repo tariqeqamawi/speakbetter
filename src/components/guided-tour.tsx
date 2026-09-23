@@ -141,23 +141,28 @@ export function GuidedTour() {
     }
     let raf = 0;
     let tries = 0;
+    let scrolled = false;
     const look = () => {
-      const el = document.querySelector(stop.target);
+      // The same marker exists on the phone's bar and the laptop's rail;
+      // only one of them is on screen, so take the first with a size.
+      const el = [...document.querySelectorAll(stop.target)].find((node) => {
+        const r = node.getBoundingClientRect();
+        return r.width > 0 && r.height > 0;
+      });
       if (el) {
-        const r = el.getBoundingClientRect();
-        if (r.width > 0) {
+        if (!scrolled) {
+          scrolled = true;
           el.scrollIntoView({ block: "center", behavior: "smooth" });
-          setBox(el.getBoundingClientRect());
-          // keep it in step with the scroll for a moment
-          if (tries < 40) {
-            tries++;
-            raf = requestAnimationFrame(look);
-          }
-          return;
         }
+        setBox(el.getBoundingClientRect());
+        // Follow it while the scroll settles.
+        if (tries < 60) {
+          tries++;
+          raf = requestAnimationFrame(look);
+        }
+        return;
       }
-      // Not on this screen - the nav a phone hides, say. Move along.
-      if (tries > 40) {
+      if (tries > 60) {
         setBox(null);
         return;
       }
@@ -231,31 +236,31 @@ export function GuidedTour() {
     <div className="fixed inset-0 z-[60]" role="dialog" aria-modal="true" aria-label={`Guided tour: ${stop.title}`}>
       {hole ? (
         <>
-          <div className="absolute inset-x-0 top-0 bg-navy-950/85 backdrop-blur-[2px]" style={{ height: hole.top }} onClick={done} />
+          <div className="absolute inset-x-0 top-0 bg-navy-950/82" style={{ height: hole.top }} onClick={done} />
           <div
-            className="absolute bg-navy-950/85 backdrop-blur-[2px]"
+            className="absolute bg-navy-950/82"
             style={{ top: hole.top, left: 0, width: hole.left, height: hole.height }}
             onClick={done}
           />
           <div
-            className="absolute bg-navy-950/85 backdrop-blur-[2px]"
+            className="absolute bg-navy-950/82"
             style={{ top: hole.top, left: hole.left + hole.width, right: 0, height: hole.height }}
             onClick={done}
           />
           <div
-            className="absolute inset-x-0 bottom-0 bg-navy-950/85 backdrop-blur-[2px]"
+            className="absolute inset-x-0 bottom-0 bg-navy-950/82"
             style={{ top: hole.top + hole.height }}
             onClick={done}
           />
           {/* The ring around what's being named. */}
           <div
             aria-hidden
-            className="pointer-events-none absolute rounded-2xl ring-2 ring-storytelling"
-            style={{ ...hole, boxShadow: "0 0 30px -4px var(--color-storytelling)" }}
+            className="tour-ring pointer-events-none absolute rounded-2xl ring-2 ring-storytelling"
+            style={hole}
           />
         </>
       ) : (
-        <div className="absolute inset-0 bg-navy-950/85 backdrop-blur-[2px]" onClick={done} />
+        <div className="absolute inset-0 bg-navy-950/82" onClick={done} />
       )}
 
       {/* The card: what this is, and the way on. */}

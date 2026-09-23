@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { categories, categoryById, type CategoryId } from "@/data/categories";
 import { SpectrumHistory } from "@/components/spectrum-history";
-import { CategoryIcon } from "@/components/category-icons";
 import { SectionBanner } from "@/components/section-banner";
 import { SpectrumIcon } from "@/components/icons";
 import { spectrumShare } from "@/lib/progress";
@@ -34,9 +33,6 @@ type Tab = (typeof TABS)[number];
 
 export function SpectrumSignature({ state }: { state: AppState }) {
   const [tab, setTab] = useState<Tab>("now");
-  // A thumb has no hover: tapping a channel opens its label, tapping it
-  // again (or another channel) closes it.
-  const [openChannel, setOpenChannel] = useState<string | null>(null);
   const share = spectrumShare(state);
   const hasData = share.some((s) => s.percent > 0);
   // The first take on the map is where they started; everything since
@@ -109,10 +105,17 @@ export function SpectrumSignature({ state }: { state: AppState }) {
           // under where they are now. The distance between the lines is
           // the whole promise of the course, drawn.
           <div className="relative overflow-hidden rounded-xl bg-navy-950/70 p-4">
-            <SpectrumWave values={nowValues} ghost={startedValues} />
+            {/* Both in colour, one over the other at half strength -
+                a dashed grey line was hard to read against the trace. */}
+            <div className="relative">
+              <SpectrumWave values={startedValues} animate={false} className="h-48 w-full opacity-50 sm:h-56" />
+              <div className="absolute inset-0">
+                <SpectrumWave values={nowValues} className="h-48 w-full opacity-90 sm:h-56" />
+              </div>
+            </div>
             <div className="mt-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-[0.7rem]">
               <span className="flex items-center gap-2 text-ink-faint">
-                <span aria-hidden className="inline-block h-0 w-6 border-t-2 border-dashed border-ink-faint" />
+                <span aria-hidden className="spectrum-rule inline-block h-1 w-6 rounded-full opacity-50" />
                 Where you started - {litOf(startedValues)} of 7 colours
               </span>
               <span className="flex items-center gap-2 text-ink">
@@ -145,45 +148,81 @@ export function SpectrumSignature({ state }: { state: AppState }) {
 
           <SpectrumWave values={tab === "where you started" && startedValues ? startedValues : nowValues} />
 
-          {/* The hard numbers. The curve is the feel; this is the fact. */}
-          {/* Each channel names itself on hover - seven colors is a
-              vocabulary, and a readout you can't name is just decoration. */}
-          <ul className="relative mt-1 flex items-start justify-between gap-1">
-            {categories.map((cat) => {
-              const shown = tab === "where you started" && startedValues ? startedValues : nowValues;
-              const percent = shown[cat.id] ?? 0;
-              return (
-                <li
-                  key={cat.id}
-                  tabIndex={0}
-                  onClick={() =>
-                    setOpenChannel((cur) => (cur === cat.id ? null : cat.id))
-                  }
-                  className="group relative flex flex-1 cursor-pointer flex-col items-center gap-1 focus:outline-none"
-                >
-                  <span
-                    className={`pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 w-36 -translate-x-1/2 rounded-lg border border-navy-500 bg-navy-950 p-2 text-center text-[0.7rem] leading-snug shadow-xl transition-opacity group-hover:opacity-100 group-focus:opacity-100 ${
-                      openChannel === cat.id ? "opacity-100" : "opacity-0"
-                    }`}
-                  >
-                    <b className={`block ${cat.textClass}`}>{cat.name}</b>
-                    <span className="text-ink-muted">
-                      {percent}% of your speaking
-                    </span>
-                  </span>
-                  <span
-                    className={`text-[0.7rem] font-bold tabular-nums ${cat.textClass}`}
-                  >
-                    {percent}%
-                  </span>
-                  <CategoryIcon
-                    category={cat.id}
-                    className={`size-4 transition-transform group-hover:scale-125 ${percent >= MEANINGFUL ? cat.textClass : "text-ink-faint"}`}
-                  />
-                </li>
-              );
-            })}
-          </ul>
+        </div>
+        )}
+        {tab === "over time" ? (
+          <SpectrumHistory attempts={state.attempts} />
+        ) : (
+        <div className="relative overflow-hidden rounded-xl bg-navy-950/70 p-4">
+          {/* The scope behind the trace. */}
+          <div aria-hidden className="absolute inset-4">
+            <div className="absolute inset-0 flex flex-col justify-between">
+              {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                <span
+                  key={i}
+                  className={`w-full h-px ${i % 4 === 0 ? "bg-navy-600" : "bg-navy-700/70"}`}
+                />
+              ))}
+            </div>
+            <div className="absolute inset-0 flex justify-between">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <span key={i} className="h-full w-px bg-navy-700/50" />
+              ))}
+            </div>
+          </div>
+
+          <SpectrumWave values={tab === "where you started" && startedValues ? startedValues : nowValues} />
+
+        </div>
+        )}
+        {tab === "over time" ? (
+          <SpectrumHistory attempts={state.attempts} />
+        ) : (
+        <div className="relative overflow-hidden rounded-xl bg-navy-950/70 p-4">
+          {/* The scope behind the trace. */}
+          <div aria-hidden className="absolute inset-4">
+            <div className="absolute inset-0 flex flex-col justify-between">
+              {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                <span
+                  key={i}
+                  className={`w-full h-px ${i % 4 === 0 ? "bg-navy-600" : "bg-navy-700/70"}`}
+                />
+              ))}
+            </div>
+            <div className="absolute inset-0 flex justify-between">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <span key={i} className="h-full w-px bg-navy-700/50" />
+              ))}
+            </div>
+          </div>
+
+          <SpectrumWave values={tab === "where you started" && startedValues ? startedValues : nowValues} />
+
+        </div>
+        )}
+        {tab === "over time" ? (
+          <SpectrumHistory attempts={state.attempts} />
+        ) : (
+        <div className="relative overflow-hidden rounded-xl bg-navy-950/70 p-4">
+          {/* The scope behind the trace. */}
+          <div aria-hidden className="absolute inset-4">
+            <div className="absolute inset-0 flex flex-col justify-between">
+              {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                <span
+                  key={i}
+                  className={`w-full h-px ${i % 4 === 0 ? "bg-navy-600" : "bg-navy-700/70"}`}
+                />
+              ))}
+            </div>
+            <div className="absolute inset-0 flex justify-between">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <span key={i} className="h-full w-px bg-navy-700/50" />
+              ))}
+            </div>
+          </div>
+
+          <SpectrumWave values={tab === "where you started" && startedValues ? startedValues : nowValues} />
+
         </div>
         )}
 

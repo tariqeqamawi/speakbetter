@@ -186,12 +186,16 @@ export function standing(state: AppState): RankStanding {
     (sum, id) => sum + lessonXp(id),
     0,
   );
-  const xp =
+  const earned =
     state.attempts.length * XP.upload +
     challengeTotal +
     lessonTotal +
     state.badges.length * XP.badge +
     state.questChests.length * XP.dailyChest;
+  // XP is a currency as well as a score: a streak bought back is paid
+  // for out of it (see keepStreak in the store), and the rank should
+  // reflect what the student actually holds.
+  const xp = Math.max(0, earned - (state.xpSpent ?? 0));
 
   let index = 0;
   for (let i = 0; i < ranks.length; i++) if (xp >= ranks[i].at) index = i;
@@ -267,3 +271,10 @@ export function longestStreak(state: AppState): number {
 
 export const totalBadges = badgeDefs.length;
 export const totalChallenges = challenges.length;
+
+/** What it costs to buy back a missed day: more the longer the streak,
+ *  because the longer it is the more it's worth keeping - and the more
+ *  a student has earned by then. */
+export function streakPrice(streakDays: number): number {
+  return Math.min(300, 40 + streakDays * 20);
+}

@@ -343,7 +343,7 @@ export function JourneyMap({
 
   // Lay the trail out top to bottom, phase by phase.
   const nodes: Node[] = [];
-  const banners: { phase: StoryPhase; y: number; locked: boolean; gate: PhaseGate }[] = [];
+  const banners: { phase: StoryPhase; index: number; y: number; locked: boolean; gate: PhaseGate }[] = [];
   let y = 24;
   let step = 0;
   let firstUnpassedSeen = false;
@@ -355,7 +355,7 @@ export function JourneyMap({
   for (const { phase, index: pi } of walk) {
     const locked = pi > currentIndex;
     const gate = ready ? phaseGate(state, pi) : { open: pi === 0, reason: null, rank: null, xpToGo: 0 };
-    banners.push({ phase, y, locked, gate });
+    banners.push({ phase, index: pi, y, locked, gate });
     y += PHASE_GAP;
     for (const challenge of challengesInPhase(phase.id)) {
       const passed = ready && challengeProgress(challenge, state).passed;
@@ -625,7 +625,7 @@ export function JourneyMap({
           </svg>
 
           {/* Level rules + phase circles, their skills in orbit */}
-          {banners.map(({ phase, y: by, locked, gate }, i) => (
+          {banners.map(({ phase, index: pi, y: by, locked, gate }) => (
             <div key={phase.id} className="contents">
               <div
                 id={`journey-${phase.id}`}
@@ -639,7 +639,7 @@ export function JourneyMap({
                     locked ? "text-ink-faint" : phase.textClass
                   }`}
                 >
-                  Level {i + 1}
+                  Level {pi + 1}
                 </span>
                 <span className="h-px flex-1 bg-navy-700/70" />
               </div>
@@ -1051,14 +1051,20 @@ export function JourneyMap({
             style={{ top: finishY }}
           >
             <span className="map-pin flex flex-col items-center gap-2.5">
-              <span
-                className={`h-3.5 w-44 rounded-sm sm:w-56 ${complete ? "" : "opacity-50"}`}
-                style={{
-                  backgroundImage:
-                    "repeating-conic-gradient(rgba(233,236,248,0.92) 0% 25%, rgba(8,13,26,0.95) 25% 50%)",
-                  backgroundSize: "14px 14px",
-                }}
-              />
+              <span className="relative flex items-end gap-2">
+                {/* A flag either side of the line, waving - the thing
+                    being walked towards should look like an arrival. */}
+                <Flag side="left" lit={complete} />
+                <span
+                  className={`h-3.5 w-36 rounded-sm sm:w-48 ${complete ? "" : "opacity-50"}`}
+                  style={{
+                    backgroundImage:
+                      "repeating-conic-gradient(rgba(233,236,248,0.92) 0% 25%, rgba(8,13,26,0.95) 25% 50%)",
+                    backgroundSize: "14px 14px",
+                  }}
+                />
+                <Flag side="right" lit={complete} />
+              </span>
               <span
                 className={`text-sm font-bold uppercase tracking-[0.35em] ${
                   complete ? "text-ink" : "text-ink-faint"
@@ -1084,5 +1090,28 @@ export function JourneyMap({
         </div>
       </div>
     </div>
+  );
+}
+
+/** A checkered flag on a pole, waving at the finish. */
+function Flag({ side, lit }: { side: "left" | "right"; lit: boolean }) {
+  return (
+    <span className={`flex flex-col items-center ${lit ? "" : "opacity-60"}`} aria-hidden>
+      <svg viewBox="0 0 40 46" className={`h-10 w-9 ${side === "right" ? "-scale-x-100" : ""}`}>
+        <defs>
+          <pattern id={`check-${side}`} width="8" height="8" patternUnits="userSpaceOnUse">
+            <rect width="8" height="8" fill="rgba(233,236,248,0.95)" />
+            <rect width="4" height="4" fill="rgba(8,13,26,0.95)" />
+            <rect x="4" y="4" width="4" height="4" fill="rgba(8,13,26,0.95)" />
+          </pattern>
+        </defs>
+        <path d="M8 4v40" stroke="rgba(233,236,248,0.65)" strokeWidth="2.5" strokeLinecap="round" />
+        <path
+          className="finish-flag"
+          d="M9 5c7-3 14 3 21 0v16c-7 3-14-3-21 0z"
+          fill={`url(#check-${side})`}
+        />
+      </svg>
+    </span>
   );
 }
