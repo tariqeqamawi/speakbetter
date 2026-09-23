@@ -379,3 +379,24 @@ export function BadgeIcon({
   const Icon = badgeIcons[name as BadgeIconName] ?? MedalIcon;
   return <Icon className={className} />;
 }
+
+/** A finger tapping - what you can do to a thing on screen. */
+export function TapIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <path d="M9 11V6.5a1.5 1.5 0 1 1 3 0V11" />
+      <path d="M12 11V9.5a1.5 1.5 0 0 1 3 0V11" />
+      <path d="M15 11.5v-1a1.5 1.5 0 0 1 3 0V15a5 5 0 0 1-5 5h-1.2a4 4 0 0 1-3-1.4L6 15a1.6 1.6 0 0 1 2.4-2.1L9 13.5V11" />
+    </svg>
+  );
+}
+
+/** A magnifier - pinch or press to look closer. */
+export function ZoomIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <circle cx="11" cy="11" r="6" />
+      <path d="M20 20l-4.5-4.5M9 11h4M11 9v4" />
+    </svg>
+  );
+}

@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useStore, type Level } from "@/lib/store";
 import { standing } from "@/lib/progress";
 import { LevelIcon, levelMeta } from "@/components/level-icon";
+import { startTour } from "@/components/guided-tour";
 import { ChevronDownIcon, ProfileIcon } from "@/components/icons";
 import { ProTip } from "@/components/pro-tip";
 
@@ -177,6 +178,13 @@ export function DashboardHeader() {
                 <ChevronDownIcon className="size-3.5 text-ink-faint" />
               </button>
               <span className="text-xs text-ink-faint">{rank.rank.name}</span>
+              <button
+                type="button"
+                onClick={startTour}
+                className="text-xs font-semibold text-ink-faint underline-offset-4 transition-colors hover:text-ink hover:underline"
+              >
+                Take the tour
+              </button>
 
               {levelOpen && (
                 <div

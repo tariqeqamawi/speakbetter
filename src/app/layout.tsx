@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { TopBar, BottomTabs } from "@/components/nav";
+import { GuidedTour } from "@/components/guided-tour";
 import { StoreProvider } from "@/lib/store";
 import { AmbientBackground } from "@/components/ambient-background";
 import { CelebrationHost } from "@/components/celebrations";
@@ -82,6 +83,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <PushSync />
           <BareMode />
           <CoachPopIn />
+          <GuidedTour />
           <ServiceWorkerRegister />
         </StoreProvider>
       </body>

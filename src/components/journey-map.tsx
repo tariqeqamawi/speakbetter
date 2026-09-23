@@ -22,7 +22,7 @@ import { BadgeMedal } from "@/components/badge-medal";
 import { VideoStill } from "@/components/video-still";
 import { OwnTake, usePeek } from "@/components/own-take";
 import { listAllVideos, type StoredVideoMeta } from "@/lib/attempt-videos";
-import { CheckIcon, LockIcon, ProfileIcon } from "@/components/icons";
+import { CheckIcon, LockIcon, ProfileIcon, TapIcon, ZoomIcon } from "@/components/icons";
 import { StudentsHere } from "@/components/students-here";
 
 // The STORY journey as terrain: a winding path of nodes, one per
@@ -305,12 +305,22 @@ export function JourneyMap({
   }, [preview]);
   // The road remembers: beside a passed node, one line the coach said
   // about that take - proof it watched, and a reason to read it again.
-  const quoteFor = (slug: string): string | null => {
+  /** What Coach credited on this take, as a couple of short deeds -
+   *  "Established the setting", not the whole sentence. A road label
+   *  has room for a phrase, and a paragraph beside every circle was
+   *  what made the map feel crowded. */
+  const winsFor = (slug: string): string[] => {
     const best = [...state.attempts].filter((a) => a.challengeSlug === slug && a.passed).sort((a, b) => b.score - a.score)[0];
-    const note = best?.strengths?.[0]?.note ?? best?.focus?.[0]?.note;
-    if (!note) return null;
-    const first = note.split(/(?<=[.!?])\s/)[0];
-    return first.length > 88 ? `${first.slice(0, 85).trimEnd()}…` : first;
+    const notes = best?.strengths ?? [];
+    return notes
+      .slice(0, 2)
+      .map((n) => {
+        // the first clause, trimmed to five words and de-pronouned
+        const clause = n.note.split(/[.,;:]|\s-\s/)[0].trim().replace(/^(you|your)\s+/i, "");
+        const words = clause.split(/\s+/).slice(0, 5).join(" ");
+        return words.charAt(0).toUpperCase() + words.slice(1);
+      })
+      .filter(Boolean);
   };
 
   // The passed node held under a finger, playing its take. The hold
@@ -451,9 +461,19 @@ export function JourneyMap({
             Pinch, or double-tap, to look closer
           </span>
         ) : (
-          <h2 className="text-sm font-medium uppercase tracking-wider text-ink-faint">
-            The journey
-          </h2>
+          <span className="flex min-w-0 flex-col">
+            <span className="text-sm font-medium uppercase tracking-wider text-ink-faint">The journey</span>
+            <span className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[0.65rem] text-ink-faint">
+              <span className="flex items-center gap-1">
+                <TapIcon className="size-3" />
+                Tap a circle to open that challenge
+              </span>
+              <span className="flex items-center gap-1">
+                <ZoomIcon className="size-3" />
+                Pinch to look closer
+              </span>
+            </span>
+          </span>
         )}
         <div className="flex items-center gap-2">
           {/* Zoom: out, in, and the scale - a pinch does the same. */}
@@ -876,11 +896,16 @@ export function JourneyMap({
                   } ${veiled ? "blur-[2px] select-none" : ""}`}
                 >
                   {shownTitle}
-                  {node.passed && quoteFor(node.slug) && (
-                    <span className={`mt-0.5 block text-[0.6rem] font-normal italic leading-snug text-ink-faint ${labelLeft ? "text-right" : ""}`}>
-                      &ldquo;{quoteFor(node.slug)}&rdquo;
-                    </span>
-                  )}
+                  {node.passed &&
+                    winsFor(node.slug).map((win) => (
+                      <span
+                        key={win}
+                        className={`mt-0.5 flex items-center gap-1 text-[0.6rem] font-normal leading-snug text-ink-faint ${labelLeft ? "flex-row-reverse text-right" : ""}`}
+                      >
+                        <CheckIcon className={`size-2.5 shrink-0 ${node.phase.textClass}`} />
+                        {win}
+                      </span>
+                    ))}
                   {/* What it pays, and where you are - on one line so a
                       node never grows a third stacked label. A challenge
                       is worth several lessons, which is the point of

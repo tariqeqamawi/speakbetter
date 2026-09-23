@@ -29,7 +29,21 @@ const AFFIRMATIONS = [
   "Most people never practice this. You are.",
 ];
 
+/** True while the guided tour (or its offer) is on screen. */
+function useOnTour(): boolean {
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    const read = () => setOn(document.body.dataset.tour === "1");
+    read();
+    const observer = new MutationObserver(read);
+    observer.observe(document.body, { attributes: true, attributeFilter: ["data-tour"] });
+    return () => observer.disconnect();
+  }, []);
+  return on;
+}
+
 export function CoachPopIn() {
+  const onTour = useOnTour();
   const { state, ready, celebrations } = useStore();
   const [message, setMessage] = useState<string | null>(null);
   const [leaving, setLeaving] = useState(false);
@@ -172,7 +186,9 @@ export function CoachPopIn() {
 
   useEffect(() => () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); }, []);
 
-  if (!message) return null;
+  // The tour owns the screen while it's running - two cards in the
+  // same corner is one too many.
+  if (!message || onTour) return null;
 
   return (
     <div

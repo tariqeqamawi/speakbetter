@@ -380,7 +380,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
       )}
 
       {stage.kind === "idle" && (!gate || gate.open) && !trialBlocked && !trialSpent && (
-        <div className="flex flex-col items-center gap-4 rounded-2xl border border-navy-600 bg-navy-800 p-6 text-center">
+        <div data-tour="record" className="flex flex-col items-center gap-4 rounded-2xl border border-navy-600 bg-navy-800 p-6 text-center">
           <p className="text-lg font-semibold tracking-tight text-ink">Ready for the challenge?</p>
           <LionMouth level={0} className="w-28" />
           <input

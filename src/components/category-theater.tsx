@@ -10,7 +10,8 @@ import { VimeoPlayer } from "@/components/vimeo-player";
 import { LessonWatched } from "@/components/lesson-watched";
 import { VideoStill } from "@/components/video-still";
 import { CheckIcon, XIcon, ZapIcon } from "@/components/icons";
-import { LessonCardButton } from "@/components/lesson-card-button";
+import { LessonCard } from "@/components/lesson-card";
+import { cardFor } from "@/data/deck";
 import { LessonNotes } from "@/components/lesson-notes";
 import { LessonTranscript } from "@/components/lesson-transcript";
 import { PlayFillIcon } from "@/components/player-icons";
@@ -49,6 +50,7 @@ export function CategoryTheater({
   const stageRef = useRef<HTMLDivElement>(null);
 
   const featured = lessons.find((l) => l.vimeoId === featuredId) ?? lessons[0];
+  const card = cardFor(featured.vimeoId);
   const index = lessons.findIndex((l) => l.vimeoId === featured.vimeoId);
   const next = lessons[index + 1];
   const watched = (id: string) => ready && state.watchedLessons.includes(id);
@@ -148,9 +150,7 @@ export function CategoryTheater({
             </span>
           )}
 
-          <span className="ml-auto flex items-center gap-3">
-            <LessonCardButton vimeoId={featured.vimeoId} />
-          </span>
+
         </div>
 
         {/* Keyed by lesson so the player rebuilds cleanly on each pick. */}
@@ -175,6 +175,17 @@ export function CategoryTheater({
             page - this is the page. */}
         <LessonNotes key={`n-${featured.vimeoId}`} vimeoId={featured.vimeoId} category={category.id} seconds={seconds} />
         <LessonTranscript vimeoId={featured.vimeoId} />
+
+        {/* The lesson's own card, face up beneath it - the fastest
+            version of the skill, and the deck met where the deck is
+            useful. It used to be behind a button. */}
+        {card && (
+          <div className="flex flex-col items-center gap-2 rounded-xl border border-navy-600 bg-navy-800 p-4">
+            <span className="text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-ink-faint">This lesson&apos;s card</span>
+            <LessonCard key={`c-${featured.vimeoId}`} data={card} startFlipped face="vignette" className="w-56 sm:w-64" />
+            <span className="text-[0.65rem] text-ink-faint">Tap the card to turn it over</span>
+          </div>
+        )}
 
         {/* Up next: offered, never taken. The lesson that just finished
             used to roll into the next one on a five second countdown,

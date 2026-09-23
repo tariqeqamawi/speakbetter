@@ -59,6 +59,7 @@ function CoachButton() {
   return (
     <Link
       href="/coach"
+      data-tour="coach"
       title="Coach - ask a question, read back your reviews"
       className={`coach-pill flex min-h-11 items-center gap-2 rounded-full py-1 pl-1 pr-3.5 hover:scale-[1.03] active:scale-[0.98] ${
         on ? "ring-2 ring-ink/70" : ""
@@ -84,6 +85,7 @@ function DesktopLinks() {
           <Link
             key={href}
             href={href}
+            data-tour={href.replace("/", "") === "profile" ? "dashboard" : href.replace("/", "")}
             className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
               active
                 ? "bg-navy-800 text-ink"
@@ -116,6 +118,7 @@ export function BottomTabs() {
             <Link
               key={href}
               href={href}
+              data-tour={href.replace("/", "") === "profile" ? "dashboard" : href.replace("/", "")}
               className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[0.7rem] font-medium transition-colors ${
                 active ? "text-ink" : "text-ink-faint"
               }`}
