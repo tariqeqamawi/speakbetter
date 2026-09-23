@@ -56,7 +56,7 @@ export const mainTour: TourStop[] = [
     id: "open",
     route: "/",
     title: "Welcome to Speak Better",
-    body: "Hey there, welcome to Speak Better. I'm going to show you around the place.",
+    body: "Hey there, welcome to Speak Better. I'm going to show you around the place. You can call me Coach. Tariq delivers the lessons; I review your uploads and give you feedback.",
   },
   {
     id: "today",
