@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useStore } from "@/lib/store";
 import { chestClaimedToday, dailyQuests } from "@/lib/quests";
+import { MapIcon } from "@/components/icons";
 import { XP } from "@/lib/progress";
 import { hapticCelebrate, playCelebration } from "@/lib/feedback-fx";
 import {
@@ -43,8 +44,13 @@ export function DailyQuests() {
 
   return (
     <section className="flex flex-col gap-3 rounded-xl border border-navy-600 bg-navy-800 p-4">
-      <div className="flex items-baseline justify-between">
-        <h2 className="text-sm font-semibold text-ink">Today&apos;s quests</h2>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="flex items-center gap-2.5 text-sm font-semibold text-ink">
+          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-structure/15 text-structure">
+            <MapIcon className="size-5" />
+          </span>
+          Today&apos;s quests
+        </h2>
         <span className="text-xs tabular-nums text-ink-faint">
           {doneCount} of {quests.length}
         </span>

@@ -17,6 +17,7 @@ import { TapIcon, VideoIcon } from "@/components/icons";
 import { startTour } from "@/components/guided-tour";
 import { LevelIcon, levelMeta } from "@/components/level-icon";
 import { FlameIcon } from "@/components/icons";
+import { streakBonusPercent } from "@/lib/progress";
 import { CheckIcon, PlayIcon } from "@/components/icons";
 
 // The daily home. A library of 24 challenges invites browsing; this
@@ -104,26 +105,39 @@ export function Today() {
       {/* A missed day, while it can still be bought back. */}
       <StreakRescue />
 
-      {/* the daily goal, and the streak it protects */}
+      {/* The daily goal and the streak it protects. A running streak
+          wears the whole spectrum rather than one green line: it is
+          the thing that pays a bonus on every colour, and a single
+          accent made it look like one more green card among green
+          cards. */}
       <section
-        className={`flex items-center gap-4 rounded-xl border p-4 ${
-          doneToday
-            ? "border-mindset/40 bg-mindset/5"
-            : "border-navy-600 bg-navy-800"
+        className={`relative flex items-center gap-4 overflow-hidden rounded-xl border p-4 ${
+          streak > 0 ? "neon-edge border-transparent bg-navy-800" : "border-navy-600 bg-navy-800"
         }`}
       >
+        {streak > 0 && <span aria-hidden className="spectrum-rule absolute inset-x-0 top-0 h-1" />}
         <span
-          className={`flex size-11 shrink-0 items-center justify-center rounded-full ${
-            doneToday ? "bg-mindset/15 text-mindset" : "bg-navy-700 text-ink-faint"
+          className={`relative flex size-11 shrink-0 items-center justify-center rounded-full ${
+            doneToday ? "bg-mindset/15 text-mindset" : streak > 0 ? "bg-acting/15 text-acting" : "bg-navy-700 text-ink-faint"
           }`}
         >
           {doneToday ? <CheckIcon className="size-5" /> : <FlameIcon className="size-5" />}
         </span>
-        <div className="flex flex-1 flex-col gap-0.5">
+        <div className="relative flex flex-1 flex-col gap-0.5">
           <span className="text-sm font-semibold text-ink">
-            {streak > 0
-              ? `${streak}-day streak`
-              : "Start a streak - one video is all it takes"}
+            {streak > 0 ? (
+              <>
+                <span className="spectrum-text text-lg font-black tabular-nums">{streak}</span>
+                <span className="pl-1.5">day streak</span>
+                {streak > 1 && (
+                  <span className="pl-2 text-xs font-medium text-acting">
+                    +{streakBonusPercent(streak)}% XP on every take
+                  </span>
+                )}
+              </>
+            ) : (
+              "Start a streak - one video is all it takes"
+            )}
           </span>
           <span className="text-xs text-ink-faint">
             {doneToday

@@ -1042,6 +1042,53 @@ svg.soundwave-c {
   }
 }
 
+/* Where the student is standing on the road: a ring of all seven
+ * colors around their circle, turning slowly and breathing, so the one
+ * marker that moves is unmistakable without covering anything. */
+.here-ring {
+  background: conic-gradient(
+    from 0deg,
+    var(--color-storytelling),
+    var(--color-figurative),
+    var(--color-acting),
+    var(--color-structure),
+    var(--color-mindset),
+    var(--color-body-language),
+    var(--color-advanced),
+    var(--color-storytelling)
+  );
+  -webkit-mask: radial-gradient(circle, transparent calc(100% - 6px), #000 calc(100% - 6px));
+  mask: radial-gradient(circle, transparent calc(100% - 6px), #000 calc(100% - 6px));
+  animation:
+    here-ring-spin 5.5s linear infinite,
+    here-ring-breathe 2.6s ease-in-out infinite;
+}
+
+@keyframes here-ring-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@keyframes here-ring-breathe {
+  0%,
+  100% {
+    opacity: 0.9;
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.5));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .here-ring {
+    animation: none;
+    opacity: 0.9;
+  }
+}
+
 .xp-float {
   animation: xp-float 2.8s cubic-bezier(0.16, 0.9, 0.3, 1) both;
 }

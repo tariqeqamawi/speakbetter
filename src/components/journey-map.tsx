@@ -565,18 +565,21 @@ export function JourneyMap({
                       height: h + 90,
                       "--grid-max": locked ? 0.09 : 0.24,
                       animationDelay: `${i * 2.6}s`,
-                      // Contours, not graph paper. Three families of
-                      // rings from three different centres, at
-                      // different ellipse ratios and spacings: where
-                      // they cross they read as the contour lines of
-                      // hills, which is what a road through territory
-                      // should be drawn on. A square grid said
-                      // "spreadsheet" underneath a map.
+                      // Contours, not graph paper - and not one set
+                      // of rings drawn through another. Each hill gets
+                      // its own patch of the plane (its own size and
+                      // position, painted once) so the rings sit BESIDE
+                      // each other the way contours on a real map do,
+                      // rather than crossing and cancelling into moire.
                       backgroundImage: [
-                        `repeating-radial-gradient(ellipse 62% 38% at 16% 24%, ${color} 0 1px, transparent 1px 26px)`,
-                        `repeating-radial-gradient(ellipse 78% 54% at 82% 58%, ${color} 0 1px, transparent 1px 34px)`,
-                        `repeating-radial-gradient(ellipse 48% 72% at 44% 92%, ${color} 0 1px, transparent 1px 29px)`,
+                        `repeating-radial-gradient(ellipse at 50% 50%, ${color} 0 1px, transparent 1px 22px)`,
+                        `repeating-radial-gradient(ellipse at 50% 50%, ${color} 0 1px, transparent 1px 27px)`,
+                        `repeating-radial-gradient(ellipse at 50% 50%, ${color} 0 1px, transparent 1px 19px)`,
+                        `repeating-radial-gradient(ellipse at 50% 50%, ${color} 0 1px, transparent 1px 24px)`,
                       ].join(", "),
+                      backgroundRepeat: "no-repeat",
+                      backgroundSize: "54% 34%, 44% 26%, 38% 30%, 50% 30%",
+                      backgroundPosition: "2% 8%, 88% 30%, 14% 66%, 82% 88%",
                     } as React.CSSProperties
                   }
                 />
@@ -758,6 +761,28 @@ export function JourneyMap({
                     <span className="flex size-full items-center justify-center text-ink-faint">
                       <LockIcon className="size-4" />
                     </span>
+                  ) : node.isCurrent && takes.has(node.slug) ? (
+                    // They have sent a take for the one they are on:
+                    // their own frame is a truer "you are here" than
+                    // any avatar, and it is already theirs.
+                    <OwnTake
+                      take={takes.get(node.slug)!}
+                      playing={held === node.slug || peeking === node.slug}
+                    />
+                  ) : node.isCurrent ? (
+                    // Where they are, with their own face in the
+                    // circle. It used to hover above the node on a pin,
+                    // which covered the challenge's title behind it and
+                    // told a student something they could already see
+                    // from the ring.
+                    state.avatar ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={state.avatar} alt="" className="size-full object-cover" />
+                    ) : (
+                      <span className="flex size-full items-center justify-center bg-navy-850">
+                        <ProfileIcon className="size-6 text-ink-muted" />
+                      </span>
+                    )
                   ) : node.passed && takes.has(node.slug) ? (
                     // Their own take in the circle - a frame of it, and
                     // a few seconds of it under a held finger or when
@@ -783,44 +808,14 @@ export function JourneyMap({
                   )}
                 </span>
 
-                {/* The student, standing on the challenge they're at.
-                    It's the only marker on the map that moves: pass a
-                    challenge and it walks down to the next one, which is
-                    the whole reason the journey is drawn as a road.
-                    Their own face where they've given one, a figure
-                    where they haven't - the marker has to be there
-                    either way, or the road has nobody on it.
-
-                    It stands above the node rather than replacing its
-                    picture: the node is which challenge this is, and
-                    covering that to say "you are here" costs more than
-                    it tells. */}
+                {/* The ring that says this is where they are: all seven
+                    colors, turning and breathing, around the circle
+                    they are standing in. The marker used to hover above
+                    the node on a pin - which covered the title of the
+                    challenge behind it to tell a student something the
+                    ring already says. */}
                 {node.isCurrent && (
-                  <span
-                    className={`absolute -top-11 left-1/2 z-30 flex -translate-x-1/2 flex-col items-center ${node.phase.textClass}`}
-                  >
-                    <span className="block size-9 overflow-hidden rounded-full border-2 border-current bg-navy-850 shadow-[0_0_20px_-2px_currentColor] sm:size-10">
-                      {state.avatar ? (
-                        // A data URL from the student's own device -
-                        // next/image would only add an optimizer hop.
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={state.avatar}
-                          alt=""
-                          className="size-full object-cover"
-                        />
-                      ) : (
-                        <span className="flex size-full items-center justify-center">
-                          <ProfileIcon className="size-5 text-ink-muted" />
-                        </span>
-                      )}
-                    </span>
-                    {/* The pin's point, resting on the node below */}
-                    <span
-                      aria-hidden
-                      className="-mt-px size-0 border-x-[5px] border-t-[7px] border-x-transparent border-t-current"
-                    />
-                  </span>
+                  <span aria-hidden className="here-ring pointer-events-none absolute -inset-1.5 z-20 rounded-full" />
                 )}
 
                 {/* Trophies won on this take, pinned beside the node on

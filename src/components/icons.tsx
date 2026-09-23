@@ -380,6 +380,17 @@ export function BadgeIcon({
   return <Icon className={className} />;
 }
 
+/** A folded map - the day's quests as a route through it. */
+export function MapIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <path d="M9 4.5 3.5 6.8v12.7L9 17.2l6 2.3 5.5-2.3V4.5L15 6.8z" />
+      <path d="M9 4.5v12.7" />
+      <path d="M15 6.8v12.7" />
+    </svg>
+  );
+}
+
 /** A finger tapping - what you can do to a thing on screen. */
 export function TapIcon({ className = "size-5" }: IconProps) {
   return (

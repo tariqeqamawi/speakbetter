@@ -1,6 +1,7 @@
 import { challenges, storyPhases, type Challenge } from "@/data/challenges";
 import { lessonByVimeoId, type Lesson } from "@/data/lessons";
 import { challengeProgress } from "@/lib/challenge-progress";
+import { phaseGate } from "@/lib/progress";
 import type { AppState } from "@/lib/store";
 
 // What one thing should a student do right now? A library of 21
@@ -16,8 +17,19 @@ export interface NextUp {
 }
 
 export function nextUp(state: AppState): NextUp | null {
+  // Only the road a student can actually walk. Watching one lesson
+  // that happens to belong to a challenge in a locked phase gives that
+  // challenge a ratio above zero, and it was winning - which is how
+  // Today came to name a challenge in "Own Your Stories" to somebody
+  // three challenges into "Start With Awareness". A next action they
+  // cannot take is worse than no next action at all.
+  const open = new Set(
+    storyPhases.filter((_, i) => phaseGate(state, i).open).map((p) => p.id),
+  );
+  const reachable = challenges.filter((c) => open.has(c.phase));
+
   // 1. Something already underway beats anything new.
-  const inFlight = challenges
+  const inFlight = reachable
     .map((c) => ({ c, p: challengeProgress(c, state) }))
     .filter(({ p }) => !p.passed && p.ratio > 0)
     .sort((a, b) => b.p.ratio - a.p.ratio)[0];
@@ -36,7 +48,7 @@ export function nextUp(state: AppState): NextUp | null {
 
   // 2. Otherwise the first unpassed challenge in journey order.
   const order = storyPhases.map((p) => p.id);
-  const untouched = challenges
+  const untouched = reachable
     .filter((c) => !challengeProgress(c, state).passed)
     .sort((a, b) => order.indexOf(a.phase) - order.indexOf(b.phase))[0];
 
