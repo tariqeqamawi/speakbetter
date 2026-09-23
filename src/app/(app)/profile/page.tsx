@@ -314,7 +314,7 @@ export default function DashboardPage() {
     },
     {
       id: "badges",
-      name: "Badges",
+      name: "Trophies",
       Icon: MedalIcon,
       accentClass: "text-mindset",
       content: badgesPanel,

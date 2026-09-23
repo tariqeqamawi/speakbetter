@@ -81,7 +81,7 @@ export function BadgeCollection({ state }: { state: AppState }) {
                 filter === f ? "bg-navy-700 text-ink" : "text-ink-faint hover:text-ink-muted"
               }`}
             >
-              {f === "won" ? `Won (${earned.size})` : `All (${badgeDefs.length})`}
+              {f === "won" ? `Awarded (${earned.size})` : `All (${badgeDefs.length})`}
             </button>
           ))}
         </div>
@@ -157,7 +157,7 @@ export function BadgeCollection({ state }: { state: AppState }) {
 
               <div className="relative flex flex-col items-center gap-1 text-center">
                 <span className="text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-ink-faint">
-                  {won ? "Won" : "Not yet won"} · {index + 1} of {shelf.length}
+                  {won ? "Awarded" : "Not yet awarded"} · {index + 1} of {shelf.length}
                 </span>
                 <h3 className="text-xl font-bold tracking-tight text-ink">{shown.title}</h3>
                 {won && (
@@ -186,7 +186,7 @@ export function BadgeCollection({ state }: { state: AppState }) {
               className="flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-navy-600 bg-navy-900/60 px-4 text-sm font-semibold text-ink-muted transition-colors hover:text-ink"
             >
               <span>
-                {filter === "won" ? "Every trophy you've won" : "Every trophy in the case"}
+                {filter === "won" ? "Every trophy you've been awarded" : "Every trophy in the case"}
                 <span className="pl-2 text-xs font-normal text-ink-faint">{shelf.length}</span>
               </span>
               <ChevronDownIcon className={`size-4 shrink-0 transition-transform ${shelfOpen ? "rotate-180" : ""}`} />
