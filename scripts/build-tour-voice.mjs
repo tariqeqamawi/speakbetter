@@ -24,10 +24,13 @@ const TMP = ".tour-voice-tmp";
 function stops() {
   const src = readFileSync("src/data/tour-script.ts", "utf8");
   const found = [];
-  const re = /\bid:\s*"([a-z0-9-]+)"[\s\S]*?\bbody:\s*\n?\s*"((?:[^"\\]|\\.)*)"/g;
+  const re = /\bid:\s*"([a-z0-9-]+)"[\s\S]*?\bbody:\s*\n?\s*"((?:[^"\\]|\\.)*)"(?:,\s*\n?\s*bodyWide:\s*\n?\s*"((?:[^"\\]|\\.)*)")?/g;
+  const clean = (t) => t.replace(/\\"/g, '"').replace(/\\n/g, " ");
   let m;
   while ((m = re.exec(src))) {
-    found.push({ id: m[1], body: m[2].replace(/\\"/g, '"').replace(/\\n/g, " ") });
+    found.push({ id: m[1], body: clean(m[2]) });
+    // A stop that says it differently on a laptop needs both clips.
+    if (m[3]) found.push({ id: `${m[1]}-wide`, body: clean(m[3]) });
   }
   // Ids are unique, and a stop whose body was captured from the NEXT
   // stop would show up as a duplicate id - so this also catches drift.

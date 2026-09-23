@@ -103,6 +103,12 @@ export function TourRunner({
   const opening = stop?.intro === true;
   const last = step === stops.length - 1;
   const offset = stops[0]?.intro ? 0 : 1;
+  // Some advice only makes sense on one kind of screen - telling
+  // somebody at a laptop to tap the portrait button is telling them
+  // about a control they do not have. The clip follows the words.
+  const saysWide = wide && Boolean(stop?.bodyWide);
+  const line = saysWide ? stop!.bodyWide! : stop?.body;
+  const clip = saysWide ? `${stop!.id}-wide` : stop?.id;
 
   // Find what this stop is pointing at, and follow it while the page
   // settles under it.
@@ -219,10 +225,10 @@ export function TourRunner({
             <div className="flex items-start gap-3">
               <span className="tour-lion w-12 shrink-0">
                 <TalkingLion
-                  key={stop.id}
+                  key={clip}
                   bare
                   controls={false}
-                  audioSrc={muted ? undefined : stopAudio(stop.id)}
+                  audioSrc={muted ? undefined : stopAudio(clip!)}
                   autoPlay={!muted}
                   onBlocked={() => setBlocked(true)}
                 />
@@ -232,7 +238,7 @@ export function TourRunner({
                   {step + offset} of {stops.length - 1 + offset}
                 </span>
                 <h2 className="text-base font-bold leading-tight text-ink">{stop.title}</h2>
-                <p className="text-sm leading-snug text-ink-muted">{stop.body}</p>
+                <p className="text-sm leading-snug text-ink-muted">{line}</p>
               </div>
             </div>
             <Controls
@@ -293,10 +299,10 @@ export function TourRunner({
               him rather than swapping one lion for another. */}
           <span className={`tour-lion shrink-0 ${opening ? "w-32" : "w-11"}`}>
             <TalkingLion
-              key={stop.id}
+              key={clip}
               bare
               controls={false}
-              audioSrc={muted ? undefined : stopAudio(stop.id)}
+              audioSrc={muted ? undefined : stopAudio(clip!)}
               autoPlay={!muted}
               onBlocked={() => setBlocked(true)}
             />
@@ -311,7 +317,7 @@ export function TourRunner({
             <h2 className={opening ? "text-xl font-bold text-ink text-balance" : "text-base font-bold text-ink"}>
               {stop.title}
             </h2>
-            <p className="text-sm leading-snug text-ink-muted text-balance">{stop.body}</p>
+            <p className="text-sm leading-snug text-ink-muted text-balance">{line}</p>
           </div>
 
           {!opening && (

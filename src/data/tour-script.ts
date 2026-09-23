@@ -34,6 +34,11 @@ export interface TourStop {
   title: string;
   /** Shown on the card and spoken aloud - the same words. */
   body: string;
+  /** What to say instead on a wide screen, where the advice is
+   *  genuinely different. Telling somebody at a laptop to tap the
+   *  portrait button is telling them about a control they do not
+   *  have. Its clip is the stop's id with "-wide" on the end. */
+  bodyWide?: string;
   /** A film of this being used, where watching beats reading. */
   film?: { src: string; poster: string };
   /** Coach introducing himself, centered, with nothing highlighted -
@@ -249,7 +254,7 @@ export const sectionTours: Record<SectionId, SectionTour> = {
         id: "sec-skills-dial",
         target: "[data-tour='dial']",
         title: "The dial",
-        body: "Each point on the ring is one color of speaking. Drag your thumb around it to hear them named, then tap one to open its lessons.",
+        body: "Use your thumb and drag it around the circle to dial your chosen skills in the seven key color areas. Lift your thumb up and you will jump into that section, where you'll be able to view video lessons, summaries, the related card, and view the other videos in the series in the carousel below.",
         film: SKILLS,
       },
       {
@@ -267,8 +272,11 @@ export const sectionTours: Record<SectionId, SectionTour> = {
       },
       {
         id: "sec-skills-portrait",
-        title: "Watching on a phone",
-        body: "Tap the zoom button on any video to fill your screen in portrait, captions and all. This is a course about how you move, so you need to be able to see it.",
+        title: "Watching a lesson",
+        body:
+          "On mobile you can view the lesson in standard landscape, or tap the portrait button to zoom in and make full use of your phone screen - close enough to see facial expressions and hand gestures.",
+        bodyWide:
+          "View it full screen or in landscape. Lessons have summaries, key ideas and transcripts below each video, as well as a carousel to watch the other skills in the same color series.",
         film: SKILLS,
       },
       {
@@ -333,7 +341,7 @@ export const sectionTours: Record<SectionId, SectionTour> = {
       {
         id: "sec-dash-challenges",
         title: "Challenges",
-        body: "How many you have attempted, how many you have passed, and the minutes you have spent speaking to a lens. Every one of those minutes counts.",
+        body: "Here is a snapshot of your challenges: how many you've attempted, how many you've passed, and how many minutes total you've spent practicing speaking.",
         film: DASHBOARD,
       },
       {
@@ -345,20 +353,20 @@ export const sectionTours: Record<SectionId, SectionTour> = {
       {
         id: "sec-dash-spectrum",
         title: "Your spectrum",
-        body: "Your first take against your latest, both in color. Underneath, each skill and how many points it has moved since you started.",
+        body: "Your speaking uploads are displayed as a spectrum of color. The more colors light up, the more dynamic your speech. You can also see where you started and where you are now, and track your improvement across time.",
         film: DASHBOARD,
       },
       {
         id: "sec-dash-streak",
         title: "Your streak",
-        body: "Practice on any day and it counts. Miss one and a freeze covers it. Miss more and you can buy the streak back with XP while it is still fresh.",
+        body: "Here you can see how many days in a row you've been practicing your speaking. The more days in a row, the longer your streak. If you miss a day you can buy your streak back with XP.",
         film: DASHBOARD,
       },
       {
         id: "sec-dash-trophies",
         target: "[data-tour='trophies']",
         title: "The trophy case",
-        body: "One trophy at a time, under the light. The empty stands tell you what is still out there to win.",
+        body: "As you complete speaking challenges and display specific abilities, you will be awarded trophies. Collect them all and show us what a winner you are.",
         film: TROPHIES,
       },
       {
