@@ -57,7 +57,7 @@ export function RecordingsShelf({
     <section className="flex flex-col gap-2">
       <div className="flex items-baseline justify-between gap-3">
         <h3 className="text-xs font-medium uppercase tracking-wider text-ink-faint">
-          Your recordings
+          Recordings
         </h3>
         <span className="text-xs text-ink-faint">
           {videos.some((v) => v.pinned)

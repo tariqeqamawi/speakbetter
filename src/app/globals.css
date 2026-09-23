@@ -76,6 +76,36 @@ html {
   z-index: 30;
 }
 
+/* The record bar, pinned under the nav for the whole of a challenge
+ * page. Fixed rather than sticky: the panel it belongs to sits most of
+ * a page below the fold, and a sticky element cannot pin itself above
+ * where it lives. */
+.record-bar {
+  position: fixed;
+  top: calc(3.65rem + env(safe-area-inset-top));
+  left: 0;
+  right: 0;
+  z-index: 30;
+  animation: record-bar 220ms ease-out both;
+}
+
+@keyframes record-bar {
+  from {
+    opacity: 0;
+    transform: translateY(-0.4rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .record-bar {
+    animation: none;
+  }
+}
+
 /* Nothing may widen the page past the viewport - horizontal scroll on a
  * phone is always a bug, never a feature, so it's clipped at the root.
  * (clip, not hidden: it doesn't create a new scroll container.) */

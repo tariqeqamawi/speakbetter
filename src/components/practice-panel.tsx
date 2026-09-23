@@ -94,19 +94,18 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
   const pickRef = useRef<HTMLInputElement>(null);
   // The in-app recorder, with the clock; the camera app is the fallback.
   const [recorder, setRecorder] = useState(false);
-  // The sticky record bar appears once the page has been scrolled past
-  // the top of this panel.
-  const panelRef = useRef<HTMLDivElement>(null);
+  // The record bar rides under the nav for the whole page, not just
+  // from where this panel happens to sit - the two things a student
+  // came here to do should never be a scroll away. It waits for the
+  // page to move at all so it doesn't cover the challenge's own title
+  // on arrival.
   const [stuck, setStuck] = useState(false);
   useEffect(() => {
-    const el = panelRef.current;
-    if (!el) return;
-    const io = new IntersectionObserver(([entry]) => setStuck(!entry.isIntersecting), {
-      rootMargin: "-120px 0px 0px 0px",
-    });
-    io.observe(el);
-    return () => io.disconnect();
-  }, [ready, stage.kind]);
+    const onScroll = () => setStuck(window.scrollY > 90);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   if (!ready) return null;
   if (challenge.passive) return <PassiveProgress challenge={challenge} />;
@@ -292,11 +291,8 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
       {/* Record and upload, under the header, from the moment the page
           scrolls - the two things a student came here to do shouldn't
           be at the bottom of a long page. */}
-      {canRecordNow && (
-        <div ref={panelRef} aria-hidden className="h-px" />
-      )}
       {canRecordNow && stuck && (
-        <div className="sticky-under-header -mx-4 flex items-center gap-2 border-b border-navy-700/70 bg-navy-900/95 px-4 py-2 backdrop-blur">
+        <div className="record-bar flex items-center gap-2 border-b border-navy-700/70 bg-navy-900/95 px-4 py-2 backdrop-blur">
           <button
             type="button"
             onClick={() => (canRecordInApp() ? setRecorder(true) : recordRef.current?.click())}
@@ -318,7 +314,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
         </div>
       )}
       <h2 className="text-sm font-medium uppercase tracking-wider text-ink-faint">
-        Your attempts
+        Spectrum
       </h2>
 
       {(best || latest) && stage.kind === "idle" && (
