@@ -61,6 +61,13 @@ const GREETINGS = [
   "What can I do for you today?",
   "Hey there.",
   "Look who returns.",
+  "Ah, let's continue.",
+  "Nice to see you again.",
+  "Practice makes permanent.",
+  "I'm glad to see you.",
+  "This is how legends are made.",
+  "You ask, I'll teach.",
+  "Ask away.",
 ];
 
 function ExampleQuestion() {
