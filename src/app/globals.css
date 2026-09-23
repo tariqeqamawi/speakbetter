@@ -1865,6 +1865,38 @@ html.bare .demo-banner {
   }
 }
 
+/* A colour Coach named, rising through the take as it's watched back:
+ * up the frame, drifting a little, and gone. */
+.take-cue {
+  animation: take-cue 3.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform, opacity;
+}
+
+@keyframes take-cue {
+  0% {
+    opacity: 0;
+    transform: translateY(1.5rem) scale(0.8);
+  }
+  12% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-9rem) scale(0.95);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .take-cue {
+    animation: none;
+    opacity: 1;
+  }
+}
+
 /* A lesson stepping into the middle of the library's shelf. */
 .gallery-in {
   animation: gallery-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;

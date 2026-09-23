@@ -9,6 +9,7 @@ import { LockIcon } from "@/components/icons";
 import { ZapIcon } from "@/components/icons";
 import { hapticPass, hapticTap, playMiss, playPass, playReviewReady, playSend, playXpDing } from "@/lib/feedback-fx";
 import { Confetti } from "@/components/confetti";
+import { TakePlayback } from "@/components/take-playback";
 import { lessonByVimeoId } from "@/data/lessons";
 import { categories, categoryById, type CategoryId } from "@/data/categories";
 import Link from "next/link";
@@ -934,7 +935,7 @@ export function Feedback({
           Watch your attempt back
         </summary>
         <div className="px-3 pb-3">
-          <video src={videoUrl} controls playsInline className="w-full rounded-lg bg-navy-950" />
+          <TakePlayback url={videoUrl} attempt={attempt} />
           <p className="mt-2 text-xs text-ink-faint">
             Played from your device - the app keeps no copy. It stays on
             this phone with your last three recordings for this challenge.
