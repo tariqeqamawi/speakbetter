@@ -26,6 +26,7 @@ export function CoachHistory() {
     <section className="flex flex-col overflow-hidden rounded-2xl border border-navy-600 bg-navy-800">
       <button
         type="button"
+        data-tour="reviews"
         onClick={() => setShelfOpen((o) => !o)}
         aria-expanded={shelfOpen}
         className="w-full text-left transition-colors hover:bg-navy-700/40"

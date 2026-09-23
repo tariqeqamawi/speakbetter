@@ -4,9 +4,9 @@ import { useRef, useState } from "react";
 import { useStore, type Level } from "@/lib/store";
 import { standing } from "@/lib/progress";
 import { LevelIcon, levelMeta } from "@/components/level-icon";
-import { startTour } from "@/components/guided-tour";
 import { AvatarCrop } from "@/components/avatar-crop";
-import { ChevronDownIcon, ProfileIcon, TapIcon } from "@/components/icons";
+import { SectionTour } from "@/components/section-tour";
+import { ChevronDownIcon, ProfileIcon } from "@/components/icons";
 import { ProTip } from "@/components/pro-tip";
 
 const levelOrder: Level[] = ["beginner", "intermediate", "advanced"];
@@ -182,14 +182,7 @@ export function DashboardHeader() {
                 <ChevronDownIcon className="size-3.5 text-ink-faint" />
               </button>
               <span className="text-xs text-ink-faint">{rank.rank.name}</span>
-              <button
-                type="button"
-                onClick={startTour}
-                className="inline-flex items-center gap-1.5 rounded-full border border-navy-500 bg-navy-900 px-3 py-1 text-xs font-semibold text-ink-muted transition-colors hover:border-ink-faint hover:text-ink"
-              >
-                <TapIcon className="size-3.5" />
-                Take the tour
-              </button>
+              <SectionTour section="dashboard" />
 
               {levelOpen && (
                 <>

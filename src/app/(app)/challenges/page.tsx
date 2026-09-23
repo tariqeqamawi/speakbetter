@@ -5,6 +5,7 @@ import { StreakFlame } from "@/components/celebrations";
 import { ChallengesIcon, ChevronDownIcon } from "@/components/icons";
 import { IntroTabs } from "@/components/intro-tabs";
 import { ThenAndNow } from "@/components/then-and-now";
+import { SectionTour } from "@/components/section-tour";
 
 export const metadata: Metadata = {
   title: "Challenges",
@@ -21,7 +22,8 @@ export default function ChallengesPage() {
             <ChallengesIcon className="size-7 shrink-0 text-structure" />
             <h1 className="text-3xl font-semibold tracking-tight">Challenges</h1>
             <ChevronDownIcon className="size-5 shrink-0 text-ink-faint transition-transform group-open:rotate-180" />
-            <span className="ml-auto">
+            <span className="ml-auto flex items-center gap-2">
+              <SectionTour section="challenges" />
               <StreakFlame />
             </span>
           </summary>

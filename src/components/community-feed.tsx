@@ -165,7 +165,8 @@ export function CommunityFeed() {
   const together = cards.reduce((n, c) => n + c.weekTakes, 0);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div data-tour="feed"
+      className="flex flex-col gap-6">
       {/* Together, before apart. */}
       <section className="flex flex-col gap-2 rounded-2xl border border-navy-600 bg-navy-800 p-5">
         <div className="flex items-baseline justify-between gap-3">

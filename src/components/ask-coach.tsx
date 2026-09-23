@@ -261,6 +261,7 @@ export function AskCoach() {
           <button
             type="button"
             disabled={phase === "thinking" || phase === "answering"}
+            data-tour="ask"
             onClick={onPress}
             className={`coach-pill inline-flex min-h-16 w-full select-none items-center justify-center gap-3 rounded-full px-6 text-lg font-bold text-navy-950 transition-transform disabled:opacity-70 ${
               phase === "listening" ? "scale-[1.03]" : "hover:scale-[1.02] active:scale-[0.99]"

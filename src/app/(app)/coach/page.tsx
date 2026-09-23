@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { AskCoach } from "@/components/ask-coach";
 import { CoachHistory } from "@/components/coach-history";
 import { ChevronDownIcon } from "@/components/icons";
+import { SectionTour } from "@/components/section-tour";
 
 export const metadata: Metadata = {
   title: "Coach",
@@ -20,7 +21,10 @@ export default function CoachPage() {
   return (
     <div className="flex min-h-[calc(100dvh-10rem)] flex-col gap-4 py-5">
       <header className="flex flex-col gap-1.5">
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Meet &ldquo;Coach&rdquo;</h1>
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Meet &ldquo;Coach&rdquo;</h1>
+          <SectionTour section="coach" />
+        </div>
         {/* Native details: no state, no JavaScript, and it keeps
             working before the page has hydrated. */}
         <details className="group max-w-lg">

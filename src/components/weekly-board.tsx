@@ -105,7 +105,8 @@ export function WeeklyBoard({ compact = false }: { compact?: boolean }) {
   };
 
   return (
-    <section className="flex flex-col gap-4 rounded-2xl border border-navy-600 bg-navy-800 p-5">
+    <section data-tour="boards"
+      className="flex flex-col gap-4 rounded-2xl border border-navy-600 bg-navy-800 p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h2 className="inline-flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-ink-faint">

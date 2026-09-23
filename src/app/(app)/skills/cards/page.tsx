@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { CardDeck } from "@/components/card-deck";
 import { SectionTabs } from "@/components/section-tabs";
+import { SectionTour } from "@/components/section-tour";
 import { ChevronDownIcon, DeckIcon } from "@/components/icons";
 import { wholeDeck } from "@/data/deck";
 
@@ -17,6 +18,9 @@ export default function CardsPage() {
             <DeckIcon className="size-7 shrink-0 text-figurative" />
             <h1 className="text-3xl font-semibold tracking-tight">Cards</h1>
             <ChevronDownIcon className="size-5 shrink-0 text-ink-faint transition-transform group-open:rotate-180" />
+            <span className="ml-auto">
+              <SectionTour section="cards" />
+            </span>
           </summary>
           <p className="max-w-lg pt-2 text-sm text-ink-muted">
             The same library in the hand instead of on screen. Pull one card of each color and you have the

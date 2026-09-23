@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ChevronDownIcon, SkillsIcon } from "@/components/icons";
 import { SkillDial } from "@/components/skill-dial";
 import { SectionTabs } from "@/components/section-tabs";
+import { SectionTour } from "@/components/section-tour";
 
 export const metadata: Metadata = {
   title: "Skills",
@@ -23,6 +24,9 @@ export default function SkillsPage() {
             <SkillsIcon className="size-7 shrink-0 text-storytelling" />
             <h1 className="text-3xl font-semibold tracking-tight">Skills</h1>
             <ChevronDownIcon className="size-5 shrink-0 text-ink-faint transition-transform group-open:rotate-180" />
+            <span className="ml-auto">
+              <SectionTour section="skills" />
+            </span>
           </summary>
           <p className="max-w-lg pt-2 text-sm text-ink-muted">
             Short, focused lessons - one to two minutes each - across the seven colors of dynamic speaking. Dip in;

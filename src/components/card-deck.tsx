@@ -338,6 +338,7 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
         <div className="grid w-full max-w-md grid-cols-2 gap-2.5">
           <button
             type="button"
+            data-tour="spread"
             onClick={deal}
             className="group relative flex flex-col items-center gap-1.5 overflow-hidden rounded-2xl border border-navy-600 bg-navy-800 px-3 py-4 transition-colors hover:border-ink-faint"
           >
@@ -348,6 +349,7 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
           </button>
           <button
             type="button"
+            data-tour="shuffle"
             onClick={shakeOn ? pullRandom : enableShake}
             className="group relative flex flex-col items-center gap-1.5 overflow-hidden rounded-2xl border border-navy-600 bg-navy-800 px-3 py-4 transition-colors hover:border-ink-faint"
           >

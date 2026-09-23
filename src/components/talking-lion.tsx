@@ -94,14 +94,22 @@ export const TalkingLion = forwardRef<
     controls?: boolean;
     /** Drawn large - the landing page's feature. */
     large?: boolean;
+    /** The head on its own: no wave under it, no captions, nothing but
+     *  the mouth moving. For the guided tour, where the words are
+     *  already written on the card he is sitting on. */
+    bare?: boolean;
     /** Speak as soon as an audio source arrives - for a page where the
      *  tap that fetched the audio is the tap that meant "play". */
     autoPlay?: boolean;
     onEnded?: () => void;
+    /** The browser refused to start the sound without a tap - so the
+     *  page above can offer one rather than letting him be silent for
+     *  no visible reason. */
+    onBlocked?: () => void;
     className?: string;
   }
 >(function TalkingLion(
-  { text, audioSrc, cues, captions = false, controls = true, large = false, autoPlay = false, onEnded, className = "" },
+  { text, audioSrc, cues, captions = false, controls = true, large = false, bare = false, autoPlay = false, onEnded, onBlocked, className = "" },
   ref,
 ) {
   const [level, setLevel] = useState(0); // 0..1 live amplitude, smoothed
@@ -349,6 +357,7 @@ export const TalkingLion = forwardRef<
         // The browser wants a tap for this one. Say so; the button is
         // the tap.
         setBlocked(true);
+        onBlocked?.();
         return;
       }
       setBlocked(false);
@@ -405,12 +414,13 @@ export const TalkingLion = forwardRef<
   const caption = captionIndex >= 0 ? phrases[captionIndex] : undefined;
 
   return (
-    <div className={`flex w-full flex-col items-center gap-4 ${className}`}>
-      <div className={`relative w-full shrink-0 ${large ? "max-w-lg" : "max-w-xs"}`}>
+    <div className={`flex w-full flex-col items-center ${bare ? "gap-0" : "gap-4"} ${className}`}>
+      <div className={`relative w-full shrink-0 ${bare ? "" : large ? "max-w-lg" : "max-w-xs"}`}>
         <LionMouth level={mouth} className="relative w-full shrink-0" />
         {/* The logo's wave, alive: the same ribbons as the mark, drawn
             by the Soundwave the header uses, breathing with the level -
             flat and faint in silence, full when the coach is speaking. */}
+        {!bare && (
         <div
           aria-hidden
           className="-mx-[6%] -mt-4 w-[112%] shrink-0 will-change-transform"
@@ -426,6 +436,7 @@ export const TalkingLion = forwardRef<
         >
           <Soundwave variant="coach" className="h-24 w-full sm:h-28" />
         </div>
+        )}
         {/* The captions: the phrase being said, over the wave, so the
             words are heard and seen together. The box keeps its height
             so the lion doesn't shift as phrases come and go. */}
