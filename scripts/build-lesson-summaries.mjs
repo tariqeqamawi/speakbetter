@@ -55,7 +55,10 @@ for (const lesson of wanted) {
     if (summary) {
       existing[lesson.id] = summary;
       done++;
-      if (done % 5 === 0) writeFileSync(OUT, JSON.stringify(existing, null, 1));
+        if (done % 5 === 0) {
+        const now = existsSync(OUT) ? JSON.parse(readFileSync(OUT, "utf8")) : {};
+        writeFileSync(OUT, JSON.stringify({ ...now, ...existing }, null, 1));
+      }
       console.log(`  ${lesson.id} ${lesson.title.slice(0, 44)} - ${summary.split(/\s+/).length} words`);
     } else {
       console.warn(`  ${lesson.id} - nothing back`);
@@ -65,5 +68,10 @@ for (const lesson of wanted) {
   }
 }
 
-writeFileSync(OUT, JSON.stringify(existing, null, 1));
-console.log(`wrote ${Object.keys(existing).length} summaries to src/data/lesson-summaries.json`);
+// Merge with whatever is on disk before writing: two runs at once
+// would otherwise have the later one overwrite the earlier one's work
+// with its own stale copy.
+const onDisk = existsSync(OUT) ? JSON.parse(readFileSync(OUT, "utf8")) : {};
+const merged = { ...onDisk, ...existing };
+writeFileSync(OUT, JSON.stringify(merged, null, 1));
+console.log(`wrote ${Object.keys(merged).length} summaries to src/data/lesson-summaries.json`);
