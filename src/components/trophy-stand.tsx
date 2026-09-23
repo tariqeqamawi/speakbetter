@@ -29,6 +29,7 @@ export function TrophyStand({
   won,
   size = "md",
   flip = false,
+  pedestal = true,
   className = "",
 }: {
   id: string;
@@ -37,6 +38,9 @@ export function TrophyStand({
   size?: "sm" | "md" | "lg";
   /** Turn on its stand, showing the lion on the back of the medal. */
   flip?: boolean;
+  /** Draw the stem and plinth. Off in the case, where the podium is
+   *  the stage's and only the trophy on it changes. */
+  pedestal?: boolean;
   className?: string;
 }) {
   const color = `var(--color-${trophyColor(id)})`;
@@ -75,6 +79,8 @@ export function TrophyStand({
       </span>
 
       {/* the stem and the plinth */}
+      {pedestal && (
+      <>
       <span
         className={`${size === "lg" ? "h-8 w-5" : size === "md" ? "h-4 w-2.5" : "h-3 w-2"} -mt-1`}
         style={{
@@ -101,6 +107,8 @@ export function TrophyStand({
           boxShadow: "inset 0 1px 0 rgba(255,255,255,0.15)",
         }}
       />
+      </>
+      )}
     </span>
   );
 }

@@ -1918,6 +1918,28 @@ html.bare .demo-banner {
   }
 }
 
+/* A trophy taking its place on the podium - the stage holds still. */
+.trophy-swap {
+  animation: trophy-swap 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes trophy-swap {
+  from {
+    opacity: 0;
+    transform: translateY(0.6rem) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trophy-swap {
+    animation: none;
+  }
+}
+
 /* A lesson stepping into the middle of the library's shelf. */
 .gallery-in {
   animation: gallery-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;

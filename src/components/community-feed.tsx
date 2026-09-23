@@ -8,6 +8,7 @@ import { challenges, storyPhases } from "@/data/challenges";
 import { SpectrumWave } from "@/components/spectrum-wave";
 import { CheckIcon, FlameIcon, TrendingUpIcon, TrophyIcon, ZapIcon } from "@/components/icons";
 import { hapticTap } from "@/lib/feedback-fx";
+import { Avatar } from "@/components/avatar";
 
 // The community (master plan §12): other people's distance travelled,
 // drawn the way the student's own is drawn - their first take's
@@ -207,6 +208,7 @@ export function CommunityFeed() {
                     <span className={`w-4 text-right text-[0.65rem] font-bold tabular-nums ${i === 0 ? board.accent : "text-ink-faint"}`}>
                       {i + 1}
                     </span>
+                    <Avatar name={row.name} src={row.mine ? state.avatar : undefined} className="size-6" ring={false} />
                     <span className="flex-1 truncate text-xs font-medium">{row.name}</span>
                     <span className="text-xs font-bold tabular-nums">
                       {row.value > 0 ? "+" : ""}
@@ -244,9 +246,7 @@ export function CommunityFeed() {
                 className={`flex flex-col gap-3 rounded-xl border p-4 ${c.mine ? "border-mindset/40 bg-navy-800" : "border-navy-600 bg-navy-800"}`}
               >
                 <div className="flex items-center gap-2.5">
-                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-navy-700 text-xs font-bold text-ink">
-                    {c.name[0]}
-                  </span>
+                  <Avatar name={c.name} src={c.mine ? state.avatar : undefined} className="size-9" />
                   <span className="flex min-w-0 flex-1 flex-col">
                     <span className="truncate text-sm font-semibold text-ink">
                       {c.name}
@@ -262,13 +262,20 @@ export function CommunityFeed() {
                   </span>
                 </div>
 
-                {/* Where they were, under where they are. */}
+                {/* Where they were, under where they are - both in
+                    colour, one at half strength, so the distance reads
+                    at a glance. */}
                 <span className="relative block overflow-hidden rounded-lg bg-navy-950/70 p-2">
-                  <SpectrumWave values={c.nowSpectrum} ghost={c.thenSpectrum} className="h-20 w-full" animate={false} />
+                  <span className="relative block">
+                    <SpectrumWave values={c.thenSpectrum} className="h-20 w-full opacity-50" animate={false} />
+                    <span className="absolute inset-0">
+                      <SpectrumWave values={c.nowSpectrum} className="h-20 w-full opacity-90" animate={false} />
+                    </span>
+                  </span>
                 </span>
                 <div className="flex items-center justify-between gap-2 text-[0.65rem]">
                   <span className="flex items-center gap-1.5 text-ink-faint">
-                    <span aria-hidden className="inline-block h-0 w-4 border-t-2 border-dashed border-ink-faint" />
+                    <span aria-hidden className="spectrum-rule inline-block h-1 w-4 rounded-full opacity-50" />
                     {lit(c.thenSpectrum)} colours · {c.thenScore}
                   </span>
                   <span className="flex items-center gap-1.5 text-ink">

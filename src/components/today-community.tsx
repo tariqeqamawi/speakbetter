@@ -6,6 +6,7 @@ import { useStore } from "@/lib/store";
 import { challenges } from "@/data/challenges";
 import { presence, sampleShares } from "@/data/community-presence";
 import { GroupIcon, TrophyIcon, ZapIcon } from "@/components/icons";
+import { Avatar } from "@/components/avatar";
 
 // The community, where a student actually asks about it: on Today, as
 // one card they can't miss. Who's on the challenge they're on, with
@@ -55,12 +56,8 @@ export function TodayCommunity() {
         {/* the faces */}
         <span className="flex shrink-0 -space-x-2">
           {(here?.recent ?? []).slice(0, 4).map((s) => (
-            <span
-              key={s.name}
-              title={s.name}
-              className="grid size-8 place-items-center rounded-full border-2 border-navy-800 bg-navy-700 text-xs font-bold text-ink"
-            >
-              {s.name[0]}
+            <span key={s.name} className="rounded-full border-2 border-navy-800">
+              <Avatar name={s.name} className="size-8" />
             </span>
           ))}
         </span>

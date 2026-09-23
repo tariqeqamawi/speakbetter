@@ -20,6 +20,7 @@ import { hapticTap } from "@/lib/feedback-fx";
 export function BadgeCollection({ state }: { state: AppState }) {
   const earned = new Map(state.badges.map((b) => [b.id, b]));
   const [filter, setFilter] = useState<"won" | "all">("all");
+  const [shelfOpen, setShelfOpen] = useState(false);
   const shelf = filter === "won" ? badgeDefs.filter((b) => earned.has(b.id)) : badgeDefs;
   // The one on the plinth. Opens on the newest trophy won.
   const newest = [...state.badges].sort((a, b) => (a.earnedAt < b.earnedAt ? 1 : -1))[0];
@@ -114,17 +115,40 @@ export function BadgeCollection({ state }: { state: AppState }) {
                 <ChevronDownIcon className="size-5 -rotate-90" />
               </button>
 
-              <TrophyStand key={shown.id} id={shown.id} icon={shown.icon} won={!!won} size="lg" flip />
+              {/* The podium and its light don't move; the trophy
+                  standing on them is what changes, arriving from the
+                  side you came from. */}
+              <div className="relative flex h-64 w-full items-end justify-center sm:h-72">
+                <span key={shown.id} className="trophy-swap absolute bottom-10">
+                  <TrophyStand id={shown.id} icon={shown.icon} won={!!won} size="lg" flip pedestal={false} />
+                </span>
 
-              {/* the light it stands in */}
-              <span
-                aria-hidden
-                className="pointer-events-none -mt-3 h-6 w-52 rounded-[50%] blur-md"
-                style={{
-                  background: won ? `var(--color-${trophyColor(shown.id)})` : "rgba(30,42,75,0.8)",
-                  opacity: won ? 0.4 : 0.25,
-                }}
-              />
+                {/* the pool of light on the podium's top */}
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute bottom-9 h-7 w-56 rounded-[50%] blur-md transition-colors duration-500"
+                  style={{
+                    background: won ? `var(--color-${trophyColor(shown.id)})` : "rgba(30,42,75,0.8)",
+                    opacity: won ? 0.45 : 0.25,
+                  }}
+                />
+
+                {/* the podium itself */}
+                <span aria-hidden className="absolute bottom-0 flex flex-col items-center">
+                  <span
+                    className="h-3 w-44 rounded-[4px]"
+                    style={{ background: "linear-gradient(180deg, #33406a, #1b2440)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.25)" }}
+                  />
+                  <span
+                    className="h-8 w-36"
+                    style={{ background: "linear-gradient(180deg, #1b2440, #0b1120)" }}
+                  />
+                  <span
+                    className="h-2 w-48 rounded-[4px]"
+                    style={{ background: "linear-gradient(180deg, #2a3559, #131b33)", boxShadow: "0 10px 26px -10px rgba(0,0,0,0.9)" }}
+                  />
+                </span>
+              </div>
 
               <div className="relative flex flex-col items-center gap-1 text-center">
                 <span className="text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-ink-faint">
@@ -148,8 +172,21 @@ export function BadgeCollection({ state }: { state: AppState }) {
               </div>
             </div>
 
-            {/* The shelf: every trophy in the case, tap to put it up. */}
-            <ul className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+            {/* The shelf, behind a door: the case is the thing to look
+                at, and forty-seven trophies underneath it was a wall. */}
+            <button
+              type="button"
+              onClick={() => setShelfOpen((o) => !o)}
+              aria-expanded={shelfOpen}
+              className="flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-navy-600 bg-navy-900/60 px-4 text-sm font-semibold text-ink-muted transition-colors hover:text-ink"
+            >
+              <span>
+                {filter === "won" ? "Every trophy you've won" : "Every trophy in the case"}
+                <span className="pl-2 text-xs font-normal text-ink-faint">{shelf.length}</span>
+              </span>
+              <ChevronDownIcon className={`size-4 shrink-0 transition-transform ${shelfOpen ? "rotate-180" : ""}`} />
+            </button>
+            <ul className={`${shelfOpen ? "grid" : "hidden"} grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6`}>
               {shelf.map((badge) => {
                 const mine = earned.get(badge.id);
                 const on = badge.id === shown.id;
