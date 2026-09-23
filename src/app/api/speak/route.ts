@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { GoogleGenAI } from "@google/genai";
 import { COACH_RATE, DEFAULT_DIRECTION, DEFAULT_VOICE, GEMINI_VOICES } from "@/lib/coach/voice";
 import { timeStretch } from "@/lib/coach/stretch";
+import { normalizeSpeech } from "@/lib/coach/loudness";
 
 // The coach speaks: a line of feedback as audio, in the chosen stock
 // voice, directed in words. Gemini's TTS returns raw 24 kHz 16-bit PCM;
@@ -79,7 +80,12 @@ export async function POST(request: Request) {
     const raw = Buffer.from(data, "base64");
     const pcm = new Int16Array(raw.buffer, raw.byteOffset, Math.floor(raw.length / 2));
     const paced = timeStretch(pcm, COACH_RATE);
-    const out = wav(Buffer.from(paced.buffer, paced.byteOffset, paced.length * 2), rate);
+    // Up to a level a phone can play in a room with people in it. The
+    // model's clips peak near full scale but average around -21 dBFS,
+    // which is about five decibels quieter than speech meant to be
+    // heard - see lib/coach/loudness.ts.
+    const loud = normalizeSpeech(Buffer.from(paced.buffer, paced.byteOffset, paced.length * 2));
+    const out = wav(loud, rate);
     if (cache.size >= CACHE_MAX) cache.delete(cache.keys().next().value!);
     cache.set(key, out);
     return audio(out, false);

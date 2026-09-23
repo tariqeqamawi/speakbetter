@@ -42,6 +42,7 @@ import { capturePoster, keepVideo } from "@/lib/attempt-videos";
 import { measureVoice } from "@/lib/voice-profile";
 import { TalkingLion, type TalkingLionHandle } from "@/components/talking-lion";
 import { speakUrl } from "@/lib/coach/voice";
+import { pickHold } from "@/data/greetings";
 
 // The practice loop (master plan §06, steps 3–7; build plan Phase 4).
 //
@@ -1009,6 +1010,14 @@ function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => v
   const lionRef = useRef<TalkingLionHandle>(null);
   const [play, setPlay] = useState(false);
   const [transcript, setTranscript] = useState(false);
+  // The written review is already on the screen; his spoken one takes
+  // about half a minute to make. Rather than leave a dead button there
+  // while it does, he says so out loud straight away, from a file -
+  // "start looking at your review while I put my thoughts together".
+  // The wait becomes a person gathering their thoughts, which is what
+  // it actually is.
+  const [hold] = useState(() => pickHold());
+  const [holding, setHolding] = useState(true);
 
   useEffect(() => {
     let alive = true;
@@ -1039,12 +1048,16 @@ function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => v
     <div className="coach-cue flex flex-col items-center gap-2 rounded-xl border border-navy-600 bg-navy-900/60 p-4">
       <TalkingLion
         ref={lionRef}
-        text={spoken}
+        text={play ? spoken : holding ? hold.text : spoken}
         captions
         controls={false}
-        audioSrc={play && url ? url : undefined}
-        autoPlay={play}
+        audioSrc={play && url ? url : holding ? hold.src : undefined}
+        autoPlay={play || holding}
         onEnded={() => {
+          if (!play) {
+            setHolding(false);
+            return;
+          }
           setState("done");
           onVerdict();
         }}
@@ -1064,7 +1077,7 @@ function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => v
               color, which is the background. */}
           <span className="flex items-center gap-2 text-navy-950">
             <ListenIcon className="size-4" />
-            {state === "loading" ? "Coach is getting ready…" : "Coach's review"}
+            {state === "loading" ? "Coach is putting his thoughts together…" : "Coach's review"}
           </span>
         </button>
       )}

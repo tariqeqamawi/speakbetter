@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useStore } from "@/lib/store";
-import { TapIcon } from "@/components/icons";
 import { TourRunner } from "@/components/tour-runner";
 import { sectionTours, type SectionId } from "@/data/tour-script";
 
@@ -89,17 +88,7 @@ export function SectionTour({ section }: { section: SectionId }) {
 
   if (!ready || !state.unlocked) return null;
 
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => setRunning(true)}
-        className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-navy-600 bg-navy-900/60 px-3 py-1 text-[0.7rem] font-semibold text-ink-faint transition-colors hover:border-ink-faint hover:text-ink"
-      >
-        <TapIcon className="size-3.5 shrink-0" />
-        <span className="whitespace-nowrap">{tour.label}</span>
-      </button>
-      {running && <TourRunner stops={tour.stops} onClose={close} />}
-    </>
-  );
+  // Nothing of its own on the page: the top bar's "Tour this section"
+  // is the door, and two doors into one room is clutter.
+  return running ? <TourRunner stops={tour.stops} onClose={close} /> : null;
 }

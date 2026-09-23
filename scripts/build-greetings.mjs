@@ -11,7 +11,7 @@
 // everything after it.
 
 import { execFileSync } from "node:child_process";
-import { mkdirSync, writeFileSync, rmSync, existsSync } from "node:fs";
+import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 const BASE = process.env.SPEAK_BASE ?? "http://localhost:3001";
@@ -19,24 +19,29 @@ const OUT = "public/coach";
 const TMP = ".greet-tmp";
 
 // Read the lines out of the data file rather than keeping a second
-// copy here - one list, one order, one source of the numbering.
-const src = await import(path.resolve("src/data/greetings.ts").replace(/\\/g, "/")).catch(() => null);
-let GREETINGS;
-if (src?.GREETINGS) {
-  GREETINGS = src.GREETINGS;
-} else {
-  const text = await import("node:fs").then((fs) => fs.readFileSync("src/data/greetings.ts", "utf8"));
-  const block = text.slice(text.indexOf("export const GREETINGS"), text.indexOf("];"));
-  GREETINGS = [...block.matchAll(/^\s*"((?:[^"\\]|\\.)*)",$/gm)].map((m) => m[1].replace(/\\"/g, '"'));
+// copy here - one list, one order, one source of the numbering. Both
+// lists are walked: the greetings he opens with, and the holding lines
+// he says while the real answer is still being spoken.
+function linesFrom(text, name, prefix) {
+  const from = text.indexOf(`export const ${name}`);
+  if (from < 0) return [];
+  const block = text.slice(from, text.indexOf("];", from));
+  return [...block.matchAll(/^\s*"((?:[^"\\]|\\.)*)",$/gm)].map((m, i) => ({
+    line: m[1].replace(/\\"/g, '"'),
+    name: `${prefix}-${String(i + 1).padStart(2, "0")}`,
+  }));
 }
+
+const source = readFileSync("src/data/greetings.ts", "utf8");
+const GREETINGS = [...linesFrom(source, "GREETINGS", "greet"), ...linesFrom(source, "HOLDS", "hold")];
+
 if (!GREETINGS.length) throw new Error("no greetings found in src/data/greetings.ts");
 
 mkdirSync(OUT, { recursive: true });
 mkdirSync(TMP, { recursive: true });
 
-for (const [i, line] of GREETINGS.entries()) {
-  const n = String(i + 1).padStart(2, "0");
-  const mp3 = path.join(OUT, `greet-${n}.mp3`);
+for (const { line, name: n } of GREETINGS) {
+  const mp3 = path.join(OUT, `${n}.mp3`);
   if (existsSync(mp3) && !process.env.FORCE) {
     console.log("kept", mp3);
     continue;
@@ -53,9 +58,9 @@ for (const [i, line] of GREETINGS.entries()) {
     await new Promise((r) => setTimeout(r, 8000));
     continue;
   }
-  const wav = path.join(TMP, `greet-${n}.wav`);
+  const wav = path.join(TMP, `${n}.wav`);
   writeFileSync(wav, Buffer.from(await res.arrayBuffer()));
-  execFileSync("ffmpeg", ["-y", "-i", wav, "-b:a", "64k", "-ac", "1", mp3], { stdio: "ignore" });
+  execFileSync("ffmpeg", ["-y", "-i", wav, "-af", "loudnorm=I=-16:TP=-1.5:LRA=11", "-b:a", "64k", "-ac", "1", mp3], { stdio: "ignore" });
   console.log("wrote", mp3, "-", line);
   await new Promise((r) => setTimeout(r, 2500));
 }

@@ -50,3 +50,33 @@ export function pickGreeting(): { text: string; src: string } {
   const i = Math.floor(Math.random() * GREETINGS.length);
   return { text: GREETINGS[i], src: greetingClip(i) };
 }
+
+// ── While he thinks ──────────────────────────────────────────────────
+//
+// The written review lands in a few seconds; his spoken one takes
+// about thirty-five, because the voice has to be made a word at a
+// time. A student staring at a disabled button for half a minute
+// assumes something is broken.
+//
+// So he says so, instantly, from a file: look at what is already on
+// your screen, I am working on the rest. The wait stops being dead
+// air and becomes a person gathering their thoughts - which is what it
+// actually is.
+
+export const HOLDS: string[] = [
+  "Start looking at your review while I put my thoughts together.",
+  "Your colors are up there. Give me a moment and I'll talk you through it.",
+  "Have a look at the numbers while I work out what to tell you.",
+  "It's all on the screen. One moment and I'll say what I saw.",
+];
+
+/** The clip for a holding line, by its place in the list. */
+export function holdClip(index: number): string {
+  return `/coach/hold-${String(index + 1).padStart(2, "0")}.mp3`;
+}
+
+/** One at random, with the file that says it. */
+export function pickHold(): { text: string; src: string } {
+  const i = Math.floor(Math.random() * HOLDS.length);
+  return { text: HOLDS[i], src: holdClip(i) };
+}

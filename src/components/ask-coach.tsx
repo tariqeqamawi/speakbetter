@@ -7,11 +7,12 @@ import { standing } from "@/lib/progress";
 import { currentStreak } from "@/data/badges";
 import { speakUrl } from "@/lib/coach/voice";
 import { TalkingLion, type TalkingLionHandle } from "@/components/talking-lion";
-import { ChevronDownIcon, ListenIcon, XIcon } from "@/components/icons";
+import { ChevronDownIcon, XIcon } from "@/components/icons";
 import { hapticTap } from "@/lib/feedback-fx";
 import { hasCoach } from "@/lib/plan";
 import { CoachUpgrade } from "@/components/coach-upgrade";
-import { pickGreeting } from "@/data/greetings";
+import { AskWave } from "@/components/ask-wave";
+import { pickGreeting, pickHold } from "@/data/greetings";
 
 // Ask your coach (master plan §07): tap once to start talking, tap
 // again to send - "how have I been improving over my last few takes?"
@@ -156,8 +157,17 @@ export function AskCoach() {
       if (!res.ok || !json.answer) throw new Error(json.error || "no answer");
       setQuestion(json.question ?? payload.question ?? "");
       setAnswer(json.answer);
+      // The words land in a few seconds; the voice takes about thirty
+      // more. Show them now, open, and let him say he is working on
+      // the rest - a student who can already read the answer is not
+      // waiting, they are reading.
+      setReading(true);
+      const held = pickHold();
+      setGreetText(held.text);
+      setGreetUrl(held.src);
       const spoken = await speakUrl(json.answer);
       if (spoken) {
+        setGreetUrl(null);
         setUrl(spoken);
         setPhase("answering");
       } else {
@@ -222,15 +232,6 @@ export function AskCoach() {
   if (!ready) return null;
   if (!hasCoach(state)) return <CoachUpgrade />;
 
-  const label =
-    phase === "listening"
-      ? "Listening"
-      : phase === "thinking"
-        ? "Processing"
-        : phase === "answering"
-          ? "Coach is answering"
-          : "Ask Coach";
-
   return (
     // An explicit width, not a shrink-to-fit one: this column is a flex
     // item, so without it the width came from whatever was longest
@@ -258,32 +259,7 @@ export function AskCoach() {
 
       <div className="flex w-full max-w-sm flex-col items-center gap-2.5">
         {canTalk && (
-          <button
-            type="button"
-            disabled={phase === "thinking" || phase === "answering"}
-            data-tour="ask"
-            onClick={onPress}
-            className={`coach-pill inline-flex min-h-16 w-full select-none items-center justify-center gap-3 rounded-full px-6 text-lg font-bold text-navy-950 transition-transform disabled:opacity-70 ${
-              phase === "listening" ? "scale-[1.03]" : "hover:scale-[1.02] active:scale-[0.99]"
-            }`}
-          >
-            <span className="flex items-center gap-3 text-navy-950">
-              {phase === "listening" ? (
-                <span aria-hidden className="flex items-end gap-[3px]">
-                  {[0, 1, 2].map((i) => (
-                    <span
-                      key={i}
-                      className="listening-bar w-[3px] rounded-full bg-navy-950"
-                      style={{ animationDelay: `${i * 140}ms` }}
-                    />
-                  ))}
-                </span>
-              ) : (
-                <ListenIcon className="size-6" />
-              )}
-              {label}
-            </span>
-          </button>
+          <AskWave phase={phase} onPress={onPress} disabled={phase === "thinking" || phase === "answering"} />
         )}
 
         {/* Typing is the quiet second way in, folded away until it is
