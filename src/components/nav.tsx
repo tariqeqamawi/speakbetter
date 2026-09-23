@@ -4,10 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useStore } from "@/lib/store";
-import { ChallengesIcon, CommunityIcon, HomeIcon, ProfileIcon, SkillsIcon } from "@/components/icons";
+import { ChallengesIcon, CommunityIcon, HomeIcon, ProfileIcon, SkillsIcon, TapIcon } from "@/components/icons";
 import { Soundwave } from "@/components/soundwave";
 import { LionMouth } from "@/components/lion-mouth";
 import { JumpButton } from "@/components/jump";
+import { startTour } from "@/components/guided-tour";
 
 // Five destinations, one set of names, in the same order everywhere:
 // Today, Challenges, Skills, Coach, You. Coach sits in the middle and
@@ -58,6 +59,18 @@ export function TopBar() {
               Speak Better
             </span>
           </Link>
+          {/* The way into the tour, in the one place that is on every
+              screen of the app. It was on Today and in Jump, which
+              still leaves a student who has scrolled past it with
+              nowhere to ask to be shown around again. */}
+          <button
+            type="button"
+            onClick={startTour}
+            className="-ml-1 flex shrink-0 items-center gap-1.5 rounded-full border border-navy-600/80 px-2.5 py-1 text-[0.7rem] font-semibold text-ink-faint transition-colors hover:border-ink-faint hover:text-ink"
+          >
+            <TapIcon className="size-3.5 shrink-0" />
+            <span className="whitespace-nowrap">Take the tour</span>
+          </button>
           <div className="flex items-center gap-2">
             <JumpButton />
             <CompactLinks />

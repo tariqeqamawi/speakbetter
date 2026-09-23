@@ -114,11 +114,11 @@ export function SkillDial() {
   ).length;
 
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="flex flex-col items-center gap-1">
       {/* The name of whatever the pointer is on, above the dial and in
           its color - so the hub keeps its shape whatever the length of
           the name. Held to a fixed height so the dial doesn't shift. */}
-      <div className="flex h-12 flex-col items-center justify-center text-center" aria-live="polite">
+      <div className="flex h-11 flex-col items-center justify-center text-center" aria-live="polite">
         {active ? (
           <>
             <span className={`text-lg font-semibold leading-tight sm:text-xl ${active.textClass}`}>

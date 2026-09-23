@@ -36,6 +36,10 @@ export interface TalkingLionHandle {
    * and after that the real clip plays whenever it arrives.
    */
   prime: () => void;
+  /** Cut off whatever is playing - a student who taps Ask has
+   *  interrupted, and being talked over is what that should feel
+   *  like everywhere else. */
+  stop: () => void;
 }
 
 // The coach persona: the lion, mouth moving with the voice.
@@ -296,6 +300,11 @@ export const TalkingLion = forwardRef<
   useImperativeHandle(
     ref,
     () => ({
+      stop: () => {
+        const el = audioRef.current;
+        if (el) el.pause();
+        if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
+      },
       prime: () => {
         const ctx = graph();
         const el = audioRef.current;
@@ -406,12 +415,16 @@ export const TalkingLion = forwardRef<
           aria-hidden
           className="-mx-[6%] -mt-4 w-[112%] will-change-transform"
           style={{
-            transform: `scaleY(${(0.3 + level * 0.7).toFixed(3)})`,
-            opacity: 0.7 + level * 0.3,
+            // At rest the wave used to squash to a third of its height,
+            // which read as a thin line under the lion rather than as
+            // the mark's wave. It now sits most of the way up in
+            // silence and opens out when he speaks.
+            transform: `scaleY(${(0.66 + level * 0.34).toFixed(3)})`,
+            opacity: 0.8 + level * 0.2,
             transition: "transform 90ms ease-out, opacity 120ms ease-out",
           }}
         >
-          <Soundwave variant="coach" className="h-20 w-full sm:h-24" />
+          <Soundwave variant="coach" className="h-24 w-full sm:h-28" />
         </div>
         {/* The captions: the phrase being said, over the wave, so the
             words are heard and seen together. The box keeps its height

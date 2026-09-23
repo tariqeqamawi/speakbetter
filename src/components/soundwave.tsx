@@ -78,10 +78,12 @@ const variants: Record<Variant, VariantSpec> = {
     midY: 40,
     fade: [3, 40, 96, 100],
     lens: 30,
+    // Fat ribbons rather than wires: this is the mark's own wave, under
+    // the lion, at the size the brand draws it.
     waves: [
-      { period: 96, amplitude: 15, opacity: 0.6, width: 12, className: "soundwave-a" },
-      { period: 138, amplitude: 11, opacity: 0.55, width: 9.5, className: "soundwave-b" },
-      { period: 70, amplitude: 7.5, opacity: 0.5, width: 7, className: "soundwave-c" },
+      { period: 96, amplitude: 17, opacity: 0.68, width: 17, className: "soundwave-a" },
+      { period: 138, amplitude: 12.5, opacity: 0.6, width: 13.5, className: "soundwave-b" },
+      { period: 70, amplitude: 8.5, opacity: 0.55, width: 10, className: "soundwave-c" },
     ],
   },
 };

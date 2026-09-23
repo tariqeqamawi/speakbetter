@@ -119,6 +119,13 @@ function garble(text: string): string {
   return out;
 }
 
+/** The steps the magnifier walks: whole road, closer, closest, and
+ *  back to the whole road. A pinch still works, but it was the only
+ *  way in and it is the one gesture a phone browser fights over with
+ *  the page itself - so the button is now the way it is done, and the
+ *  gesture is the shortcut. */
+const ZOOM_STEPS = [1, 1.6, 2.3];
+
 const ZOOM_MIN = 1;
 const ZOOM_MAX = 2.4;
 /** Past this the map is "zoomed in": pins say their names, crowds show. */
@@ -230,6 +237,12 @@ export function JourneyMap({
     return () => scene.removeEventListener("wheel", onWheel);
   }, [zoomTo]);
   const zoomedIn = zoom >= ZOOM_DETAIL;
+  // Whichever step the map is nearest, the magnifier goes to the next.
+  const atStep = ZOOM_STEPS.reduce(
+    (best, z, i) => (Math.abs(z - zoom) < Math.abs(ZOOM_STEPS[best] - zoom) ? i : best),
+    0,
+  );
+  const nextZoom = ZOOM_STEPS[(atStep + 1) % ZOOM_STEPS.length];
 
   // The map is the most expensive thing in the app to keep alive - a
   // tilted plane, a breathing grid, voices surfacing - so it stops
@@ -473,7 +486,7 @@ export function JourneyMap({
       <div className={`flex items-center justify-between gap-3 ${preview ? "sticky top-0 z-40 -mx-1 bg-navy-950/85 px-1 pb-1 pt-7 backdrop-blur" : ""}`}>
         {preview ? (
           <span className="text-[0.65rem] font-medium uppercase tracking-wider text-ink-faint">
-            Pinch, or double-tap, to look closer
+            Tap the magnifier to look closer
           </span>
         ) : (
           <span className="flex min-w-0 flex-col">
@@ -485,44 +498,28 @@ export function JourneyMap({
               </span>
               <span className="flex items-center gap-1">
                 <ZoomIcon className="size-3" />
-                Pinch to look closer
+                Tap the magnifier to look closer
               </span>
             </span>
           </span>
         )}
         <div className="flex items-center gap-2">
-          {/* Zoom: out, in, and the scale - a pinch does the same. */}
-          <span className="flex items-center rounded-full border border-navy-600 bg-navy-800 text-ink-muted">
-            <button
-              type="button"
-              onClick={() => zoomTo(zoomRef.current / 1.35)}
-              aria-label="Zoom out"
-              disabled={zoom <= ZOOM_MIN + 0.01}
-              className="grid size-7 place-items-center rounded-full text-base leading-none transition-colors hover:text-ink disabled:opacity-40"
-            >
-              &minus;
-            </button>
-            <button
-              type="button"
-              onClick={() => zoomTo(zoom > 1.05 ? 1 : ZOOM_DETAIL + 0.15)}
-              aria-label={zoomedIn ? "Show the whole road" : "Look closer"}
-              className="min-w-9 px-1 text-[0.65rem] font-semibold tabular-nums transition-colors hover:text-ink"
-            >
-              {zoom.toFixed(1)}&times;
-            </button>
-            <button
-              type="button"
-              onClick={() => zoomTo(zoomRef.current * 1.35)}
-              aria-label="Zoom in"
-              disabled={zoom >= ZOOM_MAX - 0.01}
-              className="grid size-7 place-items-center rounded-full text-base leading-none transition-colors hover:text-ink disabled:opacity-40"
-            >
-              +
-            </button>
-          </span>
+          {/* One magnifier, walking the steps: closer, closer still,
+              then back to the whole road. Two arrows and a readout was
+              three targets for one intention. */}
+          <button
+            type="button"
+            onClick={() => zoomTo(nextZoom)}
+            aria-label={nextZoom === ZOOM_STEPS[0] ? "Show the whole road" : `Look closer - ${nextZoom} times`}
+            title={nextZoom === ZOOM_STEPS[0] ? "Show the whole road" : "Look closer"}
+            className="flex min-h-8 shrink-0 items-center gap-1.5 rounded-full border border-navy-600 bg-navy-800 px-2.5 text-[0.7rem] font-semibold tabular-nums text-ink-muted transition-colors hover:border-ink-faint hover:text-ink"
+          >
+            <ZoomIcon className="size-3.5 shrink-0" />
+            {zoom.toFixed(1)}&times;
+          </button>
           {/* The other walkers - see students-here.tsx. */}
           {!preview && <StudentsHere />}
-          <span className="text-xs tabular-nums text-ink-faint">
+          <span className="shrink-0 whitespace-nowrap text-xs tabular-nums text-ink-faint">
             {done} of {challenges.length}
           </span>
         </div>

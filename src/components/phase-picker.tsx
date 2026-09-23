@@ -60,12 +60,12 @@ export function PhasePicker({
                     ? `${phase.bgClass} text-navy-950 ${phase.textClass} shadow-[0_0_16px_-2px_currentColor]`
                     : gate.open
                       ? `border-2 border-current bg-navy-900 ${phase.textClass} ${here ? "map-pulse" : ""}`
-                      : "border border-navy-600 bg-navy-900 text-ink-faint"
+                      : `border border-current bg-navy-900 ${phase.textClass} opacity-55`
                 } ${selected ? "scale-110 ring-2 ring-ink/70 ring-offset-2 ring-offset-navy-900" : "hover:scale-105"}`}
               >
                 {complete ? <CheckIcon className="size-4" /> : phase.id}
                 {!gate.open && (
-                  <span className="absolute -bottom-0.5 -right-0.5 grid size-4 place-items-center rounded-full border border-navy-700 bg-navy-950 text-ink-faint">
+                  <span className="absolute -bottom-0.5 -right-0.5 grid size-4 place-items-center rounded-full border border-navy-700 bg-navy-950 text-ink-faint opacity-100">
                     <LockIcon className="size-2.5" />
                   </span>
                 )}
@@ -77,7 +77,11 @@ export function PhasePicker({
                   style={{ width: `${(doneInPhase / inPhase.length) * 100}%` }}
                 />
               </span>
-              <span className={`text-center text-[0.6rem] leading-tight ${selected ? phase.textClass : "text-ink-faint"}`}>
+              <span
+                className={`text-center text-[0.6rem] leading-tight ${
+                  selected || gate.open ? phase.textClass : `${phase.textClass} opacity-55`
+                }`}
+              >
                 {doneInPhase}/{inPhase.length}
               </span>
             </li>

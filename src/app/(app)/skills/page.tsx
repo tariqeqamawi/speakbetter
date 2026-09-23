@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 export default function SkillsPage() {
   return (
-    <div className="flex flex-col gap-5 py-6">
+    <div className="flex flex-col gap-3 pb-10 pt-4">
       <header>
         <details className="group">
           <summary className="flex cursor-pointer list-none items-center gap-2.5 [&::-webkit-details-marker]:hidden">

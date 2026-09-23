@@ -259,10 +259,10 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
   const activeCards = active ? inSection(active.id) : [];
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-2">
       {/* The color under the thumb, named above the deck in its color -
           the hub keeps its shape, as the skill dial's does. */}
-      <div className="flex h-12 flex-col items-center justify-center text-center" aria-live="polite">
+      <div className="flex h-11 flex-col items-center justify-center text-center" aria-live="polite">
         {active ? (
           <>
             <span className={`text-lg font-semibold leading-tight ${active.textClass}`}>{active.short}</span>

@@ -53,10 +53,13 @@ function ExampleQuestion() {
     const id = window.setInterval(() => setI((n) => (n + 1) % EXAMPLES.length), 4200);
     return () => window.clearInterval(id);
   }, []);
+  // A fixed height: a question that wraps to two lines used to take
+  // the room from underneath it, and the lion - which is allowed to
+  // shrink inside a flex column - got smaller every few seconds.
   return (
-    <p className="flex flex-col items-center gap-0.5 text-center">
+    <p className="flex h-14 w-full flex-col items-center justify-center gap-0.5 text-center">
       <span className="text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-ink-faint">Example question</span>
-      <span key={i} className="coach-cue text-sm font-medium text-ink-muted">
+      <span key={i} className="coach-cue line-clamp-1 max-w-full text-sm font-medium text-ink-muted">
         &ldquo;{EXAMPLES[i]}&rdquo;
       </span>
     </p>
@@ -73,6 +76,8 @@ export function AskCoach() {
   const [error, setError] = useState<string | null>(null);
   const [reading, setReading] = useState(false);
   const [typing, setTyping] = useState(false);
+  const [greetText, setGreetText] = useState("");
+  const [greetUrl, setGreetUrl] = useState<string | null>(null);
   const recRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const lionRef = useRef<TalkingLionHandle>(null);
@@ -112,37 +117,29 @@ export function AskCoach() {
     };
   };
 
-  // Coach speaks first. Once per opening of the page: how many times
-  // today is counted on the device, the greeting is written live from
-  // the record, and the lion says it - autoplay where the browser
-  // allows it (the tap on the pill usually counts), a tap otherwise.
+  // Coach says hello, and that is all he says.
+  //
+  // He used to open with a review of the student's whole record, which
+  // put the page into its "answering" state before a question had been
+  // asked - so the button read "Coach is answering" to somebody who had
+  // just arrived, and could not be pressed. A greeting is two words: it
+  // says he is here and hands the floor straight back.
   const greeted = useRef(false);
   useEffect(() => {
     if (!ready || greeted.current) return;
     greeted.current = true;
-    let visits = 1;
-    try {
-      const key = `speak-better-coach-visits:${new Date().toISOString().slice(0, 10)}`;
-      visits = Number(window.localStorage.getItem(key) ?? 0) + 1;
-      window.localStorage.setItem(key, String(visits));
-    } catch {}
+    const first = state.displayName.trim().split(" ")[0];
+    const lines = first
+      ? [`Hey, ${first}.`, "Welcome back.", "Nice to see you.", "How can I help?", `Good to see you, ${first}.`]
+      : ["Hey.", "Welcome back.", "Nice to see you.", "How can I help?"];
+    const line = lines[Math.floor(Math.random() * lines.length)];
     let alive = true;
     (async () => {
       try {
-        const res = await fetch("/api/ask", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ greeting: { visitsToday: visits }, record: record(), displayName: state.displayName, level: state.level }),
-        });
-        const json = (await res.json()) as { answer?: string };
-        if (!alive || !res.ok || !json.answer) return;
-        setAnswer(json.answer);
-        const spoken = await speakUrl(json.answer);
-        if (!alive) return;
-        if (spoken) {
-          setUrl(spoken);
-          setPhase("answering");
-        }
+        const spoken = await speakUrl(line);
+        if (!alive || !spoken) return;
+        setGreetText(line);
+        setGreetUrl(spoken);
       } catch {
         // A greeting that fails is no greeting - the page works without it.
       }
@@ -225,6 +222,8 @@ export function AskCoach() {
   /** One button, two taps: start, then stop. Priming on each tap
    *  keeps the browser's sound permission warm for the answer. */
   const onPress = () => {
+    lionRef.current?.stop();
+    setGreetUrl(null);
     lionRef.current?.prime();
     if (phase === "listening") {
       stopListening();
@@ -264,13 +263,17 @@ export function AskCoach() {
           quiet lines under it. */}
       <TalkingLion
         ref={lionRef}
-        text={answer}
+        text={answer || greetText}
         captions
         controls={false}
         large
-        audioSrc={phase === "answering" && url ? url : undefined}
-        autoPlay={phase === "answering"}
-        onEnded={() => setPhase("idle")}
+        className="shrink-0"
+        audioSrc={phase === "answering" && url ? url : (greetUrl ?? undefined)}
+        autoPlay={phase === "answering" || !!greetUrl}
+        onEnded={() => {
+          setPhase("idle");
+          setGreetUrl(null);
+        }}
       />
 
       <div className="flex w-full max-w-sm flex-col items-center gap-2.5">

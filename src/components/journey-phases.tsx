@@ -87,7 +87,7 @@ export function JourneyPhases({
                       ? `${p.bgClass} text-navy-950 shadow-[0_0_14px_-2px_currentColor] ${p.textClass}`
                       : g.open
                         ? `border-2 border-current bg-navy-900 ${p.textClass}`
-                        : "border border-navy-600 bg-navy-900 text-ink-faint"
+                        : `border border-current bg-navy-900 ${p.textClass} opacity-55`
                   } ${on ? "ring-2 ring-current ring-offset-2 ring-offset-navy-800" : ""}`}
                 >
                   {p.id}
@@ -108,8 +108,8 @@ export function JourneyPhases({
                 )}
               </span>
               <span
-                className={`w-9 text-center text-[0.55rem] font-semibold uppercase leading-tight tracking-wide ${
-                  on ? p.textClass : g.open ? "text-ink-muted" : "text-ink-faint"
+                className={`w-9 text-center text-[0.55rem] font-semibold uppercase leading-tight tracking-wide ${p.textClass} ${
+                  on ? "" : g.open ? "opacity-80" : "opacity-50"
                 }`}
               >
                 {SHORT[p.id]}

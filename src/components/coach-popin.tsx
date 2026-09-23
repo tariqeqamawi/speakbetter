@@ -1,5 +1,7 @@
 "use client";
 
+import { usePathname } from "next/navigation";
+
 import { LionMouth } from "@/components/lion-mouth";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useStore } from "@/lib/store";
@@ -43,6 +45,7 @@ function useOnTour(): boolean {
 }
 
 export function CoachPopIn() {
+  const pathname = usePathname();
   const onTour = useOnTour();
   const { state, ready, celebrations } = useStore();
   const [message, setMessage] = useState<string | null>(null);
@@ -188,7 +191,10 @@ export function CoachPopIn() {
 
   // The tour owns the screen while it's running - two cards in the
   // same corner is one too many.
-  if (!message || onTour) return null;
+  // Not on Coach's own page: he is standing right there, full size,
+  // waiting to be asked something. A pop-in of him over himself is one
+  // lion too many.
+  if (!message || onTour || pathname === "/coach") return null;
 
   return (
     <div
