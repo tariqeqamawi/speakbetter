@@ -93,18 +93,29 @@ export function DashboardHeaderCompact({
         </div>
       )}
 
-      {/* The reason they wrote, on the screen they open - it is the
-          thing most worth being reminded of and it was two taps away. */}
-      <div className="flex flex-col gap-1 rounded-xl border border-navy-600 bg-navy-900/60 px-3 py-2.5">
-        <span className="text-[0.6rem] font-semibold uppercase tracking-[0.25em] text-ink-faint">Why you started</span>
-        {state.intention ? (
-          <span className="text-sm italic leading-relaxed text-ink-muted">&ldquo;{state.intention}&rdquo;</span>
-        ) : (
-          <span className="text-xs text-ink-faint">Open your card to write your reason.</span>
-        )}
+      {/* The reason they wrote and the day's tip: the two things worth
+          unfolding for. Folded, this is a thin banner and the panels
+          below it start higher up the screen. */}
+      <div
+        className="grid transition-[grid-template-rows] duration-300 ease-out"
+        style={{ gridTemplateRows: open ? "1fr" : "0fr" }}
+      >
+        <div className="min-h-0 overflow-hidden">
+          <div className="flex flex-col gap-3 pt-1">
+            <div className="flex flex-col gap-1 rounded-xl border border-navy-600 bg-navy-900/60 px-3 py-2.5">
+              <span className="text-[0.6rem] font-semibold uppercase tracking-[0.25em] text-ink-faint">
+                Why you started
+              </span>
+              {state.intention ? (
+                <span className="text-sm italic leading-relaxed text-ink-muted">&ldquo;{state.intention}&rdquo;</span>
+              ) : (
+                <span className="text-xs text-ink-faint">Write your reason on your full card below.</span>
+              )}
+            </div>
+            <ProTip />
+          </div>
+        </div>
       </div>
-
-      <ProTip />
     </div>
   );
 }

@@ -272,9 +272,18 @@ export function longestStreak(state: AppState): number {
 export const totalBadges = badgeDefs.length;
 export const totalChallenges = challenges.length;
 
-/** What it costs to buy back a missed day: more the longer the streak,
- *  because the longer it is the more it's worth keeping - and the more
- *  a student has earned by then. */
+/** What it costs to buy back a missed day.
+ *
+ *  It starts at 200 and climbs with the streak, because the price has
+ *  to hurt or it isn't a streak - a day you can replace for pocket
+ *  change was never a commitment, and the whole mechanic quietly
+ *  becomes decoration. 200 is roughly two challenges' worth of work,
+ *  so buying a day back is a real decision, and a long streak is
+ *  expensive to rescue precisely because it is worth rescuing.
+ *
+ *  A student who cannot afford it has not lost anything they earned:
+ *  the XP stays, the trophies stay, the record stays. Only the run of
+ *  consecutive days resets. */
 export function streakPrice(streakDays: number): number {
-  return Math.min(300, 40 + streakDays * 20);
+  return Math.min(1000, 200 + Math.max(0, streakDays - 1) * 50);
 }

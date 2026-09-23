@@ -18,11 +18,11 @@ import { CheckIcon, LockIcon } from "@/components/icons";
 // student on S has three challenges; three named things to do is worth
 // more than three gray squares.
 //
-// What a student may see is deliberately one phase further than what
-// they may do: the phases that are open, and the next one after them,
-// list their challenges in full. Beyond that the road is veiled - not
-// as a tease, but because a list of twenty-four briefs at the start is
-// a syllabus, and the journey is meant to unfold.
+// Every phase shows its challenges, open or not, greyed the way the
+// challenges page greys them. Veiling the far end of the road was
+// meant to let the journey unfold; on a dashboard - a page whose whole
+// job is to show what a student has and what is left - it hid the
+// answer to the question they came to ask.
 
 /** A word for each phase that fits under a circle. */
 const SHORT: Record<string, string> = {
@@ -61,8 +61,6 @@ export function JourneyPhases({
     return sum + (best ? challengeXpFor(c, best.score) : c.passive && isComplete(c.slug) ? challengeXp(c) : 0);
   }, 0);
   const worth = inPhase.reduce((sum, c) => sum + challengeXp(c), 0);
-  // The open phases, and one more - the next door is worth seeing through.
-  const revealed = pick <= open;
 
   return (
     <div className="flex flex-col gap-4">
@@ -134,8 +132,7 @@ export function JourneyPhases({
           </span>
         </div>
 
-        {revealed ? (
-          <ul className="flex flex-col gap-1.5">
+        <ul className="flex flex-col gap-1.5">
             {inPhase.map((c) => {
               const passed = isComplete(c.slug);
               const body = (
@@ -190,18 +187,7 @@ export function JourneyPhases({
                 </li>
               );
             })}
-          </ul>
-        ) : (
-          <div className="flex flex-col items-center gap-1.5 rounded-lg border border-dashed border-navy-600 px-4 py-7 text-center">
-            <LockIcon className="size-5 text-ink-faint" />
-            <p className="text-sm font-semibold text-ink-muted text-balance">
-              Complete the previous challenges to reveal these ones
-            </p>
-            <p className="text-xs text-ink-faint">
-              {inPhase.length} challenges waiting in {phase.name}
-            </p>
-          </div>
-        )}
+        </ul>
       </div>
     </div>
   );

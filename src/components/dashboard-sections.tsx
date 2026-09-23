@@ -77,16 +77,12 @@ export function DashboardPanel({
 
   return (
     <div className="flex flex-col gap-5">
+      {/* The banner folds its own contents - the chevron hides the
+          reason and the tip and leaves the XP line, so the panels
+          below start higher. The full card is a section of its own
+          rather than a second copy of what is already on screen. */}
       <div className="overflow-hidden rounded-2xl border border-navy-600 bg-navy-800">
         {you.compact(youOpen, () => setYouOpen((o) => !o))}
-        <div
-          className="grid transition-[grid-template-rows] duration-300 ease-out"
-          style={{ gridTemplateRows: youOpen ? "1fr" : "0fr" }}
-        >
-          <div className="min-h-0 overflow-hidden">
-            <div className="border-t border-navy-600">{you.content}</div>
-          </div>
-        </div>
       </div>
 
       {/* One bar, the same shape as every other "switch the view of

@@ -1,9 +1,9 @@
 "use client";
 
 import { currentStreak } from "@/data/badges";
-import { longestStreak, practiceDays } from "@/lib/progress";
+import { longestStreak, practiceDays, streakPrice } from "@/lib/progress";
 import type { AppState } from "@/lib/store";
-import { CheckIcon, FlameIcon } from "@/components/icons";
+import { CheckIcon, ChevronDownIcon, FlameIcon } from "@/components/icons";
 import { SectionBanner } from "@/components/section-banner";
 
 // The streak, as the thing it actually is: days. A number says "4"; a
@@ -158,6 +158,37 @@ export function StreakCalendar({ state }: { state: AppState }) {
         Every day you practice takes the next color of the spectrum. Cyan is a day a freeze covered
         for you - one missed day never costs the streak.
       </p>
+
+      {/* How the streak actually works, for the student who wants to
+          know before they need to know. Folded, because the rules of a
+          mechanic should be available rather than announced. */}
+      <details className="group rounded-xl border border-navy-600 bg-navy-900/60">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-ink transition-colors hover:text-ink [&::-webkit-details-marker]:hidden">
+          Keeping your streak, and what it earns you
+          <ChevronDownIcon className="size-4 shrink-0 text-ink-faint transition-transform group-open:rotate-180" />
+        </summary>
+        <div className="flex flex-col gap-3 px-4 pb-4 text-sm text-ink-muted">
+          <p>
+            <b className="font-semibold text-ink">Keep it running.</b> Any take you record counts for that day - the
+            challenge doesn&apos;t have to be passed, or even finished well. Showing up is the streak.
+          </p>
+          <p>
+            <b className="font-semibold text-ink">Unlock more XP.</b> A running streak pays a bonus on everything you
+            earn, so the longer it goes the more each take is worth. That is the real reason to protect it - the
+            number beside the flame is the smallest part of it.
+          </p>
+          <p>
+            <b className="font-semibold text-ink">Miss one day and a freeze covers it</b>, automatically, if you have
+            one left. You have {state.freezesRemaining}.
+          </p>
+          <p>
+            <b className="font-semibold text-ink">Miss more than that and you can buy the streak back</b> with XP,
+            while the day is still recent. It is deliberately expensive - {streakPrice(1)} XP for a short streak,
+            rising to {streakPrice(30)} for a long one - because a day you could replace for pocket change was never
+            a commitment. Your XP, trophies and reviews are never at risk; only the run of days is.
+          </p>
+        </div>
+      </details>
       </div>
     </div>
   );
