@@ -13,6 +13,7 @@ import {
   CaptionsIcon,
   ExitFullscreenIcon,
   FullscreenIcon,
+  NextLessonIcon,
   PauseFillIcon,
   PlayFillIcon,
   ResetFrameIcon,
@@ -147,11 +148,20 @@ export function VimeoPlayer({
   title,
   autoplay = false,
   onEnded,
+  onTime,
+  onNext,
+  nextTitle,
   xp,
 }: {
   vimeoId: string;
   title: string;
   autoplay?: boolean;
+  /** Where the video is, every tick - what the key-ideas panel follows. */
+  onTime?: (seconds: number) => void;
+  /** The next lesson, offered from the control row: one tap on rather
+   *  than scrolling back to the list. */
+  onNext?: () => void;
+  nextTitle?: string;
   /** Fires once when playback completes - what "up next" hangs off. */
   onEnded?: () => void;
   /**
@@ -172,6 +182,10 @@ export function VimeoPlayer({
   useEffect(() => {
     onEndedRef.current = onEnded;
   }, [onEnded]);
+  const onTimeRef = useRef(onTime);
+  useEffect(() => {
+    onTimeRef.current = onTime;
+  }, [onTime]);
   const xpRef = useRef(xp);
   useEffect(() => {
     xpRef.current = xp;
@@ -364,6 +378,7 @@ export function VimeoPlayer({
       setProgress(d.duration ? d.seconds / d.duration : 0);
       if (d.duration) setDuration(d.duration);
       cueAt(d.seconds);
+      onTimeRef.current?.(d.seconds);
     };
     player.on("play", onPlay);
     player.on("pause", onPause);
@@ -750,6 +765,12 @@ export function VimeoPlayer({
             {frame !== "fit" && (
               <ControlButton label="Reset framing" onClick={() => setFrame("fit")}>
                 <ResetFrameIcon />
+              </ControlButton>
+            )}
+
+            {onNext && (
+              <ControlButton label={nextTitle ? `Next: ${nextTitle}` : "Next lesson"} onClick={onNext}>
+                <NextLessonIcon />
               </ControlButton>
             )}
 

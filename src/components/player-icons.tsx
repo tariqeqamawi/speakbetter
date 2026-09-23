@@ -108,3 +108,13 @@ export function ExitFullscreenIcon({ className = "size-5" }: IconProps) {
     </svg>
   );
 }
+
+/** Skip to the next lesson - a play mark against a bar. */
+export function NextLessonIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <path d="M5 5.5 14 12l-9 6.5z" fill="currentColor" stroke="none" />
+      <path d="M18 5.5v13" />
+    </svg>
+  );
+}

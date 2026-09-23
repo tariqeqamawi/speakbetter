@@ -16,7 +16,9 @@ export default function CoachPage() {
       <header className="flex flex-col gap-2">
         <h1 className="text-3xl font-semibold tracking-tight">Meet &ldquo;Coach&rdquo;</h1>
         <p className="max-w-lg text-ink-muted">
-          The lion who watches every take. Ask how your speaking is developing, and read back every review Coach has given you.
+          Coach is a lion who isn&apos;t afraid of his true colours - and he&apos;ll help you find yours and roar. Talk to
+          him the way you would any other coach: ask how your speaking is developing, read back his reviews, and ask how
+          to get better.
         </p>
       </header>
       <AskCoach />

@@ -1,12 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useStore } from "@/lib/store";
 import { challenges } from "@/data/challenges";
 import { SectionBanner } from "@/components/section-banner";
 import { ChevronDownIcon, FilmIcon } from "@/components/icons";
-import { SpectrumKey } from "@/components/spectrum";
+import { Feedback } from "@/components/practice-panel";
 
 // Everything the coach has said, newest first: each review's verdict,
 // score, spectrum and what the coach said aloud, with the notes behind
@@ -23,7 +22,7 @@ export function CoachHistory() {
     <section className="flex flex-col overflow-hidden rounded-2xl border border-navy-600 bg-navy-800">
       <SectionBanner
         image="/sections/challenges.jpg"
-        title="What Coach has said"
+        title="Coach's reviews"
         Icon={FilmIcon}
         accentClass="text-structure"
         right={
@@ -66,38 +65,12 @@ export function CoachHistory() {
                   className={`size-4 shrink-0 text-ink-faint transition-transform ${isOpen ? "rotate-180" : ""}`}
                 />
               </button>
-              {isOpen && (
-                <div className="flex flex-col gap-4 border-t border-navy-600 px-4 py-4">
-                  <SpectrumKey spectrum={a.spectrum} required={challenge?.targetSkills} />
-                  {a.spoken ? (
-                    <p className="text-sm leading-relaxed text-ink">{a.spoken}</p>
-                  ) : (
-                    a.summary && <p className="text-sm leading-relaxed text-ink">{a.summary}</p>
-                  )}
-                  {a.focus.length > 0 && (
-                    <ul className="flex flex-col gap-1.5">
-                      {a.focus.map((n, i) => (
-                        <li key={i} className="text-xs text-ink-muted">
-                          <span className="font-semibold text-ink-faint">Next time: </span>
-                          {n.note}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  <span className="flex flex-wrap gap-3">
-                    <Link
-                      href={`/review/${a.id}`}
-                      className="rounded-lg bg-ink px-3 py-1.5 text-xs font-semibold text-navy-900 transition-opacity hover:opacity-90"
-                    >
-                      Open the full review
-                    </Link>
-                    <Link
-                      href={`/challenges/${a.challengeSlug}`}
-                      className="self-center text-xs font-semibold text-ink-muted underline-offset-4 hover:text-ink hover:underline"
-                    >
-                      Go to this challenge →
-                    </Link>
-                  </span>
+              {/* Opening a review opens the review - the whole page,
+                  here: the spectrum, what worked, the lessons, what to
+                  do next. A folded summary meant reading it twice. */}
+              {isOpen && challenge && (
+                <div className="border-t border-navy-600 px-2 py-3 sm:px-3">
+                  <Feedback attempt={a} videoUrl="" challenge={challenge} onDone={() => {}} revisit />
                 </div>
               )}
             </article>

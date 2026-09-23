@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { LessonNotes } from "@/components/lesson-notes";
+import type { CategoryId } from "@/data/categories";
 import { VimeoPlayer } from "@/components/vimeo-player";
 import { LessonWatched } from "@/components/lesson-watched";
 import { lessonXp } from "@/lib/progress";
@@ -20,13 +23,23 @@ import { useStore } from "@/lib/store";
 export function LessonPlayer({
   vimeoId,
   title,
+  category,
+  nextHref,
+  nextTitle,
 }: {
   vimeoId: string;
   title: string;
+  /** Colours the key-ideas panel beneath the video. */
+  category?: CategoryId;
+  /** The next lesson, offered from the player's own controls. */
+  nextHref?: string;
+  nextTitle?: string;
 }) {
   const { state, ready } = useStore();
   const [decidedFor, setDecidedFor] = useState<string | null>(null);
   const [reward, setReward] = useState<number | undefined>(undefined);
+  const [seconds, setSeconds] = useState(0);
+  const router = useRouter();
 
   // Decided during render rather than in an effect, so it's settled
   // before the player can ever finish. It waits for the store: until
@@ -41,8 +54,16 @@ export function LessonPlayer({
 
   return (
     <>
-      <VimeoPlayer vimeoId={vimeoId} title={title} xp={reward} />
+      <VimeoPlayer
+        vimeoId={vimeoId}
+        title={title}
+        xp={reward}
+        onTime={setSeconds}
+        onNext={nextHref ? () => router.push(nextHref) : undefined}
+        nextTitle={nextTitle}
+      />
       <LessonWatched vimeoId={vimeoId} />
+      {category && <LessonNotes vimeoId={vimeoId} category={category} seconds={seconds} />}
     </>
   );
 }

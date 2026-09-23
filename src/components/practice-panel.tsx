@@ -91,6 +91,19 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
   const pickRef = useRef<HTMLInputElement>(null);
   // The in-app recorder, with the clock; the camera app is the fallback.
   const [recorder, setRecorder] = useState(false);
+  // The sticky record bar appears once the page has been scrolled past
+  // the top of this panel.
+  const panelRef = useRef<HTMLDivElement>(null);
+  const [stuck, setStuck] = useState(false);
+  useEffect(() => {
+    const el = panelRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([entry]) => setStuck(!entry.isIntersecting), {
+      rootMargin: "-120px 0px 0px 0px",
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [ready, stage.kind]);
 
   if (!ready) return null;
   if (challenge.passive) return <PassiveProgress challenge={challenge} />;
@@ -267,8 +280,38 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
     }
   };
 
+  const canRecordNow = stage.kind === "idle" && (!gate || gate.open) && !trialBlocked && !trialSpent;
+
   return (
     <section className="flex flex-col gap-4">
+      {/* Record and upload, under the header, from the moment the page
+          scrolls - the two things a student came here to do shouldn't
+          be at the bottom of a long page. */}
+      {canRecordNow && (
+        <div ref={panelRef} aria-hidden className="h-px" />
+      )}
+      {canRecordNow && stuck && (
+        <div className="sticky-under-header -mx-4 flex items-center gap-2 border-b border-navy-700/70 bg-navy-900/95 px-4 py-2 backdrop-blur">
+          <button
+            type="button"
+            onClick={() => (canRecordInApp() ? setRecorder(true) : recordRef.current?.click())}
+            className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full bg-acting px-4 text-sm font-bold text-navy-950 shadow-[0_0_20px_-6px_var(--color-acting)]"
+          >
+            <span className="grid size-5 place-items-center rounded-full bg-navy-950/20">
+              <span className="size-2 rounded-full bg-navy-950" />
+            </span>
+            Record
+          </button>
+          <button
+            type="button"
+            onClick={() => pickRef.current?.click()}
+            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-navy-600 px-4 text-sm font-semibold text-ink-muted transition-colors hover:text-ink"
+          >
+            <UploadIcon className="size-4" />
+            Upload
+          </button>
+        </div>
+      )}
       <h2 className="text-sm font-medium uppercase tracking-wider text-ink-faint">
         Your attempts
       </h2>

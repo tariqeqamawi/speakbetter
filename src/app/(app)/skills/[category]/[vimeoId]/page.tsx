@@ -55,7 +55,13 @@ export default async function LessonPage(props: PageProps<"/skills/[category]/[v
       </header>
 
       <LessonGate vimeoId={lesson.vimeoId}>
-        <LessonPlayer vimeoId={lesson.vimeoId} title={lesson.title} />
+        <LessonPlayer
+          vimeoId={lesson.vimeoId}
+          title={lesson.title}
+          category={lesson.category}
+          nextHref={next ? `/skills/${cat.id}/${next.vimeoId}` : undefined}
+          nextTitle={next?.title}
+        />
       </LessonGate>
 
       {transcript && (

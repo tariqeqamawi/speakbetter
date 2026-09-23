@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { Category } from "@/data/categories";
 import type { Lesson } from "@/data/lessons";
@@ -13,6 +11,8 @@ import { LessonWatched } from "@/components/lesson-watched";
 import { VideoStill } from "@/components/video-still";
 import { CheckIcon, XIcon, ZapIcon } from "@/components/icons";
 import { LessonCardButton } from "@/components/lesson-card-button";
+import { LessonNotes } from "@/components/lesson-notes";
+import { LessonTranscript } from "@/components/lesson-transcript";
 import { PlayFillIcon } from "@/components/player-icons";
 
 // A category as a theater: whichever lesson is selected plays full
@@ -39,15 +39,14 @@ export function CategoryTheater({
   const [autoplayNext, setAutoplayNext] = useState(false);
   const [upNext, setUpNext] = useState(false);
   const [xpFlash, setXpFlash] = useState(false);
+  // Where the featured video is, for the key-ideas panel beneath it.
+  const [seconds, setSeconds] = useState(0);
   // What the featured lesson pays when it finishes - fixed the moment
   // it's selected, since it gets marked watched partway through and a
   // rewatch should play out in silence. See lesson-player.tsx.
   const [rewardFor, setRewardFor] = useState<string | null>(null);
   const [reward, setReward] = useState<number | undefined>(undefined);
   const stageRef = useRef<HTMLDivElement>(null);
-  // The full lesson page (transcript and all) has no preview twin, so
-  // inside /demo the link would dead-end past the gate. Hide it there.
-  const inDemo = usePathname().startsWith("/demo");
 
   const featured = lessons.find((l) => l.vimeoId === featuredId) ?? lessons[0];
   const index = lessons.findIndex((l) => l.vimeoId === featured.vimeoId);
@@ -67,6 +66,7 @@ export function CategoryTheater({
 
   const select = (id: string, autoplay = false) => {
     setUpNext(false);
+    setSeconds(0);
     setAutoplayNext(autoplay);
     setFeaturedId(id);
     stageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -150,14 +150,6 @@ export function CategoryTheater({
 
           <span className="ml-auto flex items-center gap-3">
             <LessonCardButton vimeoId={featured.vimeoId} />
-            {!inDemo && (
-              <Link
-                href={`/skills/${category.id}/${featured.vimeoId}`}
-                className="text-xs font-semibold text-ink-faint transition-colors hover:text-ink-muted"
-              >
-                Open lesson page →
-              </Link>
-            )}
           </span>
         </div>
 
@@ -168,11 +160,21 @@ export function CategoryTheater({
           title={featured.title}
           autoplay={autoplayNext}
           xp={reward}
+          onTime={setSeconds}
+          onNext={next ? () => select(next.vimeoId, true) : undefined}
+          nextTitle={next?.title}
           onEnded={() => {
             if (next) setUpNext(true);
           }}
         />
         <LessonWatched key={`w-${featured.vimeoId}`} vimeoId={featured.vimeoId} />
+
+        {/* What the lesson says, under it: the key ideas keeping pace
+            with the video, and the transcript for anyone who wants the
+            words. Both here, rather than behind a link to another
+            page - this is the page. */}
+        <LessonNotes key={`n-${featured.vimeoId}`} vimeoId={featured.vimeoId} category={category.id} seconds={seconds} />
+        <LessonTranscript vimeoId={featured.vimeoId} />
 
         {/* Up next: offered, never taken. The lesson that just finished
             used to roll into the next one on a five second countdown,

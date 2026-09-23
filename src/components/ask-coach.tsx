@@ -29,6 +29,36 @@ function pickAudioMime(): string | undefined {
   );
 }
 
+/** Questions worth asking, one at a time - a prompt rather than an
+ *  instruction, changing every few seconds so the page suggests
+ *  something new each time a student looks up. */
+const EXAMPLES = [
+  "How is my speaking developing?",
+  "How have I been improving over my last few takes?",
+  "What keeps coming up as a pattern for me?",
+  "How have the colours I light up changed this week?",
+  "What should I work on in my next challenge?",
+  "Which lesson would help me most right now?",
+  "Am I getting better at storytelling?",
+  "What did you notice in my last take?",
+];
+
+function ExampleQuestion() {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const id = window.setInterval(() => setI((n) => (n + 1) % EXAMPLES.length), 4200);
+    return () => window.clearInterval(id);
+  }, []);
+  return (
+    <p className="flex flex-col items-center gap-0.5 text-center">
+      <span className="text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-ink-faint">Example question</span>
+      <span key={i} className="coach-cue text-sm font-medium text-ink-muted">
+        &ldquo;{EXAMPLES[i]}&rdquo;
+      </span>
+    </p>
+  );
+}
+
 export function AskCoach() {
   const { state, ready } = useStore();
   const [phase, setPhase] = useState<Phase>("idle");
@@ -203,13 +233,8 @@ export function AskCoach() {
 
   return (
     <section className="flex flex-col overflow-hidden rounded-2xl border border-navy-600 bg-navy-800">
-      <SectionBanner image="/sections/trophies-lion.jpg" title="Ask Coach" Icon={ListenIcon} accentClass="text-advanced" large />
       <div className="flex flex-col gap-4 p-5">
-        <p className="text-sm text-ink-muted">
-          Ask how your speaking is developing - &ldquo;how have I been improving over my last few takes?&rdquo;,
-          &ldquo;what keeps coming up?&rdquo; - and Coach answers from your own record: every take, every note.
-        </p>
-
+        <ExampleQuestion />
         <TalkingLion
           ref={lionRef}
           text={answer}
@@ -257,20 +282,21 @@ export function AskCoach() {
               onPointerCancel={stopListening}
               onPointerLeave={() => phase === "listening" && stopListening()}
               onContextMenu={(e) => e.preventDefault()}
-              className={`select-none rounded-full px-6 py-3 text-sm font-semibold transition-all disabled:opacity-50 ${
-                phase === "listening"
-                  ? "bg-acting text-navy-900 shadow-[0_0_28px_-2px_var(--color-acting)] scale-105"
-                  : "bg-ink text-navy-900 hover:opacity-90"
+              className={`coach-pill inline-flex min-h-14 w-full max-w-xs select-none items-center justify-center gap-2.5 rounded-full px-6 text-base font-bold text-navy-950 transition-transform disabled:opacity-70 ${
+                phase === "listening" ? "scale-105" : "hover:scale-[1.02] active:scale-[0.99]"
               }`}
               style={{ WebkitTouchCallout: "none" } as React.CSSProperties}
             >
-              {phase === "listening"
-                ? "Listening… let go when you're done"
-                : phase === "thinking"
-                  ? "Coach is looking at your record…"
-                  : phase === "answering"
-                    ? "Coach is answering"
-                    : "Hold to ask"}
+              <span className="flex items-center gap-2.5 text-navy-950">
+                <ListenIcon className="size-5" />
+                {phase === "listening"
+                  ? "Listening… let go when you're done"
+                  : phase === "thinking"
+                    ? "Coach is looking at your record…"
+                    : phase === "answering"
+                      ? "Coach is answering"
+                      : "Ask Coach"}
+              </span>
             </button>
           )}
           <form
@@ -312,9 +338,6 @@ export function AskCoach() {
               </button>
             )}
           </form>
-          <p className="text-center text-[0.65rem] text-ink-faint">
-            Your record goes up with the question and comes straight back with the answer - nothing is kept.
-          </p>
         </div>
       </div>
     </section>
