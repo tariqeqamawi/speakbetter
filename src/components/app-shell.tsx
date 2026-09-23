@@ -12,7 +12,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const railed = ready && state.unlocked;
   return (
     <main
-      className={`mx-auto w-full max-w-5xl flex-1 px-4 pb-24 pt-8 sm:pb-12 xl:max-w-[96rem] xl:px-8 ${
+      className={`mx-auto w-full max-w-5xl flex-1 px-4 pb-28 pt-8 sm:pb-12 xl:max-w-[96rem] xl:px-8 ${
         railed ? "lg:pl-[15.5rem] xl:pl-[16rem]" : ""
       }`}
     >

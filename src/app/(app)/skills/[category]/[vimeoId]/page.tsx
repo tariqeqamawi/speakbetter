@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { BackLink } from "@/components/back-link";
+import { LessonBackLink } from "@/components/lesson-back-link";
 import { categoryById, type CategoryId } from "@/data/categories";
 import { lessons, lessonByVimeoId } from "@/data/lessons";
 import { getTranscript } from "@/lib/transcripts";
@@ -35,7 +35,7 @@ export default async function LessonPage(props: PageProps<"/skills/[category]/[v
   return (
     <div className="flex flex-col gap-6 py-6">
       <header className="flex flex-col gap-2">
-        <BackLink href={`/skills/${cat.id}`}>{cat.name}</BackLink>
+        <LessonBackLink categoryHref={`/skills/${cat.id}`} categoryName={cat.name} />
         <div className={`h-1 w-14 rounded-full ${cat.bgClass}`} />
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
           <h1 className="text-2xl font-semibold tracking-tight text-balance">

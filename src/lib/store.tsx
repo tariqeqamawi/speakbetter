@@ -80,6 +80,9 @@ export interface Attempt {
   spoken?: string;
   /** The same few things measured in every review, for comparing takes
    *  over time (lib/coach/rubric.ts). */
+  /** What the streak added to this take, settled when it was awarded
+   *  so it can never be recomputed away (lib/progress.ts). */
+  bonusXp?: number;
   /** Every instance Coach put a time on, for the replay (§14). */
   moments?: { at: string; kind: string; category: string; what: string }[];
   observations?: Observations;

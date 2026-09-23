@@ -231,7 +231,7 @@ export function BottomTabs() {
       className="fixed inset-x-0 bottom-0 z-20 border-t border-navy-600 bg-navy-850/97 sm:hidden"
       aria-label="Primary"
     >
-      <div className="pb-safe mx-auto flex max-w-md items-end justify-around">
+      <div className="pb-nav mx-auto flex max-w-md items-end justify-around">
         {destinations.slice(0, 2).map(({ href, label, tour, Icon }) => (
           <Tab key={href} href={href} label={label} tour={tour} Icon={Icon} active={isOn(pathname, href)} />
         ))}

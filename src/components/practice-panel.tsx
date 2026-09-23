@@ -4,10 +4,10 @@ import { createContext, useContext, useEffect, useId, useRef, useState } from "r
 import { upload } from "@vercel/blob/client";
 import { useStore, type Attempt, type FeedbackNote } from "@/lib/store";
 import { GRACE_SECONDS, challengeBySlug, maxSecondsFor, storyPhases, type Challenge } from "@/data/challenges";
-import { XP, challengeXp, challengeXpFor, phaseGate } from "@/lib/progress";
-import { LockIcon } from "@/components/icons";
+import { XP, challengeXp, challengeXpFor, phaseGate, streakBonusXp } from "@/lib/progress";
+import { FlameIcon, LockIcon } from "@/components/icons";
 import { ZapIcon } from "@/components/icons";
-import { hapticPass, hapticTap, playMiss, playPass, playReviewReady, playSend, playXpDing } from "@/lib/feedback-fx";
+import { hapticPass, hapticTap, playMiss, playPass, playReviewReady, playSend, playXpChime, playXpDing } from "@/lib/feedback-fx";
 import { Confetti } from "@/components/confetti";
 import { TakePlayback } from "@/components/take-playback";
 import { lessonByVimeoId } from "@/data/lessons";
@@ -43,6 +43,7 @@ import { measureVoice } from "@/lib/voice-profile";
 import { TalkingLion, type TalkingLionHandle } from "@/components/talking-lion";
 import { speakUrl } from "@/lib/coach/voice";
 import { ReadyCard } from "@/components/ready-card";
+import { currentStreak } from "@/data/badges";
 import { pickHold } from "@/data/greetings";
 
 // The practice loop (master plan §06, steps 3–7; build plan Phase 4).
@@ -255,6 +256,10 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
         progress: result.progress,
         voice: (await voice) ?? undefined,
         mock: result.mock || undefined,
+        // Settled here, on the streak they had when they sent it.
+        bonusXp: result.passed
+          ? streakBonusXp(challengeXpFor(challenge, result.score), currentStreak(state))
+          : 0,
       };
       recordAttempt(attempt);
       playReviewReady();
@@ -1238,6 +1243,8 @@ function XpSplash({
 }) {
   const max = challengeXp(challenge);
   const earned = attempt.passed ? challengeXpFor(challenge, attempt.score) : 0;
+  const bonus = attempt.bonusXp ?? 0;
+  const streak = currentStreak(useStore().state);
   useEffect(() => {
     if (attempt.passed) {
       playPass();
@@ -1248,8 +1255,13 @@ function XpSplash({
     }
     // The XP lands a beat after the verdict's sound.
     const t = window.setTimeout(playXpDing, 700);
-    return () => window.clearTimeout(t);
-  }, [attempt.passed]);
+    // And the streak's share a beat after that, with its own chime.
+    const b = (attempt.bonusXp ?? 0) > 0 ? window.setTimeout(playXpChime, 1450) : undefined;
+    return () => {
+      window.clearTimeout(t);
+      if (b) window.clearTimeout(b);
+    };
+  }, [attempt.passed, attempt.bonusXp]);
   return (
     <div
       role="dialog"
@@ -1278,6 +1290,19 @@ function XpSplash({
         >
           <ZapIcon className="size-4" />+{earned + XP.upload} XP
         </p>
+
+        {/* The streak's own share, arriving a beat later and on its
+            own line - a bonus folded into one total is a bonus nobody
+            knows they were paid, and the whole point of it is to be
+            felt. */}
+        {bonus > 0 && (
+          <p className="xp-bonus inline-flex items-center gap-1.5 rounded-full border border-acting/50 bg-acting/10 px-3 py-1.5 text-sm font-bold tabular-nums text-acting">
+            <FlameIcon className="size-4" />+{bonus} XP streak bonus
+            <span className="font-medium opacity-80">
+              · {streak} day{streak === 1 ? "" : "s"}
+            </span>
+          </p>
+        )}
         <p className="text-sm text-ink-muted text-balance">
           {attempt.passed
             ? earned < max

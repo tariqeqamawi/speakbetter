@@ -59,6 +59,17 @@ html {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+/* The bottom bar's own floor. On a phone the browser's address bar
+ * expands as you scroll back up to the top, the visual viewport
+ * shrinks under it, and a bar sitting flush at bottom: 0 loses its
+ * last few pixels - which are the labels. A minimum of half a rem
+ * below the labels means the worst case costs nothing readable, and
+ * on a device with a home indicator the safe-area inset is larger and
+ * wins anyway. */
+.pb-nav {
+  padding-bottom: max(env(safe-area-inset-bottom), 0.55rem);
+}
+
 /* The header clears the iPhone's status bar and notch when the app is
  * installed: the bar's background still paints behind the notch (so it
  * looks deliberate), but its content starts below the no-go zone. */
@@ -990,6 +1001,47 @@ svg.soundwave-c {
 /* The reward for finishing a lesson, rising off the player and away.
    Slower and taller than .xp-pop, which is a receipt printed in place -
    this one is meant to be watched leaving. */
+/* A figure drawn in all seven colors. The spectrum belongs to the
+ * student, so the numbers that are theirs - minutes spoken, XP earned
+ * - are painted in it rather than in one accent. */
+.spectrum-text {
+  background: linear-gradient(
+    100deg,
+    var(--color-storytelling),
+    var(--color-figurative),
+    var(--color-acting),
+    var(--color-structure),
+    var(--color-mindset),
+    var(--color-body-language),
+    var(--color-advanced)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* The streak's share, arriving after the take's own XP has landed. */
+.xp-bonus {
+  animation: xp-bonus 520ms cubic-bezier(0.22, 1, 0.36, 1) 1.35s both;
+}
+
+@keyframes xp-bonus {
+  from {
+    opacity: 0;
+    transform: translateY(0.9rem) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xp-bonus {
+    animation-duration: 1ms;
+  }
+}
+
 .xp-float {
   animation: xp-float 2.8s cubic-bezier(0.16, 0.9, 0.3, 1) both;
 }

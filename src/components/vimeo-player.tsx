@@ -8,7 +8,7 @@ import { categories } from "@/data/categories";
 import { lessonCues, type LessonCue } from "@/lib/lesson-cues";
 import { CaptionLine } from "@/components/caption-line";
 import { cueIcons } from "./cue-icons";
-import { XpBadge } from "./xp-badge";
+import { ZapIcon } from "@/components/icons";
 import { hapticTap, playXpChime } from "@/lib/feedback-fx";
 import {
   CaptionsIcon,
@@ -374,6 +374,7 @@ export function VimeoPlayer({
       player.setCurrentTime(0).then(() => player.pause()).catch(() => {});
       onEndedRef.current?.();
       if (xpRef.current !== undefined) {
+        playXpChime();
         setRewardKey((n) => n + 1);
         playXpChime();
         hapticTap();
@@ -651,11 +652,14 @@ export function VimeoPlayer({
             aria-live="polite"
             className="xp-float pointer-events-none absolute inset-x-0 top-1/2 z-30 flex justify-center"
           >
-            <XpBadge
-              xp={xp}
-              size="md"
-              className="border border-mindset/40 bg-navy-950/90 text-mindset shadow-[0_0_26px_-6px_currentColor]"
-            />
+            {/* Large, and drawn in all seven colors: earning is the
+                one moment in a lesson worth interrupting it for, and a
+                small green pill was not carrying that. */}
+            <span className="flex items-center gap-2 rounded-full border border-navy-600 bg-navy-950/90 px-5 py-2.5 shadow-[0_0_40px_-8px_var(--color-mindset)] backdrop-blur">
+              <ZapIcon className="size-8 shrink-0 text-mindset drop-shadow-[0_0_10px_currentColor]" />
+              <span className="spectrum-text text-4xl font-black tabular-nums tracking-tight">+{xp}</span>
+              <span className="text-sm font-bold uppercase tracking-[0.2em] text-ink-muted">XP</span>
+            </span>
           </div>
         )}
 

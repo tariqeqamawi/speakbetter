@@ -10,12 +10,9 @@ import { DeckIcon, SkillsIcon } from "@/components/icons";
 // the route, not component state, so a card section stays linkable and
 // the back button behaves.
 //
-// The tabs are the section's own two symbols, large, on clear ground.
-// The page's heading says "Skills" or "Cards" directly above them, so
-// a pair of pills repeating those two words was the same information
-// twice - and two symbols side by side are read faster than two words
-// anyway. The words survive for anybody who cannot see them, as the
-// accessible name.
+// The tabs ARE the section's heading: its symbol and its name, side
+// by side, on clear ground. A separate title above them was the page
+// introducing itself twice with the same word and the same symbol.
 
 const tabs = [
   { href: "/skills", label: "Skills", Icon: SkillsIcon, accent: "text-storytelling" },
@@ -37,15 +34,14 @@ export function SectionTabs() {
             href={`${prefix}${href}`}
             role="tab"
             aria-selected={active}
-            aria-label={label}
-            title={label}
-            className={`flex flex-1 items-center justify-center rounded-2xl border py-3 transition-colors ${
+            className={`flex flex-1 items-center justify-center gap-2.5 rounded-2xl border py-3 transition-colors ${
               active
                 ? `border-current bg-navy-800 ${accent}`
                 : "border-navy-600 text-ink-faint hover:border-ink-faint hover:text-ink-muted"
             }`}
           >
-            <Icon className="size-7" />
+            <Icon className="size-6 shrink-0" />
+            <span className={`text-lg font-bold tracking-tight ${active ? "text-ink" : ""}`}>{label}</span>
           </Link>
         );
       })}

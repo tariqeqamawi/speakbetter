@@ -186,10 +186,17 @@ export function standing(state: AppState): RankStanding {
     (sum, id) => sum + lessonXp(id),
     0,
   );
+  // What streaks paid, take by take. Stored on the attempt when it was
+  // awarded rather than recomputed, because the streak that earned it
+  // is the streak they had that day - a bonus that could be recomputed
+  // later could also be taken away later, and nothing a student earned
+  // should ever be able to shrink.
+  const streakTotal = state.attempts.reduce((sum, a) => sum + (a.bonusXp ?? 0), 0);
   const earned =
     state.attempts.length * XP.upload +
     challengeTotal +
     lessonTotal +
+    streakTotal +
     state.badges.length * XP.badge +
     state.questChests.length * XP.dailyChest;
   // XP is a currency as well as a score: a streak bought back is paid
@@ -271,6 +278,28 @@ export function longestStreak(state: AppState): number {
 
 export const totalBadges = badgeDefs.length;
 export const totalChallenges = challenges.length;
+
+/**
+ * What a running streak adds to a take.
+ *
+ * Five per cent a day, capped at half again - so a fortnight of
+ * showing up is worth a real amount on every upload, and the streak
+ * stops being a number beside a flame and becomes a reason. The cap
+ * exists because an uncapped multiplier makes the hundredth day worth
+ * more than the work, and then the streak is the game rather than the
+ * speaking.
+ *
+ * It is paid on the take itself, not on the whole record, so it can
+ * never be lost retroactively: what a day earned, it earned.
+ */
+export function streakBonusPercent(streakDays: number): number {
+  return Math.min(50, Math.max(0, streakDays) * 5);
+}
+
+/** The bonus in XP, rounded, for a take worth `base` on a `days` streak. */
+export function streakBonusXp(base: number, days: number): number {
+  return Math.round((base * streakBonusPercent(days)) / 100);
+}
 
 /** What it costs to buy back a missed day.
  *
