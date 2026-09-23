@@ -197,7 +197,7 @@ export const sectionTours: Record<SectionId, SectionTour> = {
         id: "sec-challenges-road",
         target: "[data-tour='journey']",
         title: "The road",
-        body: "Twenty-four challenges along five stretches of road. You walk it in order, and a stretch opens when the one before it is done.",
+        body: "Welcome to your STORY challenge journey. Each letter corresponds to a set of challenges. Complete those challenges to move on to the next level. Click the circle checkpoint to open the challenge page and begin your challenge.",
         film: JOURNEY,
       },
       {
@@ -210,8 +210,8 @@ export const sectionTours: Record<SectionId, SectionTour> = {
       {
         id: "sec-challenges-open-one",
         target: "[data-tour='journey']",
-        title: "Opening one",
-        body: "Tap any circle to open that challenge. You get the brief, a video of me explaining it, and exactly what passing takes.",
+        title: "Inside a challenge",
+        body: "Inside, you get the brief, a video of me explaining the challenge, and exactly what passing it takes.",
         film: CHALLENGE,
       },
       {
@@ -226,14 +226,14 @@ export const sectionTours: Record<SectionId, SectionTour> = {
         target: "[data-tour='record']",
         route: "/challenges/speaking-baseline",
         title: "Record, or upload",
-        body: "Press record and speak to the camera with the clock running, or upload something you filmed earlier. Then redo it, or send it to me.",
+        body: "Once you open a challenge, watch the video, see what it takes to complete it, then either record or upload a video of yourself completing the challenge. You will be given on-screen instructions to help you, and then your challenge will be sent to Coach for review.",
         film: REVIEW,
       },
       {
         id: "sec-challenges-review",
         route: "/challenges/speaking-baseline",
-        title: "What I send back",
-        body: "A score, your seven colors, what worked, and the one line to change next time. Every review stays, so you can read any of them again.",
+        title: "Coach watches your video",
+        body: "I watch your video and point out every color you light up - storytelling, figurative language, body and expression, confidence and presence. Then I tell you what you did well, what to improve next time, whether you passed the challenge, and the tips that will make the next one better.",
         film: REVIEW,
       },
       {
