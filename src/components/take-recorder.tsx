@@ -179,7 +179,7 @@ export function TakeRecorder({
   };
   const tone =
     left <= alarmAt(limitSec) ? "alarm" : left <= warnAt(limitSec) ? "warn" : left <= noticeAt(limitSec) ? "notice" : "calm";
-  /** The clock's colour at this tone - yellow, orange, red. */
+  /** The clock's color at this tone - yellow, orange, red. */
   const toneColor =
     tone === "alarm" ? "var(--color-acting)" : tone === "warn" ? "var(--color-figurative)" : "var(--color-storytelling)";
   const ring = limitSec > 0 ? 1 - left / limitSec : 0;
@@ -276,7 +276,7 @@ export function TakeRecorder({
                       className="flex w-full items-start gap-2 rounded-lg px-1.5 py-1 text-left text-xs leading-snug disabled:cursor-default"
                     >
                       {/* The circle fills as the line is met - one
-                          colour, filling, rather than seven. */}
+                          color, filling, rather than seven. */}
                       <span
                         className={`relative mt-0.5 grid size-5 shrink-0 place-items-center overflow-hidden rounded-full border transition-colors ${
                           met ? "border-mindset text-navy-950 shadow-[0_0_10px_-1px_var(--color-mindset)]" : "border-white/30 text-transparent"
@@ -300,7 +300,7 @@ export function TakeRecorder({
         </div>
       )}
 
-      {/* The last stretch, said in words as well as colour. */}
+      {/* The last stretch, said in words as well as color. */}
       {recording && tone !== "calm" && (
         <p
           key={tone}

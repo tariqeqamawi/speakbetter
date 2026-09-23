@@ -16,7 +16,7 @@ import { useSearchParams } from "next/navigation";
 // the header's soundwave, and one panel open below it at the full width
 // of the screen. Tapping a section swaps what's open without moving the
 // page, which is the difference between glancing at two things and
-// travelling between them. (A rail down the left side was tried first;
+// traveling between them. (A rail down the left side was tried first;
 // it squeezed every panel into two-thirds of a phone.)
 //
 // The strip sticks under the header, so nothing has to be scrolled to

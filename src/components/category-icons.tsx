@@ -36,7 +36,7 @@ function FigurativeIcon({ className = "size-6" }: IconProps) {
   );
 }
 
-/** Theatre masks, simplified to one - acting. */
+/** Theater masks, simplified to one - acting. */
 function ActingIcon({ className = "size-6" }: IconProps) {
   return (
     <svg {...base} className={className}>

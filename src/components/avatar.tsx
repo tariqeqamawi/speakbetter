@@ -1,9 +1,9 @@
 "use client";
 
 // A face for a name. The student's own photo where they've set one;
-// otherwise their initial on a colour of the spectrum, settled by the
-// name so the same person is the same colour everywhere. A row of
-// identical grey circles tells you nothing about who is in the room.
+// otherwise their initial on a color of the spectrum, settled by the
+// name so the same person is the same color everywhere. A row of
+// identical gray circles tells you nothing about who is in the room.
 
 const COLORS = ["storytelling", "figurative", "acting", "structure", "mindset", "body-language", "advanced"] as const;
 

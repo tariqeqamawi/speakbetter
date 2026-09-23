@@ -4,7 +4,7 @@ import { LionMouth } from "@/components/lion-mouth";
 import { BookIcon, VideoIcon } from "@/components/icons";
 
 // What a tier includes, as pictures from the app itself: a few lesson
-// stills, the deck fanned in its seven colours (digital, or printed
+// stills, the deck fanned in its seven colors (digital, or printed
 // and posted), the lion for the coach, a trophy, the teacher's live
 // session, the book. Each tile is drawn lit where the tier has it and
 // dim where it doesn't, so the columns fill in as the list does.
@@ -32,7 +32,7 @@ function Tile({
   );
 }
 
-/** The deck, fanned: seven backs in the seven colours. */
+/** The deck, fanned: seven backs in the seven colors. */
 export function DeckFan({ className = "" }: { className?: string }) {
   return (
     <span className={`relative block h-12 w-20 ${className}`} aria-hidden>

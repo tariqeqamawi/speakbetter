@@ -89,7 +89,7 @@ export function BadgeCollection({ state }: { state: AppState }) {
         {shown ? (
           <>
             {/* The case: a spotlight, a plinth, and the trophy turning. */}
-            <div className="trophy-case relative flex flex-col items-center gap-3 overflow-hidden rounded-2xl border border-navy-600 px-4 pb-5 pt-8">
+            <div data-tour="trophies" className="trophy-case relative flex flex-col items-center gap-3 overflow-hidden rounded-2xl border border-navy-600 px-4 pb-5 pt-8">
               {/* The spotlight: a lamp at the top of the case and the
                   cone it throws, swinging slowly across the trophy so
                   the light feels live rather than painted on. The lion

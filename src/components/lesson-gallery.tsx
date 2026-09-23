@@ -9,13 +9,13 @@ import { CategoryIcon } from "@/components/category-icons";
 import { ChevronDownIcon } from "@/components/icons";
 import { PlayFillIcon } from "@/components/player-icons";
 
-// The library, colour by colour. Pick a colour and its lessons cascade
+// The library, color by color. Pick a color and its lessons cascade
 // down one side - every title, in order - while the other side previews
-// the colour itself: its name, what it teaches, how many lessons and
+// the color itself: its name, what it teaches, how many lessons and
 // minutes, and the chosen lesson's still, large but not full-width (the
 // stills are lesson-sized, not poster-sized). On a phone the cascade
 // turns into a strip beneath the still. A visitor can see in ten
-// seconds how much there is, what each colour is for, and what it
+// seconds how much there is, what each color is for, and what it
 // looks like - every lesson in the course, nothing hidden behind the
 // checkout.
 
@@ -54,7 +54,7 @@ export function LessonGallery() {
 
   return (
     <div className="flex w-full flex-col gap-5">
-      {/* The colours, as a row of tabs - jump straight to a section. */}
+      {/* The colors, as a row of tabs - jump straight to a section. */}
       <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:justify-center sm:overflow-visible sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {categories.map((c) => {
           const on = c.id === color;
@@ -83,7 +83,7 @@ export function LessonGallery() {
       </div>
 
       <div className={`grid gap-4 sm:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] sm:items-start ${cat.textClass}`}>
-        {/* The cascade: the whole colour, every title, scrolled or arrowed. */}
+        {/* The cascade: the whole color, every title, scrolled or arrowed. */}
         <ul
           ref={list}
           className="order-2 -mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:order-1 sm:mx-0 sm:max-h-[30rem] sm:flex-col sm:overflow-y-auto sm:px-0 sm:pb-0 sm:pr-1 [scrollbar-width:thin] [&::-webkit-scrollbar]:hidden sm:[&::-webkit-scrollbar]:block"
@@ -117,7 +117,7 @@ export function LessonGallery() {
           })}
         </ul>
 
-        {/* The colour, previewed: what it is, and the chosen lesson large. */}
+        {/* The color, previewed: what it is, and the chosen lesson large. */}
         <div className="order-1 flex flex-col gap-4 rounded-2xl border border-navy-600 bg-navy-800/60 p-4 sm:order-2 sm:p-5">
           <div className="flex flex-col gap-1.5">
             <span className="flex items-center gap-2 text-[0.65rem] font-bold uppercase tracking-[0.3em]">

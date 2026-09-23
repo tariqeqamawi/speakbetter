@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-// Neon confetti for a pass: a burst in the seven colours that falls,
+// Neon confetti for a pass: a burst in the seven colors that falls,
 // tumbles and settles, and moves away from a finger or a mouse drawn
 // through it - so it's something to play with for the few seconds it
 // lasts, not a canned clip. Drawn on one canvas; nothing in the DOM.
@@ -55,7 +55,7 @@ export function Confetti({ count = 320, duration = 7000 }: { count?: number; dur
     resize();
     window.addEventListener("resize", resize);
 
-    // The palette, resolved to real colours once.
+    // The palette, resolved to real colors once.
     const probe = document.createElement("span");
     document.body.appendChild(probe);
     const colors = COLORS.map((c) => {

@@ -16,7 +16,7 @@ import { CheckIcon, LockIcon } from "@/components/icons";
 // the challenges themselves - each with the line that says what it
 // asks for - rather than on a row of thumbnails too small to read. A
 // student on S has three challenges; three named things to do is worth
-// more than three grey squares.
+// more than three gray squares.
 //
 // What a student may see is deliberately one phase further than what
 // they may do: the phases that are open, and the next one after them,

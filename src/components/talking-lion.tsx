@@ -536,7 +536,7 @@ export interface Phrase {
   to: number;
   /** Each word's share of the phrase, 0..1 - the karaoke timing. */
   words: { text: string; from: number; to: number }[];
-  /** The skill the phrase is about, for the colour of the lit word:
+  /** The skill the phrase is about, for the color of the lit word:
    *  green for mindset, cyan for the body, red for the advanced
    *  tricks, and so on - read off the words themselves. */
   colorClass: string;
@@ -584,7 +584,7 @@ export function phrasesOf(text: string): Phrase[] {
     if (cur) out.push(cur);
     return out;
   });
-  // Short pieces join their neighbour, so a caption is never a word or
+  // Short pieces join their neighbor, so a caption is never a word or
   // two on its own; a piece ending a sentence closes the join.
   const raw: string[] = [];
   for (const piece of fitted) {

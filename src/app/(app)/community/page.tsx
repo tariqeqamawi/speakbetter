@@ -12,7 +12,7 @@ export default function CommunityPage() {
       <header className="flex flex-col gap-2">
         <h1 className="text-3xl font-semibold tracking-tight">Community</h1>
         <p className="max-w-lg text-ink-muted">
-          Everyone&apos;s distance travelled, drawn the way yours is: where they started, under where they are now.
+          Everyone&apos;s distance traveled, drawn the way yours is: where they started, under where they are now.
           Three boards, because there&apos;s more than one way to be getting better - and one bar you all fill together.
         </p>
       </header>

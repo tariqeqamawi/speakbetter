@@ -57,7 +57,7 @@ export function SignIn() {
           <LionMouth level={0} className="w-20" />
           <p className="text-sm font-semibold text-ink">Check your email</p>
           <p className="text-xs text-ink-muted">
-            A link is on its way to <b className="text-ink">{email}</b>. Open it on the device you want to practise on.
+            A link is on its way to <b className="text-ink">{email}</b>. Open it on the device you want to practice on.
           </p>
         </div>
       ) : (

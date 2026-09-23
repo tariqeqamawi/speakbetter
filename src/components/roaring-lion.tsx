@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { LionMouth } from "@/components/lion-mouth";
 import { isBare } from "@/components/bare-mode";
 
-// The lion at the centre of a dial: at rest most of the time, and every
+// The lion at the center of a dial: at rest most of the time, and every
 // so often it draws in and roars - the brand animation itself, scrubbed
 // through the same frames the talking lion uses (lion-mouth.tsx), so
 // nothing new is loaded to make it move. Not on a clock: the gap

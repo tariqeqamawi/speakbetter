@@ -14,7 +14,7 @@ import type { Plan } from "@/data/pricing";
 // and read back in full when they sign in somewhere new.
 //
 // Nothing here throws into the app. A student whose connection drops
-// keeps practising; the next write catches the record up.
+// keeps practicing; the next write catches the record up.
 
 /** The shape the app keeps, as the database's rows. */
 interface ProfileRow {
@@ -106,7 +106,7 @@ export async function pullState(): Promise<Partial<AppState> | null> {
       icon: "trophy",
     })),
     frozenDays: ((streak ?? []) as { day: string; kind: string }[])
-      .filter((r) => r.kind !== "practised")
+      .filter((r) => r.kind !== "practiced")
       .map((r) => r.day),
     questChests: ((chests ?? []) as { day: string }[]).map((r) => r.day),
     sharedReels: ((shares ?? []) as {
@@ -179,7 +179,7 @@ export async function pushAttempt(attempt: Attempt): Promise<void> {
     }),
   );
   await quiet(
-    db.from("streak_days").upsert({ student_id: me, day: at.slice(0, 10), kind: "practised" }),
+    db.from("streak_days").upsert({ student_id: me, day: at.slice(0, 10), kind: "practiced" }),
   );
 }
 

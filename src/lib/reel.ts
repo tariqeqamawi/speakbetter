@@ -169,7 +169,7 @@ function wordmark(ctx: CanvasRenderingContext2D) {
   ctx.letterSpacing = "0px";
 }
 
-/** Draw a video frame covering the whole reel, centred and cropped. */
+/** Draw a video frame covering the whole reel, centered and cropped. */
 function cover(ctx: CanvasRenderingContext2D, video: HTMLVideoElement) {
   const vw = video.videoWidth || 9;
   const vh = video.videoHeight || 16;

@@ -527,6 +527,7 @@ export function JourneyMap({
 
       <div
         ref={sceneRef}
+        data-tour="journey"
         className={`map-scene ${onScreen ? "" : "map-asleep"}`}
         data-zoom={zoomedIn ? "in" : "out"}
         onPointerDown={onPointerDown}

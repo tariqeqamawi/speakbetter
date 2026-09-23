@@ -261,7 +261,7 @@ export function ProgressReel({
         });
         return;
       } catch {
-        // Cancelled, or the sheet refused the file - fall through to a
+        // Canceled, or the sheet refused the file - fall through to a
         // download so the video isn't lost.
       }
     }

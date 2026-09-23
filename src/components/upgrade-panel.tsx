@@ -2,7 +2,7 @@ import Link from "next/link";
 import { LockIcon } from "@/components/icons";
 
 // Where the plan stops (lib/plan.ts): what this is, and the way to the
-// rest of it. Never a wall of grey - it says what's behind it.
+// rest of it. Never a wall of gray - it says what's behind it.
 
 export function UpgradePanel({
   title,

@@ -1,11 +1,11 @@
 import type { ComponentType, ReactNode } from "react";
 
 // The header of a dashboard panel: the section's icon in a ring tinted
-// its colour, the title large and plain, whatever belongs on the right
-// (a count, a control), and a rule in the colour beneath. It used to
+// its color, the title large and plain, whatever belongs on the right
+// (a count, a control), and a rule in the color beneath. It used to
 // be a wide plate of the section's picture - the fire of the streak,
 // the neon lion - faded into the card; the pictures competed with the
-// data, which is also in colour, and the student found the page loud.
+// data, which is also in color, and the student found the page loud.
 // The `image` prop is kept so callers needn't change; nothing draws it.
 
 export function SectionBanner({

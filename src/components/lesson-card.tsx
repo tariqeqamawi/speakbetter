@@ -49,7 +49,7 @@ import type { Category } from "@/data/categories";
 // these colors print as they look here rather than as the dull CMYK
 // approximation four-color would give. That's the more expensive answer
 // and the right one - the seven colors are how the whole course is
-// organised, and a deck that gets them wrong is a deck that lies about
+// organized, and a deck that gets them wrong is a deck that lies about
 // which section a card came from.
 
 export interface LessonCardData {
@@ -132,7 +132,7 @@ function NeonPlate({
   );
 }
 
-/** A labelled line on the lesson face: WHAT, HOW. */
+/** A labeled line on the lesson face: WHAT, HOW. */
 function Block({
   label,
   color,

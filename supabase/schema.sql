@@ -108,8 +108,8 @@ create policy "own badges" on public.badges
 create table if not exists public.streak_days (
   student_id uuid not null references public.profiles(id) on delete cascade,
   day date not null,
-  -- practised | frozen | bought  (bought = paid for with XP)
-  kind text not null default 'practised' check (kind in ('practised','frozen','bought')),
+  -- practiced | frozen | bought  (bought = paid for with XP)
+  kind text not null default 'practiced' check (kind in ('practiced','frozen','bought')),
   primary key (student_id, day)
 );
 alter table public.streak_days enable row level security;

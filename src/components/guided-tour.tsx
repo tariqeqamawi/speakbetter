@@ -8,71 +8,138 @@ import { LionMouth } from "@/components/lion-mouth";
 import { ChevronDownIcon, XIcon } from "@/components/icons";
 import { hapticTap } from "@/lib/feedback-fx";
 
-// The guided tour: seven stops that show a new student where everything
-// is. Each stop dims the app, cuts a hole around the thing it's naming,
-// and says what it's for in a line - so orientation costs a minute and
-// nothing has to be discovered by accident.
+// The guided tour: Coach walks a new student round the app.
 //
-// The tour walks the app itself rather than a set of pictures: a stop
-// can name a route, and moving to it navigates there first, so what's
-// highlighted is the real thing. Stops whose target isn't on screen
-// (a phone hides the desktop nav, and the other way round) are skipped.
+// Three things it is, deliberately.
 //
-// Offered once, on the first visit, and always available from the
-// dashboard. Whether it's been seen is kept on the device.
+// It is **the real app**, not a set of pictures. A stop can name a
+// route, and moving to it navigates there first, then dims everything
+// except the thing it is naming. A student ends the tour having
+// already been everywhere once.
+//
+// It is **the same tour every time**. Coach's lines here are written
+// and fixed - not generated, not personalised, not varying with the
+// record. A tour is orientation, and orientation that says something
+// different on the second run is disorientation. It is also the one
+// place in this app where nothing is inferred from a student's data,
+// so it works identically on day one and day one hundred.
+//
+// And where knowing *where* a thing is isn't enough, it **shows the
+// thing being used**: a short film of the real screen, recorded from
+// the app itself, playing in the card. Reading "tap a color to open
+// its lessons" is not the same as watching a thumb do it.
+//
+// Offered once on a first visit, and available from the top bar, from
+// Today, from Jump, and from the link /?tour=1.
 
 const SEEN_KEY = "speak-better-tour-v1";
 
 interface Stop {
-  /** What to cut the hole around - the first match wins. */
-  target: string;
-  title: string;
-  body: string;
+  /** What to cut the hole around - the first visible match wins. */
+  target?: string;
   /** Go here before showing this stop. */
   route?: string;
+  title: string;
+  /** Coach's line. Fixed, always the same, written to be read in his
+   *  voice - short enough to take in at a glance. */
+  body: string;
+  /** A film of this part of the app being used, if one would say it
+   *  faster than the sentence does. */
+  film?: { src: string; poster: string };
 }
 
+const JOURNEY = { src: "/film/tour-journey.mp4", poster: "/film/tour-journey.jpg" };
+const SKILLS = { src: "/film/tour-skills.mp4", poster: "/film/tour-skills.jpg" };
+const DASHBOARD = { src: "/film/tour-dashboard.mp4", poster: "/film/tour-dashboard.jpg" };
+const REVIEW = { src: "/film/record-to-review.mp4", poster: "/film/record-to-review.jpg" };
+const DECK = { src: "/film/tour-deck.mp4", poster: "/film/tour-deck.jpg" };
+
 const STOPS: Stop[] = [
+  {
+    title: "Let me show you around.",
+    body: "I'm Coach. I watch every take you record and tell you exactly what I saw. Give me a minute and you'll know your way around all of this.",
+    route: "/",
+  },
   {
     target: "[data-tour='today']",
     route: "/",
     title: "Today",
-    body: "Your home. What to do next, your streak, and how far along the road you are - start here each day.",
+    body: "Start here every day. It names one thing to do - one - and keeps your streak. Do that one thing and the road takes care of itself.",
   },
   {
     target: "[data-tour='challenges']",
     route: "/challenges",
-    title: "The STORY journey",
-    body: "Twenty-four challenges in five phases. Tap a letter to open that stretch of the road, then tap a stop to see its challenge.",
+    title: "The challenges",
+    body: "This is the work. Twenty-four of them, in five phases, and every one ends with you on camera.",
+  },
+  {
+    target: "[data-tour='journey']",
+    route: "/challenges",
+    title: "The STORY road",
+    body: "S, T, O, R, Y - five stretches of road. Tap any circle to open its challenge, and the magnifier to look closer at where you are.",
+    film: JOURNEY,
   },
   {
     target: "[data-tour='record']",
     route: "/challenges/speaking-baseline",
-    title: "Record your take",
-    body: "Every challenge ends the same way: record yourself, or choose a video from your library. The clock keeps you honest.",
+    title: "Recording a take",
+    body: "Read the brief, warm up on the lessons underneath it, then record - or upload something you've already filmed. The clock keeps you honest.",
+  },
+  {
+    route: "/challenges/speaking-baseline",
+    title: "What comes back",
+    body: "I watch the whole thing, then give you a score, your seven colors, what worked, and the one line to change next time. You hear it in my voice, with the words on screen.",
+    film: REVIEW,
   },
   {
     target: "[data-tour='skills']",
     route: "/skills",
     title: "The skills",
-    body: "Eighty-one short lessons across the seven colours of speaking. Dip in; don't binge. Each one has its own card.",
+    body: "Eighty-one lessons, one to two minutes each, sorted into the seven colors. Dip in - don't binge.",
+  },
+  {
+    target: "[data-tour='dial']",
+    route: "/skills",
+    title: "The dial",
+    body: "Drag your thumb round the ring to hear each color named, then tap to open its lessons.",
+    film: SKILLS,
+  },
+  {
+    target: "[data-tour='deck']",
+    route: "/skills/cards",
+    title: "The deck",
+    body: "The same library as cards. Press a color to pull one, deal a full spread for one of every color, or shake your phone to shuffle.",
+    film: DECK,
   },
   {
     target: "[data-tour='coach']",
-    title: "Coach",
-    body: "The lion who watches every take. Ask him how you're developing, and read back every review he's given you.",
+    title: "Me",
+    body: "Tap my face anywhere in the app. Ask me how you're developing, what to work on, or what I noticed last time - and read back every review I've written you.",
   },
   {
     target: "[data-tour='dashboard']",
     route: "/profile",
     title: "Your dashboard",
-    body: "Challenges, lessons, your spectrum, your streak and your trophies - everything you've done, in one place.",
+    body: "Everything you've done: challenges passed, lessons watched, minutes spent speaking, your spectrum, your streak.",
+    film: DASHBOARD,
+  },
+  {
+    target: "[data-tour='trophies']",
+    route: "/profile",
+    title: "The trophy case",
+    body: "Forty-odd trophies, each earned by doing something specific. The empty stands tell you what's still out there.",
   },
   {
     target: "[data-tour='community']",
     route: "/",
     title: "The others on the road",
-    body: "Who's on your challenge right now, this week's board, and everyone's before-and-afters - all from here. You're not doing this alone.",
+    body: "Who else is on your challenge right now, this week's boards, and everyone's before-and-afters. You're not doing this alone.",
+  },
+  {
+    target: "[data-tour='jump']",
+    route: "/",
+    title: "One last thing",
+    body: "Can't find something? This finds any lesson, challenge or page by name. That's the whole app - go and record something.",
   },
 ];
 
@@ -164,13 +231,18 @@ export function GuidedTour() {
       router.push(stop.route);
       return;
     }
+    // A stop with nothing to ring leaves the last rect where it is;
+    // the render ignores it, and setting state here would only cost a
+    // cascading pass.
+    if (!stop.target) return;
+    const target = stop.target;
     let raf = 0;
     let tries = 0;
     let scrolled = false;
     const look = () => {
       // The same marker exists on the phone's bar and the laptop's rail;
       // only one of them is on screen, so take the first with a size.
-      const el = [...document.querySelectorAll(stop.target)].find((node) => {
+      const el = [...document.querySelectorAll(target)].find((node) => {
         const r = node.getBoundingClientRect();
         return r.width > 0 && r.height > 0;
       });
@@ -218,8 +290,10 @@ export function GuidedTour() {
         <div className="flex items-start gap-3">
           <LionMouth level={0} className="w-12 shrink-0" />
           <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <p className="text-sm font-semibold text-ink">New here? I&apos;ll show you around.</p>
-            <p className="text-xs text-ink-muted">Seven stops, about a minute - where everything lives and how to get to it.</p>
+            <p className="text-sm font-semibold text-ink">New here? Let me show you around.</p>
+            <p className="text-xs text-ink-muted">
+              A minute, and you&apos;ll know where everything is - with a look at each part being used.
+            </p>
           </div>
           <button type="button" onClick={done} aria-label="No thanks" className="grid size-8 shrink-0 place-items-center rounded-full text-ink-faint hover:text-ink">
             <XIcon className="size-4" />
@@ -243,18 +317,23 @@ export function GuidedTour() {
 
   if (step === null || !stop) return null;
 
+  // The first stop is Coach himself, centered, with nothing highlighted
+  // - he introduces the place before pointing at any part of it.
+  const opening = step === 0;
+
   // The hole: four dimmed panels around the target, so the thing being
   // named stays lit and everything else recedes. No target - the screen
   // simply dims and the card speaks.
   const pad = 8;
-  const hole = box
-    ? {
-        top: Math.max(0, box.top - pad),
-        left: Math.max(0, box.left - pad),
-        width: box.width + pad * 2,
-        height: box.height + pad * 2,
-      }
-    : null;
+  const hole =
+    box && stop.target && !opening
+      ? {
+          top: Math.max(0, box.top - pad),
+          left: Math.max(0, box.left - pad),
+          width: box.width + pad * 2,
+          height: box.height + pad * 2,
+        }
+      : null;
   const below = hole ? hole.top + hole.height < window.innerHeight * 0.55 : true;
 
   return createPortal(
@@ -285,31 +364,46 @@ export function GuidedTour() {
           />
         </>
       ) : (
-        <div className="absolute inset-0 bg-navy-950/82" onClick={done} />
+        <div className="absolute inset-0 bg-navy-950/88" onClick={done} />
       )}
 
-      {/* The card: what this is, and the way on. */}
+      {/* The card: Coach, what this is, and - where it helps - the
+          thing being used. */}
       <div
-        className={`absolute inset-x-3 mx-auto max-w-sm rounded-2xl border border-navy-500 bg-navy-850 p-4 shadow-2xl shadow-navy-950 ${
-          below ? "bottom-[max(5.5rem,env(safe-area-inset-bottom))] sm:bottom-8" : "top-[max(5rem,env(safe-area-inset-top))]"
+        className={`absolute inset-x-3 mx-auto flex max-w-sm flex-col gap-3 rounded-2xl border border-navy-500 bg-navy-850 p-4 shadow-2xl shadow-navy-950 ${
+          opening
+            ? "top-1/2 -translate-y-1/2"
+            : below
+              ? "bottom-[max(5.5rem,env(safe-area-inset-bottom))] sm:bottom-8"
+              : "top-[max(5rem,env(safe-area-inset-top))]"
         }`}
       >
-        <div className="flex items-start gap-3">
-          <LionMouth level={0} className="w-11 shrink-0" />
-          <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <span className="text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-ink-faint">
-              {step + 1} of {STOPS.length}
-            </span>
-            <h2 className="text-base font-bold text-ink">{stop.title}</h2>
-            <p className="text-sm leading-snug text-ink-muted">{stop.body}</p>
+        <div className={`flex gap-3 ${opening ? "flex-col items-center text-center" : "items-start"}`}>
+          <LionMouth level={0} className={opening ? "w-28 shrink-0" : "w-11 shrink-0"} />
+          <div className={`flex min-w-0 flex-1 flex-col gap-1 ${opening ? "items-center" : ""}`}>
+            {!opening && (
+              <span className="text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-ink-faint">
+                {step} of {STOPS.length - 1}
+              </span>
+            )}
+            <h2 className={opening ? "text-xl font-bold text-ink text-balance" : "text-base font-bold text-ink"}>
+              {stop.title}
+            </h2>
+            <p className="text-sm leading-snug text-ink-muted text-balance">{stop.body}</p>
           </div>
-          <button type="button" onClick={done} aria-label="End the tour" className="grid size-8 shrink-0 place-items-center rounded-full text-ink-faint hover:text-ink">
-            <XIcon className="size-4" />
-          </button>
+          {!opening && (
+            <button type="button" onClick={done} aria-label="End the tour" className="grid size-8 shrink-0 place-items-center rounded-full text-ink-faint hover:text-ink">
+              <XIcon className="size-4" />
+            </button>
+          )}
         </div>
-        <div className="mt-3 flex items-center gap-2">
-          {/* Where you are in the seven. */}
-          <span className="flex flex-1 items-center gap-1.5">
+
+        {/* The film, in a phone: the real screen, being used. */}
+        {stop.film && <TourFilm key={stop.film.src} {...stop.film} />}
+
+        <div className="flex items-center gap-2">
+          {/* Where you are along the road. */}
+          <span className="flex flex-1 items-center gap-1">
             {STOPS.map((_, i) => (
               <span
                 key={i}
@@ -336,17 +430,55 @@ export function GuidedTour() {
             }}
             className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-ink px-5 text-sm font-bold text-navy-900 transition-opacity hover:opacity-90"
           >
-            {step === STOPS.length - 1 ? "Done" : "Next"}
+            {opening ? "Show me" : step === STOPS.length - 1 ? "Done" : "Next"}
             {step < STOPS.length - 1 && <ChevronDownIcon className="size-4 -rotate-90" />}
           </button>
         </div>
+
+        {opening && (
+          <button
+            type="button"
+            onClick={done}
+            className="text-xs font-semibold text-ink-faint transition-colors hover:text-ink"
+          >
+            Not now
+          </button>
+        )}
       </div>
     </div>,
     host,
   );
 }
 
-/** Start the tour from anywhere - the dashboard's link fires this. */
+/**
+ * A film of the app being used, inside a phone.
+ *
+ * Muted, looping and playing the moment it appears - it is a diagram
+ * that moves, not a video to decide about, so it carries no controls
+ * and asks for no decision. The poster paints first so the card never
+ * opens on a black rectangle.
+ */
+function TourFilm({ src, poster }: { src: string; poster: string }) {
+  return (
+    <div className="flex justify-center">
+      <span className="relative block w-[8.5rem] shrink-0 rounded-[1.4rem] border-2 border-navy-500 bg-navy-950 p-1 shadow-xl shadow-navy-950/70">
+        <span aria-hidden className="absolute left-1/2 top-1.5 z-10 h-1 w-10 -translate-x-1/2 rounded-full bg-navy-700" />
+        <video
+          src={src}
+          poster={poster}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          className="block aspect-[390/844] w-full rounded-[1.1rem] object-cover"
+        />
+      </span>
+    </div>
+  );
+}
+
+/** Start the tour from anywhere - every "Take the tour" fires this. */
 export function startTour() {
   window.dispatchEvent(new Event("speak-better:tour"));
 }

@@ -274,6 +274,7 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
       {/* The deck, face down, one color per node */}
       <div
         ref={dialRef}
+        data-tour="deck"
         className="relative mx-auto aspect-square w-full max-w-xl select-none touch-pan-y"
       >
         <div
@@ -330,9 +331,9 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
 
       {/* The two ways in that aren't a color, and the instruction card */}
       <div className="flex flex-col items-center gap-4">
-        {/* The two ways in that aren't a colour, drawn as two things
+        {/* The two ways in that aren't a color, drawn as two things
             rather than said as two labels: a fan of seven, and a deck
-            being shuffled. They were a pair of grey outlined boxes,
+            being shuffled. They were a pair of gray outlined boxes,
             which is what a form looks like, not a deck of cards. */}
         <div className="grid w-full max-w-md grid-cols-2 gap-2.5">
           <button
@@ -343,7 +344,7 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
             <span aria-hidden className="spectrum-rule absolute inset-x-0 top-0 h-1" />
             <FanMark />
             <span className="text-sm font-bold text-ink">Deal a full spread</span>
-            <span className="text-[0.7rem] leading-tight text-ink-faint">One card of every colour</span>
+            <span className="text-[0.7rem] leading-tight text-ink-faint">One card of every color</span>
           </button>
           <button
             type="button"

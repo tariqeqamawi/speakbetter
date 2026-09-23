@@ -10,16 +10,16 @@ import { BadgeIcon } from "@/components/icons";
 // stem on a plinth, two handles, the rim catching the light, and the
 // badge's own symbol engraved on the bowl the way a real cup is.
 //
-// Nothing here is a picture. The cup is one SVG coloured by
+// Nothing here is a picture. The cup is one SVG colored by
 // `currentColor`, so all forty-odd badges become trophies without any
-// art being drawn for them, and each wears its own colour at any size.
+// art being drawn for them, and each wears its own color at any size.
 //
-// Won, it's metal in its colour with a sheen travelling across it. Not
+// Won, it's metal in its color with a sheen traveling across it. Not
 // yet won, it's the same cup in dull pewter - you can see exactly what
 // you haven't won, which is the whole point of a case with empty
 // stands in it.
 
-/** Each trophy owns one of the seven colours, settled by its id so it
+/** Each trophy owns one of the seven colors, settled by its id so it
  *  never changes between visits. */
 const COLORS = ["storytelling", "figurative", "acting", "structure", "mindset", "body-language", "advanced"] as const;
 
@@ -70,7 +70,7 @@ export function TrophyStand({
           aria-label={won ? "Trophy, won" : "Trophy, not yet won"}
         >
           <defs>
-            {/* The metal: a bright edge, the body in its colour, a dark
+            {/* The metal: a bright edge, the body in its color, a dark
                 side where it turns away from the light. */}
             <linearGradient id={`${uid}-body`} x1="0" y1="0" x2="1" y2="0">
               <stop offset="0%" stopColor="#000" stopOpacity="0.45" />
@@ -122,7 +122,7 @@ export function TrophyStand({
           {/* The bowl. */}
           <path d="M26 30 H94 C94 74 80 100 60 106 C40 100 26 74 26 30 Z" fill={`url(#${uid}-body)`} />
 
-          {/* The light travelling across it, clipped to the bowl. */}
+          {/* The light traveling across it, clipped to the bowl. */}
           {flip && won && (
             <g clipPath={`url(#${uid}-bowl)`}>
               <rect className="trophy-sheen" x="-60" y="26" width="40" height="84" fill={`url(#${uid}-sheen)`} />

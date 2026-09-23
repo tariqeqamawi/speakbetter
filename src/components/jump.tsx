@@ -13,7 +13,7 @@ import { ChallengesIcon, SearchIcon, SkillsIcon, XIcon } from "@/components/icon
 // opened with "/" or ctrl/cmd-K from anywhere in the app. Eighty-one
 // lessons is more than anyone will browse for a particular one, and a
 // student who half-remembers "the one about the pause" shouldn't have
-// to guess which colour it lives in.
+// to guess which color it lives in.
 
 interface Target {
   kind: "lesson" | "challenge" | "place";
@@ -94,6 +94,7 @@ export function JumpButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
+        data-tour="jump"
         aria-label="Jump to a lesson or challenge"
         title="Jump to… (press /)"
         className="flex min-h-11 items-center gap-2 rounded-full border border-navy-600 px-3 text-sm text-ink-faint transition-colors hover:border-ink-faint hover:text-ink"

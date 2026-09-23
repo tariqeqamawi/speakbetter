@@ -148,7 +148,7 @@ export function SpectrumWave({
           strokeLinecap="round"
         />
         {/* Where they started, behind: the same shape, dashed and pale,
-            so the distance travelled is the gap between the two lines. */}
+            so the distance traveled is the gap between the two lines. */}
         {ghostLine && (
           <path
             d={ghostLine}

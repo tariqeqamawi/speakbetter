@@ -54,7 +54,7 @@ export default async function ChallengePage(props: PageProps<"/challenges/[slug]
         </div>
         <p className="max-w-lg text-ink-muted">{challenge.brief}</p>
         <div className="mt-1 flex flex-col gap-1.5">
-          <span className="text-xs font-medium uppercase tracking-wider text-ink-faint">Speaking colours used</span>
+          <span className="text-xs font-medium uppercase tracking-wider text-ink-faint">Speaking colors used</span>
           <div className="flex flex-wrap gap-1.5">
             {challenge.targetSkills.map((skill) => (
               <CategoryChip key={skill} category={skill} />

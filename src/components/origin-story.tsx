@@ -3,7 +3,7 @@ import Image from "next/image";
 // How Speak Better came to be, told as moments down the page - the
 // talk, the letters, the stage, the cohorts, the bottleneck, the coach.
 // A moment with a picture sits beside its words, zigzagging left and
-// right; a moment without one runs as a full-width band in its colour,
+// right; a moment without one runs as a full-width band in its color,
 // so the story keeps a rhythm of picture, band, picture. The pictures
 // are painted in the app's own palette on its own navy (generated for
 // this section, kept in public/origin), so the story reads as part of
@@ -103,7 +103,7 @@ const MOMENTS: Moment[] = [
     body: (
       <>
         Now, thanks to advances in technology and the ability to train an AI coach that actually watches your
-        videos and knows what it&apos;s looking for, Tariq can realise his dream: helping a million people
+        videos and knows what it&apos;s looking for, Tariq can realize his dream: helping a million people
         become the messengers of their mission and the voice of their values. Speak Better is born - the
         fastest, most effective way to master public speaking, for the stage or for the screen.
       </>

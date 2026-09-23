@@ -28,7 +28,7 @@ export function TodayCommunity() {
   const here = crowd.find((c) => c.slug === mine.slug);
   const total = crowd.reduce((n, c) => n + c.count, 0);
   // This week, in one line each: who has recorded most, and who has
-  // gained the most colour.
+  // gained the most color.
   const busiest = [...others].sort((a, b) => b.weekTakes - a.weekTakes)[0];
   const climber = [...others].sort((a, b) => b.nowScore - b.thenScore - (a.nowScore - a.thenScore))[0];
 

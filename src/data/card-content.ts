@@ -240,7 +240,7 @@ export const cardContent: Record<string, CardContent> = {
     what: "A shortcut for describing a person or a thing: name two things everyone already knows and let the audience do the drawing.",
     how: "When a description is about to run long, swap it for a reference. It lands in a second, it's usually funnier, and you get to move on with the story.",
     like: [
-      "He looked like a cross between Bob Marley and Gandalf the Grey.",
+      "He looked like a cross between Bob Marley and Gandalf the Gray.",
       "What's Monkey Man like? It's John Wick meets Slumdog Millionaire.",
       "Long sleeves, long dreadlocks, old shoes - that's going to take too much time.",
     ],
@@ -324,7 +324,7 @@ export const cardContent: Record<string, CardContent> = {
 
   // ── Don't Just Speak It, Act Out The Scene ─────────────────────────
   "1081162875": {
-    what: "Speaking is theatre acting, not cinema acting. On camera an eye does the work; in a room, nobody sees the eye.",
+    what: "Speaking is theater acting, not cinema acting. On camera an eye does the work; in a room, nobody sees the eye.",
     how: "Play it bigger than feels natural. Do the reach, the flinch, the shiver. Most people play it far too safe, and safe reads as nothing at all.",
     like: [
       "My friend was slipping. I reached my hand down, used all my strength, reached out again, and pulled him to safety.",
@@ -347,7 +347,7 @@ export const cardContent: Record<string, CardContent> = {
   // ── How To Convey Multiple Characters ──────────────────────────────
   "1081163466": {
     what: "Playing the people in your story instead of reporting what they said. Voices, accents, and a different way of standing for each one.",
-    how: "Give each character their own body - one turned this way, one that way - and switch between them cleanly so nobody has to be told who's talking. Practise this one in front of a mirror first.",
+    how: "Give each character their own body - one turned this way, one that way - and switch between them cleanly so nobody has to be told who's talking. Practice this one in front of a mirror first.",
     like: [
       "The bouncer: alright mate, you're not coming in dressed like that. And the other guy: but what's wrong with what I'm wearing?",
       "My boss, in his Scottish accent: Tarek, what do you think you're doing? You've been cold and sick for two days.",
@@ -433,12 +433,12 @@ export const cardContent: Record<string, CardContent> = {
 
   // ── Using Tongue Twisters To Improve Speech ────────────────────────
   "1081200064": {
-    what: "Deliberately hard words, practised beforehand, so ordinary words come out clean under pressure.",
+    what: "Deliberately hard words, practiced beforehand, so ordinary words come out clean under pressure.",
     how: "Run a few before you speak, slowly first, then faster. Give your mouth the difficult version and the real one gets easy.",
     like: [
       "Red leather, yellow leather. Short, and difficult to say.",
       "Sally sells seashells by the seashore, but the seashells she sells aren't seashells, I'm sure.",
-      "It's kind of like an ace up my sleeve - practise your tongue twisters and you won't get tongue tied.",
+      "It's kind of like an ace up my sleeve - practice your tongue twisters and you won't get tongue tied.",
     ],
   },
 
@@ -553,7 +553,7 @@ export const cardContent: Record<string, CardContent> = {
   // ── How To Structure Longer Talks ──────────────────────────────────
   "1081198709": {
     what: "How a 20-minute talk is actually held together: a known opener, a known ending, and story-point-story-point in between.",
-    how: "Memorise the opening and the close only. Fill the middle by alternating a story with the point it proves - either order - using stories you've already practised.",
+    how: "Memorise the opening and the close only. Fill the middle by alternating a story with the point it proves - either order - using stories you've already practiced.",
     like: [
       "Memorising a 20-minute talk is really difficult, if you've ever tried it.",
       "Story, then point. Or point, then the story that proves it.",
@@ -862,7 +862,7 @@ export const cardContent: Record<string, CardContent> = {
     like: [
       "Barbara Marciniak says your beliefs are your agreements with reality.",
       "Coincidence is not the same as luck. Here's an incident across space and time, here's another - and the point where they overlap is the coincidence.",
-      "All the other stuff is totally improvised. That moment, I've practised.",
+      "All the other stuff is totally improvised. That moment, I've practiced.",
     ],
   },
 

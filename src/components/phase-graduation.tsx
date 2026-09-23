@@ -136,7 +136,7 @@ export function PhaseGraduation() {
 
         <div className="spectrum-rule h-1 w-32 rounded-full" />
 
-        {/* The gate opening: the next phase's colour floods in behind
+        {/* The gate opening: the next phase's color floods in behind
             the lion, who roars it open, and its first challenge's still
             comes up out of the dark - the road ahead, seen for the
             first time. */}

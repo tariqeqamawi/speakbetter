@@ -12,7 +12,7 @@
 // can't back with a number or a moment.
 //
 // None of this is a clinical measure. A phone microphone, a room, and
-// a compressed video codec all colour the sound, so every figure is a
+// a compressed video codec all color the sound, so every figure is a
 // proxy, and the brief tells Coach to treat it as one.
 
 export interface VoiceProfile {

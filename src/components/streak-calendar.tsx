@@ -105,7 +105,7 @@ export function StreakCalendar({ state }: { state: AppState }) {
         </div>
         <div className="grid grid-cols-7 gap-1.5">
           {cells.map((cell) => {
-            // A day inside the running streak wears the next colour of
+            // A day inside the running streak wears the next color of
             // the spectrum, so a long streak reads as a cascade through
             // all seven rather than a block of green - the streak is the
             // student widening, and the calendar can say so.
@@ -155,7 +155,7 @@ export function StreakCalendar({ state }: { state: AppState }) {
       </div>
 
       <p className="text-xs text-ink-faint">
-        Every day you practise takes the next colour of the spectrum. Cyan is a day a freeze covered
+        Every day you practice takes the next color of the spectrum. Cyan is a day a freeze covered
         for you - one missed day never costs the streak.
       </p>
       </div>

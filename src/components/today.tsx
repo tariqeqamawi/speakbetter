@@ -39,8 +39,8 @@ export function Today() {
     <div className="flex flex-col gap-8 py-6">
       <header className="relative overflow-hidden rounded-3xl border border-navy-600 bg-navy-800 p-5 sm:p-6">
         {/* The day's own light: the spectrum, low and wide behind the
-            greeting, so Today opens with colour rather than a line of
-            grey text. */}
+            greeting, so Today opens with color rather than a line of
+            gray text. */}
         <span aria-hidden className="spectrum-rule absolute inset-x-0 top-0 h-1" />
         <span
           aria-hidden
@@ -56,7 +56,7 @@ export function Today() {
           </div>
           <div className="flex shrink-0 flex-col items-end gap-2">
             {state.level && meta && <LevelIcon level={state.level} className="h-14 w-auto" />}
-            {/* The way back into the tour. It lived as grey underlined
+            {/* The way back into the tour. It lived as gray underlined
                 text on the dashboard, which is a page a student may
                 never open - and a tour nobody can find is a tour that
                 was not built. */}
@@ -70,7 +70,7 @@ export function Today() {
             </button>
           </div>
         </div>
-        {/* Three numbers, in their colours. */}
+        {/* Three numbers, in their colors. */}
         <div className="relative mt-5 grid grid-cols-3 gap-2">
           <Stat label="Challenges passed" value={`${passed}/${challenges.length}`} accent="text-structure" />
           <Stat label="Videos uploaded" value={state.attempts.length} accent="text-body-language" />
@@ -88,7 +88,7 @@ export function Today() {
             else gets measured against.
           </p>
           <p className="text-sm text-ink-muted">
-            Coach watches it and comes back with your score, your seven colours and the one thing to do next. Nobody
+            Coach watches it and comes back with your score, your seven colors and the one thing to do next. Nobody
             else ever sees the video.
           </p>
           <Link

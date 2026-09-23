@@ -7,7 +7,7 @@ import { CategoryIcon } from "@/components/category-icons";
 import type { Attempt } from "@/lib/store";
 
 // Watching your own take back, with what Coach saw floating up as it
-// happens: the moment he named a technique, its colour's icon rises
+// happens: the moment he named a technique, its color's icon rises
 // through the frame and fades, with the name of the thing beside it.
 //
 // It happens here rather than while recording, because nothing on the
@@ -94,7 +94,7 @@ export function TakePlayback({ url, attempt }: { url: string; attempt: Attempt }
     <div className="flex flex-col gap-2">
       <div className="relative overflow-hidden rounded-lg bg-navy-950">
         <video ref={videoRef} src={url} controls playsInline className="w-full bg-navy-950" />
-        {/* The colours rising through the frame. Pointer-events none, so
+        {/* The colors rising through the frame. Pointer-events none, so
             the player's own controls are never in the way. */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           {flying.map(({ key, cue }, i) => {
@@ -118,7 +118,7 @@ export function TakePlayback({ url, attempt }: { url: string; attempt: Attempt }
       </div>
       {cues.length > 0 && (
         <p className="text-xs text-ink-faint">
-          Watch it back and the colours you lit float up as they happen - {cues.length} moment
+          Watch it back and the colors you lit float up as they happen - {cues.length} moment
           {cues.length === 1 ? "" : "s"} Coach put a time on.
         </p>
       )}

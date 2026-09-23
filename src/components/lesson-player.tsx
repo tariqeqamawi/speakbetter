@@ -30,7 +30,7 @@ export function LessonPlayer({
 }: {
   vimeoId: string;
   title: string;
-  /** Colours the key-ideas panel beneath the video. */
+  /** Colors the key-ideas panel beneath the video. */
   category?: CategoryId;
   /** The next lesson, offered from the player's own controls. */
   nextHref?: string;

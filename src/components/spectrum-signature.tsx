@@ -105,8 +105,8 @@ export function SpectrumSignature({ state }: { state: AppState }) {
           // under where they are now. The distance between the lines is
           // the whole promise of the course, drawn.
           <div className="relative overflow-hidden rounded-xl bg-navy-950/70 p-4">
-            {/* Both in colour, one over the other at half strength -
-                a dashed grey line was hard to read against the trace. */}
+            {/* Both in color, one over the other at half strength -
+                a dashed gray line was hard to read against the trace. */}
             <div className="relative">
               <SpectrumWave values={startedValues} animate={false} className="h-48 w-full opacity-50 sm:h-56" />
               <div className="absolute inset-0">
@@ -116,7 +116,7 @@ export function SpectrumSignature({ state }: { state: AppState }) {
             <div className="mt-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-[0.7rem]">
               <span className="flex items-center gap-2 text-ink-faint">
                 <span aria-hidden className="spectrum-rule inline-block h-1 w-6 rounded-full opacity-50" />
-                Where you started - {litOf(startedValues)} of 7 colours
+                Where you started - {litOf(startedValues)} of 7 colors
               </span>
               <span className="flex items-center gap-2 text-ink">
                 <span aria-hidden className="spectrum-rule inline-block h-0.5 w-6 rounded-full" />
@@ -154,7 +154,7 @@ export function SpectrumSignature({ state }: { state: AppState }) {
         {tab === "where you started" ? (
           <p className="text-sm text-ink-muted">
             {firstTake
-              ? `Your first take, ${new Date(firstTake.at).toLocaleDateString(undefined, { day: "numeric", month: "long" })} - ${litOf(startedValues)} of 7 colours, scored ${firstTake.score}. This is the before.`
+              ? `Your first take, ${new Date(firstTake.at).toLocaleDateString(undefined, { day: "numeric", month: "long" })} - ${litOf(startedValues)} of 7 colors, scored ${firstTake.score}. This is the before.`
               : "Record your first challenge and this becomes your before."}
           </p>
         ) : (

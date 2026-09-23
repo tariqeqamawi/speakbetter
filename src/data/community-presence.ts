@@ -103,7 +103,7 @@ export interface SharedProgress {
   phases: number[];
   /** The challenge they're on now. */
   onChallenge: string;
-  /** Takes recorded this week, and colours gained since their baseline
+  /** Takes recorded this week, and colors gained since their baseline
    *  - the two boards that aren't about XP. */
   weekTakes: number;
   /** Cheers their last share has collected. */

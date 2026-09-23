@@ -206,7 +206,7 @@ export default function DashboardPage() {
                   <b className={`font-semibold ${cat.textClass}`}>{seen}</b>/{inCat.length}
                 </span>
               </span>
-              {/* The colour's lessons as stills: the watched ones lit
+              {/* The color's lessons as stills: the watched ones lit
                   with a tick, the rest dark beside them - so what's done
                   and what's waiting read in the same glance. Watched
                   first, so the lit ones lead. */}

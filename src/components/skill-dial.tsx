@@ -134,6 +134,7 @@ export function SkillDial() {
       </div>
     <div
       ref={dialRef}
+      data-tour="dial"
       className="relative mx-auto aspect-square w-full max-w-xl select-none touch-pan-y"
     >
       {/* The ring: the seven colors joined end to end, faint, and one

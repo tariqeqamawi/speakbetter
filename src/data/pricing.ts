@@ -49,7 +49,7 @@ export interface Tier {
   featured?: boolean;
   /** Which of the features it has - the rest show struck out. */
   has: string[];
-  /** The tier's own colour, for its ticks. */
+  /** The tier's own color, for its ticks. */
   accent: "mindset" | "structure" | "storytelling";
   cta: string;
   /** Limited seats, a cohort start - the note under the button. */

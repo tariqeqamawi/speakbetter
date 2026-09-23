@@ -22,7 +22,7 @@ import {
 // watches, the colors light up, the notes land, and the lion says it
 // out loud.
 //
-// Clearly labelled as a sample. Nothing here is presented as real
+// Clearly labeled as a sample. Nothing here is presented as real
 // student data.
 
 // Agrees with what the coach says: the scene and the hands worked,
@@ -151,7 +151,7 @@ function DemoSection({
   children: React.ReactNode;
 }) {
   // The same header the review wears inside: the icon in a tinted
-  // ring, a large plain title, a rule in the section's colour - no
+  // ring, a large plain title, a rule in the section's color - no
   // picture competing with the data.
   const accentVar = `var(--color-${accentClass.replace("text-", "")})`;
   return (

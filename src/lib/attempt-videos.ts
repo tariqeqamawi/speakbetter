@@ -17,7 +17,7 @@
 // Without Any Help" is the student as they arrived, and it's pinned -
 // never dropped for a newer one, not removable from the shelf - so
 // that weeks later it can be set beside the latest attempt and the
-// distance travelled can be seen rather than told.
+// distance traveled can be seen rather than told.
 //
 // Three two-minute phone videos is a few hundred megabytes at most -
 // small next to a phone's storage, not small next to a browser's

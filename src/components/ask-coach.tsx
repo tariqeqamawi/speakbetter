@@ -40,7 +40,7 @@ const EXAMPLES = [
   "How is my speaking developing?",
   "How have I been improving over my last few takes?",
   "What keeps coming up as a pattern for me?",
-  "How have the colours I light up changed this week?",
+  "How have the colors I light up changed this week?",
   "What should I work on in my next challenge?",
   "Which lesson would help me most right now?",
   "Am I getting better at storytelling?",

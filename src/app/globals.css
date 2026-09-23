@@ -981,7 +981,7 @@ svg.soundwave-c {
     animation: none;
   }
 
-  /* Still says what was earned - it just stops travelling to say it. */
+  /* Still says what was earned - it just stops traveling to say it. */
   .xp-float {
     animation: xp-still 2.8s linear both;
   }
@@ -1198,7 +1198,7 @@ svg.soundwave-c {
 }
 
 /* The halo is blurred once and only its opacity breathes: cycling its
-   colour re-blurred it every frame, which alone cost the landing page
+   color re-blurred it every frame, which alone cost the landing page
    half its frame rate. The face of the sign still cycles. */
 .cta-neon-glow {
   position: absolute;
@@ -1497,8 +1497,8 @@ svg.soundwave-c {
 @media (prefers-reduced-motion: reduce) {
   }
 
-/* A dark box with a neon edge that drifts through the seven colours -
- * the pill's colour cycle, as a border rather than a fill. */
+/* A dark box with a neon edge that drifts through the seven colors -
+ * the pill's color cycle, as a border rather than a fill. */
 .neon-edge {
   border: 1.5px solid var(--pill);
   box-shadow:
@@ -1618,7 +1618,7 @@ svg.soundwave-c {
   }
 }
 
-/* A phase gate opening: the next colour floods in, then settles to a
+/* A phase gate opening: the next color floods in, then settles to a
    tint; the first challenge's still rises out of the dark. */
 .gate-flood {
   opacity: 0.12;
@@ -1694,10 +1694,10 @@ html.bare .demo-banner {
   display: none;
 }
 
-/* The AI Coach pill: a solid colour that drifts through the seven, the
+/* The AI Coach pill: a solid color that drifts through the seven, the
    way mood lighting does - orange first, then yellow, red, magenta,
-   blue, green, cyan - with a halo at the edge in the same colour. The
-   colour is one custom property animated on the element; the halo is
+   blue, green, cyan - with a halo at the edge in the same color. The
+   color is one custom property animated on the element; the halo is
    a box-shadow of currentColor, so both follow one animation. */
 .coach-pill {
   --pill: var(--color-figurative);
@@ -1751,7 +1751,7 @@ html.bare .demo-banner {
 }
 
 /* A word that's working - "Sending it", "Coach is watching your video" -
- * with the seven colours sweeping through its letters, so a wait reads
+ * with the seven colors sweeping through its letters, so a wait reads
  * as something happening. Background-position on a few words of text;
  * cheap enough. */
 .working-word {
@@ -1822,7 +1822,7 @@ html.bare .demo-banner {
   }
 }
 
-/* A colour Coach named, rising through the take as it's watched back:
+/* A color Coach named, rising through the take as it's watched back:
  * up the frame, drifting a little, and gone. */
 .take-cue {
   animation: take-cue 3.2s cubic-bezier(0.22, 1, 0.36, 1) both;

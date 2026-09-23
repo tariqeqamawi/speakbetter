@@ -77,7 +77,7 @@ export function TierTabs() {
             </div>
             <TierArt has={tier.has} />
             {/* Every tier lists everything: what it has, lit in its
-                colour; what it doesn't, greyed and struck - so the
+                color; what it doesn't, greyed and struck - so the
                 columns visibly fill in from left to right. */}
             <ul className="flex flex-1 flex-col gap-2 text-sm">
               {features.map((f) => {

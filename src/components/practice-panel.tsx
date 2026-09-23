@@ -400,7 +400,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
             className="hidden"
             onChange={(e) => onFile(e.target.files?.[0])}
           />
-          {/* The record button: big, neon, drifting through the colours -
+          {/* The record button: big, neon, drifting through the colors -
               the one thing on the page worth pressing. */}
           <button
             type="button"
@@ -457,7 +457,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
 
 /** The earlier takes, compact, for Coach to compare this one with:
  *  the last eight, oldest first - what each measured, what the voice
- *  measured, which colours lit, the score. */
+ *  measured, which colors lit, the score. */
 export function takeHistory(attempts: Attempt[]) {
   return [...attempts]
     .sort((a, b) => (a.at < b.at ? -1 : 1))
@@ -736,7 +736,7 @@ export function Feedback({
       {attempt.mock && (
         <p className="rounded-lg border border-figurative/40 bg-figurative/10 px-3 py-2 text-xs text-figurative">
           This is the stand-in coach, not Coach himself - it happens in previews and when the studio is closed. The
-          words are a sample; your score and colours aren&apos;t a real reading.
+          words are a sample; your score and colors aren&apos;t a real reading.
         </p>
       )}
 
@@ -1060,8 +1060,8 @@ function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => v
           <span className="grid size-9 place-items-center overflow-hidden rounded-full bg-navy-950/25">
             <LionMouth level={0} className="w-10 translate-y-0.5" />
           </span>
-          {/* Its own colour: the pill paints its text in the drifting
-              colour, which is the background. */}
+          {/* Its own color: the pill paints its text in the drifting
+              color, which is the background. */}
           <span className="flex items-center gap-2 text-navy-950">
             <ListenIcon className="size-4" />
             {state === "loading" ? "Coach is getting ready…" : "Coach's review"}
@@ -1113,11 +1113,11 @@ function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => v
 
 /**
  * One part of the review, as a card that opens. The feedback arrived
- * with each section under a full-colour plate - the fire of the streak,
+ * with each section under a full-color plate - the fire of the streak,
  * the neon lion - and the pictures competed with the data, which is
- * also in colour. So each section is a folded card with a large, plain
+ * also in color. So each section is a folded card with a large, plain
  * title, a one-line summary readable while folded, and no picture: the
- * icon in a ring tinted the section's colour, and a rule in it. (Three
+ * icon in a ring tinted the section's color, and a rule in it. (Three
  * treatments were tried - a muted plate, this, a thumbnail - and this
  * one was chosen.)
  */
@@ -1312,7 +1312,7 @@ function WatchingCoach({ poster }: { poster?: string }) {
 }
 
 /** A little confetti inside the verdict bar - a few dozen pieces in the
- *  seven colours falling through the box for a few seconds, so the
+ *  seven colors falling through the box for a few seconds, so the
  *  pass has its own small celebration even when the splash has gone.
  *  CSS only; each piece is a span. */
 function BarConfetti() {
@@ -1343,7 +1343,7 @@ function BarConfetti() {
   );
 }
 
-/** A bar that fills in the seven colours, with a glow at its tip - the
+/** A bar that fills in the seven colors, with a glow at its tip - the
  *  same bar the lesson player draws as a video plays. */
 function NeonBar({ percent }: { percent: number }) {
   return (

@@ -70,7 +70,7 @@ export function DashboardHeader() {
   const level = state.level ?? "beginner";
 
   // The picked file goes to the cropper rather than straight into the
-  // profile: squashing it to a square cropped from the centre, and a
+  // profile: squashing it to a square cropped from the center, and a
   // photo of a person is almost never composed that way. The cropper
   // hands back the 256-square the store keeps.
   const onPick = (file: File | undefined) => {

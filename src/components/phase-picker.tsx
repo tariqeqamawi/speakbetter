@@ -7,7 +7,7 @@ import { phaseGate } from "@/lib/progress";
 import { CheckIcon, LockIcon } from "@/components/icons";
 
 // STORY, across the top: five circles, one per phase, in the road's own
-// colours. The phase the student is on pulses; the one they're looking
+// colors. The phase the student is on pulses; the one they're looking
 // at is ringed. Tapping a circle shows that stretch of the road below -
 // including the ones still locked, because a student should be able to
 // see where they're going before they can go there.

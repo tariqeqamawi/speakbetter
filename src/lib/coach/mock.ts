@@ -262,7 +262,7 @@ export function mockReview(body: MockRequest): ReviewResponse | null {
     : `Not there yet - but ${litColors} of 7 colors showed up, and every attempt is compounding. Focus on the notes below and go again.`;
 
   // The rest of the review's shape, so the page can be seen whole in
-  // development: what worked (the three strongest colours), the cited
+  // development: what worked (the three strongest colors), the cited
   // lessons judged, a technique or two from elsewhere, and a spoken
   // review that stops before the verdict, as the real one does.
   const strongest = [...categories].sort((a, b) => spectrum[b.id] - spectrum[a.id]).slice(0, 3);

@@ -291,7 +291,7 @@ export function Landing() {
       <section className="flex flex-col items-center gap-8 rounded-2xl border border-navy-600 bg-navy-800 p-6 sm:p-10 lg:flex-row lg:justify-center lg:gap-14">
         <div className="flex shrink-0 items-end gap-4 sm:gap-6">
           {/* The lion, as the coach page shows it: large, a line of its
-              review beneath in the colour of the skill it names. */}
+              review beneath in the color of the skill it names. */}
           <div className="relative w-44 shrink-0 rounded-[2.2rem] border-4 border-navy-600 bg-navy-950 p-1.5 shadow-2xl shadow-navy-950 sm:w-52">
             <span className="absolute left-1/2 top-3 z-10 h-1.5 w-14 -translate-x-1/2 rounded-full bg-navy-700" />
             <div className="relative flex aspect-[9/19] flex-col items-center justify-center gap-3 overflow-hidden rounded-[1.8rem] bg-navy-950 px-3">

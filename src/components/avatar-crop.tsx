@@ -7,7 +7,7 @@ import { CheckIcon, XIcon } from "@/components/icons";
 // Choosing which part of a photo is the face.
 //
 // A picked image used to be squashed to 256 square and stored, which
-// cropped from the centre - and a photo of a person is almost never
+// cropped from the center - and a photo of a person is almost never
 // composed with their face in the exact middle. So: a circle, the
 // photo behind it, and the two gestures everyone already knows - drag
 // to move, pinch to zoom (wheel on a laptop, and a slider for anyone

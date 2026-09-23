@@ -10,14 +10,14 @@ import { CheckIcon, FlameIcon, TrendingUpIcon, TrophyIcon, ZapIcon } from "@/com
 import { hapticTap } from "@/lib/feedback-fx";
 import { Avatar } from "@/components/avatar";
 
-// The community (master plan §12): other people's distance travelled,
+// The community (master plan §12): other people's distance traveled,
 // drawn the way the student's own is drawn - their first take's
 // spectrum dashed under their latest, so the widening is a picture
 // rather than a number. Never the videos; those stay on the phone
 // (§13).
 //
 // Three small boards instead of one, because a single XP ladder means
-// the same few names forever and tells a beginner nothing: colours
+// the same few names forever and tells a beginner nothing: colors
 // gained since the baseline, takes recorded this week, and the biggest
 // jump in score. A student can lead one of them in their first week.
 //
@@ -122,8 +122,8 @@ export function CommunityFeed() {
   // question, so leading one of them is within reach.
   const boards = [
     {
-      id: "colours",
-      title: "Colours gained",
+      id: "colors",
+      title: "Colors gained",
       note: "since their baseline",
       Icon: TrendingUpIcon,
       accent: "text-body-language",
@@ -223,7 +223,7 @@ export function CommunityFeed() {
         </div>
       </section>
 
-      {/* Everyone's distance travelled, drawn. */}
+      {/* Everyone's distance traveled, drawn. */}
       <section className="flex flex-col gap-3">
         <div className="flex items-center gap-2">
           <TrendingUpIcon className="size-5 text-mindset" />
@@ -263,7 +263,7 @@ export function CommunityFeed() {
                 </div>
 
                 {/* Where they were, under where they are - both in
-                    colour, one at half strength, so the distance reads
+                    color, one at half strength, so the distance reads
                     at a glance. */}
                 <span className="relative block overflow-hidden rounded-lg bg-navy-950/70 p-2">
                   <span className="relative block">
@@ -276,11 +276,11 @@ export function CommunityFeed() {
                 <div className="flex items-center justify-between gap-2 text-[0.65rem]">
                   <span className="flex items-center gap-1.5 text-ink-faint">
                     <span aria-hidden className="spectrum-rule inline-block h-1 w-4 rounded-full opacity-50" />
-                    {lit(c.thenSpectrum)} colours · {c.thenScore}
+                    {lit(c.thenSpectrum)} colors · {c.thenScore}
                   </span>
                   <span className="flex items-center gap-1.5 text-ink">
                     <span aria-hidden className="spectrum-rule inline-block h-0.5 w-4 rounded-full" />
-                    {lit(c.nowSpectrum)} colours · {c.nowScore}
+                    {lit(c.nowSpectrum)} colors · {c.nowScore}
                   </span>
                 </div>
 

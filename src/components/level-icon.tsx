@@ -24,7 +24,7 @@ export const levelMeta: Record<
     detail:
       "The same focused feedback, plus the full set of coach notes whenever you want them.",
     looksFor:
-      "You're expected to show up with more of the spectrum of speaking skills - more colours in every take, for more dynamic performances. Coach names the techniques you used without being asked, and reaches into other lessons that would lift the next take.",
+      "You're expected to show up with more of the spectrum of speaking skills - more colors in every take, for more dynamic performances. Coach names the techniques you used without being asked, and reaches into other lessons that would lift the next take.",
     accentClass: "text-figurative",
   },
   advanced: {
