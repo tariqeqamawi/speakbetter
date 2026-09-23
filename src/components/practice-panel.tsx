@@ -897,14 +897,28 @@ export function Feedback({
 
       {settled && (
         <div
-          className={`coach-cue relative overflow-hidden rounded-xl border p-4 transition-opacity ${
+          className={`coach-cue relative overflow-hidden rounded-xl border transition-opacity ${
             verdictShown ? "opacity-100" : "opacity-0"
-          } ${attempt.passed ? "border-mindset/40 bg-mindset/10" : "border-storytelling/40 bg-storytelling/10"}`}
+          } ${
+            attempt.passed
+              ? "border-mindset/50 bg-mindset/10 px-4 py-6 shadow-[0_0_44px_-16px_var(--color-mindset)]"
+              : "border-storytelling/40 bg-storytelling/10 p-4"
+          }`}
           aria-live="polite"
         >
           {verdictShown && (
             <>
-              {attempt.passed && <BarConfetti />}
+              {attempt.passed && (
+                <>
+                  {/* The light a pass earns, under the confetti. */}
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute inset-x-0 -top-10 h-24 opacity-70 blur-2xl"
+                    style={{ background: "radial-gradient(50% 100% at 50% 100%, var(--color-mindset), transparent 70%)" }}
+                  />
+                  <BarConfetti dense />
+                </>
+              )}
               <p className={`relative flex items-center gap-2 text-sm font-semibold ${attempt.passed ? "text-mindset" : "text-storytelling"}`}>
                 {attempt.passed ? (
                   <TrophyIcon className="size-5 shrink-0 drop-shadow-[0_0_6px_currentColor]" />
@@ -1192,7 +1206,7 @@ export function ReviewSection({
         style={{ gridTemplateRows: open ? "1fr" : "0fr" }}
       >
         <div className="min-h-0 overflow-hidden">
-          <div className="p-4">{children}</div>
+          <div className="px-3 py-4 sm:px-4">{children}</div>
         </div>
       </div>
     </section>
@@ -1328,28 +1342,37 @@ function WatchingCoach({ poster }: { poster?: string }) {
  *  seven colors falling through the box for a few seconds, so the
  *  pass has its own small celebration even when the splash has gone.
  *  CSS only; each piece is a span. */
-function BarConfetti() {
-  const pieces = Array.from({ length: 28 }, (_, i) => ({
-    left: (i * 37) % 100,
-    delay: ((i * 53) % 100) / 100,
-    dur: 2.6 + ((i * 29) % 100) / 60,
+function BarConfetti({ dense = false }: { dense?: boolean }) {
+  const n = dense ? 64 : 28;
+  const pieces = Array.from({ length: n }, (_, i) => ({
+    left: ((i * 37) % 100) + (((i * 17) % 7) - 3) / 3,
+    delay: ((i * 53) % 130) / 100,
+    dur: 2.4 + ((i * 29) % 100) / 55,
     color: ["storytelling", "figurative", "acting", "structure", "mindset", "body-language", "advanced"][i % 7],
-    w: 4 + (i % 3) * 2,
+    w: 4 + (i % 4) * 2,
+    // Some pieces are ribbons, some are squares, and they drift to
+    // different sides on the way down - all one shape falling straight
+    // reads as rain.
+    drift: (((i * 41) % 9) - 4) * 0.55,
+    round: i % 3 === 0,
   }));
   return (
     <span aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
       {pieces.map((p, i) => (
         <span
           key={i}
-          className="bar-confetti absolute -top-3 block rounded-[1px]"
-          style={{
-            left: `${p.left}%`,
-            width: p.w,
-            height: p.w * 1.6,
-            background: `var(--color-${p.color})`,
-            animationDelay: `${p.delay}s`,
-            animationDuration: `${p.dur}s`,
-          }}
+          className={`bar-confetti absolute -top-4 block ${p.round ? "rounded-full" : "rounded-[1px]"}`}
+          style={
+            {
+              left: `${p.left}%`,
+              width: p.w,
+              height: p.round ? p.w : p.w * 1.8,
+              background: `var(--color-${p.color})`,
+              animationDelay: `${p.delay}s`,
+              animationDuration: `${p.dur}s`,
+              "--drift": `${p.drift}rem`,
+            } as React.CSSProperties
+          }
         />
       ))}
     </span>
@@ -1421,8 +1444,8 @@ function FeedbackNoteRow({
   return (
     <li className={`flex items-start gap-2 text-sm text-ink ${className}`} style={style}>
       <span className={`mt-1.5 size-2 shrink-0 rounded-full ${cat?.bgClass ?? ""}`} />
-      <span className="flex flex-col gap-1">
-        <span>
+      <span className="flex min-w-0 flex-1 flex-col gap-1">
+        <span className="break-words">
           {note.at && (
             <span className="mr-1.5 rounded bg-navy-700 px-1 py-0.5 text-[0.65rem] font-semibold tabular-nums text-ink-muted">
               {note.at}

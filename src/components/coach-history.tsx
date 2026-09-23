@@ -43,7 +43,7 @@ export function CoachHistory() {
           }
         />
       </button>
-      <div className={`${shelfOpen ? "flex" : "hidden"} flex-col gap-3 p-5`}>
+      <div className={`${shelfOpen ? "flex" : "hidden"} flex-col gap-3 px-2 pb-4 pt-3 sm:px-4`}>
         {attempts.length === 0 && (
           <p className="text-sm text-ink-muted">
             Nothing yet - record a challenge and Coach&apos;s review lands here, to read back any time.
@@ -81,7 +81,7 @@ export function CoachHistory() {
                   here: the spectrum, what worked, the lessons, what to
                   do next. A folded summary meant reading it twice. */}
               {isOpen && challenge && (
-                <div className="border-t border-navy-600 px-2 py-3 sm:px-3">
+                <div className="border-t border-navy-600 py-3">
                   <Feedback attempt={a} videoUrl="" challenge={challenge} onDone={() => {}} revisit />
                 </div>
               )}

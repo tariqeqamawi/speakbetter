@@ -1795,24 +1795,25 @@ html.bare .demo-banner {
 /* Confetti inside the verdict bar: a piece falls the height of the box,
  * tumbling, and fades - four passes, then still. */
 .bar-confetti {
+  --drift: 0rem;
   opacity: 0;
-  animation: bar-confetti 3s ease-in 4;
+  animation: bar-confetti 3s ease-in 5;
 }
 
 @keyframes bar-confetti {
   0% {
     opacity: 0;
-    transform: translateY(0) rotate(0deg);
+    transform: translate(0, 0) rotate(0deg);
   }
   8% {
     opacity: 1;
   }
-  85% {
-    opacity: 0.9;
+  88% {
+    opacity: 0.95;
   }
   100% {
     opacity: 0;
-    transform: translateY(6rem) rotate(540deg);
+    transform: translate(var(--drift), 9rem) rotate(540deg);
   }
 }
 
