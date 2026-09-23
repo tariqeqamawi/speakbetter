@@ -371,6 +371,22 @@ Navigation stays deliberately small — four destinations: **Community**, **Chal
 
 The brand mark — a lion with a spectrum-colored mane, speaking into a microphone over a soundwave — sits in the top bar beside the wordmark, and appears in full on the landing page. Its own palette (magenta and violet through to blue, with a warm amber lion) is where the category colors came from, so the identity and the scoring system are visibly the same idea.
 
+### The navigation, as one thing (22 September 2026)
+
+Five destinations, the same five everywhere, in the same order: **Today · Challenges · Skills · Coach · You**. On a phone they are the bottom bar with **Coach raised out of the middle as the lion himself** - which retires the pill in the header corner and the second navigation it implied. On a laptop they are a **rail down the left** (`Sidebar` in `nav.tsx`, the column set by `app-shell.tsx`), always in view, with the content beside it instead of under a header of four links; between the two, at tablet width, the header carries them.
+
+**Community stopped being a destination.** Who's on your challenge, and this week's board, are part of **Today** (`today-community.tsx`), where a student actually asks the question, with *See everyone →* through to the full page. **Jump** (`/` or ctrl-K, or the button in the header) finds any lesson, challenge or section by name - eighty-one lessons is more than anyone will browse for a particular one.
+
+**A guided tour** (`guided-tour.tsx`): seven stops that dim the app, ring the real thing they're naming, and walk the real pages - offered once on a first visit, always available from the dashboard. Coach's pop-ins stand down while it runs.
+
+### The community, redrawn
+
+Every student is a **spectrum trace** - their first take dashed under their latest - with their STORY letters filled as far as they've walked and the challenge they're on. **Three boards** replace the single XP ladder (colours gained since the baseline, takes this week, biggest jump in score), so a beginner can lead one of them in their first week, and above them **the week's shared goal** that everybody's takes fill: the one board where the whole cohort is on the same side. A **cheer** is one tap, with no comments to moderate. The joinable XP board (the real backend) sits below.
+
+### Watching a take back
+
+Every moment Coach put a time on rises through the frame as the replay reaches it - the colour's icon and the name of the technique (`take-playback.tsx`). It happens on the replay rather than during recording **on purpose**: nothing on the phone can judge a gesture or a story in the moment, so an icon during a take would be a guess dressed as a fact, and this app's whole standing rests on never doing that.
+
 ### The dashboard, quieter
 
 The dashboard's panels lost their pictures with the review's (above): a tinted-ring icon, a large title and a colour rule head each one, with more air between the tabs and the panel and between the rows inside it. In the lessons panel, the squares light **by count from the left** — two lessons watched in a colour is the first two squares lit, wherever in the colour they were watched — because the squares are a count, not a map, and a lit square after a run of dark ones read as clutter. The strip of stills beneath each colour shows only the watched lessons, with their ticks; the dimmed unwatched ones are gone. (If the squares still read as busy, the fallback is a single bar per colour, filled to the percentage.) The challenges panel keeps its squares by position, because the road is walked in order.
