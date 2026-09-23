@@ -10,7 +10,7 @@ import {
   loadVideo,
   type StoredVideoMeta,
 } from "@/lib/attempt-videos";
-import { SpectrumStrip } from "@/components/spectrum";
+import { SpectrumWave } from "@/components/spectrum-wave";
 import { CheckIcon, PlayIcon, XIcon } from "@/components/icons";
 
 // The last three videos a student recorded for this challenge, as a
@@ -123,8 +123,10 @@ export function RecordingsShelf({
                   )}
                 </span>
                 {attempt && (
-                  <span className="px-0.5 pb-0.5">
-                    <SpectrumStrip spectrum={attempt.spectrum} />
+                  <span className="block px-0.5 pb-0.5">
+                    {/* The take's spectrum in miniature - the same trace
+                        the review draws, small enough for a tile. */}
+                    <SpectrumWave values={attempt.spectrum} className="h-8 w-full" animate={false} />
                   </span>
                 )}
               </button>
@@ -258,7 +260,7 @@ function RecordingViewer({
           )}
         </div>
 
-        {attempt && <SpectrumStrip spectrum={attempt.spectrum} />}
+        {attempt && <SpectrumWave values={attempt.spectrum} className="h-16 w-full" animate={false} />}
 
         <div className="flex items-center justify-between gap-3 px-1">
           <span className="text-xs text-ink-faint">

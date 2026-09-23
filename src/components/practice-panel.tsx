@@ -27,9 +27,7 @@ import {
   TrophyIcon,
   XIcon,
   RepeatIcon,
-  SendIcon,
   UploadIcon,
-  VideoIcon,
 } from "@/components/icons";
 import { LionMouth } from "@/components/lion-mouth";
 import { setPendingReview } from "@/lib/push-client";
@@ -60,7 +58,6 @@ import { speakUrl } from "@/lib/coach/voice";
 
 type Stage =
   | { kind: "idle" }
-  | { kind: "selected"; file: File; url: string; durationSec: number }
   | { kind: "uploading"; file: File; url: string; durationSec: number; percent: number }
   | { kind: "reviewing"; file: File; url: string; durationSec: number; poster?: string }
   | { kind: "reviewed"; url: string; attempt: Attempt }
@@ -105,10 +102,13 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
 
   // A take recorded in the app arrives with its length known - a
   // MediaRecorder file often reports none - so it skips the probe.
+  // A take finished in the recorder has already been kept or redone
+  // there, so it goes straight up - the old "now press send" step was
+  // the same question asked twice.
   const onRecorded = (file: File, durationSec: number) => {
     setRecorder(false);
     const url = URL.createObjectURL(file);
-    setStage({ kind: "selected", file, url, durationSec });
+    void submit(file, url, durationSec);
   };
 
   const onFile = (file: File | undefined) => {
@@ -129,7 +129,9 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
         });
         return;
       }
-      setStage({ kind: "selected", file, url, durationSec });
+      // Chosen from the library: it's already the take they meant, so
+      // it goes to Coach without another button.
+      void submit(file, url, durationSec);
     };
     probe.onerror = () =>
       setStage({ kind: "error", message: "Couldn't read that video - try a different file." });
@@ -268,16 +270,11 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
   return (
     <section className="flex flex-col gap-4">
       <h2 className="text-sm font-medium uppercase tracking-wider text-ink-faint">
-        Your attempt
+        Your attempts
       </h2>
 
       {(best || latest) && stage.kind === "idle" && (
-        <div className="grid gap-2 sm:grid-cols-2">
-          {best && <AttemptCard label="Best attempt" attempt={best} required={challenge.targetSkills} />}
-          {latest && latest.id !== best?.id && (
-            <AttemptCard label="Most recent" attempt={latest} required={challenge.targetSkills} />
-          )}
-        </div>
+        <AttemptsCard best={best} latest={latest} required={challenge.targetSkills} />
       )}
 
       {trialBlocked && (
@@ -340,14 +337,9 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
       )}
 
       {stage.kind === "idle" && (!gate || gate.open) && !trialBlocked && !trialSpent && (
-        <div className="flex flex-col items-start gap-3 rounded-xl border border-navy-600 bg-navy-800 p-5">
-          <p className="text-sm text-ink-muted">
-            Record yourself here - selfie mode,{" "}
-            {limit >= 120
-              ? `${limitLabel(limit)} at most, and shorter is better`
-              : `${limitLabel(limit)} at most`}
-            {" "}- or choose one you&apos;ve already recorded, and Coach will review it.
-          </p>
+        <div className="flex flex-col items-center gap-4 rounded-2xl border border-navy-600 bg-navy-800 p-6 text-center">
+          <p className="text-lg font-semibold tracking-tight text-ink">Ready for the challenge?</p>
+          <LionMouth level={0} className="w-28" />
           <input
             ref={recordRef}
             type="file"
@@ -363,72 +355,34 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
             className="hidden"
             onChange={(e) => onFile(e.target.files?.[0])}
           />
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => (canRecordInApp() ? setRecorder(true) : recordRef.current?.click())}
-              className="inline-flex items-center gap-2 rounded-lg bg-acting px-5 py-2.5 text-sm font-semibold text-navy-900 shadow-[0_0_22px_-4px_var(--color-acting)] transition-[box-shadow,opacity] hover:opacity-90 hover:shadow-[0_0_28px_-2px_var(--color-acting)]"
-            >
-              <VideoIcon className="size-4" />
-              Record
-            </button>
-            <button
-              type="button"
-              onClick={() => pickRef.current?.click()}
-              className="inline-flex items-center gap-2 rounded-lg border border-body-language px-5 py-2.5 text-sm font-semibold text-body-language shadow-[0_0_18px_-6px_var(--color-body-language)] transition-[box-shadow,background-color] hover:bg-body-language/10 hover:shadow-[0_0_24px_-4px_var(--color-body-language)]"
-            >
-              <UploadIcon className="size-4" />
-              Upload
-            </button>
-          </div>
-          <p className="text-xs text-ink-faint">
-            Your video goes to Coach for review and is deleted the
-            moment the review is back - it&apos;s never stored by us. The
-            feedback is what&apos;s kept, and your last three recordings
-            stay on this device so you can watch them back.
-          </p>
-        </div>
-      )}
-
-      {stage.kind === "error" && (
-        <div className="flex flex-col items-start gap-3 rounded-xl border border-acting/40 bg-navy-800 p-5">
-          <p className="text-sm text-ink">{stage.message}</p>
+          {/* The record button: big, neon, drifting through the colours -
+              the one thing on the page worth pressing. */}
           <button
             type="button"
-            onClick={() => setStage({ kind: "idle" })}
-            className="rounded-lg border border-navy-600 px-4 py-2 text-sm font-semibold text-ink-muted transition-colors hover:text-ink"
+            onClick={() => (canRecordInApp() ? setRecorder(true) : recordRef.current?.click())}
+            className="neon-edge flex min-h-14 w-full max-w-xs items-center justify-center gap-3 rounded-full bg-navy-900 px-6 text-base font-bold text-ink transition-transform hover:scale-[1.02] active:scale-[0.99]"
           >
-            Try again
-          </button>
-        </div>
-      )}
-
-      {stage.kind === "selected" && (
-        <div className="flex flex-col gap-3 rounded-xl border border-navy-600 bg-navy-800 p-5">
-          <video src={stage.url} controls playsInline className="w-full rounded-lg bg-navy-950" />
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <span className="text-xs text-ink-faint">
-              {fmt(stage.durationSec)} recorded - happy with it?
+            <span className="grid size-7 place-items-center rounded-full bg-acting shadow-[0_0_14px_-2px_var(--color-acting)]">
+              <span className="size-3 rounded-full bg-navy-950" />
             </span>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setStage({ kind: "idle" })}
-                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-navy-600 px-4 text-sm font-semibold text-ink-muted transition-colors hover:text-ink"
-              >
-                <RepeatIcon className="size-4" />
-                Redo
-              </button>
-              <button
-                type="button"
-                onClick={() => submit(stage.file, stage.url, stage.durationSec)}
-                className="inline-flex min-h-11 items-center gap-2 rounded-full bg-acting px-5 text-sm font-bold text-navy-950 shadow-[0_0_22px_-4px_var(--color-acting)] transition-[box-shadow,opacity] hover:opacity-90 hover:shadow-[0_0_28px_-2px_var(--color-acting)]"
-              >
-                <SendIcon className="size-4" />
-                Send it
-              </button>
-            </div>
-          </div>
+            Record a new attempt
+          </button>
+          <button
+            type="button"
+            onClick={() => pickRef.current?.click()}
+            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-navy-600 px-5 text-sm font-semibold text-ink-muted transition-colors hover:border-ink-faint hover:text-ink"
+          >
+            <UploadIcon className="size-4" />
+            Choose from your library
+          </button>
+          <p className="text-xs text-ink-muted">
+            Selfie mode, {limit >= 120 ? `${limitLabel(limit)} at most, and shorter is better` : `${limitLabel(limit)} at most`} - prop the
+            phone up so your hands and body are in frame.
+          </p>
+          <p className="text-[0.65rem] text-ink-faint">
+            Your video goes to Coach for review and is deleted the moment the review is back - it&apos;s never stored by
+            us. The feedback is what&apos;s kept, and your last three recordings stay on this device.
+          </p>
         </div>
       )}
 
@@ -488,54 +442,94 @@ function fmt(sec: number): string {
   return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
 }
 
-/** An attempt at a glance: the same resonance trace the dashboard
- *  draws, with the score out of a hundred beside it. */
-function AttemptCard({
-  label,
-  attempt,
-  required,
-}: {
-  label: string;
-  attempt: Attempt;
-  required: CategoryId[];
-}) {
-  return (
-    <Link
-      href={`/review/${attempt.id}`}
-      className="flex flex-col gap-2 rounded-xl border border-navy-600 bg-navy-800 p-4 transition-colors hover:border-ink-faint"
-    >
-      <div className="flex items-baseline justify-between">
-        <span className="text-xs font-medium uppercase tracking-wider text-ink-faint">
-          {label}
-        </span>
-        <span className="text-xl font-bold tabular-nums text-ink">
-          {attempt.score}
-          <span className="text-xs font-medium text-ink-faint"> / 100</span>
-        </span>
-      </div>
-      <span className="relative block overflow-hidden rounded-lg bg-navy-950/70 p-2">
-        <SpectrumWave values={attempt.spectrum} className="h-20 w-full" animate={false} highlight={required} />
-      </span>
-      <SpectrumKey spectrum={attempt.spectrum} required={required} />
-      <span className="flex items-center justify-between text-xs text-ink-faint">
-        <span>
-          {new Date(attempt.at).toLocaleDateString()} · {attempt.passed ? "passed" : "not passed"}
-        </span>
-        <span className="font-semibold text-ink-muted">Open the review →</span>
-      </span>
-    </Link>
-  );
-}
-
 /**
  * Where a lesson named in a review leads. Inside a review, a lesson
- * opens on the review's own lesson page - the lessons the coach named,
- * and a way back - rather than in the library, where the review would
- * be lost behind it. Provided by Feedback; the default is the library.
+ * opens on the review's own lesson page - the lessons Coach named, and
+ * a way back - rather than in the library, where the review would be
+ * lost behind it. Provided by Feedback; the default is the library.
  */
 export const LessonHrefContext = createContext<(lesson: { vimeoId: string; category: string }) => string>(
   (l) => `/skills/${l.category}/${l.vimeoId}`,
 );
+
+/** Best and most recent, in one card: two tabs, and the pair overlaid
+ *  so the most recent take can be read against the best one - the
+ *  dashed trace is the other attempt, under the one being shown. */
+function AttemptsCard({
+  best,
+  latest,
+  required,
+}: {
+  best?: Attempt;
+  latest?: Attempt;
+  required: CategoryId[];
+}) {
+  const pair = best && latest && best.id !== latest.id;
+  const [tab, setTab] = useState<"best" | "latest">(pair ? "latest" : best ? "best" : "latest");
+  const [overlay, setOverlay] = useState(true);
+  const shown = tab === "best" ? (best ?? latest) : (latest ?? best);
+  const other = tab === "best" ? latest : best;
+  if (!shown) return null;
+  const ghost = pair && overlay ? other : undefined;
+  return (
+    <div className="flex flex-col gap-3 rounded-xl border border-navy-600 bg-navy-800 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        {pair ? (
+          <span className="flex rounded-lg border border-navy-600 bg-navy-900 p-0.5 text-xs font-semibold">
+            {([["best", "Best attempt"], ["latest", "Most recent"]] as const).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setTab(id)}
+                aria-pressed={tab === id}
+                className={`rounded-md px-2.5 py-1 transition-colors ${tab === id ? "bg-navy-700 text-ink" : "text-ink-faint hover:text-ink-muted"}`}
+              >
+                {label}
+              </button>
+            ))}
+          </span>
+        ) : (
+          <span className="text-xs font-medium uppercase tracking-wider text-ink-faint">
+            {shown.id === best?.id ? "Best attempt" : "Most recent"}
+          </span>
+        )}
+        <span className="text-xl font-bold tabular-nums text-ink">
+          {shown.score}
+          <span className="text-xs font-medium text-ink-faint"> / 100</span>
+        </span>
+      </div>
+      <span className="relative block overflow-hidden rounded-lg bg-navy-950/70 p-2">
+        <SpectrumWave
+          values={shown.spectrum}
+          ghost={ghost?.spectrum}
+          className="h-20 w-full"
+          animate={false}
+          highlight={required}
+        />
+      </span>
+      <SpectrumKey spectrum={shown.spectrum} required={required} />
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+        <span className="text-ink-faint">
+          {new Date(shown.at).toLocaleDateString()} · {shown.passed ? "passed" : "not passed"}
+        </span>
+        <Link href={`/review/${shown.id}`} className="font-semibold text-ink-muted transition-colors hover:text-ink">
+          Open the review →
+        </Link>
+      </div>
+      {pair && (
+        <button
+          type="button"
+          onClick={() => setOverlay((o) => !o)}
+          className="self-start text-[0.7rem] font-semibold text-ink-faint underline-offset-4 transition-colors hover:text-ink hover:underline"
+        >
+          {overlay
+            ? `Hide the ${tab === "best" ? "most recent" : "best"} attempt behind it`
+            : `Compare with your ${tab === "best" ? "most recent" : "best"} attempt`}
+        </button>
+      )}
+    </div>
+  );
+}
 
 export function Feedback({
   attempt,

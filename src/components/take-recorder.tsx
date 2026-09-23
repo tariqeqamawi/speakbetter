@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CheckIcon, VideoIcon, XIcon } from "@/components/icons";
+import { CheckIcon, RepeatIcon, SendIcon, VideoIcon, XIcon } from "@/components/icons";
 import { hapticTap, playRecordStart, playRecordStop } from "@/lib/feedback-fx";
 
 // Recording a take inside the app, with the clock in view. The phone's
@@ -15,8 +15,12 @@ import { hapticTap, playRecordStart, playRecordStop } from "@/lib/feedback-fx";
 // Where the browser can't record (no camera, permission refused, no
 // MediaRecorder), the caller falls back to the phone's camera app.
 
-/** Seconds left at which the clock turns amber, then red - closer in
- *  on a short challenge, where thirty seconds would be the whole take. */
+/** Seconds left at which the clock turns yellow, then orange, then red
+ *  - closer in on a short challenge, where a minute would be the whole
+ *  take. A student should feel the time going without looking away. */
+function noticeAt(limit: number): number {
+  return limit <= 60 ? 20 : 60;
+}
 function warnAt(limit: number): number {
   return limit <= 60 ? 10 : 30;
 }
@@ -81,7 +85,10 @@ export function TakeRecorder({
   const chunksRef = useRef<Blob[]>([]);
   const startedAtRef = useRef(0);
   const tickRef = useRef<number | null>(null);
-  const [phase, setPhase] = useState<"asking" | "ready" | "recording" | "finishing" | "denied">("asking");
+  const [phase, setPhase] = useState<"asking" | "ready" | "recording" | "finishing" | "denied" | "review">("asking");
+  // The take just recorded, held here so the two questions that follow
+  // - keep it or go again - are asked without leaving the camera.
+  const [take, setTake] = useState<{ file: File; url: string; durationSec: number } | null>(null);
   const [left, setLeft] = useState(limitSec);
   const [facing, setFacing] = useState<"user" | "environment">("user");
   const [ticked, setTicked] = useState<Set<number>>(new Set());
@@ -141,7 +148,8 @@ export function TakeRecorder({
       const type = mime.split(";")[0];
       const file = new File(chunksRef.current, `take-${Date.now()}.${ext}`, { type });
       streamRef.current?.getTracks().forEach((t) => t.stop());
-      onDone(file, Math.max(1, durationSec));
+      setTake({ file, url: URL.createObjectURL(file), durationSec: Math.max(1, durationSec) });
+      setPhase("review");
     };
     recorderRef.current = rec;
     startedAtRef.current = Date.now();
@@ -156,7 +164,7 @@ export function TakeRecorder({
       const gone = (Date.now() - startedAtRef.current) / 1000;
       const remaining = Math.max(0, Math.ceil(limitSec - gone));
       setLeft(remaining);
-      if (remaining === alarmAt(limitSec) || remaining === warnAt(limitSec)) hapticTap();
+      if (remaining === alarmAt(limitSec) || remaining === warnAt(limitSec) || remaining === noticeAt(limitSec)) hapticTap();
       if (gone >= limitSec) stop();
     }, 200);
   };
@@ -169,7 +177,11 @@ export function TakeRecorder({
     if (t?.kind === "under") return recording;
     return ticked.has(i);
   };
-  const tone = left <= alarmAt(limitSec) ? "alarm" : left <= warnAt(limitSec) ? "warn" : "calm";
+  const tone =
+    left <= alarmAt(limitSec) ? "alarm" : left <= warnAt(limitSec) ? "warn" : left <= noticeAt(limitSec) ? "notice" : "calm";
+  /** The clock's colour at this tone - yellow, orange, red. */
+  const toneColor =
+    tone === "alarm" ? "var(--color-acting)" : tone === "warn" ? "var(--color-figurative)" : "var(--color-storytelling)";
   const ring = limitSec > 0 ? 1 - left / limitSec : 0;
 
   return (
@@ -200,18 +212,28 @@ export function TakeRecorder({
         </button>
 
         <div
+          style={
+            recording && tone !== "calm"
+              ? { color: toneColor, borderColor: toneColor, background: `color-mix(in oklab, ${toneColor} 18%, rgba(6,10,21,0.6))` }
+              : undefined
+          }
           className={`take-clock flex items-center gap-2 rounded-full border px-3.5 py-2 backdrop-blur-sm ${
             !recording
               ? "border-white/20 bg-navy-950/60 text-ink"
               : tone === "alarm"
-                ? "take-clock-alarm border-acting bg-acting/20 text-acting"
-                : tone === "warn"
-                  ? "border-figurative bg-figurative/15 text-figurative"
-                  : "border-mindset/60 bg-navy-950/60 text-mindset"
+                ? "take-clock-alarm"
+                : tone === "calm"
+                  ? "border-mindset/60 bg-navy-950/60 text-mindset"
+                  : ""
           }`}
           aria-live={tone === "alarm" ? "assertive" : "off"}
         >
-          {recording && <span className={`size-2 rounded-full ${tone === "alarm" ? "bg-acting" : tone === "warn" ? "bg-figurative" : "bg-acting take-rec-dot"}`} />}
+          {recording && (
+            <span
+              style={tone === "calm" ? undefined : { background: toneColor }}
+              className={`size-2 rounded-full ${tone === "calm" ? "bg-acting take-rec-dot" : ""}`}
+            />
+          )}
           <span className="text-lg font-bold tabular-nums leading-none">{clock(left)}</span>
           {!recording && <span className="text-xs text-ink-muted">max</span>}
         </div>
@@ -227,7 +249,7 @@ export function TakeRecorder({
             onClick={() => setBriefOpen((o) => !o)}
             className="flex w-full items-center justify-between gap-3 px-3 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-ink-muted"
           >
-            The brief
+            Complete the challenge by
             <span className="tabular-nums text-ink-faint">
               {criteria.filter((c, i) => isMet(c, i)).length}/{criteria.length}
             </span>
@@ -253,12 +275,20 @@ export function TakeRecorder({
                       }}
                       className="flex w-full items-start gap-2 rounded-lg px-1.5 py-1 text-left text-xs leading-snug disabled:cursor-default"
                     >
+                      {/* The circle fills as the line is met - one
+                          colour, filling, rather than seven. */}
                       <span
-                        className={`mt-0.5 grid size-4 shrink-0 place-items-center rounded-full border transition-colors ${
-                          met ? "border-mindset bg-mindset text-navy-950 shadow-[0_0_8px_-1px_var(--color-mindset)]" : "border-white/30 text-transparent"
+                        className={`relative mt-0.5 grid size-5 shrink-0 place-items-center overflow-hidden rounded-full border transition-colors ${
+                          met ? "border-mindset text-navy-950 shadow-[0_0_10px_-1px_var(--color-mindset)]" : "border-white/30 text-transparent"
                         }`}
                       >
-                        <CheckIcon className="size-2.5" />
+                        <span
+                          aria-hidden
+                          className={`absolute inset-0 rounded-full bg-mindset transition-transform duration-500 ease-out ${
+                            met ? "scale-100" : "scale-0"
+                          }`}
+                        />
+                        <CheckIcon className="relative size-3" />
                       </span>
                       <span className={met ? "text-ink" : "text-ink-muted"}>{c}</span>
                     </button>
@@ -274,12 +304,56 @@ export function TakeRecorder({
       {recording && tone !== "calm" && (
         <p
           key={tone}
-          className={`coach-cue absolute inset-x-0 top-20 text-center text-sm font-semibold ${
-            tone === "alarm" ? "text-acting" : "text-figurative"
-          }`}
+          style={{ color: toneColor }}
+          className="coach-cue absolute inset-x-0 top-20 text-center text-sm font-semibold"
         >
-          {tone === "alarm" ? `${left} seconds - land it` : `${warnAt(limitSec)} seconds left - head for the close`}
+          {tone === "alarm"
+            ? `${left} seconds - land it`
+            : tone === "warn"
+              ? `${warnAt(limitSec)} seconds left - head for the close`
+              : `${noticeAt(limitSec)} seconds left`}
         </p>
+      )}
+
+      {/* The take, right where it was made: watch it back, go again, or
+          send it to Coach. Leaving the camera to answer that question
+          was a step too many. */}
+      {phase === "review" && take && (
+        <div className="absolute inset-0 z-10 flex flex-col bg-navy-950">
+          <video src={take.url} controls playsInline autoPlay className="min-h-0 flex-1 bg-navy-950 object-contain" />
+          <div className="flex flex-col gap-3 p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+            <p className="text-center text-xs text-ink-muted">
+              {clock(take.durationSec)} recorded - happy with it?
+            </p>
+            <div className="flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  URL.revokeObjectURL(take.url);
+                  setTake(null);
+                  setTicked(new Set());
+                  void open(facing);
+                }}
+                className="inline-flex min-h-12 items-center gap-2 rounded-full border border-navy-500 px-5 text-sm font-semibold text-ink-muted transition-colors hover:text-ink"
+              >
+                <RepeatIcon className="size-4" />
+                Redo
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const t = take;
+                  setTake(null);
+                  onDone(t.file, t.durationSec);
+                }}
+                className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-acting px-6 text-base font-bold text-navy-950 shadow-[0_0_28px_-6px_var(--color-acting)] transition-opacity hover:opacity-90"
+              >
+                <SendIcon className="size-5" />
+                Send it to Coach
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Bottom: the record button inside a ring that fills as the time goes. */}

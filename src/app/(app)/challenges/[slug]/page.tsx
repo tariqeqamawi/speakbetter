@@ -10,6 +10,7 @@ import { challengeXp } from "@/lib/progress";
 import { LazyVimeoPlayer } from "@/components/lazy-vimeo-player";
 import { PracticePanel } from "@/components/practice-panel";
 import { CircleIcon } from "@/components/icons";
+import { PlayFillIcon } from "@/components/player-icons";
 
 export function generateStaticParams() {
   return challenges.map((c) => ({ slug: c.slug }));
@@ -52,10 +53,13 @@ export default async function ChallengePage(props: PageProps<"/challenges/[slug]
           />
         </div>
         <p className="max-w-lg text-ink-muted">{challenge.brief}</p>
-        <div className="mt-1 flex flex-wrap gap-1.5">
-          {challenge.targetSkills.map((skill) => (
-            <CategoryChip key={skill} category={skill} />
-          ))}
+        <div className="mt-1 flex flex-col gap-1.5">
+          <span className="text-xs font-medium uppercase tracking-wider text-ink-faint">Speaking colours used</span>
+          <div className="flex flex-wrap gap-1.5">
+            {challenge.targetSkills.map((skill) => (
+              <CategoryChip key={skill} category={skill} />
+            ))}
+          </div>
         </div>
       </header>
 
@@ -89,17 +93,37 @@ export default async function ChallengePage(props: PageProps<"/challenges/[slug]
           <h2 className="text-sm font-medium uppercase tracking-wider text-ink-faint">
             Warm up - a few minutes of skills
           </h2>
-          <ul className="flex flex-col gap-2">
+          {/* Big stills with a play mark: these are video lessons, and a
+              line of text didn't look like one. */}
+          <ul className="grid gap-3 sm:grid-cols-2">
             {warmUp.map((lesson) => {
               const cat = categoryById.get(lesson.category)!;
               return (
                 <li key={lesson.vimeoId}>
                   <Link
                     href={`/skills/${lesson.category}/${lesson.vimeoId}?from=${challenge.slug}`}
-                    className="flex min-h-11 items-center gap-3 rounded-lg border border-navy-600 bg-navy-800 px-4 py-2.5 text-sm transition-colors hover:bg-navy-700"
+                    className={`group flex flex-col overflow-hidden rounded-xl border border-navy-600 bg-navy-800 transition-colors hover:border-current ${cat.textClass}`}
                   >
-                    <span className={`size-2 shrink-0 rounded-full ${cat.bgClass}`} />
-                    <span className="flex-1 font-medium text-ink">{lesson.title}</span>
+                    <span className="relative block aspect-video w-full overflow-hidden bg-navy-950">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={`/thumbs/${lesson.vimeoId}.jpg`}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <span className="absolute inset-0 bg-gradient-to-t from-navy-950/80 to-transparent" />
+                      <span className="absolute inset-0 grid place-items-center">
+                        <span className="grid size-12 place-items-center rounded-full border border-white/25 bg-navy-950/70 text-ink backdrop-blur-sm transition-transform group-hover:scale-110">
+                          <PlayFillIcon className="size-5 translate-x-0.5" />
+                        </span>
+                      </span>
+                      <span className={`absolute left-2 top-2 rounded-full bg-navy-950/80 px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider ${cat.textClass}`}>
+                        {cat.short}
+                      </span>
+                    </span>
+                    <span className="p-3 text-sm font-medium text-ink">{lesson.title}</span>
                   </Link>
                 </li>
               );
