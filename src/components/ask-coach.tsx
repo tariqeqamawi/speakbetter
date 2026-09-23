@@ -68,6 +68,11 @@ const GREETINGS = [
   "This is how legends are made.",
   "You ask, I'll teach.",
   "Ask away.",
+  "Speaking will be your new superpower.",
+  "Getting your reps in.",
+  "Alright, let's go.",
+  "Ready when you are.",
+  "What would you like to know?",
 ];
 
 function ExampleQuestion() {
