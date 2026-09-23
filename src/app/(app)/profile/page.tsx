@@ -326,7 +326,13 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-6 py-6">
       {phone ? (
-        <DashboardPanel sections={sections} you={{ compact: <DashboardHeaderCompact />, content: headerPanel }} />
+        <DashboardPanel
+          sections={sections}
+          you={{
+            compact: (open, toggle) => <DashboardHeaderCompact open={open} onToggle={toggle} />,
+            content: headerPanel,
+          }}
+        />
       ) : (
         <>
           {headerPanel}

@@ -21,38 +21,91 @@ const levelOrder: Level[] = ["beginner", "intermediate", "advanced"];
  * name, level, rank and the bar to the next one. Tapping it opens the
  * full card below.
  */
-export function DashboardHeaderCompact() {
+export function DashboardHeaderCompact({
+  open = false,
+  onToggle,
+}: {
+  /** Whether the full card is showing underneath. */
+  open?: boolean;
+  onToggle?: () => void;
+}) {
   const { state } = useStore();
   const rank = standing(state);
   const level = state.level ?? "beginner";
+  const levelColor =
+    level === "beginner" ? "text-storytelling" : level === "intermediate" ? "text-figurative" : "text-acting";
+
   return (
-    <span className="flex items-center gap-3 p-3">
-      <span className="relative size-12 shrink-0 overflow-hidden rounded-full border border-navy-500 bg-navy-900">
-        {state.avatar ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={state.avatar} alt="" className="size-full object-cover" />
-        ) : (
-          <span className="grid size-full place-items-center text-ink-faint">
-            <ProfileIcon className="size-5" />
+    <div className="flex flex-col gap-3 p-4">
+      <div className="flex items-start gap-3">
+        <span className="relative size-14 shrink-0 overflow-hidden rounded-full border border-navy-500 bg-navy-900">
+          {state.avatar ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={state.avatar} alt="" className="size-full object-cover" />
+          ) : (
+            <span className="grid size-full place-items-center text-ink-faint">
+              <ProfileIcon className="size-6" />
+            </span>
+          )}
+        </span>
+
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+          <span className="truncate text-xl font-semibold tracking-tight text-ink">
+            {state.displayName || "You"}
           </span>
+          {/* Level and rank said in full, not as two tiny words: they
+              are the two things a student checks when they open this. */}
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+            <span className={`rounded-full border border-current px-2 py-0.5 font-semibold capitalize ${levelColor}`}>
+              {level}
+            </span>
+            <span className="font-semibold text-ink">{rank.rank.name}</span>
+            <span className="tabular-nums text-ink-faint">{rank.xp.toLocaleString()} XP</span>
+          </div>
+        </div>
+
+        {onToggle && (
+          <button
+            type="button"
+            onClick={onToggle}
+            aria-expanded={open}
+            aria-label={open ? "Close your card" : "Open your card"}
+            className="grid size-9 shrink-0 place-items-center rounded-full border border-navy-600 text-ink-faint transition-colors hover:border-ink-faint hover:text-ink"
+          >
+            <ChevronDownIcon className={`size-4 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
+          </button>
         )}
-      </span>
-      <span className="flex min-w-0 flex-1 flex-col gap-1">
-        <span className="flex items-baseline justify-between gap-2">
-          <span className="truncate text-sm font-semibold text-ink">{state.displayName || "You"}</span>
-          <span className="shrink-0 text-xs tabular-nums text-ink-muted">{rank.xp.toLocaleString()} XP</span>
-        </span>
-        <span className="flex items-center gap-2 text-[0.65rem] uppercase tracking-wider text-ink-faint">
-          <span className={level === "beginner" ? "text-storytelling" : level === "intermediate" ? "text-figurative" : "text-acting"}>{level}</span>
-          <span>·</span>
-          <span>{rank.rank.name}</span>
-          {rank.next && <span className="ml-auto normal-case tracking-normal">{rank.toNext} to {rank.next.name}</span>}
-        </span>
-        <span className="h-1 overflow-hidden rounded-full bg-navy-900">
-          <span className="spectrum-rule block h-full rounded-full" style={{ width: `${rank.progress * 100}%` }} />
-        </span>
-      </span>
-    </span>
+      </div>
+
+      {/* How far to the next rank, said and drawn. */}
+      {rank.next && (
+        <div className="flex flex-col gap-1">
+          <span className="flex items-baseline justify-between text-[0.7rem] text-ink-faint">
+            <span>
+              <b className="font-semibold tabular-nums text-ink">{rank.toNext.toLocaleString()} XP</b> to{" "}
+              {rank.next.name}
+            </span>
+            <span className="tabular-nums">{Math.round(rank.progress * 100)}%</span>
+          </span>
+          <span className="h-1.5 overflow-hidden rounded-full bg-navy-900">
+            <span className="spectrum-rule block h-full rounded-full transition-[width] duration-700" style={{ width: `${rank.progress * 100}%` }} />
+          </span>
+        </div>
+      )}
+
+      {/* The reason they wrote, on the screen they open - it is the
+          thing most worth being reminded of and it was two taps away. */}
+      <div className="flex flex-col gap-1 rounded-xl border border-navy-600 bg-navy-900/60 px-3 py-2.5">
+        <span className="text-[0.6rem] font-semibold uppercase tracking-[0.25em] text-ink-faint">Why you started</span>
+        {state.intention ? (
+          <span className="text-sm italic leading-relaxed text-ink-muted">&ldquo;{state.intention}&rdquo;</span>
+        ) : (
+          <span className="text-xs text-ink-faint">Open your card to write your reason.</span>
+        )}
+      </div>
+
+      <ProTip />
+    </div>
   );
 }
 

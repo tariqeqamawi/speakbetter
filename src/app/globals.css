@@ -476,13 +476,23 @@ svg.soundwave-c {
  * center while scrolling. The scene clips the tilted plane so the page
  * never scrolls sideways. */
 .map-scene {
-  /* Zoomed, the plane is wider than the page: the scene scrolls
-   * sideways for it (the page keeps scrolling down as ever), and a
-   * two-finger pinch reaches the map rather than the browser. */
-  overflow-x: auto;
+  /* At rest the road fits, and the only way through it is down - so
+   * there is nothing to drag sideways and no way to shove the map off
+   * its own screen. The territory washes reach past the plane's edges
+   * by design; clipping keeps them from becoming scrollable width. */
+  overflow-x: clip;
   overflow-y: clip;
-  touch-action: pan-x pan-y;
+  touch-action: pan-y;
   scrollbar-width: none;
+}
+
+/* Zoomed past its own width, the plane IS wider than the page: now
+ * the scene scrolls sideways for it (the page keeps scrolling down as
+ * ever), and a two-finger pinch reaches the map rather than the
+ * browser. */
+.map-scene[data-pan="on"] {
+  overflow-x: auto;
+  touch-action: pan-x pan-y;
 }
 
 .map-scene::-webkit-scrollbar {

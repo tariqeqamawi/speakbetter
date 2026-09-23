@@ -530,6 +530,7 @@ export function JourneyMap({
         data-tour="journey"
         className={`map-scene ${onScreen ? "" : "map-asleep"}`}
         data-zoom={zoomedIn ? "in" : "out"}
+        data-pan={zoom > 1.02 ? "on" : "off"}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}

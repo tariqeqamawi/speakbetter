@@ -97,8 +97,12 @@ export function TourRunner({
   };
 
   const stop = stops[step];
-  const opening = step === 0;
+  // Whether this stop is Coach introducing himself, rather than
+  // whether it happens to be first: a section tour has no
+  // introduction and its first stop is a real one.
+  const opening = stop?.intro === true;
   const last = step === stops.length - 1;
+  const offset = stops[0]?.intro ? 0 : 1;
 
   // Find what this stop is pointing at, and follow it while the page
   // settles under it.
@@ -167,7 +171,7 @@ export function TourRunner({
 
   // A film takes the screen on a phone. On a laptop the live thing is
   // right there behind a small card, so it gets ringed instead.
-  const staged = Boolean(stop.film) && !wide;
+  const staged = Boolean(stop.film) && !wide && !opening;
   const pad = 8;
   const hole =
     box && stop.target && !opening && !staged
@@ -225,7 +229,7 @@ export function TourRunner({
               </span>
               <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                 <span className="text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-ink-faint">
-                  {step} of {stops.length - 1}
+                  {step + offset} of {stops.length - 1 + offset}
                 </span>
                 <h2 className="text-base font-bold leading-tight text-ink">{stop.title}</h2>
                 <p className="text-sm leading-snug text-ink-muted">{stop.body}</p>
@@ -301,7 +305,7 @@ export function TourRunner({
           <div className={`flex min-w-0 flex-1 flex-col gap-1 ${opening ? "items-center" : ""}`}>
             {!opening && (
               <span className="text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-ink-faint">
-                {step} of {stops.length - 1}
+                {step + offset} of {stops.length - 1 + offset}
               </span>
             )}
             <h2 className={opening ? "text-xl font-bold text-ink text-balance" : "text-base font-bold text-ink"}>

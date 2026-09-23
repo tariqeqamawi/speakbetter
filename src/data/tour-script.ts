@@ -36,6 +36,10 @@ export interface TourStop {
   body: string;
   /** A film of this being used, where watching beats reading. */
   film?: { src: string; poster: string };
+  /** Coach introducing himself, centered, with nothing highlighted -
+   *  the whole-app tour opens on one. A section tour does not: the
+   *  student already pressed the button that means "show me". */
+  intro?: boolean;
 }
 
 const JOURNEY = { src: "/film/tour-journey.mp4", poster: "/film/tour-journey.jpg" };
@@ -60,6 +64,7 @@ export function stopAudio(id: string): string {
 export const mainTour: TourStop[] = [
   {
     id: "open",
+    intro: true,
     route: "/",
     title: "Welcome to Speak Better",
     body: "Hey there, welcome to Speak Better. I'm going to show you around the place. You can call me Coach. Tariq delivers the lessons; I review your uploads and give you feedback.",
@@ -184,12 +189,6 @@ export const sectionTours: Record<SectionId, SectionTour> = {
     label: "Show me the challenges",
     stops: [
       {
-        id: "sec-challenges-open",
-        title: "The challenges",
-        body: "This is where the work happens. Let me show you how a challenge goes.",
-        film: CHALLENGE,
-      },
-      {
         id: "sec-challenges-road",
         target: "[data-tour='journey']",
         title: "The road",
@@ -197,10 +196,18 @@ export const sectionTours: Record<SectionId, SectionTour> = {
         film: JOURNEY,
       },
       {
+        id: "sec-challenges-levels",
+        target: "[data-tour='journey']",
+        title: "Levels, and looking closer",
+        body: "The letters are your levels: S, T, O, R, Y. Tap the magnifier to zoom in on where you are, and again to come back out.",
+        film: JOURNEY,
+      },
+      {
         id: "sec-challenges-open-one",
         target: "[data-tour='journey']",
         title: "Opening one",
         body: "Tap any circle to open that challenge. You get the brief, a video of me explaining it, and exactly what passing takes.",
+        film: CHALLENGE,
       },
       {
         id: "sec-challenges-warm",
@@ -217,6 +224,20 @@ export const sectionTours: Record<SectionId, SectionTour> = {
         body: "Press record and speak to the camera with the clock running, or upload something you filmed earlier. Then redo it, or send it to me.",
         film: REVIEW,
       },
+      {
+        id: "sec-challenges-review",
+        route: "/challenges/speaking-baseline",
+        title: "What I send back",
+        body: "A score, your seven colors, what worked, and the one line to change next time. Every review stays, so you can read any of them again.",
+        film: REVIEW,
+      },
+      {
+        id: "sec-challenges-thenandnow",
+        route: "/challenges",
+        title: "Then and now",
+        body: "Ten challenges in, your very first take is set beside your latest one. That is the comparison this whole course is built to give you.",
+        film: JOURNEY,
+      },
     ],
   },
 
@@ -225,12 +246,6 @@ export const sectionTours: Record<SectionId, SectionTour> = {
     label: "Show me the lessons",
     stops: [
       {
-        id: "sec-skills-open",
-        title: "The lessons",
-        body: "Eighty-one lessons, in seven colors. Here is how to find your way around them.",
-        film: SKILLS,
-      },
-      {
         id: "sec-skills-dial",
         target: "[data-tour='dial']",
         title: "The dial",
@@ -238,16 +253,29 @@ export const sectionTours: Record<SectionId, SectionTour> = {
         film: SKILLS,
       },
       {
+        id: "sec-skills-color",
+        target: "[data-tour='dial']",
+        title: "Inside a color",
+        body: "Every lesson in that color runs down one side, in order, with the one you are on shown large beside it. Eighty-one in total, across the seven.",
+        film: SKILLS,
+      },
+      {
         id: "sec-skills-lesson",
         title: "Inside a lesson",
-        body: "Every lesson runs one to two minutes, with the key idea appearing beside me as I say it. Underneath you get the key ideas, a written summary, and the full transcript if you want it.",
+        body: "One to two minutes, with the key idea appearing beside me as I say it. Underneath you get the key ideas, a written summary, and the full transcript if you want it.",
         film: SKILLS,
       },
       {
         id: "sec-skills-portrait",
         title: "Watching on a phone",
-        body: "Tap the zoom button on any video to fill your screen in portrait. This is a course about how you move, so you need to be able to see it.",
+        body: "Tap the zoom button on any video to fill your screen in portrait, captions and all. This is a course about how you move, so you need to be able to see it.",
         film: SKILLS,
+      },
+      {
+        id: "sec-skills-back",
+        title: "Finding your way back",
+        body: "A lesson you opened from a challenge sends you back to that challenge, not out into the library. You never lose your place.",
+        film: CHALLENGE,
       },
     ],
   },
@@ -257,12 +285,6 @@ export const sectionTours: Record<SectionId, SectionTour> = {
     label: "Show me the deck",
     stops: [
       {
-        id: "sec-cards-open",
-        title: "The deck",
-        body: "Same library, different shape. Seventy-nine cards, one per skill, for when you want the idea without the video.",
-        film: DECK,
-      },
-      {
         id: "sec-cards-pull",
         target: "[data-tour='deck']",
         title: "Pulling a card",
@@ -270,18 +292,36 @@ export const sectionTours: Record<SectionId, SectionTour> = {
         film: DECK,
       },
       {
+        id: "sec-cards-move",
+        title: "Moving between cards",
+        body: "Move your thumb left and right across the cards to choose a different one. The whole color is there, a swipe apart.",
+        film: DECK,
+      },
+      {
+        id: "sec-cards-colors",
+        title: "Every color",
+        body: "The strip along the bottom moves you between the seven colors without going back out. Pick from different colors and you build a different talk.",
+        film: DECK,
+      },
+      {
         id: "sec-cards-spread",
         target: "[data-tour='spread']",
         title: "A full spread",
-        body: "Deal a full spread and you get one card of every color at once. That is the ingredients for a talk that moves.",
+        body: "Deal a full spread and you get one card of every color, ensuring that your talk lights up with all of the aspects of a highly engaging and dynamic speech.",
         film: DECK,
       },
       {
         id: "sec-cards-shake",
         target: "[data-tour='shuffle']",
         title: "Shake to shuffle",
-        body: "Or just shake your phone. Shuffles the deck and pulls you a new one.",
+        body: "Or just shake your phone. It shuffles the deck and pulls you a new one.",
         film: DECK,
+      },
+      {
+        id: "sec-cards-lesson",
+        title: "The card is the reminder",
+        body: "Every card is a lesson in the course. The card is the reminder; the video is the teaching, and it is one tap away whenever you want the whole thing.",
+        film: SKILLS,
       },
     ],
   },
@@ -291,21 +331,21 @@ export const sectionTours: Record<SectionId, SectionTour> = {
     label: "Show me my dashboard",
     stops: [
       {
-        id: "sec-dash-open",
-        title: "Your dashboard",
-        body: "This is the record of everything you have done. Let me show you what is in it.",
-        film: DASHBOARD,
-      },
-      {
         id: "sec-dash-challenges",
         title: "Challenges",
         body: "How many you have attempted, how many you have passed, and the minutes you have spent speaking to a lens. Every one of those minutes counts.",
         film: DASHBOARD,
       },
       {
+        id: "sec-dash-skills",
+        title: "Skills",
+        body: "Which lessons you have watched, color by color, and how long you have spent on them. Tap the arrow to go straight to the library.",
+        film: DASHBOARD,
+      },
+      {
         id: "sec-dash-spectrum",
         title: "Your spectrum",
-        body: "Your first take against your latest, both in color. The distance between those two lines is what this whole course is for.",
+        body: "Your first take against your latest, both in color. Underneath, each skill and how many points it has moved since you started.",
         film: DASHBOARD,
       },
       {
@@ -321,6 +361,12 @@ export const sectionTours: Record<SectionId, SectionTour> = {
         body: "One trophy at a time, under the light. The empty stands tell you what is still out there to win.",
         film: TROPHIES,
       },
+      {
+        id: "sec-dash-attempts",
+        title: "Every take you have sent",
+        body: "All of them are kept here with the review each one earned. Open any of them and you get the whole thing back.",
+        film: DASHBOARD,
+      },
     ],
   },
 
@@ -329,9 +375,9 @@ export const sectionTours: Record<SectionId, SectionTour> = {
     label: "Show me the community",
     stops: [
       {
-        id: "sec-comm-open",
-        title: "The community",
-        body: "Everybody else walking the same road. Here is what you can see.",
+        id: "sec-comm-goal",
+        title: "The week's goal",
+        body: "One bar that everybody's takes fill together. It is the one board where the whole group is on the same side.",
         film: COMMUNITY,
       },
       {
@@ -363,23 +409,23 @@ export const sectionTours: Record<SectionId, SectionTour> = {
     label: "How to talk to me",
     stops: [
       {
-        id: "sec-coach-open",
-        title: "Talking to me",
-        body: "I am here whenever you want me. Here is how this works.",
-        film: COACH,
-      },
-      {
         id: "sec-coach-ask",
         target: "[data-tour='ask']",
         title: "Ask me",
-        body: "Press the button once and start talking. Press it again when you are done, and I will answer out loud from your own record.",
+        body: "Press the wave once and start talking. Press it again when you are done, and I will answer out loud from your own record.",
         film: COACH,
       },
       {
         id: "sec-coach-type",
         target: "[data-tour='ask']",
         title: "Or type it",
-        body: "If you would rather not speak, type your question instead. Same answer either way.",
+        body: "If you would rather not speak, type your question instead. You get the same answer either way.",
+        film: COACH,
+      },
+      {
+        id: "sec-coach-wait",
+        title: "While I think",
+        body: "My answer appears in writing the moment it is ready, and my voice follows a little after. Start reading. I will catch you up.",
         film: COACH,
       },
       {

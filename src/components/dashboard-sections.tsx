@@ -61,7 +61,7 @@ export function DashboardPanel({
   sections: DashboardSection[];
   /** The student's own card: a compact line above the strip, and the
    *  full card as the open panel when that line is tapped. */
-  you: { compact: ReactNode; content: ReactNode };
+  you: { compact: (open: boolean, toggle: () => void) => ReactNode; content: ReactNode };
 }) {
   // A link can name the tab to open - the landing page's phone frames
   // show the trophy case this way.
@@ -69,21 +69,25 @@ export function DashboardPanel({
   const [openId, setOpenId] = useState(sections.some((s) => s.id === asked) ? asked! : sections[0]?.id);
   // A section can come and go - "recent attempts" only exists once
   // there are some - so never hold a tab that isn't there any more.
-  const open = sections.find((s) => s.id === openId) ?? (openId === "you" ? undefined : sections[0]);
-  const showingYou = openId === "you";
+  const open = sections.find((s) => s.id === openId) ?? sections[0];
+  // The card opens in place rather than taking the panel's turn: who
+  // you are and what you are looking at are two different questions,
+  // and answering one should not close the other.
+  const [youOpen, setYouOpen] = useState(false);
 
   return (
     <div className="flex flex-col gap-5">
-      <button
-        type="button"
-        onClick={() => setOpenId("you")}
-        aria-current={showingYou ? "true" : undefined}
-        className={`rounded-2xl border text-left transition-colors ${
-          showingYou ? "border-ink-faint bg-navy-800" : "border-navy-600 bg-navy-800 hover:border-ink-faint"
-        }`}
-      >
-        {you.compact}
-      </button>
+      <div className="overflow-hidden rounded-2xl border border-navy-600 bg-navy-800">
+        {you.compact(youOpen, () => setYouOpen((o) => !o))}
+        <div
+          className="grid transition-[grid-template-rows] duration-300 ease-out"
+          style={{ gridTemplateRows: youOpen ? "1fr" : "0fr" }}
+        >
+          <div className="min-h-0 overflow-hidden">
+            <div className="border-t border-navy-600">{you.content}</div>
+          </div>
+        </div>
+      </div>
 
       {/* One bar, the same shape as every other "switch the view of
           this page" control in the app - under the title, full width,
@@ -116,7 +120,7 @@ export function DashboardPanel({
           inside the panel instead of widening the page. Every panel
           names itself in its own banner, so the strip doesn't say it
           again above them. */}
-      <div className="flex min-w-0 flex-col">{showingYou ? you.content : open?.content}</div>
+      <div className="flex min-w-0 flex-col">{open?.content}</div>
     </div>
   );
 }
