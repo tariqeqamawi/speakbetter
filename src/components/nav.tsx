@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useStore } from "@/lib/store";
-import { ChallengesIcon, HomeIcon, ProfileIcon, SkillsIcon } from "@/components/icons";
+import { ChallengesIcon, CommunityIcon, HomeIcon, ProfileIcon, SkillsIcon } from "@/components/icons";
 import { Soundwave } from "@/components/soundwave";
 import { LionMouth } from "@/components/lion-mouth";
 import { JumpButton } from "@/components/jump";
@@ -153,6 +153,16 @@ export function Sidebar() {
       {destinations.slice(3).map(({ href, label, tour, Icon }) => (
         <RailLink key={href} href={href} label={label} tour={tour} Icon={Icon} active={isOn(pathname, href)} />
       ))}
+
+      {/* Not one of the five - the community lives inside Today - but
+          a laptop has room to name the way there. */}
+      <RailLink
+        href="/community"
+        label="Community"
+        tour="community"
+        Icon={CommunityIcon}
+        active={isOn(pathname, "/community")}
+      />
     </nav>
   );
 }

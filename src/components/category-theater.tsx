@@ -13,6 +13,7 @@ import { CheckIcon, XIcon, ZapIcon } from "@/components/icons";
 import { LessonCard } from "@/components/lesson-card";
 import { cardFor } from "@/data/deck";
 import { LessonNotes } from "@/components/lesson-notes";
+import { LessonSummary } from "@/components/lesson-summary";
 import { LessonTranscript } from "@/components/lesson-transcript";
 import { PlayFillIcon } from "@/components/player-icons";
 
@@ -173,6 +174,7 @@ export function CategoryTheater({
             with the video, and the transcript for anyone who wants the
             words. Both here, rather than behind a link to another
             page - this is the page. */}
+        <LessonSummary vimeoId={featured.vimeoId} />
         <LessonNotes key={`n-${featured.vimeoId}`} vimeoId={featured.vimeoId} category={category.id} seconds={seconds} />
         <LessonTranscript vimeoId={featured.vimeoId} />
 

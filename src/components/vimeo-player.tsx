@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { vimeoEmbedUrl } from "@/lib/vimeo";
 import { categories } from "@/data/categories";
 import { lessonCues, type LessonCue } from "@/lib/lesson-cues";
+import { CaptionLine } from "@/components/caption-line";
 import { cueIcons } from "./cue-icons";
 import { XpBadge } from "./xp-badge";
 import { hapticTap, playXpChime } from "@/lib/feedback-fx";
@@ -206,6 +207,10 @@ export function VimeoPlayer({
   const [rewardKey, setRewardKey] = useState(0);
   const [captionsOn, setCaptionsOn] = useState(false);
   const [captionLang, setCaptionLang] = useState<string | null>(null);
+  // In the portrait takeover the video is cropped to fill a tall
+  // screen, and Vimeo's own captions are cropped away with it - so we
+  // take the cues and draw them ourselves, one line at a time.
+  const [caption, setCaption] = useState("");
 
   // ── Floating key ideas ─────────────────────────────────────────────
   // A key phrase drifts through the margins around the teacher while the
@@ -384,12 +389,21 @@ export function VimeoPlayer({
     player.on("pause", onPause);
     player.on("ended", onEnd);
     player.on("timeupdate", onTime);
+    const onCue = (d: { cues?: { text?: string }[] }) => {
+      const line = (d.cues ?? [])
+        .map((c) => (c.text ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim())
+        .filter(Boolean)
+        .join(" ");
+      setCaption(line);
+    };
+    player.on("cuechange", onCue);
 
     return () => {
       player.off("play", onPlay);
       player.off("pause", onPause);
       player.off("ended", onEnd);
       player.off("timeupdate", onTime);
+      player.off("cuechange", onCue);
       player.destroy().catch(() => {});
       playerRef.current = null;
     };
@@ -433,6 +447,7 @@ export function VimeoPlayer({
     if (captionsOn) {
       p.disableTextTrack().catch(() => {});
       setCaptionsOn(false);
+      setCaption("");
     } else {
       p.enableTextTrack(captionLang).catch(() => {});
       setCaptionsOn(true);
@@ -501,6 +516,15 @@ export function VimeoPlayer({
   // element fullscreen doesn't exist. Reset framing (or toggling
   // portrait off) returns to the page.
   const takeover = fullscreen || frame === "portrait";
+  // Portrait crops the player's own captions off the screen, so it
+  // asks for the cues with the renderer off (showing: false) and draws
+  // them itself; leaving portrait hands the rendering back.
+  const ownCaptions = frame === "portrait" && !fullscreen && captionsOn;
+  useEffect(() => {
+    const p = playerRef.current;
+    if (!p || !captionLang || !captionsOn) return;
+    p.enableTextTrack(captionLang, "captions", !ownCaptions).catch(() => {});
+  }, [ownCaptions, captionLang, captionsOn]);
 
   // Portrait is locked vertical: where the platform allows it the
   // screen orientation is pinned, and everywhere else (iOS) the angle
@@ -665,6 +689,16 @@ export function VimeoPlayer({
             <SoundOffIcon className="size-4" />
             Tap for sound
           </button>
+        )}
+
+        {/* The line being spoken, at the foot of the crop - one line,
+            the words lighting as they're said. */}
+        {ownCaptions && caption && (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center px-5 pb-[max(5.5rem,env(safe-area-inset-bottom))]">
+            <span className="max-w-xl rounded-2xl bg-navy-950/70 px-4 py-2.5 backdrop-blur-sm">
+              <CaptionLine text={caption} className="text-base font-semibold leading-snug sm:text-lg" />
+            </span>
+          </div>
         )}
 
         {/* click anywhere to play/pause */}

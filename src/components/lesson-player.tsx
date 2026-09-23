@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LessonNotes } from "@/components/lesson-notes";
+import { LessonSummary } from "@/components/lesson-summary";
 import type { CategoryId } from "@/data/categories";
 import { VimeoPlayer } from "@/components/vimeo-player";
 import { LessonWatched } from "@/components/lesson-watched";
@@ -63,6 +64,7 @@ export function LessonPlayer({
         nextTitle={nextTitle}
       />
       <LessonWatched vimeoId={vimeoId} />
+      <LessonSummary vimeoId={vimeoId} />
       {category && <LessonNotes vimeoId={vimeoId} category={category} seconds={seconds} />}
     </>
   );

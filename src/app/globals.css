@@ -1998,3 +1998,27 @@ html.bare .demo-banner {
 .no-glass {
   background-color: var(--color-navy-800);
 }
+
+/* ── The trophy case ───────────────────────────────────────────────────
+ * A lit box: the floor darker than the walls, and a cone of light
+ * falling from above onto whatever is standing in it.
+ */
+.trophy-case {
+  background:
+    radial-gradient(120% 70% at 50% 105%, rgba(10, 16, 32, 0.9), transparent 70%),
+    linear-gradient(180deg, #080d1a, #0b1220);
+  background-color: #080d1a;
+}
+
+.trophy-beam {
+  background: conic-gradient(
+    from 180deg at 50% -10%,
+    transparent 40%,
+    rgba(231, 233, 242, 0.09) 47%,
+    rgba(231, 233, 242, 0.16) 50%,
+    rgba(231, 233, 242, 0.09) 53%,
+    transparent 60%
+  );
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.95), transparent 85%);
+  -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.95), transparent 85%);
+}

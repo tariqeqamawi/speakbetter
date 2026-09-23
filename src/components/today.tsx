@@ -35,16 +35,31 @@ export function Today() {
 
   return (
     <div className="flex flex-col gap-8 py-6">
-      <header className="flex items-start justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <p className="text-sm text-ink-faint">{greeting()}</p>
-          <h1 className="text-3xl font-semibold tracking-tight">
-            {doneToday ? "You've practiced today" : "Ready to practice?"}
-          </h1>
+      <header className="relative overflow-hidden rounded-3xl border border-navy-600 bg-navy-800 p-5 sm:p-6">
+        {/* The day's own light: the spectrum, low and wide behind the
+            greeting, so Today opens with colour rather than a line of
+            grey text. */}
+        <span aria-hidden className="spectrum-rule absolute inset-x-0 top-0 h-1" />
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -right-16 -top-24 size-64 rounded-full opacity-25 blur-3xl"
+          style={{ background: "radial-gradient(circle, var(--color-acting), transparent 70%)" }}
+        />
+        <div className="relative flex items-start justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <p className="text-sm text-ink-faint">{greeting()}{state.displayName ? `, ${state.displayName.split(" ")[0]}` : ""}</p>
+            <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+              {doneToday ? "You've practiced today" : "Ready to practice?"}
+            </h1>
+          </div>
+          {state.level && meta && <LevelIcon level={state.level} className="h-14 w-auto shrink-0" />}
         </div>
-        {state.level && meta && (
-          <LevelIcon level={state.level} className="h-12 w-auto shrink-0" />
-        )}
+        {/* Three numbers, in their colours. */}
+        <div className="relative mt-5 grid grid-cols-3 gap-2">
+          <Stat label="Challenges passed" value={`${passed}/${challenges.length}`} accent="text-structure" />
+          <Stat label="Videos uploaded" value={state.attempts.length} accent="text-body-language" />
+          <Stat label="Day streak" value={streak} accent="text-acting" />
+        </div>
       </header>
 
       {/* A missed day, while it can still be bought back. */}
@@ -147,13 +162,6 @@ export function Today() {
         </section>
       )}
 
-      {/* where they stand */}
-      <section className="grid grid-cols-3 gap-3">
-        <Stat label="Challenges passed" value={`${passed}/${challenges.length}`} />
-        <Stat label="Videos uploaded" value={state.attempts.length} />
-        <Stat label="Day streak" value={streak} />
-      </section>
-
       {lastAttempt && (
         <section className="flex flex-col gap-2">
           <h2 className="text-sm font-medium uppercase tracking-wider text-ink-faint">
@@ -239,11 +247,11 @@ export function Today() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string | number }) {
+function Stat({ label, value, accent = "text-ink" }: { label: string; value: string | number; accent?: string }) {
   return (
-    <div className="flex flex-col gap-1 rounded-xl border border-navy-600 bg-navy-800 p-4">
-      <span className="text-xl font-bold tabular-nums text-ink">{value}</span>
-      <span className="text-[0.7rem] leading-tight text-ink-faint">{label}</span>
+    <div className="flex flex-col gap-0.5 rounded-xl border border-navy-600 bg-navy-900/60 px-3 py-2.5">
+      <span className={`text-xl font-bold tabular-nums ${accent}`}>{value}</span>
+      <span className="text-[0.65rem] leading-tight text-ink-faint">{label}</span>
     </div>
   );
 }

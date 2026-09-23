@@ -3,186 +3,184 @@
 import { useEffect, useState } from "react";
 import { badgeDefs } from "@/data/badges";
 import type { AppState } from "@/lib/store";
-import { BadgeMedal } from "@/components/badge-medal";
 import { SectionBanner } from "@/components/section-banner";
-import { TrophyIcon, XIcon } from "@/components/icons";
+import { TrophyStand, trophyColor } from "@/components/trophy-stand";
+import { ChevronDownIcon, TrophyIcon } from "@/components/icons";
+import { hapticTap } from "@/lib/feedback-fx";
 
-// Every badge in the game, not only the ones already won. Seeing the
-// locked ones is the point: an empty slot with a name on it is an
-// invitation, where a hidden one is nothing at all.
+// The trophy case: one trophy at a time, on a lit plinth, turning
+// slowly so the lion on the back of the medal comes round - and the
+// whole collection underneath as a shelf you can walk. Won and locked
+// stand on the same shelf, because an empty stand with a name on it is
+// an invitation, where a hidden one is nothing at all.
 //
-// The tooltip answers to hover on desktop and to a tap on touch - a
-// thumb has no hover, so the tap toggles it and a second tap (or a tap
-// on another badge) puts it away.
+// It was a grid of circles. A case with a spotlight in it makes the
+// things in it feel worth having, which is the entire job of a trophy.
 
 export function BadgeCollection({ state }: { state: AppState }) {
   const earned = new Map(state.badges.map((b) => [b.id, b]));
-  const [openId, setOpenId] = useState<string | null>(null);
-  const open = openId ? badgeDefs.find((b) => b.id === openId) : undefined;
+  const [filter, setFilter] = useState<"won" | "all">("all");
+  const shelf = filter === "won" ? badgeDefs.filter((b) => earned.has(b.id)) : badgeDefs;
+  // The one on the plinth. Opens on the newest trophy won.
+  const newest = [...state.badges].sort((a, b) => (a.earnedAt < b.earnedAt ? 1 : -1))[0];
+  const [openId, setOpenId] = useState<string | null>(newest?.id ?? badgeDefs[0]?.id ?? null);
+  const index = Math.max(0, shelf.findIndex((b) => b.id === openId));
+  const shown = shelf[index] ?? shelf[0];
+  const won = shown ? earned.get(shown.id) : undefined;
+
+  const go = (delta: number) => {
+    if (shelf.length === 0) return;
+    hapticTap();
+    setOpenId(shelf[(index + delta + shelf.length) % shelf.length].id);
+  };
+
+  // Arrows walk the shelf.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const el = document.activeElement;
+      if (el instanceof HTMLElement && (el.tagName === "INPUT" || el.tagName === "TEXTAREA")) return;
+      if (e.key === "ArrowRight") go(1);
+      if (e.key === "ArrowLeft") go(-1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [index, shelf.length]);
 
   return (
     <div className="flex flex-col overflow-hidden rounded-2xl border border-navy-600 bg-navy-800">
       <SectionBanner
-        // Versioned filename: the image optimiser caches by URL, so a
-        // replaced file under the same name keeps serving the old one.
-        // An alternate crowned-lion treatment sits at trophies-lion.jpg.
-        image="/sections/trophies-v2.jpg"
         title="Trophy case"
         Icon={TrophyIcon}
         accentClass="text-storytelling"
         large
         right={
           <span className="text-xs tabular-nums text-ink-faint">
-            {earned.size} of {badgeDefs.length} collected
+            {earned.size} of {badgeDefs.length}
           </span>
         }
       />
       <div className="flex flex-col gap-4 p-5">
-      <div className="h-1.5 overflow-hidden rounded-full bg-navy-900">
-        <div
-          className="spectrum-rule h-full rounded-full transition-[width] duration-700"
-          style={{ width: `${(earned.size / badgeDefs.length) * 100}%` }}
-        />
-      </div>
+        <div className="h-1.5 overflow-hidden rounded-full bg-navy-900">
+          <div
+            className="spectrum-rule h-full rounded-full transition-[width] duration-700"
+            style={{ width: `${(earned.size / badgeDefs.length) * 100}%` }}
+          />
+        </div>
 
-      <ul className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
-        {badgeDefs.map((badge) => {
-          const won = earned.get(badge.id);
-          return (
-            <li
-              key={badge.id}
-              // The group/tooltip pair below shows what a locked badge
-              // wants from you - a collection you can't read is just a
-              // wall of gray. A few keep their secret on purpose.
-              onClick={() => setOpenId(badge.id)}
-              className={`group relative flex cursor-pointer flex-col items-center gap-2 rounded-xl border p-3 text-center transition-colors ${
-                won
-                  ? "border-navy-500 bg-navy-700"
-                  : "border-dashed border-navy-600 bg-navy-900/40 hover:border-ink-faint"
+        {/* Won, or everything - the same shelf, filtered. */}
+        <div className="flex w-full gap-1 rounded-xl border border-navy-600 bg-navy-900/60 p-1">
+          {(["won", "all"] as const).map((f) => (
+            <button
+              key={f}
+              type="button"
+              onClick={() => setFilter(f)}
+              aria-pressed={filter === f}
+              className={`flex-1 rounded-lg px-4 py-2 text-center text-sm font-semibold transition-colors ${
+                filter === f ? "bg-navy-700 text-ink" : "text-ink-faint hover:text-ink-muted"
               }`}
             >
-              <span
-                className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 hidden w-44 -translate-x-1/2 rounded-lg border border-navy-500 bg-navy-950 p-2.5 text-left text-[0.7rem] leading-snug text-ink-muted opacity-0 shadow-xl transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 sm:block"
-              >
-                <b className="block pb-0.5 text-ink">{badge.title}</b>
-                {won
-                  ? badge.message
-                  : (badge.how ?? "Hidden achievement - you'll know it when you get it.")}
-              </span>
-              <BadgeMedal
-                id={badge.id}
-                icon={badge.icon}
-                earned={!!won}
-                className="size-14"
-              />
-              <span
-                className={`text-[0.65rem] font-semibold leading-tight ${
-                  won ? "text-ink" : "text-ink-faint"
-                }`}
-              >
-                {badge.title}
-              </span>
-              {won && (
-                <span className="text-[0.6rem] tabular-nums text-ink-faint">
-                  {new Date(won.earnedAt).toLocaleDateString()}
-                </span>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-      </div>
-      {open && (
-        <TrophyDetail
-          badge={open}
-          won={earned.get(open.id)}
-          onClose={() => setOpenId(null)}
-        />
-      )}
-    </div>
-  );
-}
+              {f === "won" ? `Won (${earned.size})` : `All (${badgeDefs.length})`}
+            </button>
+          ))}
+        </div>
 
-/**
- * One trophy, up close: the medal large and turning, the day it was
- * won, and what won it - or, for one not yet won, what would. The
- * medal is the same artwork as the case and the celebration toast; the
- * turn is a CSS rotation, so nothing new is loaded to look closer.
- */
-function TrophyDetail({
-  badge,
-  won,
-  onClose,
-}: {
-  badge: (typeof badgeDefs)[number];
-  won: { earnedAt: string } | undefined;
-  onClose: () => void;
-}) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
-  return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="trophy-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-navy-950/80 p-5 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        className="celebration-pop relative flex w-full max-w-sm flex-col items-center gap-4 rounded-3xl border border-navy-600 bg-navy-800 px-6 pb-7 pt-10 text-center shadow-2xl shadow-navy-950/80"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close"
-          className="absolute right-3 top-3 grid size-9 place-items-center rounded-full border border-navy-600 text-ink-muted transition-colors hover:text-ink"
-        >
-          <XIcon className="size-4" />
-        </button>
-        <span className="spectrum-rule h-1 w-16 rounded-full" />
-        {/* A coin: the trophy on one face, the mark on the other. It
-            holds on the trophy, turns to show the lion, holds, and
-            turns back. */}
-        <span className={`trophy-stage ${won ? "" : "opacity-60"}`} aria-hidden>
-          <span className="trophy-coin">
-            <span className="trophy-face">
-              <BadgeMedal id={badge.id} icon={badge.icon} earned={!!won} className="size-44 sm:size-52" />
-              {won && <span className="trophy-shine" />}
-            </span>
-            <span className="trophy-face trophy-face-back">
-              <span className="grid size-44 place-items-center rounded-full border border-navy-600 bg-navy-950 sm:size-52">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/logo-mark.png" alt="" className={`w-2/3 ${won ? "" : "opacity-40 grayscale"}`} />
-              </span>
-            </span>
-          </span>
-        </span>
-        <span className="flex flex-col gap-1">
-          <span className="text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-ink-faint">
-            {won ? "Trophy earned" : "Not yet earned"}
-          </span>
-          <h3 id="trophy-title" className="text-xl font-bold text-ink">
-            {badge.title}
-          </h3>
-          {won && (
-            <span className="text-xs tabular-nums text-ink-faint">
-              {new Date(won.earnedAt).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" })}
-            </span>
-          )}
-        </span>
-        <p className="text-sm text-ink-muted text-balance">
-          {won ? badge.message : (badge.how ?? "Hidden achievement - you'll know it when you get it.")}
-        </p>
-        {won && badge.how && (
-          <p className="neon-edge rounded-xl bg-navy-900 px-4 py-3 text-xs text-ink-muted text-balance">
-            <b className="block pb-0.5 font-semibold text-ink">How you unlocked it</b>
-            {badge.how}
+        {shown ? (
+          <>
+            {/* The case: a spotlight, a plinth, and the trophy turning. */}
+            <div className="trophy-case relative flex flex-col items-center gap-3 overflow-hidden rounded-2xl border border-navy-600 px-4 pb-5 pt-8">
+              <span aria-hidden className="trophy-beam pointer-events-none absolute inset-x-0 top-0 h-64" />
+              {/* the lion, watermarked across the back of the case */}
+              <span
+                aria-hidden
+                className="pointer-events-none absolute inset-0 opacity-[0.045]"
+                style={{ backgroundImage: "url(/logo-mark.png)", backgroundSize: "72px", backgroundRepeat: "repeat" }}
+              />
+
+              <button
+                type="button"
+                onClick={() => go(-1)}
+                aria-label="Previous trophy"
+                className="absolute left-2 top-1/2 z-10 grid size-10 -translate-y-1/2 place-items-center rounded-full border border-navy-600 bg-navy-950/70 text-ink-muted transition-colors hover:text-ink"
+              >
+                <ChevronDownIcon className="size-5 rotate-90" />
+              </button>
+              <button
+                type="button"
+                onClick={() => go(1)}
+                aria-label="Next trophy"
+                className="absolute right-2 top-1/2 z-10 grid size-10 -translate-y-1/2 place-items-center rounded-full border border-navy-600 bg-navy-950/70 text-ink-muted transition-colors hover:text-ink"
+              >
+                <ChevronDownIcon className="size-5 -rotate-90" />
+              </button>
+
+              <TrophyStand key={shown.id} id={shown.id} icon={shown.icon} won={!!won} size="lg" flip />
+
+              {/* the light it stands in */}
+              <span
+                aria-hidden
+                className="pointer-events-none -mt-3 h-6 w-52 rounded-[50%] blur-md"
+                style={{
+                  background: won ? `var(--color-${trophyColor(shown.id)})` : "rgba(30,42,75,0.8)",
+                  opacity: won ? 0.4 : 0.25,
+                }}
+              />
+
+              <div className="relative flex flex-col items-center gap-1 text-center">
+                <span className="text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-ink-faint">
+                  {won ? "Won" : "Not yet won"} · {index + 1} of {shelf.length}
+                </span>
+                <h3 className="text-xl font-bold tracking-tight text-ink">{shown.title}</h3>
+                {won && (
+                  <span className="text-xs tabular-nums text-ink-faint">
+                    {new Date(won.earnedAt).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" })}
+                  </span>
+                )}
+                <p className="max-w-sm text-sm text-ink-muted text-balance">
+                  {won ? shown.message : (shown.how ?? "Hidden achievement - you'll know it when you get it.")}
+                </p>
+                {won && shown.how && (
+                  <p className="neon-edge mt-2 rounded-xl bg-navy-900 px-4 py-2.5 text-xs text-ink-muted text-balance">
+                    <b className="block pb-0.5 font-semibold text-ink">How you unlocked it</b>
+                    {shown.how}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* The shelf: every trophy in the case, tap to put it up. */}
+            <ul className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+              {shelf.map((badge) => {
+                const mine = earned.get(badge.id);
+                const on = badge.id === shown.id;
+                return (
+                  <li key={badge.id}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        hapticTap();
+                        setOpenId(badge.id);
+                      }}
+                      aria-pressed={on}
+                      title={mine ? badge.title : (badge.how ?? badge.title)}
+                      className={`flex w-full flex-col items-center gap-2 rounded-xl border p-2.5 text-center transition-colors ${
+                        on ? "border-current bg-navy-700" : mine ? "border-navy-500 bg-navy-800" : "border-dashed border-navy-600 bg-navy-900/40 hover:border-ink-faint"
+                      }`}
+                      style={on ? { color: `var(--color-${trophyColor(badge.id)})` } : undefined}
+                    >
+                      <TrophyStand id={badge.id} icon={badge.icon} won={!!mine} size="sm" />
+                      <span className={`text-[0.6rem] font-semibold leading-tight ${mine ? "text-ink" : "text-ink-faint"}`}>
+                        {badge.title}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
+        ) : (
+          <p className="py-8 text-center text-sm text-ink-muted">
+            No trophies yet. Record a challenge - the first one is waiting.
           </p>
         )}
       </div>
