@@ -34,6 +34,7 @@ export function TodayCommunity() {
   return (
     <Link
       href="/community"
+      data-tour="community"
       className="group relative flex flex-col gap-4 overflow-hidden rounded-2xl border border-mindset/40 bg-navy-800 p-5 transition-colors hover:border-mindset"
     >
       {/* the room's own light */}

@@ -8,7 +8,7 @@ import type { ReactNode } from "react";
 // nothing here can touch real progress.
 
 const tabs = [
-  { href: "/demo", label: "Dashboard" },
+  { href: "/demo", label: "You" },
   { href: "/demo/challenges", label: "Challenges" },
   { href: "/demo/skills", label: "Skills" },
   { href: "/landing", label: "Landing" },

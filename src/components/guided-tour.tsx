@@ -70,9 +70,9 @@ const STOPS: Stop[] = [
   },
   {
     target: "[data-tour='community']",
-    route: "/community",
+    route: "/",
     title: "The others on the road",
-    body: "Who else is walking it, this week's board, and the takes people are proud of. You're not doing this alone.",
+    body: "Who's on your challenge right now, this week's board, and everyone's before-and-afters - all from here. You're not doing this alone.",
   },
 ];
 
@@ -93,7 +93,10 @@ export function GuidedTour() {
 
   // Offered once, to a student who hasn't seen it.
   useEffect(() => {
-    if (!ready || !state.unlocked || seen.current) return;
+    // Today is where a new student lands, and where a tour makes
+    // sense to start; offering it over a lesson they're watching is
+    // an interruption rather than a welcome.
+    if (!ready || !state.unlocked || seen.current || pathname !== "/") return;
     seen.current = true;
     const t = window.setTimeout(() => {
       try {
@@ -101,7 +104,7 @@ export function GuidedTour() {
       } catch {}
     }, 1200);
     return () => window.clearTimeout(t);
-  }, [ready, state.unlocked]);
+  }, [ready, state.unlocked, pathname]);
 
   // Opened from anywhere: the dashboard's "Take the tour" fires this.
   useEffect(() => {
@@ -123,13 +126,20 @@ export function GuidedTour() {
     };
   }, [offer, step]);
 
-  const done = useCallback(() => {
-    setStep(null);
-    setOffer(false);
-    try {
-      window.localStorage.setItem(SEEN_KEY, "1");
-    } catch {}
-  }, []);
+  const close = useCallback(
+    (finished = false) => {
+      setStep(null);
+      setOffer(false);
+      try {
+        window.localStorage.setItem(SEEN_KEY, "1");
+      } catch {}
+      // Walked all the way round: back to Today, where the day starts.
+      if (finished) router.push("/");
+    },
+    [router],
+  );
+  /** For the places that hand a click event to their handler. */
+  const done = useCallback(() => close(false), [close]);
 
   // Find the current stop's target, following it as the page settles.
   const stop = step === null ? null : STOPS[step];
@@ -306,7 +316,7 @@ export function GuidedTour() {
             type="button"
             onClick={() => {
               hapticTap();
-              if (step === STOPS.length - 1) done();
+              if (step === STOPS.length - 1) close(true);
               else setStep(step + 1);
             }}
             className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-ink px-5 text-sm font-bold text-navy-900 transition-opacity hover:opacity-90"

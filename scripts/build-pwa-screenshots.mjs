@@ -63,7 +63,20 @@ for (const { form, width, height, scale } of FORMS) {
     baseURL: BASE,
   });
   const page = await context.newPage();
+  // The dev overlay, if these are taken against `next dev`.
+  await page.addInitScript(() => {
+    const style = document.createElement("style");
+    style.textContent = "nextjs-portal{display:none!important}";
+    document.addEventListener("DOMContentLoaded", () => document.head.appendChild(style));
+  });
   await page.goto("/try", { waitUntil: "networkidle" });
+  // An install preview shouldn't open on an invitation to be shown
+  // around - that's for a student, not a shop window.
+  await page.evaluate(() => {
+    try {
+      localStorage.setItem("speak-better-tour-v1", "1");
+    } catch {}
+  });
 
   for (const { name, url, label } of SHOTS) {
     await page.goto(url, { waitUntil: "networkidle" });
