@@ -1,17 +1,23 @@
 "use client";
 
-import { BadgeMedal } from "@/components/badge-medal";
+import { BadgeIcon } from "@/components/icons";
 
-// A trophy, not a sticker: the medallion art mounted in a ring, on a
-// stem, on a plinth, with the student's name for it on the base. The
-// art itself is the neon medal that was drawn for each badge - it
-// stays the face of the trophy, and everything around it is drawn
-// here, so all forty-four become trophies without redrawing any of
-// them.
+// A trophy: a cup, drawn.
 //
-// Won, it wears its colour and shines; locked, it's the same shape in
-// dull metal - you can see exactly what you haven't won, which is the
-// whole point of a case with empty stands in it.
+// It began as the badge's medallion mounted in a ring, which still read
+// as a medal wearing a frame - a sticker with handles. This is the
+// shape everybody pictures when they hear the word: a wide bowl on a
+// stem on a plinth, two handles, the rim catching the light, and the
+// badge's own symbol engraved on the bowl the way a real cup is.
+//
+// Nothing here is a picture. The cup is one SVG coloured by
+// `currentColor`, so all forty-odd badges become trophies without any
+// art being drawn for them, and each wears its own colour at any size.
+//
+// Won, it's metal in its colour with a sheen travelling across it. Not
+// yet won, it's the same cup in dull pewter - you can see exactly what
+// you haven't won, which is the whole point of a case with empty
+// stands in it.
 
 /** Each trophy owns one of the seven colours, settled by its id so it
  *  never changes between visits. */
@@ -22,6 +28,9 @@ export function trophyColor(id: string): string {
   for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
   return COLORS[hash % COLORS.length];
 }
+
+const CUP = { sm: "h-16", md: "h-24", lg: "h-56 sm:h-64" } as const;
+const ETCH = { sm: "size-4", md: "size-6", lg: "size-14 sm:size-16" } as const;
 
 export function TrophyStand({
   id,
@@ -36,97 +45,128 @@ export function TrophyStand({
   icon: string;
   won: boolean;
   size?: "sm" | "md" | "lg";
-  /** Turn on its stand, showing the lion on the back of the medal. */
+  /** Let the sheen travel across the cup, as though it were turning
+   *  under the light. On for the one standing in the case. */
   flip?: boolean;
-  /** Draw the stem and plinth. Off in the case, where the podium is
-   *  the stage's and only the trophy on it changes. */
+  /** Draw the pool of light under the cup. Off in the case, where the
+   *  podium is the stage's and only the cup standing on it changes. */
   pedestal?: boolean;
   className?: string;
 }) {
   const color = `var(--color-${trophyColor(id)})`;
-  const medal = size === "lg" ? "size-40 sm:size-48" : size === "md" ? "size-20" : "size-14";
-  const wrap = size === "lg" ? "w-56 sm:w-64" : size === "md" ? "w-28" : "w-20";
-  return (
-    <span className={`relative flex flex-col items-center ${wrap} ${className}`} style={{ color: won ? color : "var(--color-ink-faint)" }}>
-      {/* the cup: two handles either side of the medal */}
-      <span className="relative flex items-center justify-center">
-        <Handle side="left" size={size} won={won} />
-        <span
-          className={`relative grid place-items-center rounded-full ${won ? "" : "opacity-55 grayscale"}`}
-          style={{
-            padding: size === "lg" ? 10 : 6,
-            background: won
-              ? `conic-gradient(from 210deg, color-mix(in oklab, ${color} 70%, #fff 30%), ${color}, color-mix(in oklab, ${color} 40%, #000 60%), ${color})`
-              : "conic-gradient(from 210deg, #2a3450, #151e39, #2a3450)",
-            boxShadow: won ? `0 0 26px -6px ${color}, inset 0 1px 0 rgba(255,255,255,0.35)` : "inset 0 1px 0 rgba(255,255,255,0.12)",
-          }}
-        >
-          <span className={`${flip ? "trophy-coin" : ""} grid`}>
-            <span className="trophy-face">
-              <BadgeMedal id={id} icon={icon} earned={won} className={medal} />
-            </span>
-            {flip && (
-              <span className="trophy-face trophy-face-back">
-                <span className={`grid ${medal} place-items-center rounded-full border border-navy-600 bg-navy-950`}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/logo-mark.png" alt="" className={`w-2/3 ${won ? "" : "opacity-40 grayscale"}`} />
-                </span>
-              </span>
-            )}
-          </span>
-        </span>
-        <Handle side="right" size={size} won={won} />
-      </span>
+  // Gradient ids have to be unique per trophy on the page.
+  const uid = `t${id.replace(/[^a-zA-Z0-9]/g, "")}${size}`;
 
-      {/* the stem and the plinth */}
-      {pedestal && (
-      <>
-      <span
-        className={`${size === "lg" ? "h-8 w-5" : size === "md" ? "h-4 w-2.5" : "h-3 w-2"} -mt-1`}
-        style={{
-          background: won
-            ? `linear-gradient(90deg, color-mix(in oklab, ${color} 30%, #000 70%), ${color}, color-mix(in oklab, ${color} 25%, #000 75%))`
-            : "linear-gradient(90deg, #131b33, #263254, #131b33)",
-        }}
-      />
-      <span
-        className={`${size === "lg" ? "h-3 w-28" : size === "md" ? "h-1.5 w-14" : "h-1 w-10"} rounded-[3px]`}
-        style={{
-          background: won
-            ? `linear-gradient(90deg, color-mix(in oklab, ${color} 25%, #000 75%), color-mix(in oklab, ${color} 85%, #fff 15%), color-mix(in oklab, ${color} 25%, #000 75%))`
-            : "linear-gradient(90deg, #131b33, #2a3450, #131b33)",
-          boxShadow: won ? `0 6px 18px -8px ${color}` : "none",
-        }}
-      />
-      <span
-        className={`${size === "lg" ? "h-4 w-40" : size === "md" ? "h-2 w-20" : "h-1.5 w-14"} rounded-[4px]`}
-        style={{
-          background: won
-            ? `linear-gradient(180deg, color-mix(in oklab, ${color} 60%, #000 40%), color-mix(in oklab, ${color} 15%, #000 85%))`
-            : "linear-gradient(180deg, #1e2a4b, #0a1020)",
-          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.15)",
-        }}
-      />
-      </>
-      )}
-    </span>
-  );
-}
-
-/** A cup's handle, drawn as a ring cut in half. */
-function Handle({ side, size, won }: { side: "left" | "right"; size: "sm" | "md" | "lg"; won: boolean }) {
-  const dim = size === "lg" ? "h-16 w-8" : size === "md" ? "h-8 w-4" : "h-6 w-3";
   return (
     <span
-      aria-hidden
-      className={`${dim} ${side === "left" ? "-mr-1.5" : "-ml-1.5"} ${won ? "" : "opacity-50"}`}
-      style={{
-        borderTop: "3px solid currentColor",
-        borderBottom: "3px solid currentColor",
-        [side === "left" ? "borderLeft" : "borderRight"]: "3px solid currentColor",
-        borderRadius: side === "left" ? "999px 0 0 999px" : "0 999px 999px 0",
-        opacity: won ? 0.85 : 0.4,
-      }}
-    />
+      className={`relative flex flex-col items-center ${className}`}
+      style={{ color: won ? color : "#5a688f" }}
+    >
+      <span className="relative flex flex-col items-center">
+        <svg
+          viewBox="0 0 120 176"
+          className={`${CUP[size]} w-auto ${won ? "" : "opacity-75"}`}
+          role="img"
+          aria-label={won ? "Trophy, won" : "Trophy, not yet won"}
+        >
+          <defs>
+            {/* The metal: a bright edge, the body in its colour, a dark
+                side where it turns away from the light. */}
+            <linearGradient id={`${uid}-body`} x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#000" stopOpacity="0.45" />
+              <stop offset="14%" stopColor="currentColor" stopOpacity="0.85" />
+              <stop offset="30%" stopColor="#fff" stopOpacity="0.5" />
+              <stop offset="48%" stopColor="currentColor" stopOpacity="1" />
+              <stop offset="72%" stopColor="currentColor" stopOpacity="0.75" />
+              <stop offset="88%" stopColor="#000" stopOpacity="0.35" />
+              <stop offset="100%" stopColor="currentColor" stopOpacity="0.6" />
+            </linearGradient>
+            <linearGradient id={`${uid}-rim`} x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="currentColor" stopOpacity="0.7" />
+              <stop offset="35%" stopColor="#fff" stopOpacity="0.85" />
+              <stop offset="70%" stopColor="currentColor" stopOpacity="0.9" />
+              <stop offset="100%" stopColor="#000" stopOpacity="0.3" />
+            </linearGradient>
+            <linearGradient id={`${uid}-base`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="currentColor" stopOpacity="0.9" />
+              <stop offset="100%" stopColor="#000" stopOpacity="0.55" />
+            </linearGradient>
+            <linearGradient id={`${uid}-sheen`} x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#fff" stopOpacity="0" />
+              <stop offset="50%" stopColor="#fff" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="#fff" stopOpacity="0" />
+            </linearGradient>
+            <clipPath id={`${uid}-bowl`}>
+              <path d="M26 30 H94 C94 74 80 100 60 106 C40 100 26 74 26 30 Z" />
+            </clipPath>
+          </defs>
+
+          {/* The handles, behind the bowl so they read as attached. */}
+          <path
+            d="M27 38 C4 40 4 84 30 86"
+            fill="none"
+            stroke="currentColor"
+            strokeOpacity="0.75"
+            strokeWidth="7"
+            strokeLinecap="round"
+          />
+          <path
+            d="M93 38 C116 40 116 84 90 86"
+            fill="none"
+            stroke="currentColor"
+            strokeOpacity="0.75"
+            strokeWidth="7"
+            strokeLinecap="round"
+          />
+
+          {/* The bowl. */}
+          <path d="M26 30 H94 C94 74 80 100 60 106 C40 100 26 74 26 30 Z" fill={`url(#${uid}-body)`} />
+
+          {/* The light travelling across it, clipped to the bowl. */}
+          {flip && won && (
+            <g clipPath={`url(#${uid}-bowl)`}>
+              <rect className="trophy-sheen" x="-60" y="26" width="40" height="84" fill={`url(#${uid}-sheen)`} />
+            </g>
+          )}
+
+          {/* The rim, catching the light. */}
+          <rect x="22" y="24" width="76" height="10" rx="5" fill={`url(#${uid}-rim)`} />
+
+          {/* Stem, knop, and the plinth it stands on. */}
+          <path d="M53 106 H67 L64 128 H56 Z" fill={`url(#${uid}-body)`} />
+          <ellipse cx="60" cy="130" rx="13" ry="4.5" fill={`url(#${uid}-rim)`} />
+          <path d="M44 134 H76 L82 150 H38 Z" fill={`url(#${uid}-base)`} />
+          <rect x="32" y="150" width="56" height="11" rx="3" fill={`url(#${uid}-rim)`} />
+          <rect x="26" y="161" width="68" height="7" rx="3" fill={`url(#${uid}-base)`} />
+        </svg>
+
+        {/* The engraving: the badge's own symbol, cut into the bowl.
+            Drawn over the cup rather than inside the SVG, because an
+            icon is an <svg> of its own and nesting one loses its size.
+            The bowl's middle is 50% across and 36% down. */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 top-[36%] -translate-x-1/2 -translate-y-1/2"
+          style={{ color: "#0a0f1f", opacity: won ? 0.5 : 0.35, filter: "drop-shadow(0 1px 0 rgba(255,255,255,0.28))" }}
+        >
+          <BadgeIcon name={icon} className={ETCH[size]} />
+        </span>
+      </span>
+
+      {/* The pool of light it stands in, where the trophy stands alone
+          rather than in the case (which lights its own podium). */}
+      {pedestal && (
+        <span
+          aria-hidden
+          className="-mt-1 rounded-[50%] blur-md"
+          style={{
+            width: size === "lg" ? "11rem" : size === "md" ? "4.5rem" : "3rem",
+            height: size === "lg" ? "1.1rem" : "0.5rem",
+            background: won ? color : "rgba(30,42,75,0.8)",
+            opacity: won ? 0.4 : 0.2,
+          }}
+        />
+      )}
+    </span>
   );
 }

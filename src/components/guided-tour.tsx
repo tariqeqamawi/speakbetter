@@ -106,7 +106,7 @@ export function GuidedTour() {
     return () => window.clearTimeout(t);
   }, [ready, state.unlocked, pathname]);
 
-  // Opened from anywhere: the dashboard's "Take the tour" fires this.
+  // Opened from anywhere: every "Take the tour" fires this.
   useEffect(() => {
     const onOpen = () => {
       setOffer(false);
@@ -115,6 +115,21 @@ export function GuidedTour() {
     window.addEventListener("speak-better:tour", onOpen);
     return () => window.removeEventListener("speak-better:tour", onOpen);
   }, []);
+
+  // And asked for by link - `/?tour=1`, which is what Jump and any
+  // other page links to, since the tour starts on Today and a link is
+  // the one way to start it from somewhere else. The query is wiped
+  // once it has fired so a reload doesn't start it again.
+  const asked = useRef(false);
+  useEffect(() => {
+    if (!ready || !state.unlocked || asked.current) return;
+    if (!new URLSearchParams(window.location.search).has("tour")) return;
+    asked.current = true;
+    window.history.replaceState(null, "", window.location.pathname);
+    // Through the same event every other entry point uses, rather than
+    // setting state here: one way in, and no cascading render.
+    startTour();
+  }, [ready, state.unlocked, pathname]);
 
   // While the tour or its offer is up, other pop-ins stand down.
   useEffect(() => {

@@ -13,7 +13,8 @@ import { challengeProgress } from "@/lib/challenge-progress";
 import { categoryById } from "@/data/categories";
 import { VideoStill } from "@/components/video-still";
 import { DailyQuests } from "@/components/daily-quests";
-import { VideoIcon } from "@/components/icons";
+import { TapIcon, VideoIcon } from "@/components/icons";
+import { startTour } from "@/components/guided-tour";
 import { LevelIcon, levelMeta } from "@/components/level-icon";
 import { FlameIcon } from "@/components/icons";
 import { CheckIcon, PlayIcon } from "@/components/icons";
@@ -53,7 +54,21 @@ export function Today() {
               {doneToday ? "You've practiced today" : "Ready to practice?"}
             </h1>
           </div>
-          {state.level && meta && <LevelIcon level={state.level} className="h-14 w-auto shrink-0" />}
+          <div className="flex shrink-0 flex-col items-end gap-2">
+            {state.level && meta && <LevelIcon level={state.level} className="h-14 w-auto" />}
+            {/* The way back into the tour. It lived as grey underlined
+                text on the dashboard, which is a page a student may
+                never open - and a tour nobody can find is a tour that
+                was not built. */}
+            <button
+              type="button"
+              onClick={startTour}
+              className="inline-flex items-center gap-1.5 rounded-full border border-navy-500 bg-navy-900/70 px-3 py-1.5 text-xs font-semibold text-ink-muted transition-colors hover:border-ink-faint hover:text-ink"
+            >
+              <TapIcon className="size-3.5" />
+              Take the tour
+            </button>
+          </div>
         </div>
         {/* Three numbers, in their colours. */}
         <div className="relative mt-5 grid grid-cols-3 gap-2">

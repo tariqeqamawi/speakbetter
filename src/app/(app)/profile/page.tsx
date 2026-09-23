@@ -2,22 +2,22 @@
 
 import Link from "next/link";
 import { useStore } from "@/lib/store";
-import { challenges, storyPhases } from "@/data/challenges";
+import { challenges } from "@/data/challenges";
 import { categories } from "@/data/categories";
 import { lessons } from "@/data/lessons";
 import { SpectrumSignature } from "@/components/spectrum-signature";
 import { StreakCalendar } from "@/components/streak-calendar";
 import { BadgeCollection } from "@/components/badge-collection";
 import { DashboardHeader, DashboardHeaderCompact } from "@/components/dashboard-header";
-import { challengeXp, challengeXpFor, lessonMinutes, phaseGate } from "@/lib/progress";
+import { lessonMinutes } from "@/lib/progress";
 import { listAllVideos, type StoredVideoMeta } from "@/lib/attempt-videos";
 import { useEffect, useState } from "react";
 import { useChallengeComplete } from "@/components/story-progress";
 import { CategoryIcon } from "@/components/category-icons";
+import { JourneyPhases } from "@/components/journey-phases";
 import { SectionBanner } from "@/components/section-banner";
 import {
   ChallengesIcon,
-  LockIcon,
   CheckIcon,
   FilmIcon,
   FlameIcon,
@@ -90,107 +90,10 @@ export default function DashboardPage() {
           practiced and uploaded. Well done - every minute in front of the lens counts.
         </p>
       )}
-      {/* The journey in miniature: five checkpoints along a road, lit
-          as far as the student has reached - the road's own colours,
-          the rank each gate asks for. */}
-      <div className="flex items-center gap-1">
-        {storyPhases.map((phase, i) => {
-          const gate = phaseGate(state, i);
-          const inPhase = challenges.filter((c) => c.phase === phase.id);
-          const done = inPhase.filter((c) => isComplete(c.slug)).length;
-          const complete = done === inPhase.length;
-          const reached = gate.open;
-          return (
-            <span key={phase.id} className="flex flex-1 items-center gap-1">
-              <span
-                title={`${phase.name}${reached ? "" : gate.rank ? ` - opens at ${gate.rank.name}` : ""}`}
-                className={`grid size-8 shrink-0 place-items-center rounded-full text-xs font-bold ${
-                  complete
-                    ? `${phase.bgClass} text-navy-950 shadow-[0_0_12px_-2px_currentColor] ${phase.textClass}`
-                    : reached
-                      ? `border-2 border-current bg-navy-900 ${phase.textClass} map-pulse`
-                      : "border border-navy-600 bg-navy-900 text-ink-faint"
-                }`}
-              >
-                {complete ? <CheckIcon className="size-3.5" /> : reached ? phase.id : <LockIcon className="size-3" />}
-              </span>
-              {i < storyPhases.length - 1 && (
-                <span className={`h-0.5 flex-1 rounded-full ${complete ? phase.bgClass : "bg-navy-700"}`} />
-              )}
-            </span>
-          );
-        })}
-      </div>
-
-      {/* Phase by phase: the challenges as stills - passed ones lit
-          with a tick, the rest dark beside them, the same way the
-          lessons read - and the XP each phase has paid against what it
-          can pay. */}
-      <ul className="flex flex-col gap-4">
-        {storyPhases.map((phase, i) => {
-          const inPhase = challenges.filter((c) => c.phase === phase.id);
-          const done = inPhase.filter((c) => isComplete(c.slug)).length;
-          const paid = inPhase.reduce((sum, c) => {
-            const best = state.attempts.filter((a) => a.challengeSlug === c.slug && a.passed).sort((a, b) => b.score - a.score)[0];
-            return sum + (best ? challengeXpFor(c, best.score) : c.passive && isComplete(c.slug) ? challengeXp(c) : 0);
-          }, 0);
-          const worth = inPhase.reduce((sum, c) => sum + challengeXp(c), 0);
-          const gate = phaseGate(state, i);
-          return (
-            <li key={phase.id} className="flex flex-col gap-1.5">
-              <span className="flex items-center gap-2.5">
-                <span className={`w-4 text-xs font-bold ${gate.open ? phase.textClass : "text-ink-faint"}`}>
-                  {phase.id}
-                </span>
-                <span className="min-w-0 flex-1 truncate text-xs text-ink-muted">{phase.name}</span>
-                <span className="shrink-0 text-right text-[0.65rem] tabular-nums text-ink-faint">
-                  <b className={`font-semibold ${paid > 0 ? phase.textClass : ""}`}>{paid}</b>/{worth} XP
-                  <span className="pl-1.5">{done}/{inPhase.length} passed</span>
-                </span>
-              </span>
-              <span className="-mx-5 flex gap-1.5 overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                {[...inPhase]
-                  .sort((a, b) => Number(isComplete(b.slug)) - Number(isComplete(a.slug)))
-                  .map((c) => {
-                    const passed = isComplete(c.slug);
-                    return (
-                      <Link
-                        key={c.slug}
-                        href={`/challenges/${c.slug}`}
-                        title={passed ? c.title : gate.open ? `${c.title} - not passed yet` : `${c.title} - locked`}
-                        className={`relative aspect-video w-16 shrink-0 overflow-hidden rounded-md bg-navy-950 ${passed ? "" : "ring-1 ring-inset ring-navy-600"}`}
-                      >
-                        {c.vimeoId ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={`/thumbs/${c.vimeoId}.jpg`}
-                            alt=""
-                            loading="lazy"
-                            decoding="async"
-                            className={`size-full object-cover transition-[filter,opacity] ${passed ? "" : "opacity-25 grayscale"}`}
-                          />
-                        ) : (
-                          <span className={`block size-full ${phase.tintClass} ${passed ? "" : "opacity-40"}`} />
-                        )}
-                        {passed ? (
-                          <span className={`absolute bottom-0.5 right-0.5 grid size-4 place-items-center rounded-full bg-navy-950/85 ${phase.textClass}`}>
-                            <CheckIcon className="size-2.5" />
-                          </span>
-                        ) : (
-                          !gate.open && (
-                            <span className="absolute bottom-0.5 right-0.5 grid size-4 place-items-center rounded-full bg-navy-950/85 text-ink-faint">
-                              <LockIcon className="size-2.5" />
-                            </span>
-                          )
-                        )}
-                      </Link>
-                    );
-                  })}
-              </span>
-            </li>
-          );
-        })}
-      </ul>
+      {/* The journey: five letters that always read S T O R Y, and the
+          challenges of whichever one is open, named and described.
+          journey-phases.tsx says why. */}
+      <JourneyPhases state={state} isComplete={isComplete} />
 
       {/* Your attempts and reviews - what used to be its own dashboard
           tab. A take belongs beside the challenges it was for: the

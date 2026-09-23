@@ -13,9 +13,13 @@ import { hapticTap } from "@/lib/feedback-fx";
 import { hasCoach } from "@/lib/plan";
 import { UpgradePanel } from "@/components/upgrade-panel";
 
-// Ask your coach (master plan §07): hold the button and ask - "how
-// have I been improving over my last few takes?" - and the coach
-// answers from the student's own record, aloud, with captions. The
+// Ask your coach (master plan §07): tap once to start talking, tap
+// again to send - "how have I been improving over my last few takes?"
+// - and the coach answers from the student's own record, aloud, with
+// captions. Holding a button down through a spoken question meant a
+// student could not gesture, could not think with their hands, and
+// lost the question if their thumb slipped; two taps is how every
+// voice note on a phone is made. The
 // record is what this device holds: every attempt, the notes on it,
 // the streak, the XP, the rank. Nothing is stored for this; the
 // question and the record go up, the answer comes back, that's all.
@@ -68,6 +72,7 @@ export function AskCoach() {
   const [url, setUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [reading, setReading] = useState(false);
+  const [typing, setTyping] = useState(false);
   const recRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const lionRef = useRef<TalkingLionHandle>(null);
@@ -217,6 +222,17 @@ export function AskCoach() {
     recRef.current = null;
   };
 
+  /** One button, two taps: start, then stop. Priming on each tap
+   *  keeps the browser's sound permission warm for the answer. */
+  const onPress = () => {
+    lionRef.current?.prime();
+    if (phase === "listening") {
+      stopListening();
+      return;
+    }
+    if (phase === "idle" || phase === "failed") startListening();
+  };
+
   if (!ready) return null;
   if (!hasCoach(state))
     return (
@@ -231,114 +247,141 @@ export function AskCoach() {
       </section>
     );
 
+  const label =
+    phase === "listening"
+      ? "Listening"
+      : phase === "thinking"
+        ? "Processing"
+        : phase === "answering"
+          ? "Coach is answering"
+          : "Ask Coach";
+
   return (
-    <section className="flex flex-col overflow-hidden rounded-2xl border border-navy-600 bg-navy-800">
-      <div className="flex flex-col gap-4 p-5">
-        <ExampleQuestion />
-        <TalkingLion
-          ref={lionRef}
-          text={answer}
-          captions
-          controls={false}
-          audioSrc={phase === "answering" && url ? url : undefined}
-          autoPlay={phase === "answering"}
-          onEnded={() => setPhase("idle")}
-          className="scale-90"
-        />
+    <section className="flex flex-col items-center gap-3">
+      <ExampleQuestion />
 
-        {question && (
-          <p className="text-center text-xs text-ink-faint">
-            You asked: <span className="text-ink-muted">&ldquo;{question}&rdquo;</span>
-          </p>
-        )}
-        {answer && phase !== "answering" && (
-          <div className="flex flex-col items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setReading((r) => !r)}
-              aria-expanded={reading}
-              className="inline-flex items-center gap-1.5 rounded-full border border-navy-600 px-3.5 py-1.5 text-xs font-semibold text-ink-muted transition-colors hover:text-ink"
-            >
-              {reading ? "Hide" : "Read"} the answer
-              <ChevronDownIcon className={`size-3.5 transition-transform ${reading ? "rotate-180" : ""}`} />
-            </button>
-            {reading && (
-              <p className="coach-cue w-full rounded-xl border border-navy-600 bg-navy-900/60 px-4 py-3 text-sm leading-relaxed text-ink">{answer}</p>
-            )}
-          </div>
-        )}
-        {error && <p className="text-center text-xs text-storytelling">{error}</p>}
+      {/* The lion is the page. Everything else is one button and two
+          quiet lines under it. */}
+      <TalkingLion
+        ref={lionRef}
+        text={answer}
+        captions
+        controls={false}
+        large
+        audioSrc={phase === "answering" && url ? url : undefined}
+        autoPlay={phase === "answering"}
+        onEnded={() => setPhase("idle")}
+      />
 
-        <div className="flex flex-col items-center gap-3">
-          {canTalk && (
-            <button
-              type="button"
-              disabled={phase === "thinking" || phase === "answering"}
-              onPointerDown={(e) => {
-                e.preventDefault();
-                if (phase === "idle" || phase === "failed") startListening();
-              }}
-              onPointerUp={stopListening}
-              onPointerCancel={stopListening}
-              onPointerLeave={() => phase === "listening" && stopListening()}
-              onContextMenu={(e) => e.preventDefault()}
-              className={`coach-pill inline-flex min-h-14 w-full max-w-xs select-none items-center justify-center gap-2.5 rounded-full px-6 text-base font-bold text-navy-950 transition-transform disabled:opacity-70 ${
-                phase === "listening" ? "scale-105" : "hover:scale-[1.02] active:scale-[0.99]"
-              }`}
-              style={{ WebkitTouchCallout: "none" } as React.CSSProperties}
-            >
-              <span className="flex items-center gap-2.5 text-navy-950">
-                <ListenIcon className="size-5" />
-                {phase === "listening"
-                  ? "Listening… let go when you're done"
-                  : phase === "thinking"
-                    ? "Coach is looking at your record…"
-                    : phase === "answering"
-                      ? "Coach is answering"
-                      : "Ask Coach"}
-              </span>
-            </button>
-          )}
+      <div className="flex w-full max-w-sm flex-col items-center gap-2.5">
+        {canTalk && (
+          <button
+            type="button"
+            disabled={phase === "thinking" || phase === "answering"}
+            onClick={onPress}
+            className={`coach-pill inline-flex min-h-16 w-full select-none items-center justify-center gap-3 rounded-full px-6 text-lg font-bold text-navy-950 transition-transform disabled:opacity-70 ${
+              phase === "listening" ? "scale-[1.03]" : "hover:scale-[1.02] active:scale-[0.99]"
+            }`}
+          >
+            <span className="flex items-center gap-3 text-navy-950">
+              {phase === "listening" ? (
+                <span aria-hidden className="flex items-end gap-[3px]">
+                  {[0, 1, 2].map((i) => (
+                    <span
+                      key={i}
+                      className="listening-bar w-[3px] rounded-full bg-navy-950"
+                      style={{ animationDelay: `${i * 140}ms` }}
+                    />
+                  ))}
+                </span>
+              ) : (
+                <ListenIcon className="size-6" />
+              )}
+              {label}
+            </span>
+          </button>
+        )}
+
+        {/* Typing is the quiet second way in, folded away until it is
+            asked for - the button above is the one thing to see. */}
+        {!canTalk || typing ? (
           <form
-            className="flex w-full max-w-md items-center gap-2"
+            className="flex w-full items-center gap-2"
             onSubmit={(e) => {
               e.preventDefault();
               if (!typed.trim()) return;
               lionRef.current?.prime();
               ask({ question: typed.trim() });
               setTyped("");
+              setTyping(false);
             }}
           >
             <input
               value={typed}
               onChange={(e) => setTyped(e.target.value)}
-              placeholder={canTalk ? "Or type a question" : "Type a question for Coach"}
+              placeholder="Type a question for Coach"
+              autoFocus={typing}
               maxLength={300}
-              className="min-w-0 flex-1 rounded-lg border border-navy-600 bg-navy-950 px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:border-ink-faint focus:outline-none"
+              className="min-w-0 flex-1 rounded-full border border-navy-600 bg-navy-950 px-4 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:border-ink-faint focus:outline-none"
             />
             <button
               type="submit"
               disabled={!typed.trim() || phase === "thinking" || phase === "answering"}
-              className="rounded-lg border border-navy-600 px-3 py-2 text-sm font-semibold text-ink-muted transition-colors hover:text-ink disabled:opacity-50"
+              className="rounded-full border border-navy-600 px-4 py-2.5 text-sm font-semibold text-ink-muted transition-colors hover:text-ink disabled:opacity-50"
             >
               Ask
             </button>
-            {(answer || question) && (
-              <button
-                type="button"
-                onClick={() => {
-                  setAnswer("");
-                  setQuestion("");
-                  setPhase("idle");
-                }}
-                aria-label="Clear"
-                className="grid size-9 shrink-0 place-items-center rounded-full border border-navy-600 text-ink-faint hover:text-ink"
-              >
-                <XIcon className="size-4" />
-              </button>
-            )}
           </form>
-        </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setTyping(true)}
+            className="text-sm font-medium text-ink-faint underline-offset-4 transition-colors hover:text-ink hover:underline"
+          >
+            Type a question
+          </button>
+        )}
+
+        {error && <p className="text-center text-xs text-storytelling">{error}</p>}
+
+        {/* What was asked and what came back, both behind one line, so
+            an answer never pushes the lion off the screen. */}
+        {answer && phase !== "answering" && (
+          <div className="flex w-full flex-col items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setReading((r) => !r)}
+              aria-expanded={reading}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-faint transition-colors hover:text-ink"
+            >
+              {reading ? "Hide" : "Read"} what Coach said
+              <ChevronDownIcon className={`size-3.5 transition-transform ${reading ? "rotate-180" : ""}`} />
+            </button>
+            {reading && (
+              <div className="coach-cue w-full rounded-2xl border border-navy-600 bg-navy-900/60 px-4 py-3">
+                {question && (
+                  <p className="pb-1.5 text-xs text-ink-faint">
+                    You asked: <span className="text-ink-muted">&ldquo;{question}&rdquo;</span>
+                  </p>
+                )}
+                <p className="text-sm leading-relaxed text-ink">{answer}</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAnswer("");
+                    setQuestion("");
+                    setReading(false);
+                    setPhase("idle");
+                  }}
+                  className="inline-flex items-center gap-1.5 pt-2 text-xs font-semibold text-ink-faint transition-colors hover:text-ink"
+                >
+                  <XIcon className="size-3.5" />
+                  Clear
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </section>
   );

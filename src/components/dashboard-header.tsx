@@ -5,7 +5,8 @@ import { useStore, type Level } from "@/lib/store";
 import { standing } from "@/lib/progress";
 import { LevelIcon, levelMeta } from "@/components/level-icon";
 import { startTour } from "@/components/guided-tour";
-import { ChevronDownIcon, ProfileIcon } from "@/components/icons";
+import { AvatarCrop } from "@/components/avatar-crop";
+import { ChevronDownIcon, ProfileIcon, TapIcon } from "@/components/icons";
 import { ProTip } from "@/components/pro-tip";
 
 const levelOrder: Level[] = ["beginner", "intermediate", "advanced"];
@@ -14,7 +15,6 @@ const levelOrder: Level[] = ["beginner", "intermediate", "advanced"];
 // held above all of it - the reason they gave for starting. Everything
 // else on this page counts what they did; this says why.
 
-const MAX_DIM = 256;
 
 /**
  * The student in one line, for the top of the phone dashboard: avatar,
@@ -64,29 +64,19 @@ export function DashboardHeader() {
   const [levelOpen, setLevelOpen] = useState(false);
   const [nameDraft, setNameDraft] = useState(state.displayName);
   const [whyDraft, setWhyDraft] = useState(state.intention);
+  const [picked, setPicked] = useState<string | null>(null);
 
   const rank = standing(state);
   const level = state.level ?? "beginner";
 
-  // Downscale before storing: a phone photo would blow the storage
-  // budget, and this only ever renders at avatar size anyway.
+  // The picked file goes to the cropper rather than straight into the
+  // profile: squashing it to a square cropped from the centre, and a
+  // photo of a person is almost never composed that way. The cropper
+  // hands back the 256-square the store keeps.
   const onPick = (file: File | undefined) => {
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => {
-      const img = new window.Image();
-      img.onload = () => {
-        const scale = Math.min(MAX_DIM / img.width, MAX_DIM / img.height, 1);
-        const canvas = document.createElement("canvas");
-        canvas.width = Math.round(img.width * scale);
-        canvas.height = Math.round(img.height * scale);
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        setProfile({ avatar: canvas.toDataURL("image/jpeg", 0.82) });
-      };
-      img.src = String(reader.result);
-    };
+    reader.onload = () => setPicked(String(reader.result));
     reader.readAsDataURL(file);
   };
 
@@ -131,8 +121,22 @@ export function DashboardHeader() {
             type="file"
             accept="image/*"
             className="hidden"
-            onChange={(e) => onPick(e.target.files?.[0])}
+            onChange={(e) => {
+              onPick(e.target.files?.[0]);
+              // Let the same file be picked again after a cancel.
+              e.target.value = "";
+            }}
           />
+          {picked && (
+            <AvatarCrop
+              src={picked}
+              onCancel={() => setPicked(null)}
+              onDone={(avatar) => {
+                setProfile({ avatar });
+                setPicked(null);
+              }}
+            />
+          )}
 
           <div className="flex flex-col gap-1">
             {editingName ? (
@@ -181,15 +185,28 @@ export function DashboardHeader() {
               <button
                 type="button"
                 onClick={startTour}
-                className="text-xs font-semibold text-ink-faint underline-offset-4 transition-colors hover:text-ink hover:underline"
+                className="inline-flex items-center gap-1.5 rounded-full border border-navy-500 bg-navy-900 px-3 py-1 text-xs font-semibold text-ink-muted transition-colors hover:border-ink-faint hover:text-ink"
               >
+                <TapIcon className="size-3.5" />
                 Take the tour
               </button>
 
               {levelOpen && (
+                <>
+                {/* On a phone this is a sheet in the middle of the
+                    screen rather than a dropdown: anchored to the
+                    button, its right-hand side ran off the screen and
+                    took half of every description with it - the
+                    descriptions being the entire reason the menu
+                    exists. On a laptop it stays a dropdown. */}
+                <span
+                  aria-hidden
+                  onClick={() => setLevelOpen(false)}
+                  className="fixed inset-0 z-20 bg-navy-950/70 sm:hidden"
+                />
                 <div
                   role="listbox"
-                  className="absolute left-0 top-full z-30 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-navy-500 bg-navy-900 shadow-2xl shadow-navy-950/80"
+                  className="fixed left-1/2 top-1/2 z-30 w-[calc(100vw-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-xl border border-navy-500 bg-navy-900 shadow-2xl shadow-navy-950/80 sm:absolute sm:left-0 sm:top-full sm:mt-2 sm:w-80 sm:max-w-[calc(100vw-2rem)] sm:translate-x-0 sm:translate-y-0"
                 >
                   {levelOrder.map((option) => {
                     const meta = levelMeta[option];
@@ -229,6 +246,7 @@ export function DashboardHeader() {
                     );
                   })}
                 </div>
+                </>
               )}
             </span>
           </div>

@@ -15,23 +15,34 @@ import { Feedback } from "@/components/practice-panel";
 export function CoachHistory() {
   const { state, ready } = useStore();
   const [open, setOpen] = useState<string | null>(null);
+  // The whole shelf is folded by default: on the coach's own page the
+  // lion is the thing to see, and a list of every review he has ever
+  // written under him made the page a scroll.
+  const [shelfOpen, setShelfOpen] = useState(false);
   if (!ready) return null;
   const attempts = [...state.attempts].sort((a, b) => (a.at < b.at ? 1 : -1));
 
   return (
     <section className="flex flex-col overflow-hidden rounded-2xl border border-navy-600 bg-navy-800">
-      <SectionBanner
-        image="/sections/challenges.jpg"
-        title="Coach's reviews"
-        Icon={FilmIcon}
-        accentClass="text-structure"
-        right={
-          <span className="text-xs tabular-nums text-ink-faint">
-            {attempts.length} {attempts.length === 1 ? "review" : "reviews"}
-          </span>
-        }
-      />
-      <div className="flex flex-col gap-3 p-5">
+      <button
+        type="button"
+        onClick={() => setShelfOpen((o) => !o)}
+        aria-expanded={shelfOpen}
+        className="w-full text-left transition-colors hover:bg-navy-700/40"
+      >
+        <SectionBanner
+          title="Coach's reviews"
+          Icon={FilmIcon}
+          accentClass="text-structure"
+          right={
+            <span className="flex items-center gap-2 text-xs tabular-nums text-ink-faint">
+              {attempts.length} {attempts.length === 1 ? "review" : "reviews"}
+              <ChevronDownIcon className={`size-4 transition-transform ${shelfOpen ? "rotate-180" : ""}`} />
+            </span>
+          }
+        />
+      </button>
+      <div className={`${shelfOpen ? "flex" : "hidden"} flex-col gap-3 p-5`}>
         {attempts.length === 0 && (
           <p className="text-sm text-ink-muted">
             Nothing yet - record a challenge and Coach&apos;s review lands here, to read back any time.

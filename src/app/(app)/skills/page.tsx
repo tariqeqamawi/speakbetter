@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { SkillsIcon } from "@/components/icons";
+import { ChevronDownIcon, SkillsIcon } from "@/components/icons";
 import { SkillDial } from "@/components/skill-dial";
 import { SectionTabs } from "@/components/section-tabs";
 
@@ -7,20 +7,28 @@ export const metadata: Metadata = {
   title: "Skills",
 };
 
+// The dial is the page. What the section is gets one line behind a
+// chevron beside its name - a paragraph a student reads once and then
+// scrolls past every day afterwards is not worth the top of the
+// screen.
+
 export default function SkillsPage() {
   return (
-    <div className="flex flex-col gap-8 py-6">
-      <header className="flex flex-col gap-2">
-        {/* The section's own icon travels with its name, the way it does
-            in the navigation and on the dashboard. */}
-        <h1 className="flex items-center gap-2.5 text-3xl font-semibold tracking-tight">
-          <SkillsIcon className="size-7 shrink-0 text-storytelling" />
-          Skills
-        </h1>
-        <p className="max-w-lg text-ink-muted">
-          Short, focused lessons - one to two minutes each - across the seven
-          colors of dynamic speaking. Dip in; don&apos;t binge.
-        </p>
+    <div className="flex flex-col gap-5 py-6">
+      <header>
+        <details className="group">
+          <summary className="flex cursor-pointer list-none items-center gap-2.5 [&::-webkit-details-marker]:hidden">
+            {/* The section's own icon travels with its name, the way it
+                does in the navigation and on the dashboard. */}
+            <SkillsIcon className="size-7 shrink-0 text-storytelling" />
+            <h1 className="text-3xl font-semibold tracking-tight">Skills</h1>
+            <ChevronDownIcon className="size-5 shrink-0 text-ink-faint transition-transform group-open:rotate-180" />
+          </summary>
+          <p className="max-w-lg pt-2 text-sm text-ink-muted">
+            Short, focused lessons - one to two minutes each - across the seven colors of dynamic speaking. Dip in;
+            don&apos;t binge.
+          </p>
+        </details>
       </header>
 
       <SectionTabs />

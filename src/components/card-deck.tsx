@@ -12,7 +12,6 @@ import { rulesCard, type DeckCardData } from "@/data/deck";
 import { hapticTap, playXpChime } from "@/lib/feedback-fx";
 import {
   ChevronDownIcon,
-  DeckIcon,
   ExpandIcon,
   RepeatIcon,
   XIcon,
@@ -269,12 +268,7 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
             <span className={`text-lg font-semibold leading-tight ${active.textClass}`}>{active.short}</span>
             <span className="text-xs text-ink-muted">{activeCards.length} cards</span>
           </>
-        ) : (
-          <>
-            <span className="text-lg font-semibold text-ink">{cards.length} cards</span>
-            <span className="text-xs text-ink-muted">Press a color and let go</span>
-          </>
-        )}
+        ) : null}
       </div>
 
       {/* The deck, face down, one color per node */}
@@ -336,22 +330,34 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
 
       {/* The two ways in that aren't a color, and the instruction card */}
       <div className="flex flex-col items-center gap-4">
-        <div className="flex flex-wrap items-center justify-center gap-2.5">
+        {/* The two ways in that aren't a colour, drawn as two things
+            rather than said as two labels: a fan of seven, and a deck
+            being shuffled. They were a pair of grey outlined boxes,
+            which is what a form looks like, not a deck of cards. */}
+        <div className="grid w-full max-w-md grid-cols-2 gap-2.5">
           <button
             type="button"
             onClick={deal}
-            className="flex items-center gap-2 rounded-lg border border-navy-600 bg-navy-800 px-4 py-2.5 text-sm font-semibold text-ink transition-colors hover:border-current"
+            className="group relative flex flex-col items-center gap-1.5 overflow-hidden rounded-2xl border border-navy-600 bg-navy-800 px-3 py-4 transition-colors hover:border-ink-faint"
           >
-            <DeckIcon className="size-4" />
-            Deal a full spread
+            <span aria-hidden className="spectrum-rule absolute inset-x-0 top-0 h-1" />
+            <FanMark />
+            <span className="text-sm font-bold text-ink">Deal a full spread</span>
+            <span className="text-[0.7rem] leading-tight text-ink-faint">One card of every colour</span>
           </button>
           <button
             type="button"
             onClick={shakeOn ? pullRandom : enableShake}
-            className="flex items-center gap-2 rounded-lg border border-navy-600 bg-navy-800 px-4 py-2.5 text-sm font-semibold text-ink transition-colors hover:border-current"
+            className="group relative flex flex-col items-center gap-1.5 overflow-hidden rounded-2xl border border-navy-600 bg-navy-800 px-3 py-4 transition-colors hover:border-ink-faint"
           >
-            <RepeatIcon className="size-4" />
-            {shakeOn ? "Pull a card" : "Shuffle - or shake your phone"}
+            <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-figurative/70" />
+            <span className="deck-shake grid size-10 place-items-center text-figurative">
+              <RepeatIcon className="size-7" />
+            </span>
+            <span className="text-sm font-bold text-ink">{shakeOn ? "Pull a card" : "Shuffle"}</span>
+            <span className="text-[0.7rem] leading-tight text-ink-faint">
+              {shakeOn ? "Or shake your phone" : "Or shake your phone"}
+            </span>
           </button>
         </div>
         {hand && (
@@ -1053,5 +1059,33 @@ function CardZoom({
         </button>
       </div>
     </div>
+  );
+}
+
+/** Seven cards fanned - what "deal a full spread" actually looks like,
+ *  small enough to sit on a button. */
+function FanMark() {
+  return (
+    <span aria-hidden className="grid size-10 place-items-center">
+      <svg viewBox="0 0 44 34" className="h-9 w-auto overflow-visible">
+        {categories.map((cat, i) => {
+          const angle = (i - (categories.length - 1) / 2) * 13;
+          return (
+            <rect
+              key={cat.id}
+              x="18"
+              y="6"
+              width="8"
+              height="22"
+              rx="2"
+              className={cat.textClass}
+              fill="currentColor"
+              opacity="0.9"
+              transform={`rotate(${angle} 22 30)`}
+            />
+          );
+        })}
+      </svg>
+    </span>
   );
 }

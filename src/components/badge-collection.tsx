@@ -90,12 +90,17 @@ export function BadgeCollection({ state }: { state: AppState }) {
           <>
             {/* The case: a spotlight, a plinth, and the trophy turning. */}
             <div className="trophy-case relative flex flex-col items-center gap-3 overflow-hidden rounded-2xl border border-navy-600 px-4 pb-5 pt-8">
-              <span aria-hidden className="trophy-beam pointer-events-none absolute inset-x-0 top-0 h-64" />
-              {/* the lion, watermarked across the back of the case */}
+              {/* The spotlight: a lamp at the top of the case and the
+                  cone it throws, swinging slowly across the trophy so
+                  the light feels live rather than painted on. The lion
+                  watermark that used to tile the back is gone - a
+                  pattern behind a display case is wallpaper, and it
+                  fought the one thing the case is for. */}
+              <span aria-hidden className="trophy-spot pointer-events-none absolute inset-x-0 top-0 h-72" />
               <span
                 aria-hidden
-                className="pointer-events-none absolute inset-0 opacity-[0.045]"
-                style={{ backgroundImage: "url(/logo-mark.png)", backgroundSize: "72px", backgroundRepeat: "repeat" }}
+                className="trophy-lamp pointer-events-none absolute left-1/2 top-0 size-16 -translate-x-1/2 -translate-y-1/2 rounded-full blur-xl"
+                style={{ background: won ? `var(--color-${trophyColor(shown.id)})` : "rgba(231,233,242,0.55)" }}
               />
 
               <button

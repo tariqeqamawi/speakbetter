@@ -112,10 +112,6 @@ export function SkillDial() {
   const activeWatched = activeLessons.filter((l) =>
     state.watchedLessons.includes(l.vimeoId),
   ).length;
-  const totalLessons = categories.reduce(
-    (sum, c) => sum + lessonsInCategory(c.id).length,
-    0,
-  );
 
   return (
     <div className="flex flex-col items-center gap-3">
@@ -134,12 +130,7 @@ export function SkillDial() {
               <span className="text-ink-faint"> · tap to open</span>
             </span>
           </>
-        ) : (
-          <>
-            <span className="text-lg font-semibold text-ink sm:text-xl">Seven colors</span>
-            <span className="text-xs text-ink-muted">{totalLessons} lessons · pick where to dip in</span>
-          </>
-        )}
+        ) : null}
       </div>
     <div
       ref={dialRef}
