@@ -7,11 +7,11 @@ import { standing } from "@/lib/progress";
 import { currentStreak } from "@/data/badges";
 import { speakUrl } from "@/lib/coach/voice";
 import { TalkingLion, type TalkingLionHandle } from "@/components/talking-lion";
-import { SectionBanner } from "@/components/section-banner";
 import { ChevronDownIcon, ListenIcon, XIcon } from "@/components/icons";
 import { hapticTap } from "@/lib/feedback-fx";
 import { hasCoach } from "@/lib/plan";
-import { UpgradePanel } from "@/components/upgrade-panel";
+import { CoachUpgrade } from "@/components/coach-upgrade";
+import { pickGreeting } from "@/data/greetings";
 
 // Ask your coach (master plan §07): tap once to start talking, tap
 // again to send - "how have I been improving over my last few takes?"
@@ -45,34 +45,6 @@ const EXAMPLES = [
   "Which lesson would help me most right now?",
   "Am I getting better at storytelling?",
   "What did you notice in my last take?",
-];
-
-/** What Coach says when the page opens. Fixed lines, no name in them:
- *  a greeting is the one thing in this app that should never be
- *  assembled from the record, and a lion who says your name every
- *  single time you open a page stops sounding like a greeting. */
-const GREETINGS = [
-  "Welcome back.",
-  "Back for more, I see.",
-  "How can I help?",
-  "Ready for more?",
-  "You're back.",
-  "Ask me anything.",
-  "What can I do for you today?",
-  "Hey there.",
-  "Look who returns.",
-  "Ah, let's continue.",
-  "Nice to see you again.",
-  "Practice makes permanent.",
-  "I'm glad to see you.",
-  "This is how legends are made.",
-  "You ask, I'll teach.",
-  "Ask away.",
-  "Speaking will be your new superpower.",
-  "Getting your reps in.",
-  "Alright, let's go.",
-  "Ready when you are.",
-  "What would you like to know?",
 ];
 
 function ExampleQuestion() {
@@ -152,26 +124,17 @@ export function AskCoach() {
   // asked - so the button read "Coach is answering" to somebody who had
   // just arrived, and could not be pressed. A greeting is two words: it
   // says he is here and hands the floor straight back.
+  //
+  // The line comes from a file rather than the voice model: no call, no
+  // wait, and no silence on a day when the text-to-speech balance is
+  // empty (data/greetings.ts, scripts/build-greetings.mjs).
   const greeted = useRef(false);
   useEffect(() => {
     if (!ready || greeted.current) return;
     greeted.current = true;
-    const line = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
-    let alive = true;
-    (async () => {
-      try {
-        const spoken = await speakUrl(line);
-        if (!alive || !spoken) return;
-        setGreetText(line);
-        setGreetUrl(spoken);
-      } catch {
-        // A greeting that fails is no greeting - the page works without it.
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-     
+    const { text, src } = pickGreeting();
+    setGreetText(text);
+    setGreetUrl(src);
   }, [ready]);
 
   const ask = async (payload: { audio?: { data: string; mimeType: string }; question?: string }) => {
@@ -257,18 +220,7 @@ export function AskCoach() {
   };
 
   if (!ready) return null;
-  if (!hasCoach(state))
-    return (
-      <section className="flex flex-col overflow-hidden rounded-2xl border border-navy-600 bg-navy-800">
-        <SectionBanner image="/sections/trophies-lion.jpg" title="Ask Coach" Icon={ListenIcon} accentClass="text-advanced" large />
-        <div className="p-5">
-          <UpgradePanel
-            title="Coach on call is the Full Experience"
-            body="Upgrade now for the full 24/7 coach experience: ask him anything, any time, and he answers aloud from your own record - every take, every note. He already watches your takes and writes your reviews; this is him on call."
-          />
-        </div>
-      </section>
-    );
+  if (!hasCoach(state)) return <CoachUpgrade />;
 
   const label =
     phase === "listening"
