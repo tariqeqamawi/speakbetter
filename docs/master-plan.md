@@ -452,6 +452,46 @@ On a laptop the dashboard's panels sit two to a row and read as one heads-up dis
 
 The panels count in figures a student feels rather than in totals: **Challenges** shows how many were attempted, how many passed, and the **minutes spent speaking to a lens** ("13 minutes of speaking practiced and uploaded — well done, every minute in front of the lens counts"); **Lessons** shows lessons and **minutes watched**, and each color's lessons as a strip of stills, watched ones in color, so the library reads as something to look at rather than a list; **Attempts** carry a frame of the recording from the device's own copy, where one is still kept. **The trophy case** is the case described above: one trophy at a time on a lit podium, the day it was won and what won it, or — for one not yet won — what would.
 
+### The dashboard's banner, and its road
+
+**The banner is thin.** Name, level, rank, XP and the bar to the next rank; the chevron folds *Why you started* and the day's tip away rather than opening a second copy of the same information, so at rest the panels start most of a screen higher. It was a thin bar that, tapped, replaced the panel below it - which meant seeing who you are closed whatever you had open.
+
+**The road hides nothing.** Every phase lists its challenges, greyed and padlocked the way the challenges page greys them. Veiling the far end of the road is right on the journey; on a dashboard - a page whose whole job is to show what a student has and what is left - it hid the answer to the question they came to ask. Tapping a letter opens that phase, and the space goes to the challenges themselves, each with the line that says what it asks for.
+
+**Skills, not Lessons**, because the section has one name everywhere a student can tap it - and both it and Challenges carry a door out at the top of the panel, not only at the bottom.
+
+### A streak that costs something
+
+Buying a missed day back started at 40 XP. A day you can replace for pocket change was never a commitment, and the mechanic quietly became decoration. It starts at **200** - about two challenges' work - and climbs 50 a day to a **1,000** cap, so rescuing a long streak is expensive precisely because a long streak is worth rescuing (`streakPrice()`).
+
+Nothing a student earned is ever at risk: the XP, the trophies and the reviews stay, and only the run of days resets. The streak panel says all of this in a fold - how to keep it running, that a running streak pays a bonus on everything earned, how many freezes are left, and what a buy-back costs at each end of the scale.
+
+### The ask, and the moment of passing
+
+**"Ready for the challenge?"** is built like Coach's own page rather than like another panel: him large in the middle, lit from below, the record button under him, nothing competing. Everything else on a challenge page is information; this is the ask. He speaks when the card is properly on screen - one of ten fixed lines, *let me hear you roar*, *lights camera action*, *show me your true colors* - once per visit, because a lion who shouts every time you scroll past is a lion you mute.
+
+**The verdict waits to be earned.** The pass box used to sit blank and invisible until the spoken review ended, so a student who had not pressed play saw an empty rectangle. It now says *"Listen to Coach's feedback to find out whether you passed"*, which turns the wait into an instruction and makes the confetti the payoff for listening. A pass is a taller box, lit from inside, with sixty-four pieces of confetti falling **through** it - ribbons and discs in all seven colors, drifting sideways as they go, because one shape falling straight reads as rain. And *Hear it again* is on the button once he has finished.
+
+**The review uses the width.** "For next time" was cut off on the right because the note's text column had no minimum width - inside a flex row a long line pushed past the card instead of wrapping in it. A review opened from Coach's page was also a card inside a card inside a card, each taking its own padding off; the outer two gave theirs up.
+
+### The spectrum, in words
+
+The spectrum's history was a row of stacked color blocks, one column per attempt: a chart that looked like data and said almost nothing, because counting the blocks in the third column to compare them with the seventh is work and the answer was a number with no meaning attached. It is one line per color now, largest first - *"Storytelling increased by 13 points"*, *"Confidence & presence stayed about the same"* - with where each sits now. **Points, not percent**: the spectrum is scored out of 100, so "up 13 points" is what happened and "up 13%" would be a different and wrong number. It compares the first third of the road with the last third, so one unusual take cannot pretend to be a trend.
+
+### The road does not drag sideways
+
+At rest the STORY road fits the screen and the only way through it is down - but the territory washes reach past the plane's edges by design, and an `auto` overflow turned that into 121 pixels of pointless horizontal travel on every phone. Measured before and after: it is now zero, and the scene pans sideways only once it has been zoomed past its own width. Pinching still works; the magnifier is the advertised way, because a pinch is the one gesture a phone browser fights the page over.
+
+### Seven trophies, to choose between
+
+At `/prototype/trophies`, in two families. Four take the badge art that already exists - the forty-four medallions are the most characterful thing in the app, each its own little painting and its own colors - and only ask what it is standing in: a stepped plinth with its reflection on the floor, an open collector's ring on a post, a tapered column under a cone of light, or tilted back on a wedge the way a medal sits in a presentation case. Three draw a disc from scratch with the lion on it: a medal on a ribbon, a cup, a coin on its edge.
+
+All of it is CSS - a real perspective, an edge built from stacked layers so the thickness is genuine when it turns, a rim that catches light all the way round, and a gleam travelling across the face every few seconds, which is the one thing that makes a flat disc read as polished metal rather than a picture of one. Undecided; the case still shows the drawn cup.
+
+### One spelling
+
+American throughout - color, practiced, gray, center - in every user-facing string, every comment and this document. The coach's brief matters most: it is what he writes every review from, so the spelling a student reads comes out of that file.
+
 ### Small things that move
 
 The lion in each dial's hub **roars** every five to ten seconds — the brand animation itself, scrubbed through the talking lion's frames, at no clock. On the streak calendar a neon glow **runs along the streak's days**, oldest to today, then rests and runs again. The lessons panel shows each color as one square per lesson, watched ones lit, and a tick in the color on every watched still.
@@ -459,6 +499,42 @@ The lion in each dial's hub **roars** every five to ten seconds — the brand an
 ### The dials
 
 The skill dial and the deck's dial share one hub: **the lion holds the center and keeps its shape**; the name of the color under the pointer sits above the dial, in its color, with its count, and the hub's ring glows that color. (The name used to change inside the hub, which turned the circle into an oval on a long name.) The seven names have a short form for a dial or a tab — Storytelling, Figurative, Acting skills, Structure, Speaker's mindset, Body & physical, Advanced. The ring is the seven colors joined end to end, and one bright length of it — the color under the pointer — **slides round to the next color** rather than jumping, changing color on the way. On a phone the deck's color carousel is worked with a thumb drawn across it.
+
+### The coach's page is the lion
+
+Everything that is not him folds away: who he is sits behind *Read more*, and every review he has written sits behind its own header. What is left is the lion at full size, an example question drifting above him, and one button.
+
+**The button is the wave.** The ribbons under him were the best-looking thing on the page and did nothing; the button under them was the most important thing on the page and looked like a button. They are one object now (`ask-wave.tsx`): calm and dim at rest, standing up and running bright while he listens, swelling wide and slow while he thinks - so half a minute of waiting looks like something happening.
+
+**One tap to start, one to stop.** Holding a button down through a spoken question means a student cannot gesture, cannot think with their hands, and loses the question if their thumb slips. *Ask Coach* → *Listening* → *Processing*, and a tap on his own face cuts him off mid-word, the way interrupting a person does.
+
+**He says hello from a file.** Twenty-one fixed lines, spoken once into `public/coach/` and shipped (`data/greetings.ts`, `scripts/build-greetings.mjs`) - instant, free per visit, and still there on a day the voice model's balance is empty, which is the day a new cohort is most likely to arrive. He used to open by reviewing the student's whole record, which put the page into its answering state before a question had been asked: the button read "Coach is answering" to somebody who had just arrived.
+
+**And he keeps his size.** He was changing size - measured at 224, then 345, then 294 pixels wide across twelve seconds - because his column was a flex item sizing itself to its own contents: every longer example question and every change of button label made it wider. An explicit width settles it.
+
+### The wait, made honest
+
+Coach's answer takes six to twenty seconds; his **voice** takes about thirty-five, because it is made a word at a time. Measured, that is where the wait lives - not in the thinking, and lowering the thinking budget was tested and rejected: it halves the latency but costs the small factual accuracy (it got a weekday wrong that full thinking got right), and this app's standing rests on him never claiming what the record does not show.
+
+So the words arrive first. The written answer appears the moment it is ready, open, and Coach says so out loud from a file: *"Start looking at your review while I put my thoughts together."* The wait stops being dead air and becomes a person gathering their thoughts, which is what it actually is.
+
+**And he is loud enough to hear.** The clips peak at -1.4 dBFS but averaged -21.2 - about five decibels under speech meant to be heard on a phone in a room with people in it. Turning the volume up could not fix that, because the peaks were already at the ceiling; one soft knee and one gain could (`lib/coach/loudness.ts`). Measured after: -16.7 average, -0.3 peak, nothing clipped.
+
+### The guided tour, spoken (23 September 2026)
+
+Coach walks a new student round the place, out loud.
+
+He arrives in the middle of the screen at full size - *"Hey there, welcome to Speak Better. I'm going to show you around the place. You can call me Coach. Tariq delivers the lessons; I review your uploads and give you feedback."* - and then retreats to the corner of the card. The same element moves, so the eye follows him there.
+
+**Every line is fixed, and spoken from a file.** Forty-odd of them, built once (`data/tour-script.ts`, `scripts/build-tour-voice.mjs`). A tour that says something different on the second run is not orientation, and a tour that needs a working API to speak is a tour that is silent on exactly the wrong day. The line on screen is the line that is spoken - the same words, so reading and listening are the same tour.
+
+**How a stop is shown depends on the screen, because the two sizes have opposite problems.** On a phone the card explaining a highlight covers the thing being highlighted and what is left of the app is a strip, so a stop with a film **is** that film, near enough full screen, with Coach talking over it: a student watches somebody do the thing they are about to do. On a laptop the card is a small box in a large window and the live thing is right there, so the ring stays - dimmed panels, a pulsing ring, and a second ring travelling outwards like a drop landing, because merely being undimmed does not take an eye anywhere.
+
+**Eleven films** of the real app, recorded by a real browser at phone size (`scripts/film-tour.mjs`) - the road scrolled, a thumb round the dial, a color pressed out of the deck, the dashboard tab by tab, Today, a challenge, Coach's own page, the community, the trophy case, Jump. The recorder signs itself in as a student who has already paid and already been shown around, after the first set came back with the landing page and the tour's own offer card in shot.
+
+**Six section tours** as well as the long one - challenges, skills, cards, dashboard, community, and how to talk to Coach - three to six stops each, living on the page they are about. The whole-app tour is for arriving; these are for the other way a student gets lost, landing straight on the cards three weeks in with nobody to ask. They share one runner (`tour-runner.tsx`), so the short ones cannot drift from the long one. A section tour has no title card: pressing *Tour this section* is the decision to take it, and a second press on a card saying "let me show you around" is a door in front of a door.
+
+The top bar offers the tour that fits the page - **Take the full tour** on Today, **Tour this section** anywhere with one of its own - and it is the only door, because two doors into one room is clutter. A stop can also say two different things depending on the screen: telling somebody at a laptop to tap the portrait button is telling them about a control they do not have.
 
 ### The review, spoken and seen
 
@@ -488,6 +564,27 @@ The lion has a name, and it is Coach — introduced once with the quotes (*Meet 
 - **Coached across time.** Every review now records the same few observations (filler words counted, where the eyes were, how much of the student the frame showed, hands visible, the voice in a clause, the pace) and keeps the phone's voice measurements; the last eight takes go up with each new one, and Coach adds **Since you started** — its own section, and a line in the spoken review: improvements celebrated with the numbers (*three to five filler words when you started, one today*), a slip named gently as awareness (*lately it's thinned a little — not a big thing, I'm pointing it out so you can be aware of it*), never scolding, never a change the record can't show.
 - **The advanced color is rare.** It lights only when a professional technique is actually demonstrated and named with its moment — a mic drop, a callback, an open loop closed, memorised delivery, a live audience worked — never for general confidence or a strong take.
 - **The levels say what they change.** Beginner: Coach looks for the basic implementation of the lessons a challenge asks for. Intermediate: more of the spectrum in every take, the techniques used without being asked named, the reach into other lessons. Advanced: nuance and detail — projection and resonance, the dropped-in register, eye contact with the lens, whether the gestures accurately describe what's said, whether what's said is also painted. Said on the welcome page and in the level menu; the brief's level guide matches.
+
+### What the brief learned from the first real baseline (23 September 2026)
+
+One student, one baseline upload, four faults - and all four were the brief's, not the model's.
+
+- **A criterion that was met was marked unmet.** "Say something true about yourself" was not ticked for a take that said "I've always loved speaking". Everything in the brief pushed towards strictness and nothing pushed back, so strictness now cuts both ways: where a criterion is marked unmet the evidence must say what was missing and where it was looked for, and if that sentence cannot be written honestly, it was met. The criterion is read as written and no more strictly than it is written - a true thing does not have to be a confession.
+- **A color is a shelf of lessons, not a mood.** Acting and figurative lit up on a take that used neither. A color now lights only for a technique **taught in one of its own lessons**, with the lesson and the moment both named in the evidence, and the brief says what each color is *not*: figurative is metaphor and imagery, not an enthusiastic adjective; acting is a change of register or reliving a moment, not a lively voice; structure is a shape a listener can feel, not finished sentences. It also says the true shape of a first take - **one or two colors** - because five lit on day one tells a student they have arrived and leaves nothing to watch grow.
+- **A lesson only counts when its situation happened.** *Don't Sell, Invite and Recommend* was credited to somebody who was not selling anything; it is a lesson about making an **offer**, and saying speaking is a superpower is not an offer. Every lesson gets the same test - a pause lesson needs a pause you can point to, a callback needs the thing being called back - and an empty `skillsSpotted` is an honest one.
+- **No dates, and numbers as numbers.** Coach places a take by what it was ("your bus story", "three takes ago"), never by a weekday: working out which day the 20th fell on is arithmetic he can get wrong, and a coach who gets the day wrong sounds like one who is guessing. The delivery is the subject, not the calendar. And he writes 62 rather than sixty-two, because every word of a review is read on a screen as well as heard.
+
+### Who is in the video
+
+Before anything else, Coach looks at what he was actually sent.
+
+**No speaker at all** - a pet, a room, a screen recording, silence - is not reviewed as a take, and the response is a joke rather than a correction: *"Cute dog - is he taking the course too?"*, *"Have you taught him to speak? Now THAT is a trick I want to see."*, *"I watched all forty seconds of that wall. Strong, silent type. Your turn."* A student who uploads their dog is testing the coach, and a coach who plays along has proved he is watching. Then one plain line asking for one of them instead; no criteria met, no colors lit, and never a pretence of having watched a performance that was not there.
+
+**Somebody else speaking** is allowed, and gets a review in full - the score, the colors, the strengths, the improvements - because somebody spoke and that performance deserves the same attention. What follows is one aside, warm and a little amused: *"You do look rather different from your last few, though. You're welcome to have a friend do the talking, I'll review whatever you send me. I just can't show you how YOU are coming along unless it's you in the frame."* Each review keeps a short, neutral note of who was in frame (`observations.speakerLooks`) purely so the next one can tell - never shown as-is, never a remark about anybody's looks. And never a suspicion: a student who changed their hair should not be interrogated about it, so where he cannot tell, he says nothing.
+
+### Every moment, not every technique
+
+The review's `moments` list is one entry **per instance**, not per technique: four gestures is four entries at four different seconds. It is what rises through the frame while a student watches their own take back, and repetition is the whole point - somebody who sees the blue hand rise five times across two minutes can see for themselves that they are doing it steadily, which no score conveys. Each carries its own symbol rather than its color's: a hand for a gesture, an eye for holding the lens, a brush for an image, a book for a scene (`moment-icon.tsx`). One of each kind per second, so a gesture and a held lens in the same breath both rise but the same thing twice does not.
 
 ### The review's colors
 
@@ -581,6 +678,18 @@ Two things to build on this: **pay-as-you-go by phase** for Starter buyers who w
 **Other structures worth exploring for launch** (weighed 19 September 2026, none built): a **founding-member price** — the first hundred at a yearly rate that never rises, which makes urgency honest and seeds the board and the testimonials; **a review pack** — ten reviews for $39 with no clock on them, for the Starter buyer who wants the coach for one talk rather than a month, sold from the *review spent* gate; **the cohort as the product** — a dated six-week *Communicate and Captivate* at $399–$599 with the app inside it, which is what the teacher has already sold and what people already write letters about, run three or four times a year as the launch moments; **a gift and a team seat** — a one-line "give a year" at checkout, and the team plan above with a manager's board, because a company paying for ten seats is the cheapest acquisition there is; **a results guarantee** on the Full Experience — pass the baseline and a phase within thirty days or the month back, cheap to honour because the coach actually watches. The one to avoid: a free tier with unlimited written feedback — it would move the coach's cost to the wrong side of the card.
 
 In the code the plan lives on the student's state (`data/pricing.ts`, `lib/plan.ts`) and the checkout is still a stub — Stripe arrives with service integration (§19), and the webhook calls the same unlock the stub does.
+
+### Paying, and the cohort's prices (23 September 2026)
+
+The first cohort is three one-off payments for **six weeks** of access - **Starter $300**, **Full Experience $500**, **Ultimate $1,000** - and not a subscription: a cohort starts and finishes together, so a monthly plan would be asking somebody to keep paying for a thing that has already ended. Six weeks is said everywhere a price is, including on Stripe's receipt and on the screen a student lands on after paying; the printed deck and the book in Ultimate are theirs to keep.
+
+**Starter is Coach in writing.** He watches every take and writes the full review card; there is no spoken review and no asking him questions. Opening his page on Starter shows him standing there with the line the offer is carried on - *"Upgrade to access Coach 24/7 and become the speaker you always dreamed of"* - the three things that are missing said as what they **are** rather than as what is withheld, and a button charging **$200**: the difference between what they paid and the Full Experience, never a second full price. Their written reviews keep working the whole time, because taking something away to make an offer look better is the wrong trade.
+
+**Checkout is Stripe Checkout.** One press opens a session on our own server and the browser goes to Stripe; no card field is ever rendered by this app, which is the point - the least designed part of a payment should be the part that touches the card. The webhook is the only thing that may grant a plan on the server and it verifies the signature before reading a single field. The return page confirms the session **with Stripe** rather than trusting a query string, then lets the device in immediately so nobody waits on a spinner after paying.
+
+Prices live as cents in `data/pricing.ts` and the session is built with `price_data`, so changing the code changes the charge and there is no second catalogue to keep in step; `STRIPE_PRICE_*` is the hook for moving to dashboard Price ids when the offer grows past three one-off tiers. And with no `STRIPE_SECRET_KEY` the buy buttons do exactly what they did before checkout existed, so previews and the landing page's demo keep working with no keys at all.
+
+What remains before money can actually be taken: the secret key and the webhook signing secret in Vercel, `NEXT_PUBLIC_SITE_URL`, and - for the plan to land on an account rather than only on a device - the Supabase service-role key.
 
 ### Social proof — to come
 
