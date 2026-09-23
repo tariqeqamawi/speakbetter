@@ -32,7 +32,7 @@ export function Today() {
   const meta = state.level ? levelMeta[state.level] : null;
 
   return (
-    <div data-tour="today" className="flex flex-col gap-8 py-6">
+    <div className="flex flex-col gap-8 py-6">
       <header className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
           <p className="text-sm text-ink-faint">{greeting()}</p>
@@ -85,7 +85,9 @@ export function Today() {
         )}
       </section>
 
-      <DailyQuests />
+      <div data-tour="today">
+        <DailyQuests />
+      </div>
 
       {/* the one thing to do */}
       {up && (
