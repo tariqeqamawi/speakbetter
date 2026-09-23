@@ -262,7 +262,7 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
     <div className="flex flex-col gap-2">
       {/* The color under the thumb, named above the deck in its color -
           the hub keeps its shape, as the skill dial's does. */}
-      <div className="flex h-11 flex-col items-center justify-center text-center" aria-live="polite">
+      <div className="flex h-9 flex-col items-center justify-center text-center" aria-live="polite">
         {active ? (
           <>
             <span className={`text-lg font-semibold leading-tight ${active.textClass}`}>{active.short}</span>
@@ -330,7 +330,7 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
       </div>
 
       {/* The two ways in that aren't a color, and the instruction card */}
-      <div className="flex flex-col items-center gap-4">
+      <div className="flex flex-col items-center gap-4 pt-7">
         {/* The two ways in that aren't a color, drawn as two things
             rather than said as two labels: a fan of seven, and a deck
             being shuffled. They were a pair of gray outlined boxes,
