@@ -9,6 +9,7 @@ import { Soundwave } from "@/components/soundwave";
 import { LionMouth } from "@/components/lion-mouth";
 import { JumpButton } from "@/components/jump";
 import { startTour } from "@/components/guided-tour";
+import { sectionOf, startSectionTour } from "@/components/section-tour";
 
 // Five destinations, one set of names, in the same order everywhere:
 // Today, Challenges, Skills, Coach, You. Coach sits in the middle and
@@ -60,17 +61,12 @@ export function TopBar() {
             </span>
           </Link>
           {/* The way into the tour, in the one place that is on every
-              screen of the app. It was on Today and in Jump, which
-              still leaves a student who has scrolled past it with
-              nowhere to ask to be shown around again. */}
-          <button
-            type="button"
-            onClick={startTour}
-            className="-ml-1 flex shrink-0 items-center gap-1.5 rounded-full border border-navy-600/80 px-2.5 py-1 text-[0.7rem] font-semibold text-ink-faint transition-colors hover:border-ink-faint hover:text-ink"
-          >
-            <TapIcon className="size-3.5 shrink-0" />
-            <span className="whitespace-nowrap">Take the tour</span>
-          </button>
+              screen of the app - and it offers the tour that fits the
+              page. On Today, where a student has just arrived and the
+              whole app is ahead of them, that is the full walk round.
+              Anywhere else, being shown the section they are standing
+              in is what they actually wanted. */}
+          <TourButton />
           <div className="flex items-center gap-2">
             <JumpButton />
             <CompactLinks />
@@ -78,6 +74,23 @@ export function TopBar() {
         </div>
       </div>
     </header>
+  );
+}
+
+/** Take the full tour on Today; tour this section anywhere that has
+ *  one of its own. */
+function TourButton() {
+  const pathname = usePathname();
+  const section = sectionOf(pathname);
+  return (
+    <button
+      type="button"
+      onClick={() => (section ? startSectionTour(section) : startTour())}
+      className="-ml-1 flex shrink-0 items-center gap-1.5 rounded-full border border-navy-600/80 px-2.5 py-1 text-[0.7rem] font-semibold text-ink-faint transition-colors hover:border-ink-faint hover:text-ink"
+    >
+      <TapIcon className="size-3.5 shrink-0" />
+      <span className="whitespace-nowrap">{section ? "Tour this section" : "Take the full tour"}</span>
+    </button>
   );
 }
 

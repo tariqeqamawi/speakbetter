@@ -13,11 +13,23 @@ import { stopAudio, type TourStop } from "@/data/tour-script";
 // behaves lives here, so the short ones cannot drift from the long
 // one.
 //
-// What a stop does, in order: go to its route if it names one, find
-// the first VISIBLE element matching its target (the same marker sits
-// on the phone's bar and the laptop's rail, and ringing the hidden one
-// dims the screen and points at nothing), scroll it into view, cut a
-// hole around it, and play Coach's line.
+// How a stop is shown depends on the size of the screen, because the
+// two sizes have opposite problems.
+//
+// ON A PHONE the card that explains a highlight covers the thing being
+// highlighted; what is left of the app is a strip above it. So where
+// there is a film of that part being used, the FILM is the stop: it
+// fills the screen, Coach talks over it from the corner, and a student
+// watches somebody do the thing they are about to do.
+//
+// ON A LAPTOP the card is a small box in a large window and the app is
+// perfectly visible around it, so the live thing is better than a film
+// of it: go to the stop's route, find the first VISIBLE element
+// matching its target (the same marker sits on the phone's bar and the
+// laptop's rail, and ringing the hidden one dims the screen and points
+// at nothing), scroll it into view, and cut a hole around it.
+//
+// A stop with no film rings the live element at either size.
 //
 // Coach arrives in the middle of the screen at full size for the first
 // stop, says hello, and then retreats to the corner of the card for
@@ -55,6 +67,20 @@ export function TourRunner({
     }
   });
   const [blocked, setBlocked] = useState(false);
+  // Wide enough that the card leaves the app visible around it.
+  const [wide, setWide] = useState(() => {
+    try {
+      return window.matchMedia("(min-width: 768px)").matches;
+    } catch {
+      return false;
+    }
+  });
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    const on = (e: MediaQueryListEvent) => setWide(e.matches);
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
 
   useEffect(() => {
     const t = window.setTimeout(() => setHost(document.body), 0);
@@ -139,9 +165,12 @@ export function TourRunner({
 
   if (!host || !stop) return null;
 
+  // A film takes the screen on a phone. On a laptop the live thing is
+  // right there behind a small card, so it gets ringed instead.
+  const staged = Boolean(stop.film) && !wide;
   const pad = 8;
   const hole =
-    box && stop.target && !opening
+    box && stop.target && !opening && !staged
       ? {
           top: Math.max(0, box.top - pad),
           left: Math.max(0, box.left - pad),
@@ -150,6 +179,74 @@ export function TourRunner({
         }
       : null;
   const below = hole ? hole.top + hole.height < window.innerHeight * 0.55 : true;
+
+  if (staged && stop.film)
+    return createPortal(
+      <div className="fixed inset-0 z-[60] flex flex-col bg-navy-950/95 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={`Guided tour: ${stop.title}`}>
+        {/* The film, as big as the screen will allow. */}
+        <div className="relative flex min-h-0 flex-1 items-center justify-center px-4 pt-[max(1rem,env(safe-area-inset-top))]">
+          <span className="relative block h-full max-h-full overflow-hidden rounded-[1.6rem] border-2 border-navy-600 bg-navy-950 shadow-2xl shadow-navy-950">
+            <video
+              key={stop.film.src}
+              src={stop.film.src}
+              poster={stop.film.poster}
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="metadata"
+              className="block h-full w-auto max-w-full object-contain"
+            />
+          </span>
+
+          <button
+            type="button"
+            onClick={done}
+            aria-label="End the tour"
+            className="absolute right-5 top-[max(1.4rem,calc(env(safe-area-inset-top)+0.4rem))] grid size-9 place-items-center rounded-full border border-navy-600 bg-navy-950/80 text-ink-faint backdrop-blur transition-colors hover:text-ink"
+          >
+            <XIcon className="size-4" />
+          </button>
+        </div>
+
+        {/* Coach, talking over it from the corner. */}
+        <div className="shrink-0 px-3 pb-[max(0.9rem,env(safe-area-inset-bottom))] pt-3">
+          <div className="mx-auto flex max-w-sm flex-col gap-3 rounded-2xl border border-navy-500 bg-navy-850/95 p-3.5 shadow-2xl shadow-navy-950 backdrop-blur">
+            <div className="flex items-start gap-3">
+              <span className="tour-lion w-12 shrink-0">
+                <TalkingLion
+                  key={stop.id}
+                  bare
+                  controls={false}
+                  audioSrc={muted ? undefined : stopAudio(stop.id)}
+                  autoPlay={!muted}
+                  onBlocked={() => setBlocked(true)}
+                />
+              </span>
+              <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <span className="text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-ink-faint">
+                  {step} of {stops.length - 1}
+                </span>
+                <h2 className="text-base font-bold leading-tight text-ink">{stop.title}</h2>
+                <p className="text-sm leading-snug text-ink-muted">{stop.body}</p>
+              </div>
+            </div>
+            <Controls
+              step={step}
+              stops={stops}
+              opening={opening}
+              last={last}
+              muted={muted}
+              blocked={blocked}
+              toggleMute={toggleMute}
+              back={() => setStep(step - 1)}
+              next={next}
+            />
+          </div>
+        </div>
+      </div>,
+      host,
+    );
 
   return createPortal(
     <div className="fixed inset-0 z-[60]" role="dialog" aria-modal="true" aria-label={`Guided tour: ${stop.title}`}>
@@ -220,49 +317,17 @@ export function TourRunner({
           )}
         </div>
 
-        {stop.film && <TourFilm key={stop.film.src} {...stop.film} />}
-
-        <div className="flex items-center gap-2">
-          <span className="flex flex-1 items-center gap-1">
-            {stops.map((_, i) => (
-              <span
-                key={i}
-                className={`h-1 flex-1 rounded-full transition-colors ${i <= step ? "bg-storytelling" : "bg-navy-600"}`}
-              />
-            ))}
-          </span>
-          {/* His voice, on or off - and the way back in when a browser
-              refused to start it without a tap. */}
-          <button
-            type="button"
-            onClick={toggleMute}
-            aria-pressed={!muted}
-            aria-label={muted ? "Let Coach speak" : "Mute Coach"}
-            className={`grid size-9 shrink-0 place-items-center rounded-full border transition-colors ${
-              muted || blocked ? "border-navy-600 text-ink-faint hover:text-ink" : "border-storytelling/60 text-storytelling"
-            }`}
-          >
-            <SpeakerIcon muted={muted} className="size-4" />
-          </button>
-          {step > 0 && (
-            <button
-              type="button"
-              onClick={() => setStep(step - 1)}
-              aria-label="Back"
-              className="grid size-9 place-items-center rounded-full border border-navy-600 text-ink-muted transition-colors hover:text-ink"
-            >
-              <ChevronDownIcon className="size-4 rotate-90" />
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={next}
-            className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-ink px-5 text-sm font-bold text-navy-900 transition-opacity hover:opacity-90"
-          >
-            {opening ? "Show me" : last ? "Done" : "Next"}
-            {!last && <ChevronDownIcon className="size-4 -rotate-90" />}
-          </button>
-        </div>
+        <Controls
+          step={step}
+          stops={stops}
+          opening={opening}
+          last={last}
+          muted={muted}
+          blocked={blocked}
+          toggleMute={toggleMute}
+          back={() => setStep(step - 1)}
+          next={next}
+        />
 
         {opening && (
           <button type="button" onClick={done} className="text-xs font-semibold text-ink-faint transition-colors hover:text-ink">
@@ -275,30 +340,71 @@ export function TourRunner({
   );
 }
 
-/**
- * A film of the app being used, inside a phone.
- *
- * Muted, looping and playing the moment it appears - it is a diagram
- * that moves, not a video to decide about, so it carries no controls
- * and asks for no decision. The poster paints first so the card never
- * opens on a black rectangle.
- */
-function TourFilm({ src, poster }: { src: string; poster: string }) {
+/** The row along the bottom of every stop: where you are, his voice,
+ *  back, and on. One copy, so the staged stop and the plain one cannot
+ *  drift apart. */
+function Controls({
+  step,
+  stops,
+  opening,
+  last,
+  muted,
+  blocked,
+  toggleMute,
+  back,
+  next,
+}: {
+  step: number;
+  stops: TourStop[];
+  opening: boolean;
+  last: boolean;
+  muted: boolean;
+  blocked: boolean;
+  toggleMute: () => void;
+  back: () => void;
+  next: () => void;
+}) {
   return (
-    <div className="flex justify-center">
-      <span className="relative block w-[8.5rem] shrink-0 rounded-[1.4rem] border-2 border-navy-500 bg-navy-950 p-1 shadow-xl shadow-navy-950/70">
-        <span aria-hidden className="absolute left-1/2 top-1.5 z-10 h-1 w-10 -translate-x-1/2 rounded-full bg-navy-700" />
-        <video
-          src={src}
-          poster={poster}
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="metadata"
-          className="block aspect-[390/844] w-full rounded-[1.1rem] object-cover"
-        />
+    <div className="flex items-center gap-2">
+      <span className="flex flex-1 items-center gap-1">
+        {stops.map((_, i) => (
+          <span
+            key={i}
+            className={`h-1 flex-1 rounded-full transition-colors ${i <= step ? "bg-storytelling" : "bg-navy-600"}`}
+          />
+        ))}
       </span>
+      {/* His voice, on or off - and the way back in when a browser
+          refused to start it without a tap. */}
+      <button
+        type="button"
+        onClick={toggleMute}
+        aria-pressed={!muted}
+        aria-label={muted ? "Let Coach speak" : "Mute Coach"}
+        className={`grid size-9 shrink-0 place-items-center rounded-full border transition-colors ${
+          muted || blocked ? "border-navy-600 text-ink-faint hover:text-ink" : "border-storytelling/60 text-storytelling"
+        }`}
+      >
+        <SpeakerIcon muted={muted} className="size-4" />
+      </button>
+      {step > 0 && (
+        <button
+          type="button"
+          onClick={back}
+          aria-label="Back"
+          className="grid size-9 shrink-0 place-items-center rounded-full border border-navy-600 text-ink-muted transition-colors hover:text-ink"
+        >
+          <ChevronDownIcon className="size-4 rotate-90" />
+        </button>
+      )}
+      <button
+        type="button"
+        onClick={next}
+        className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-ink px-5 text-sm font-bold text-navy-900 transition-opacity hover:opacity-90"
+      >
+        {opening ? "Show me" : last ? "Done" : "Next"}
+        {!last && <ChevronDownIcon className="size-4 -rotate-90" />}
+      </button>
     </div>
   );
 }

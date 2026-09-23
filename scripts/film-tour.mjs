@@ -126,6 +126,88 @@ const FILMS = {
     await ease(p, 0, Math.min(700, h - 900), 2200);
     await p.waitForTimeout(1200);
   },
+
+  // Today, scrolled: the day's one thing to do, then what is under it.
+  async today(p) {
+    await p.goto(`${BASE}/`, { waitUntil: "load" });
+    await p.waitForTimeout(2200);
+    const h = await p.evaluate(() => document.body.scrollHeight);
+    await ease(p, 0, Math.min(900, h - 900), 4500);
+    await p.waitForTimeout(1200);
+    await ease(p, Math.min(900, h - 900), 0, 1800);
+    await p.waitForTimeout(700);
+  },
+
+  // A challenge, opened: the brief, the warm-up lessons, the record bar.
+  async challenge(p) {
+    await p.goto(`${BASE}/challenges/speaking-baseline`, { waitUntil: "load" });
+    await p.waitForTimeout(2400);
+    const h = await p.evaluate(() => document.body.scrollHeight);
+    await ease(p, 0, Math.min(1100, h - 900), 5200);
+    await p.waitForTimeout(1400);
+    await ease(p, Math.min(1100, h - 900), 300, 2000);
+    await p.waitForTimeout(900);
+  },
+
+  // Coach's page: his face, the wave, the button pressed.
+  async coach(p) {
+    await p.goto(`${BASE}/coach`, { waitUntil: "load" });
+    await p.waitForTimeout(3000);
+    const ask = p.locator("[data-tour='ask']").first();
+    const box = await ask.boundingBox().catch(() => null);
+    if (box) {
+      await p.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 16 });
+      await p.waitForTimeout(1200);
+    }
+    const h = await p.evaluate(() => document.body.scrollHeight);
+    await ease(p, 0, Math.min(500, Math.max(0, h - 900)), 1800);
+    await p.waitForTimeout(1600);
+    await ease(p, Math.min(500, Math.max(0, h - 900)), 0, 1200);
+    await p.waitForTimeout(800);
+  },
+
+  // The community: the boards, then everybody's before and afters.
+  async community(p) {
+    await p.goto(`${BASE}/community`, { waitUntil: "load" });
+    await p.waitForTimeout(2400);
+    const h = await p.evaluate(() => document.body.scrollHeight);
+    await ease(p, 0, Math.min(1300, h - 900), 6000);
+    await p.waitForTimeout(1200);
+    await ease(p, Math.min(1300, h - 900), 0, 2000);
+    await p.waitForTimeout(700);
+  },
+
+  // The trophy case, walked.
+  async trophies(p) {
+    await p.goto(`${BASE}/profile`, { waitUntil: "load" });
+    await p.waitForTimeout(2400);
+    await p
+      .locator("nav[aria-label='Dashboard sections'] button", { hasText: "Badges" })
+      .click()
+      .catch(() => {});
+    await p.waitForTimeout(1400);
+    const stage = p.locator("[data-tour='trophies']").first();
+    await stage.scrollIntoViewIfNeeded().catch(() => {});
+    await p.waitForTimeout(1200);
+    for (let i = 0; i < 3; i++) {
+      await p.getByLabel("Next trophy").click().catch(() => {});
+      await p.waitForTimeout(1500);
+    }
+    await p.waitForTimeout(800);
+  },
+
+  // Jump: the palette opened and a name typed into it.
+  async jump(p) {
+    await p.goto(`${BASE}/`, { waitUntil: "load" });
+    await p.waitForTimeout(2200);
+    await p.locator("[data-tour='jump']").first().click().catch(() => {});
+    await p.waitForTimeout(1200);
+    for (const ch of "metaphor") {
+      await p.keyboard.type(ch);
+      await p.waitForTimeout(160);
+    }
+    await p.waitForTimeout(2600);
+  },
 };
 
 async function film(name) {
@@ -150,6 +232,17 @@ async function film(name) {
     document.addEventListener("DOMContentLoaded", () => document.head.appendChild(st));
     try {
       window.localStorage.setItem("speak-better-tour-v1", "1");
+      for (const k of ["challenges", "skills", "cards", "dashboard", "community", "coach"]) {
+        window.localStorage.setItem(`speak-better-tour-${k}-v1`, "1");
+      }
+      // A student who has paid and has a little road behind them - the
+      // real pages, not the gate and not an empty dashboard.
+      const raw = window.localStorage.getItem("speak-better-state-v1");
+      const st = raw ? JSON.parse(raw) : {};
+      window.localStorage.setItem(
+        "speak-better-state-v1",
+        JSON.stringify({ ...st, unlocked: true, plan: "coached", level: "beginner", displayName: "Tariq" }),
+      );
     } catch {}
   });
 

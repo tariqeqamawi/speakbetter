@@ -18,6 +18,7 @@ import { JourneyPhases } from "@/components/journey-phases";
 import { SectionBanner } from "@/components/section-banner";
 import {
   ChallengesIcon,
+  ChevronDownIcon,
   CheckIcon,
   FilmIcon,
   FlameIcon,
@@ -45,6 +46,23 @@ import {
 // isn't one. See dashboard-sections.tsx. The panels themselves are built
 // once, here, and placed by whichever layout is on.
 
+/** A panel's way out to the section it is about. The dashboard is a
+ *  read-out, and every read-out should have a door: a student looking
+ *  at how many lessons they have watched is one tap from watching
+ *  another, at the top of the panel rather than only at the bottom. */
+function JumpTo({ href, label }: { href: string; label: string }) {
+  return (
+    <Link
+      href={href}
+      aria-label={label}
+      title={label}
+      className="grid size-7 shrink-0 place-items-center rounded-full border border-navy-600 text-ink-faint transition-colors hover:border-ink-faint hover:text-ink"
+    >
+      <ChevronDownIcon className="size-3.5 -rotate-90" />
+    </Link>
+  );
+}
+
 export default function DashboardPage() {
   const { state, ready } = useStore();
   const isComplete = useChallengeComplete();
@@ -71,8 +89,11 @@ export default function DashboardPage() {
         accentClass="text-structure"
         large
         right={
-          <span className="text-xs tabular-nums text-ink-faint">
-            {completed} of {challenges.length}
+          <span className="flex items-center gap-2">
+            <span className="text-xs tabular-nums text-ink-faint">
+              {completed} of {challenges.length}
+            </span>
+            <JumpTo href="/challenges" label="Go to Challenges" />
           </span>
         }
       />
@@ -162,14 +183,16 @@ export default function DashboardPage() {
   const lessonsPanel = (
     <section className="flex flex-col overflow-hidden rounded-2xl border border-navy-600 bg-navy-800">
       <SectionBanner
-        image="/sections/lessons.jpg"
-        title="Lessons"
+        title="Skills"
         Icon={SkillsIcon}
         accentClass="text-storytelling"
         large
         right={
-          <span className="text-xs tabular-nums text-ink-faint">
-            {watched} of {lessons.length}
+          <span className="flex items-center gap-2">
+            <span className="text-xs tabular-nums text-ink-faint">
+              {watched} of {lessons.length}
+            </span>
+            <JumpTo href="/skills" label="Go to Skills" />
           </span>
         }
       />
@@ -272,7 +295,7 @@ export default function DashboardPage() {
     },
     {
       id: "lessons",
-      name: "Lessons",
+      name: "Skills",
       Icon: SkillsIcon,
       accentClass: "text-storytelling",
       content: lessonsPanel,

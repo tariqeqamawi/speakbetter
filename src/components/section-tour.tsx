@@ -21,6 +21,24 @@ import { sectionTours, type SectionId } from "@/data/tour-script";
 
 const seenKey = (id: SectionId) => `speak-better-tour-${id}-v1`;
 
+/** Start the tour for a section from anywhere - the top bar's button
+ *  fires this, and the SectionTour mounted on that page answers it. */
+export function startSectionTour(section: SectionId) {
+  window.dispatchEvent(new CustomEvent("speak-better:section-tour", { detail: section }));
+}
+
+/** Which section a path belongs to, or null for the ones that have no
+ *  tour of their own (a lesson, a single challenge, the review). */
+export function sectionOf(pathname: string): SectionId | null {
+  if (pathname.startsWith("/skills/cards")) return "cards";
+  if (pathname.startsWith("/skills")) return "skills";
+  if (pathname.startsWith("/challenges")) return "challenges";
+  if (pathname.startsWith("/profile")) return "dashboard";
+  if (pathname.startsWith("/community")) return "community";
+  if (pathname.startsWith("/coach")) return "coach";
+  return null;
+}
+
 export function SectionTour({ section }: { section: SectionId }) {
   const { state, ready } = useStore();
   const [running, setRunning] = useState(false);
@@ -43,6 +61,15 @@ export function SectionTour({ section }: { section: SectionId }) {
     }, 2200);
     return () => window.clearTimeout(t);
   }, [ready, state.unlocked, section]);
+
+  // Asked for from the top bar.
+  useEffect(() => {
+    const onOpen = (e: Event) => {
+      if ((e as CustomEvent<SectionId>).detail === section) setRunning(true);
+    };
+    window.addEventListener("speak-better:section-tour", onOpen);
+    return () => window.removeEventListener("speak-better:section-tour", onOpen);
+  }, [section]);
 
   // While it runs, Coach's pop-ins stand down.
   useEffect(() => {
