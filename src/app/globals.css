@@ -572,8 +572,12 @@ svg.soundwave-c {
   transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Forty-six degrees folded the far end of the road into a band and
+ * left most of the frame empty above it. Thirty-eight keeps real
+ * depth - the top of the plane still recedes and the checkpoints up
+ * there are visibly smaller - without flattening the road. */
 .map-3d {
-  transform: perspective(1400px) rotateX(35deg);
+  transform: perspective(1150px) rotateX(38deg);
 }
 
 /* Every wrapper between the tilted plane and a .map-pin must carry the
@@ -589,7 +593,7 @@ svg.soundwave-c {
 }
 
 .map-3d .map-pin {
-  transform: rotateX(-35deg);
+  transform: rotateX(-38deg);
   transform-origin: 50% 100%;
 }
 

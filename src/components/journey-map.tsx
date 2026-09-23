@@ -280,9 +280,16 @@ export function JourneyMap({
 
   // The map is far taller than the screen, so a fixed tilt origin would
   // throw most of it beyond the horizon. Instead the origin rides the
-  // viewport center while you scroll - the band you're looking at stays
-  // level, the road recedes above it and swells below, the way a maps
-  // app tilts.
+  // point you are standing at - which is low in the viewport, not the
+  // middle of it. Everything above that point recedes into the
+  // distance and shrinks; the checkpoint nearest the bottom is the
+  // biggest thing on screen. Scrolling then walks you forward down the
+  // road: the one you were standing on swells and slides past you, and
+  // the next one grows out of the distance to take its place.
+  //
+  // (Anchoring at the middle tilted the road away above AND swelled it
+  // below, which reads as looking down at a table rather than as
+  // standing on a path.)
   const tiltRef = useRef<HTMLDivElement>(null);
   const [originY, setOriginY] = useState(0);
   useEffect(() => {
@@ -296,9 +303,13 @@ export function JourneyMap({
       // would feed the origin back into itself. Divided by the zoom,
       // since the origin is set in the plane's own (zoomed) units.
       const rect = scene.getBoundingClientRect();
+      // Two thirds down rather than halfway: the ground a student is
+      // standing on belongs nearer their feet than their eyeline -
+      // but anchoring it at the very bottom folds the whole road into
+      // a band and leaves the frame empty above it.
       const mid = sp
-        ? sp.getBoundingClientRect().top + sp.clientHeight / 2
-        : window.innerHeight / 2;
+        ? sp.getBoundingClientRect().top + sp.clientHeight * 0.66
+        : window.innerHeight * 0.66;
       const center = (mid - rect.top) / zoomRef.current;
       setOriginY(Math.max(0, Math.min(el.offsetHeight, center)));
     };
