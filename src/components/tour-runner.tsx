@@ -194,7 +194,7 @@ export function TourRunner({
     return createPortal(
       <div className="fixed inset-0 z-[60] flex flex-col bg-navy-950/95 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={`Guided tour: ${stop.title}`}>
         {/* The film, as big as the screen will allow. */}
-        <div className="relative flex min-h-0 flex-1 items-center justify-center px-4 pt-[max(1rem,env(safe-area-inset-top))]">
+        <div className="relative flex min-h-0 flex-1 items-center justify-center px-2 pt-[max(0.5rem,env(safe-area-inset-top))]">
           <span className="relative block h-full max-h-full overflow-hidden rounded-[1.6rem] border-2 border-navy-600 bg-navy-950 shadow-2xl shadow-navy-950">
             <video
               key={stop.film.src}
@@ -220,7 +220,7 @@ export function TourRunner({
         </div>
 
         {/* Coach, talking over it from the corner. */}
-        <div className="shrink-0 px-3 pb-[max(0.9rem,env(safe-area-inset-bottom))] pt-3">
+        <div className="shrink-0 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2">
           <div className="mx-auto flex max-w-sm flex-col gap-3 rounded-2xl border border-navy-500 bg-navy-850/95 p-3.5 shadow-2xl shadow-navy-950 backdrop-blur">
             <div className="flex items-start gap-3">
               <span className="tour-lion w-12 shrink-0">
