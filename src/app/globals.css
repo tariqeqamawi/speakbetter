@@ -1940,6 +1940,14 @@ html.bare .demo-banner {
   }
 }
 
+/* A map nobody is looking at costs nothing: every animation inside it
+ * stops until it comes back on screen. */
+.map-asleep *,
+.map-asleep *::after,
+.map-asleep *::before {
+  animation-play-state: paused !important;
+}
+
 /* A lesson stepping into the middle of the library's shelf. */
 .gallery-in {
   animation: gallery-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;

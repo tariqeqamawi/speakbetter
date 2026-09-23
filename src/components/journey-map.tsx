@@ -231,6 +231,19 @@ export function JourneyMap({
   }, [zoomTo]);
   const zoomedIn = zoom >= ZOOM_DETAIL;
 
+  // The map is the most expensive thing in the app to keep alive - a
+  // tilted plane, a breathing grid, voices surfacing - so it stops
+  // when it isn't being looked at. Matters most on the landing page,
+  // where it rides inside a phone a long way down the page.
+  const [onScreen, setOnScreen] = useState(true);
+  useEffect(() => {
+    const scene = sceneRef.current;
+    if (!scene) return;
+    const io = new IntersectionObserver(([entry]) => setOnScreen(entry.isIntersecting), { rootMargin: "200px" });
+    io.observe(scene);
+    return () => io.disconnect();
+  }, []);
+
   // ---- who else is here, for the zoomed-in view ----
   const crowd = useMemo(() => presence(), []);
   const crowdFor = (slug: string) => crowd.find((c) => c.slug === slug);
@@ -276,6 +289,7 @@ export function JourneyMap({
       const center = (mid - rect.top) / zoomRef.current;
       setOriginY(Math.max(0, Math.min(el.offsetHeight, center)));
     };
+    if (!onScreen) return;
     const t = window.setTimeout(update, 0);
     const target: HTMLElement | Window = sp ?? window;
     target.addEventListener("scroll", update, { passive: true });
@@ -285,7 +299,7 @@ export function JourneyMap({
       target.removeEventListener("scroll", update);
       window.removeEventListener("resize", update);
     };
-  }, [zoom]);
+  }, [zoom, onScreen]);
 
   // The student's own recordings, one per passed challenge where this
   // device still holds one - the newest. Read once; posters only.
@@ -391,6 +405,7 @@ export function JourneyMap({
   const [pop, setPop] = useState<{ node: number; post: number; key: number } | null>(null);
   const nodeCount = nodes.length;
   useEffect(() => {
+    if (!onScreen) return;
     let alive = true;
     let key = 0;
     let t: number;
@@ -408,7 +423,7 @@ export function JourneyMap({
       alive = false;
       clearTimeout(t);
     };
-  }, [nodeCount]);
+  }, [nodeCount, onScreen]);
 
   // The colored territory each phase owns, banner to banner.
   const territories = banners.map((b, i) => ({
@@ -515,7 +530,7 @@ export function JourneyMap({
 
       <div
         ref={sceneRef}
-        className="map-scene"
+        className={`map-scene ${onScreen ? "" : "map-asleep"}`}
         data-zoom={zoomedIn ? "in" : "out"}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}

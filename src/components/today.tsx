@@ -13,6 +13,7 @@ import { challengeProgress } from "@/lib/challenge-progress";
 import { categoryById } from "@/data/categories";
 import { VideoStill } from "@/components/video-still";
 import { DailyQuests } from "@/components/daily-quests";
+import { VideoIcon } from "@/components/icons";
 import { LevelIcon, levelMeta } from "@/components/level-icon";
 import { FlameIcon } from "@/components/icons";
 import { CheckIcon, PlayIcon } from "@/components/icons";
@@ -61,6 +62,29 @@ export function Today() {
           <Stat label="Day streak" value={streak} accent="text-acting" />
         </div>
       </header>
+
+      {/* Nothing behind them yet: one line saying where to start,
+          rather than three zeroes and no instruction. */}
+      {state.attempts.length === 0 && (
+        <section className="flex flex-col items-start gap-3 rounded-2xl border border-acting/40 bg-navy-800 p-5 shadow-[0_0_40px_-18px_var(--color-acting)]">
+          <span className="text-[0.65rem] font-bold uppercase tracking-[0.3em] text-acting">Start here</span>
+          <p className="text-lg font-semibold leading-snug text-ink text-balance">
+            Record your speaking baseline - two minutes, no preparation. It&apos;s the &ldquo;before&rdquo; everything
+            else gets measured against.
+          </p>
+          <p className="text-sm text-ink-muted">
+            Coach watches it and comes back with your score, your seven colours and the one thing to do next. Nobody
+            else ever sees the video.
+          </p>
+          <Link
+            href="/challenges/speaking-baseline"
+            className="inline-flex min-h-11 items-center gap-2 rounded-full bg-acting px-5 text-sm font-bold text-navy-950 shadow-[0_0_22px_-6px_var(--color-acting)] transition-opacity hover:opacity-95"
+          >
+            <VideoIcon className="size-4" />
+            Record your first take
+          </Link>
+        </section>
+      )}
 
       {/* A missed day, while it can still be bought back. */}
       <StreakRescue />

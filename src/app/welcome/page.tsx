@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useStore, type Level } from "@/lib/store";
 import { LevelIcon, levelMeta } from "@/components/level-icon";
+import { startTour } from "@/components/guided-tour";
 
 // Onboarding (master plan §09): one plain, human question decides the
 // starting level. Level changes stay manual, in the student's hands.
@@ -30,9 +31,13 @@ export default function WelcomePage() {
 
   if (!ready || !state.unlocked) return null;
 
-  const finish = () => {
+  // The end of welcome is when a new student is most ready to be shown
+  // around - not the next time they happen to open Today. The tour
+  // starts on Today, so that's where they're sent.
+  const finish = (withTour: boolean) => {
     setIntention(draft);
-    router.push("/challenges");
+    router.push("/");
+    if (withTour) window.setTimeout(startTour, 600);
   };
 
   return (
@@ -110,22 +115,32 @@ export default function WelcomePage() {
               {draft.length}/280
             </span>
           </label>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-3">
             <button
               type="button"
-              onClick={finish}
+              onClick={() => finish(true)}
               disabled={draft.trim().length === 0}
-              className="rounded-lg bg-ink px-5 py-2.5 text-sm font-semibold text-navy-900 transition-opacity hover:opacity-90 disabled:opacity-40"
+              className="coach-pill flex min-h-12 items-center justify-center rounded-full text-sm font-bold text-navy-950 disabled:opacity-40"
             >
-              Start the journey
+              <span className="text-navy-950">Show me around - one minute</span>
             </button>
-            <button
-              type="button"
-              onClick={() => router.push("/challenges")}
-              className="text-xs text-ink-faint transition-colors hover:text-ink-muted"
-            >
-              Skip for now
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => finish(false)}
+                disabled={draft.trim().length === 0}
+                className="rounded-lg bg-ink px-5 py-2.5 text-sm font-semibold text-navy-900 transition-opacity hover:opacity-90 disabled:opacity-40"
+              >
+                Straight in, thanks
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push("/")}
+                className="text-xs text-ink-faint transition-colors hover:text-ink-muted"
+              >
+                Skip for now
+              </button>
+            </div>
           </div>
         </div>
       )}
