@@ -45,11 +45,18 @@ export function Landing() {
 
         {/* The promise, in one breath - then the rest in one more. */}
         <div className="flex max-w-2xl flex-col items-center gap-3">
+          {/* The cohort is the offer now, so the first line says what
+              is being sold: six weeks, dated, with everybody else on
+              it - not a course that sits on a shelf. */}
+          <span className="rounded-full border border-figurative/50 bg-figurative/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-figurative">
+            A guided 6-week experience
+          </span>
           <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
-            Master public speaking in minutes, not months.
+            Discover your true colors and roar on screen or stage.
           </h1>
           <p className="text-xl font-medium text-figurative text-balance sm:text-2xl">
-            Step into your true power as a speaker. Let your true colors shine and roar from screen or stage.
+            Six weeks. Master public speaking in minutes a day, not months - and step into your true power as a
+            speaker.
           </p>
           <p className="max-w-xl text-lg text-ink-muted text-balance">
             Overcome fears, nerves and shyness in a fully gamified, interactive app. Watch short one-to-two-minute

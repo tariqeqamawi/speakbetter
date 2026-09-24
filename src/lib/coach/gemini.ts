@@ -10,6 +10,7 @@
 
 import { GoogleGenAI, MediaResolution, createPartFromUri } from "@google/genai";
 import type { CoachContext } from "./context";
+import { cachedBrief, dropCachedBrief } from "./cache";
 import { RESPONSE_SCHEMA, type CoachVerdict } from "./rubric";
 
 /**
@@ -71,7 +72,13 @@ export async function review(
     await untilActive(ai, name);
     const t1 = Date.now();
 
-    const result = await ai.models.generateContent({
+    // The brief is the same on every review, so it is held on Google's
+    // side and referenced rather than sent again (lib/coach/cache.ts).
+    // Null means inline, which is always safe.
+    const cache = await cachedBrief(ai, model, context.system);
+
+    const ask = (cachedContent: string | null) =>
+      ai.models.generateContent({
       model,
       contents: [
         {
@@ -83,7 +90,9 @@ export async function review(
         },
       ],
       config: {
-        systemInstruction: context.system,
+        // One or the other, never both: a cached brief already carries
+        // the system instruction.
+        ...(cachedContent ? { cachedContent } : { systemInstruction: context.system }),
         responseMimeType: "application/json",
         responseJsonSchema: RESPONSE_SCHEMA,
         // Low resolution on the video, which is the single biggest
@@ -107,6 +116,18 @@ export async function review(
         temperature: 0.2,
       },
     });
+
+    // A cache can expire between the check and the call, or be refused
+    // outright. Either way the review still happens.
+    let result;
+    try {
+      result = await ask(cache);
+    } catch (err) {
+      if (!cache) throw err;
+      console.warn("[coach] cached brief refused, retrying inline:", err instanceof Error ? err.message : err);
+      dropCachedBrief();
+      result = await ask(null);
+    }
     const t2 = Date.now();
 
     const text = result.text;

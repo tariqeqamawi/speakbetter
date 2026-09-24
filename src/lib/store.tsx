@@ -128,6 +128,10 @@ export interface AppState {
   /** XP spent - on buying back a missed day, so far. Subtracted from
    *  the earned total by standing() in lib/progress. */
   xpSpent?: number;
+  /** Coaching credits bought on top of the plan's allowance. Reviews
+   *  used are counted from the attempts themselves, so this is only
+   *  what was purchased (data/credits.ts). */
+  creditsBought?: number;
   /** When each lesson was watched (vimeo id → yyyy-mm-dd). The watched
    *  list predates this, so older entries may be absent - anything that
    *  reads it must treat missing as "not today". */
@@ -158,6 +162,7 @@ const EMPTY: AppState = {
   frozenDays: [],
   freezesRemaining: STARTING_FREEZES,
   xpSpent: 0,
+  creditsBought: 0,
   watchedOn: {},
   questChests: [],
   intention: "",
@@ -190,6 +195,8 @@ interface StoreApi {
   /** Pay XP to cover a missed day and keep the streak alive. Returns
    *  false when the day isn't the one at risk, or the XP isn't there. */
   keepStreak: (day: string, price: number) => boolean;
+  /** After a top-up is paid for. */
+  addCredits: (reviews: number) => void;
 }
 
 /**
@@ -458,6 +465,8 @@ function StoreCore({
       // counts it) and the price goes on the ledger. Refused if the
       // day is already covered or the XP isn't there - the check is
       // here rather than in the button, so it can't be clicked twice.
+      addCredits: (reviews) =>
+        applyWithBadges((p) => ({ ...p, creditsBought: (p.creditsBought ?? 0) + Math.max(0, reviews) })),
       keepStreak: (day, price) => {
         const current = stateRef.current;
         if (current.frozenDays.includes(day)) return false;

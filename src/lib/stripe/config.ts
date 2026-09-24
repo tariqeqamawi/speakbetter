@@ -19,7 +19,7 @@ export type PaidPlan = Exclude<Plan, "trial">;
 
 /** What the checkout is buying: a whole tier, or the step up from
  *  Starter to the Full Experience. */
-export type Purchase = PaidPlan | "upgrade";
+export type Purchase = PaidPlan | "upgrade" | "credits-small" | "credits-medium" | "credits-large";
 
 export function stripeEnabled(): boolean {
   return Boolean(process.env.STRIPE_SECRET_KEY);
@@ -42,6 +42,9 @@ export function priceId(what: Purchase): string | undefined {
     coached: process.env.STRIPE_PRICE_FULL,
     founders: process.env.STRIPE_PRICE_ULTIMATE,
     upgrade: process.env.STRIPE_PRICE_UPGRADE,
+    "credits-small": process.env.STRIPE_PRICE_CREDITS_SMALL,
+    "credits-medium": process.env.STRIPE_PRICE_CREDITS_MEDIUM,
+    "credits-large": process.env.STRIPE_PRICE_CREDITS_LARGE,
   };
   return map[what];
 }

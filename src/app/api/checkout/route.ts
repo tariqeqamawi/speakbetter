@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { priceCents, tiers, UPGRADE_CENTS } from "@/data/pricing";
+import { creditPacks } from "@/data/credits";
 import { priceId, siteUrl, stripe, stripeEnabled, type Purchase } from "@/lib/stripe/config";
 
 // Start a checkout: the app posts what is being bought, Stripe hands
@@ -11,6 +12,12 @@ import { priceId, siteUrl, stripe, stripeEnabled, type Purchase } from "@/lib/st
 // better than sending somebody to a page that cannot take their money.
 
 export const maxDuration = 30;
+
+/** Reviews each pack adds. Kept beside the prices it is sold at, in
+ *  data/credits.ts, so the two can never drift. */
+const CREDITS: Record<string, number> = Object.fromEntries(
+  creditPacks.map((p) => [`credits-${p.id}`, p.reviews]),
+);
 
 const WHAT: Record<Purchase, { name: string; blurb: string; cents: number }> = {
   foundations: {
@@ -28,6 +35,21 @@ const WHAT: Record<Purchase, { name: string; blurb: string; cents: number }> = {
     blurb: "Six weeks of the Full Experience, the live cohort, the session with the teacher, and the printed deck and book to keep.",
     cents: priceCents.founders,
   },
+  "credits-small": {
+    name: "Speak Better - 25 coaching credits",
+    blurb: "25 more reviews from Coach: he watches the take, scores the seven colors, and tells you what to change.",
+    cents: 500,
+  },
+  "credits-medium": {
+    name: "Speak Better - 60 coaching credits",
+    blurb: "60 more reviews from Coach, at a better rate per review.",
+    cents: 1000,
+  },
+  "credits-large": {
+    name: "Speak Better - 150 coaching credits",
+    blurb: "150 more reviews from Coach - enough for the rest of the cohort whatever you do.",
+    cents: 2000,
+  },
   upgrade: {
     name: "Speak Better - upgrade to the Full Experience",
     blurb: "Coach out loud, and Coach on call, for the rest of your six weeks. The difference between Starter and the Full Experience.",
@@ -44,8 +66,10 @@ export async function POST(request: Request) {
   const item = WHAT[buy];
   if (!item) return NextResponse.json({ error: "Nothing to buy." }, { status: 400 });
 
-  // What they end up with. An upgrade lands on the Full Experience.
-  const plan = buy === "upgrade" ? "coached" : buy;
+  // What they end up with. An upgrade lands on the Full Experience; a
+  // pack of credits changes no plan at all, it just adds reviews.
+  const credits = CREDITS[buy] ?? 0;
+  const plan = credits > 0 ? "" : buy === "upgrade" ? "coached" : buy;
   const site = siteUrl(request);
   const known = priceId(buy);
 
@@ -70,6 +94,7 @@ export async function POST(request: Request) {
       // page both know what was bought without looking it up.
       metadata: {
         plan,
+        credits: String(credits),
         bought: buy,
         cohort: typeof body.cohort === "string" ? body.cohort.slice(0, 40) : "",
       },

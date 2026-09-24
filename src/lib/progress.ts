@@ -82,10 +82,50 @@ export function scoreShare(score: number): number {
   return Math.max(0.5, Math.min(1, share));
 }
 
+/**
+ * What brevity is worth.
+ *
+ * A story needs room, so the story challenges keep their three
+ * minutes - it is genuinely hard to tell one in less, and a cap that
+ * forces a summary teaches the opposite of what this course is for.
+ * But told in two, the same story is a better story: the course has a
+ * lesson called Staying Succinct and this is that lesson with a number
+ * on it.
+ *
+ * So the time is not taken away, it is priced. Two minutes pays
+ * everything; every thirty seconds past that pays a little less, down
+ * to 70% at the full three. A student who needs the room still passes
+ * and still earns well - they simply learn, from their own XP, that
+ * the tighter telling was worth more.
+ *
+ * It is also, not by accident, the cheapest minute in the app: a
+ * review costs strictly by the second of footage. That alignment is
+ * the reason to do it, not the reason it is right.
+ */
+export function brevityShare(seconds: number, maxSeconds: number): number {
+  // Only where there is room to be brief. A thirty-second pitch or a
+  // two-minute baseline is already as tight as it is asked to be.
+  if (maxSeconds < 150 || seconds <= 0) return 1;
+  if (seconds <= 120) return 1;
+  if (seconds <= 150) return 0.85;
+  return 0.7;
+}
+
+/** The bands, for saying them on the challenge page before a take. */
+export function brevityBands(maxSeconds: number): { label: string; share: number }[] | null {
+  if (maxSeconds < 150) return null;
+  return [
+    { label: "Under 2:00", share: 1 },
+    { label: "2:00 - 2:30", share: 0.85 },
+    { label: "2:30 - 3:00", share: 0.7 },
+  ];
+}
+
 /** What a pass at this score is worth on this challenge. */
-export function challengeXpFor(challenge: Challenge, score: number): number {
+export function challengeXpFor(challenge: Challenge, score: number, seconds?: number): number {
   if (challenge.passive) return challengeXp(challenge);
-  return Math.round(challengeXp(challenge) * scoreShare(score));
+  const brevity = seconds === undefined ? 1 : brevityShare(seconds, challenge.maxSeconds ?? 180);
+  return Math.round(challengeXp(challenge) * scoreShare(score) * brevity);
 }
 
 export interface Rank {
@@ -172,16 +212,20 @@ export interface RankStanding {
 export function standing(state: AppState): RankStanding {
   // A challenge pays its best passing take - so improving a score on
   // one already passed is worth something, and never less than before.
-  const bestPassed = new Map<string, number>();
+  const bestPassed = new Map<string, { score: number; seconds: number }>();
   for (const a of state.attempts) {
     if (!a.passed) continue;
-    bestPassed.set(a.challengeSlug, Math.max(bestPassed.get(a.challengeSlug) ?? 0, a.score));
+    const held = bestPassed.get(a.challengeSlug);
+    if (!held || a.score > held.score) bestPassed.set(a.challengeSlug, { score: a.score, seconds: a.durationSec });
   }
   // Summed item by item rather than by multiplying counts, because a
   // lesson and a challenge are each worth what they are individually.
   const challengeTotal = challenges
     .filter((c) => bestPassed.has(c.slug))
-    .reduce((sum, c) => sum + challengeXpFor(c, bestPassed.get(c.slug)!), 0);
+    .reduce((sum, c) => {
+      const best = bestPassed.get(c.slug)!;
+      return sum + challengeXpFor(c, best.score, best.seconds);
+    }, 0);
   const lessonTotal = state.watchedLessons.reduce(
     (sum, id) => sum + lessonXp(id),
     0,

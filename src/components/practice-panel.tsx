@@ -258,7 +258,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
         mock: result.mock || undefined,
         // Settled here, on the streak they had when they sent it.
         bonusXp: result.passed
-          ? streakBonusXp(challengeXpFor(challenge, result.score), currentStreak(state))
+          ? streakBonusXp(challengeXpFor(challenge, result.score, durationSec), currentStreak(state))
           : 0,
       };
       recordAttempt(attempt);
@@ -1242,7 +1242,7 @@ function XpSplash({
   onClose: () => void;
 }) {
   const max = challengeXp(challenge);
-  const earned = attempt.passed ? challengeXpFor(challenge, attempt.score) : 0;
+  const earned = attempt.passed ? challengeXpFor(challenge, attempt.score, attempt.durationSec) : 0;
   const bonus = attempt.bonusXp ?? 0;
   const streak = currentStreak(useStore().state);
   useEffect(() => {

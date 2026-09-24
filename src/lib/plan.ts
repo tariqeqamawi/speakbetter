@@ -1,6 +1,7 @@
 import type { AppState } from "@/lib/store";
 import type { Plan } from "@/data/pricing";
 import { challenges, type Challenge } from "@/data/challenges";
+import { includedReviews, LOW_AT } from "@/data/credits";
 
 // What a student's plan lets them do (data/pricing.ts). There are two
 // ways to be coached, and the difference is the voice:
@@ -55,3 +56,30 @@ export function trialReviewsUsed(state: Pick<AppState, "attempts">): number {
 }
 
 export const TRIAL_REVIEWS = 1;
+
+/**
+ * Reviews left: what the plan included, plus anything topped up,
+ * minus what has been spent.
+ *
+ * A review is spent when Coach actually watches a take - a mock review
+ * costs nothing and is not counted. The allowance is deliberately
+ * larger than ordinary practice needs (a take a day for six weeks is
+ * 42) so that nobody doing the course as intended ever meets this;
+ * it exists for the evening somebody re-records the same challenge
+ * eleven times, which is the case that makes an unlimited plan
+ * impossible to offer honestly.
+ */
+export function reviewsLeft(state: Pick<AppState, "plan" | "unlocked" | "attempts" | "creditsBought">): number {
+  const allowance = includedReviews[planOf(state)] ?? 0;
+  const bought = state.creditsBought ?? 0;
+  const spent = state.attempts.filter((a) => !a.mock).length;
+  return Math.max(0, allowance + bought - spent);
+}
+
+/** Worth warning about, but not yet blocking. */
+export function reviewsRunningLow(
+  state: Pick<AppState, "plan" | "unlocked" | "attempts" | "creditsBought">,
+): boolean {
+  const left = reviewsLeft(state);
+  return left > 0 && left <= LOW_AT;
+}

@@ -58,7 +58,7 @@ export function JourneyPhases({
     const best = state.attempts
       .filter((a) => a.challengeSlug === c.slug && a.passed)
       .sort((a, b) => b.score - a.score)[0];
-    return sum + (best ? challengeXpFor(c, best.score) : c.passive && isComplete(c.slug) ? challengeXp(c) : 0);
+    return sum + (best ? challengeXpFor(c, best.score, best.durationSec) : c.passive && isComplete(c.slug) ? challengeXp(c) : 0);
   }, 0);
   const worth = inPhase.reduce((sum, c) => sum + challengeXp(c), 0);
 
