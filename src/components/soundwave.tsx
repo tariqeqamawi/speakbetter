@@ -60,14 +60,21 @@ const variants: Record<Variant, VariantSpec> = {
     // Clear of the waves' full reach at the center, so nothing is cut
     // where the band is fullest; the taper does its work out toward
     // the points instead.
-    lens: 27,
+    lens: 34,
     // Thinner and more transparent than they look: each ribbon is drawn
     // twice - a blurred halo under a sharper core - so the color is
     // see-through everywhere and blooms where ribbons cross.
+    //
+    // Carrying more weight than it used to, and the lens opened with
+    // it: widening the ribbons alone would only have pushed them into
+    // the clip and lost the swell again. The taper still does its work
+    // out at the points, so the band is fattest directly under the
+    // lion and thins to nothing at both ends - which is the shape the
+    // mark draws.
     waves: [
-      { period: 104, amplitude: 13, opacity: 0.34, width: 7, className: "soundwave-a" },
-      { period: 146, amplitude: 9.5, opacity: 0.3, width: 5.5, className: "soundwave-b" },
-      { period: 74, amplitude: 6, opacity: 0.26, width: 4, className: "soundwave-c" },
+      { period: 104, amplitude: 14, opacity: 0.38, width: 11, className: "soundwave-a" },
+      { period: 146, amplitude: 10.5, opacity: 0.34, width: 8.5, className: "soundwave-b" },
+      { period: 74, amplitude: 6.5, opacity: 0.29, width: 6, className: "soundwave-c" },
     ],
   },
   // Under the talking lion, at a third of the hero's width: the same
@@ -78,12 +85,14 @@ const variants: Record<Variant, VariantSpec> = {
     midY: 40,
     fade: [3, 40, 96, 100],
     lens: 30,
-    // Fat ribbons rather than wires: this is the mark's own wave, under
-    // the lion, at the size the brand draws it.
+    // Ribbons rather than wires - but ribbons, not a slab. At 17 units
+    // wide the three overlapped into one solid band with a hard pinch
+    // at each end, which read as a painted shape rather than sound.
+    // Narrower, and the individual ribbons are legible again.
     waves: [
-      { period: 96, amplitude: 17, opacity: 0.68, width: 17, className: "soundwave-a" },
-      { period: 138, amplitude: 12.5, opacity: 0.6, width: 13.5, className: "soundwave-b" },
-      { period: 70, amplitude: 8.5, opacity: 0.55, width: 10, className: "soundwave-c" },
+      { period: 96, amplitude: 16, opacity: 0.6, width: 12, className: "soundwave-a" },
+      { period: 138, amplitude: 12, opacity: 0.52, width: 9.5, className: "soundwave-b" },
+      { period: 70, amplitude: 8, opacity: 0.46, width: 7, className: "soundwave-c" },
     ],
   },
 };

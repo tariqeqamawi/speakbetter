@@ -20,6 +20,8 @@ import Link from "next/link";
 import { CoachDemo } from "@/components/coach-demo";
 import { SpectrumDemo } from "@/components/spectrum-demo";
 import { HeroBeat } from "@/components/hero-beat";
+import { TheReality } from "@/components/the-reality";
+import { WhatItIs } from "@/components/what-it-is";
 import { RoarMark } from "@/components/roar-mark";
 import { LionMouth } from "@/components/lion-mouth";
 import { FirstChallenge } from "@/components/first-challenge";
@@ -63,54 +65,44 @@ export function Landing() {
               Two facts, in the order they are asked: when does it
               start, and what happens if I buy right now. */}
           <CohortDates />
-          <p className="max-w-xl text-lg text-ink-muted text-balance">
-            Overcome fears, nerves and shyness in a fully gamified, interactive app. Watch short one-to-two-minute
-            lessons and upload one-to-two-minute challenges. Now you don&apos;t only get to learn - you get to
-            practice, and a space to do it in.
-          </p>
+          <ul className="flex max-w-xl flex-col gap-3 text-left">
+            {[
+              <>Overcome fears, nerves and shyness in a fully gamified, interactive app.</>,
+              <>
+                Watch short <strong className="font-semibold text-ink">1-2 minute</strong> skills videos. Upload{" "}
+                <strong className="font-semibold text-ink">1-2 minute</strong> challenges.
+              </>,
+              <>
+                Now you don&apos;t only get to learn - you get to{" "}
+                <strong className="font-semibold text-ink">practice</strong>, from the comfort of your phone.
+              </>,
+            ].map((line, i) => (
+              <li key={i} className="flex items-start gap-3">
+                <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-mindset/15 text-mindset">
+                  <CheckIcon className="size-3.5" />
+                </span>
+                <span className="text-lg text-ink-muted text-balance">{line}</span>
+              </li>
+            ))}
+          </ul>
         </div>
 
         {/* The premise and its punchline, each with its picture: the
             concert you watch from your seat, the lecture that ticks by. */}
         <HeroBeat />
 
-        {/* The other side of it. */}
-        <p className="max-w-2xl text-xl font-medium leading-snug text-ink text-balance sm:text-2xl">
-          Imagine the cameras are rolling, the audience is waiting, the stage is set - and you have no fear, no
-          nerves, just full confidence and the ability to deliver at a level of mastery with no notes and no
-          notice.{" "}
-          <span className="text-figurative">This is the reality waiting for you on the other side of Speak Better.</span>
-        </p>
-        <p className="max-w-2xl text-lg text-ink-muted text-balance">
-          Master public speaking - overcome fear and shyness in minutes rather than months - in a fully
-          gamified, interactive learning experience like no other: short nano lessons, on-camera challenges,
-          and a coach trained in the methodology that watches your every take and gives you detailed feedback.
-        </p>
-        <p className="max-w-xl text-sm text-ink-faint text-balance">
-          Speak Better is built on practice: short lessons, real on-camera challenges, and true interactive
-          feedback based on your physical and spoken performance.
-        </p>
-        {/* The value, counted - what's in the box, before the box is
-            opened below. */}
-        <ul className="flex flex-wrap items-center justify-center gap-2">
-          {[
-            { n: "81", label: "nano lessons", color: "text-storytelling" },
-            { n: "24", label: "interactive challenges", color: "text-structure" },
-            { n: "79", label: "cards in the digital deck", color: "text-figurative" },
-            { n: "1", label: "AI coach trained on the method", color: "text-advanced" },
-            { n: "7", label: "colors of speaking to light up", color: "text-mindset" },
-          ].map((v) => (
-            <li
-              key={v.label}
-              className="flex items-baseline gap-1.5 rounded-full border border-navy-600 bg-navy-800/70 px-3.5 py-1.5"
-            >
-              <span className={`text-base font-bold tabular-nums ${v.color}`}>{v.n}</span>
-              <span className="text-xs font-medium text-ink-muted">{v.label}</span>
-            </li>
-          ))}
-          <li className="px-2 text-xs font-medium text-ink-faint">…and the trophies, ranks, streaks and board to go with them</li>
-        </ul>
-        <div className="w-full max-w-2xl">
+        {/* The other side of it - said, and then shown. */}
+        <TheReality />
+
+        {/* What it is, and what is in it. The second paragraph here used
+            to say "master public speaking, overcome fear and shyness in
+            minutes rather than months" for the third time on one screen;
+            by then the reader has either believed it or stopped
+            reading, and repeating it spends trust rather than building
+            it. What they have not been told yet is HOW - so that is
+            what this says now. */}
+        <WhatItIs />
+        <div className="flex w-full max-w-2xl flex-col gap-2">
           {/* Facade poster is a library still of the same instructor - the
               intro video itself is unlisted, so Vimeo offers no poster. */}
           <LazyVimeoPlayer
@@ -118,6 +110,9 @@ export function Landing() {
             title="Speak Better - Intro"
             poster="/thumbs/1080612884.jpg"
           />
+          <p className="text-center text-sm font-medium text-ink-muted">
+            See a studio-recorded lesson for yourself.
+          </p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <a href="#try" className="cta-neon-wrap rounded-xl">
@@ -136,7 +131,13 @@ export function Landing() {
           belongs to the right card only, so the difference is felt
           before it's read. */}
       <section className="flex flex-col gap-6">
-        <h2 className="sr-only">Practice, not playback</h2>
+        {/* This comparison was carrying a screen-reader-only heading,
+            which meant the single clearest claim on the page - that
+            this is a different KIND of thing from what they have
+            bought before - was invisible to everybody who can see. */}
+        <h2 className="mb-2 max-w-3xl text-center text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+          How Speak Better is different to every other speaking course or app on the market
+        </h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-4 rounded-2xl border border-navy-600 bg-navy-900/60 p-6 sm:p-7">
             <div className="relative -mx-2 -mt-2 aspect-[3/2] overflow-hidden rounded-xl">
@@ -394,7 +395,9 @@ export function Landing() {
       <section id="pricing" className="flex flex-col items-center gap-6">
         <div className="flex flex-col items-center gap-2 text-center">
           <div className="spectrum-rule h-1 w-16 rounded-full" />
-          <h2 className="text-2xl font-semibold tracking-tight">Keep the method. Add the coach.</h2>
+          <h2 className="text-2xl font-semibold tracking-tight text-balance">
+            Three tiers, based on the amount of support you want
+          </h2>
           <p className="max-w-md text-sm text-ink-muted">
             The first challenge above is free. Then choose how far to take it.
           </p>

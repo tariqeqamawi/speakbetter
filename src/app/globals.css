@@ -2552,6 +2552,38 @@ html.bare .demo-banner {
   }
 }
 
+/* Reactions arriving on a live: up and away, fading as they go, each
+ * on its own delay so they never travel as a row. */
+.reaction-float {
+  animation: reaction-float 7s ease-out infinite;
+  opacity: 0;
+}
+
+@keyframes reaction-float {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.6);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+    transform: translate3d(0, -10%, 0) scale(1);
+  }
+  70% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate3d(-18%, -320%, 0) scale(1.05);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reaction-float {
+    animation: none;
+    opacity: 0.9;
+  }
+}
+
 /* "Hover" or "Tap", decided by the device rather than by JavaScript.
  * Saying the wrong verb is a small thing that makes an interface feel
  * like it was built for somebody else's hardware. */

@@ -21,8 +21,11 @@ export interface Category {
    * shorthand, which is what a student ends up calling them anyway.
    */
   code: string;
-  /** The name at a glance - what fits a dial label or a tab without
-   *  wrapping: "Storytelling", "Acting skills", "Confidence & Presence". */
+  /** Kept for the callers that ask for it. It is the same string as
+   *  `name` now: the two had drifted, so a dial said "Acting skills"
+   *  while the page it opened said "Acting skills for speakers", and a
+   *  student had to work out they were the same thing. One name per
+   *  colour, short enough to read anywhere it lands. */
   short: string;
   colorName: string;
   blurb: string;
@@ -34,7 +37,7 @@ export interface Category {
 export const categories: Category[] = [
   {
     id: "storytelling",
-    name: "Storytelling techniques",
+    name: "Storytelling",
     short: "Storytelling",
     code: "STORY",
     colorName: "Neon yellow",
@@ -45,8 +48,8 @@ export const categories: Category[] = [
   },
   {
     id: "figurative",
-    name: "Figurative language",
-    short: "Figurative language",
+    name: "Figurative & sensory",
+    short: "Figurative & sensory",
     code: "IMAGE",
     colorName: "Bright orange",
     blurb: "Metaphor, simile, hyperbole, analogy - language that paints instead of describes.",
@@ -56,8 +59,8 @@ export const categories: Category[] = [
   },
   {
     id: "acting",
-    name: "Acting skills for speakers",
-    short: "Acting skills",
+    name: "Acting",
+    short: "Acting",
     code: "ACT",
     colorName: "Bright red",
     blurb: "Voice, character, emotion, and scene work - deliver the experience, don't just say it.",
@@ -67,7 +70,7 @@ export const categories: Category[] = [
   },
   {
     id: "structure",
-    name: "Structure & framing",
+    name: "Structure",
     short: "Structure",
     code: "FRAME",
     colorName: "Magenta",
@@ -78,8 +81,8 @@ export const categories: Category[] = [
   },
   {
     id: "mindset",
-    name: "Confidence & Presence",
-    short: "Confidence & Presence",
+    name: "Confidence",
+    short: "Confidence",
     code: "MIND",
     colorName: "Neon green",
     blurb: "Fear, confidence, and conviction - the inner game that everything else stands on.",
@@ -89,7 +92,7 @@ export const categories: Category[] = [
   },
   {
     id: "body-language",
-    name: "Body language & physical expression",
+    name: "Body & physical",
     short: "Body & physical",
     code: "BODY",
     colorName: "Bright cyan",
@@ -100,7 +103,7 @@ export const categories: Category[] = [
   },
   {
     id: "advanced",
-    name: "Advanced tips & tricks",
+    name: "Advanced",
     short: "Advanced",
     code: "PRO",
     colorName: "Deep crimson",
