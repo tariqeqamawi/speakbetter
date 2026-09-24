@@ -145,7 +145,7 @@ function LandingBody() {
             it. What they have not been told yet is HOW - so that is
             what this says now. */}
         <WhatItIs />
-        <JoinCta label="Join Speak Better Now" />
+        <JoinCta label="Join Speak Better Now" seal />
       </section>
 
       {/* Coach, in his own voice, before anything else argues for him.
@@ -429,7 +429,7 @@ function LandingBody() {
         </div>
       </section>
 
-      <JoinCta label="Sign Me Up" />
+      <JoinCta label="Sign Me Up" seal />
 
       <ProofLine tag="results" />
 

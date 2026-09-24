@@ -1,3 +1,5 @@
+import { GuaranteeSeal } from "@/components/guarantee-seal";
+
 // The way to the tiers, offered more than once.
 //
 // A long page with its only door at the bottom asks somebody who has
@@ -9,13 +11,16 @@
 // rather than a banner repeated. Every one goes to the same place: the
 // three tiers.
 
-export function JoinCta({ label }: { label: string }) {
+export function JoinCta({ label, seal = false }: { label: string; seal?: boolean }) {
   return (
-    <div className="flex justify-center">
+    <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
       <a href="#pricing" className="cta-neon-wrap rounded-xl">
         <span className="cta-neon-glow rounded-xl" aria-hidden />
         <span className="cta-neon block rounded-xl px-9 py-4 text-base">{label}</span>
       </a>
+      {/* The guarantee beside the ask, where the question it answers is
+          being asked (guarantee-seal.tsx). */}
+      {seal && <GuaranteeSeal size={88} />}
     </div>
   );
 }
