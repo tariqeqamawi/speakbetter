@@ -21,13 +21,14 @@ export function ProofLine({ tag, skip = 0 }: { tag: Proof; skip?: number }) {
   if (!quote) return null;
 
   return (
-    <figure className="flex w-full max-w-2xl gap-3 rounded-2xl border border-navy-600 bg-navy-800/70 p-4">
+    // White, like every other quotation on this page - a student's
+    // words are the one thing here that is not the seller speaking,
+    // and they should not be wearing the seller's colours.
+    <figure className="quote-card flex w-full max-w-2xl gap-3 rounded-2xl border p-4">
       <Avatar name={quote.name} className="size-9 shrink-0" />
       <div className="flex min-w-0 flex-col gap-1.5">
-        <blockquote className="text-sm leading-relaxed text-ink-muted">
-          &ldquo;{quote.quote}&rdquo;
-        </blockquote>
-        <figcaption className="text-xs font-semibold text-ink-faint">{quote.name}</figcaption>
+        <blockquote className="text-sm leading-relaxed">&ldquo;{quote.quote}&rdquo;</blockquote>
+        <figcaption className="text-xs font-semibold">{quote.name}</figcaption>
       </div>
     </figure>
   );

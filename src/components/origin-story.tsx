@@ -117,7 +117,7 @@ export function OriginStory() {
     <section className="flex flex-col items-center gap-8">
       <div className="flex flex-col items-center gap-2 text-center">
         <span className="text-xs font-semibold uppercase tracking-[0.3em] text-ink-faint">Who&apos;s teaching this</span>
-        <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">How Speak Better came to be</h2>
+        <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">The origin story of Speak Better</h2>
       </div>
       <ol className="flex w-full flex-col gap-10 sm:gap-14">
         {MOMENTS.map((m) => {

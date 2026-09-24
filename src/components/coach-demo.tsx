@@ -207,12 +207,21 @@ export function CoachDemo() {
           </span>
         </div>
 
+        {/* min-w-0 on the note bodies below.
+            
+            A flex item sizes to its content's minimum width unless
+            told otherwise, and the lesson link inside each note has a
+            thumbnail and a title - so the column grew past the card
+            holding it and the right-hand end of every observation was
+            clipped away by the card's overflow-hidden. Silently, on
+            the one part of the page whose job is showing somebody
+            exactly what the feedback looks like. */}
         <DemoSection title="What worked" Icon={CheckCircleIcon} accentClass="text-mindset">
           <ul className="flex flex-col gap-3">
             {SAMPLE_WORKED.map((n) => (
               <li key={n.note} className="flex items-start gap-2 text-sm text-ink">
                 <span className={`mt-1.5 size-2 shrink-0 rounded-full ${categoryById.get(n.category)?.bgClass ?? ""}`} />
-                <span className="flex flex-col gap-1.5">
+                <span className="flex min-w-0 flex-col gap-1.5">
                   <span>
                     <span className="mr-1.5 rounded bg-navy-700 px-1 py-0.5 text-[0.65rem] font-semibold tabular-nums text-ink-muted">{n.at}</span>
                     {n.note}
@@ -248,7 +257,7 @@ export function CoachDemo() {
             {SAMPLE_NOTES.map((n) => (
               <li key={n.category} className="flex items-start gap-2 text-sm text-ink">
                 <span className={`mt-1.5 size-2 shrink-0 rounded-full ${categoryById.get(n.category)?.bgClass ?? ""}`} />
-                <span className="flex flex-col gap-1.5">
+                <span className="flex min-w-0 flex-col gap-1.5">
                   {n.note}
                   <LessonLink lesson={n.lesson} href="#pricing" />
                 </span>
@@ -257,9 +266,19 @@ export function CoachDemo() {
           </ul>
         </DemoSection>
 
-        <div className="rounded-xl border border-mindset/40 bg-mindset/10 p-4">
-          <p className="text-sm font-semibold text-mindset">Congratulations - you&apos;ve passed this challenge.</p>
-          <p className="mt-1 text-sm text-ink-muted">The next one is waiting on the map. A better take on this one is worth more XP.</p>
+        {/* Passing is the moment the whole page is selling, and it
+            was announced in a green box the same size as the four
+            sections above it. The app itself throws confetti when
+            this happens; a demonstration of the app that does not is
+            demonstrating something quieter than the real thing. */}
+        <div className="relative overflow-hidden rounded-xl border border-mindset/40 bg-mindset/10 p-4">
+          <span aria-hidden className="pass-confetti pointer-events-none absolute inset-0" />
+          <p className="relative text-sm font-semibold text-mindset">
+            Congratulations - you&apos;ve passed this challenge.
+          </p>
+          <p className="relative mt-1 text-sm text-ink-muted">
+            The next one is waiting on the map. A better take on this one is worth more XP.
+          </p>
         </div>
       </div>
     </div>

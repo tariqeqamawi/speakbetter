@@ -1,12 +1,10 @@
 import { CohortDates } from "@/components/cohort-dates";
 import Image from "next/image";
-import { CheckIcon, XIcon } from "@/components/icons";
+import { CheckIcon, ChevronDownIcon, XIcon } from "@/components/icons";
 import { Soundwave } from "@/components/soundwave";
 import { categories } from "@/data/categories";
 import { StoryPreview } from "@/components/story-preview";
 import { LessonGallery } from "@/components/lesson-gallery";
-import { LazyVimeoPlayer } from "@/components/lazy-vimeo-player";
-import { PreviewChip } from "@/components/preview-chip";
 import {
   FullscreenIcon,
   PlayFillIcon,
@@ -30,6 +28,8 @@ import { WhatItIs } from "@/components/what-it-is";
 import { RoarMark } from "@/components/roar-mark";
 import { LionMouth } from "@/components/lion-mouth";
 import { FirstChallenge } from "@/components/first-challenge";
+import { CoachDemo } from "@/components/coach-demo";
+import { HowItWorks } from "@/components/how-it-works";
 
 // The landing page (master plan §15): promo video as centerpiece,
 // pay-to-unlock, straight into the app. Promo video choice is an open
@@ -136,18 +136,6 @@ export function Landing() {
             it. What they have not been told yet is HOW - so that is
             what this says now. */}
         <WhatItIs />
-        <div className="flex w-full max-w-2xl flex-col gap-2">
-          {/* Facade poster is a library still of the same instructor - the
-              intro video itself is unlisted, so Vimeo offers no poster. */}
-          <LazyVimeoPlayer
-            vimeoId="1080326796"
-            title="Speak Better - Intro"
-            poster="/thumbs/1080612884.jpg"
-          />
-          <p className="text-center text-sm font-medium text-ink-muted">
-            See a studio-recorded lesson for yourself.
-          </p>
-        </div>
         <div className="flex flex-col items-center gap-2">
           <a href="#try" className="cta-neon-wrap rounded-xl">
             <span className="cta-neon-glow rounded-xl" aria-hidden />
@@ -157,40 +145,51 @@ export function Landing() {
             See what&apos;s included
           </a>
         </div>
-        <PreviewChip />
       </section>
 
       {/* Coach, in his own voice, before anything else argues for him.
           A claim ABOUT a thing is always weaker than the thing. */}
       <LionPitch line={LANDING_PITCH} audioSrc={LANDING_PITCH_AUDIO} />
 
-      {/* What Coach does, said once.
+      {/* Coach, demonstrated - once, here, where the claim was made.
           
-          This used to be a section headed "Experience your Speak
-          Better Coach" with a worked review card under it - and then,
-          eight screens later, "Experience Speak Better" with the free
-          first challenge and ANOTHER review card. Two headings that
-          promise the same experience, two demonstrations of the same
-          thing, and a reader who has seen the review before they
-          reach the part that offers them one of their own.
+          The five steps first, because "how does this work" is the
+          question a visitor has at this point and it answers in five
+          seconds. Then the long explanation, folded: it is good copy
+          and most readers do not want it, and a page that shows
+          everything to everybody is a page nobody finishes. Then the
+          thing itself.
           
-          The demonstration belongs with the offer, so the card went
-          down there and what is left here is the explanation - which
-          is what this spot is for: the claim, before the proof. */}
-      <section className="flex max-w-2xl flex-col items-center gap-4 self-center text-center">
-        <h2 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-          What Coach actually does
+          This is the ONLY worked review on the page. It used to be
+          here and again inside the free first challenge, so a reader
+          met the same review twice. */}
+      <section className="flex w-full flex-col items-center gap-5">
+        <h2 className="max-w-2xl text-center text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+          Experience your Speak Better &ldquo;Coach&rdquo;
         </h2>
-        <p className="text-lg text-ink-muted text-balance">
-          You record a challenge and, in a minute or two, Coach the lion watches your video and makes note
-          of your hand gestures, your body language, your presence, your confidence, your storytelling,
-          your acting, your sensory details and your structure.
-        </p>
-        <p className="text-ink-muted text-balance">
-          Then he gives you a detailed breakdown of what you did, what you can improve, and specific notes
-          on your spoken and physical delivery. You&apos;ll know whether you passed or missed, and
-          you&apos;ll watch your ability grow take by take.
-        </p>
+
+        <HowItWorks />
+
+        <details className="group w-full max-w-2xl rounded-2xl border border-navy-600 bg-navy-800">
+          <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm font-semibold text-ink [&::-webkit-details-marker]:hidden">
+            What Coach looks for, in full
+            <ChevronDownIcon className="ml-auto size-4 shrink-0 text-ink-faint transition-transform group-open:rotate-180" />
+          </summary>
+          <div className="flex flex-col gap-3 px-4 pb-4 text-ink-muted">
+            <p>
+              You record a challenge and, in a minute or two, Coach the lion watches your video and makes note
+              of your hand gestures, your body language, your presence, your confidence, your storytelling,
+              your acting, your sensory details and your structure.
+            </p>
+            <p>
+              Then he gives you a detailed breakdown of what you did, what you can improve, and specific notes
+              on your spoken and physical delivery. You&apos;ll know whether you passed or missed, and
+              you&apos;ll watch your ability grow take by take.
+            </p>
+          </div>
+        </details>
+
+        <CoachDemo />
       </section>
 
       <ProofLine tag="teacher" />
@@ -342,8 +341,7 @@ export function Landing() {
         </div>
       </section>
 
-      {/* The first challenge, live - the free baseline as the thing
-          itself rather than a description of it */}
+      {/* The first challenge, shown rather than run. */}
       <FirstChallenge />
 
       {/* How Speak Better came to be - four moments, zigzagging */}

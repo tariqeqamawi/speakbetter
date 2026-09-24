@@ -3109,3 +3109,83 @@ html.bare .demo-banner {
     animation: none;
   }
 }
+
+/* Testimonials, on white.
+ *
+ * Everything else on this page is dark, which is right for an app you
+ * use in the evening and wrong for the one part of a sales page that
+ * is not the seller talking. A white card reads as a quotation - a
+ * thing lifted from somewhere else and set down here - where the same
+ * words on the same dark card as every other section read as more of
+ * the page's own copy.
+ *
+ * The colours are held here rather than as utilities because a quote
+ * card is the only light surface in this app, so nothing about it
+ * should look like a reusable dark-theme token that somebody might
+ * reach for elsewhere by accident.
+ */
+.quote-card {
+  background: #ffffff;
+  border-color: rgba(2, 5, 11, 0.1);
+  color: #0e1629;
+  box-shadow: 0 10px 30px -18px rgba(2, 5, 11, 0.9);
+}
+
+.quote-card blockquote {
+  color: #0e1629;
+}
+
+/* The name, quieter than the words - but still a real navy, not a
+   grey, so it belongs to the same card. */
+.quote-card figcaption,
+.quote-card .quote-name {
+  color: #47527a;
+}
+
+/* Confetti over the pass.
+ *
+ * The app throws real confetti when a challenge is passed, and the
+ * demonstration on the landing page announced it in a plain green box
+ * - so the sales page was quieter about the best moment in the product
+ * than the product is. This is the same idea as .streak-confetti but
+ * falling rather than sweeping, in the seven colours, because this is
+ * a celebration rather than a passing glint.
+ *
+ * Transform and opacity only, on one element. The lesson this app
+ * learned the hard way still holds.
+ */
+.pass-confetti {
+  background-image:
+    radial-gradient(circle, var(--color-storytelling) 0 1.6px, transparent 2px),
+    radial-gradient(circle, var(--color-mindset) 0 1.3px, transparent 1.7px),
+    radial-gradient(circle, var(--color-figurative) 0 1.4px, transparent 1.8px),
+    radial-gradient(circle, var(--color-body-language) 0 1.2px, transparent 1.6px);
+  background-size: 37px 29px, 29px 37px, 43px 31px, 31px 43px;
+  background-position: 0 0, 11px 7px, 23px 17px, 5px 25px;
+  opacity: 0;
+  animation: pass-confetti 6s ease-in-out infinite;
+}
+
+@keyframes pass-confetti {
+  0%,
+  58% {
+    transform: translate3d(0, -110%, 0);
+    opacity: 0;
+  }
+  64% {
+    opacity: 0.85;
+  }
+  88% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(0, 110%, 0);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pass-confetti {
+    animation: none;
+  }
+}

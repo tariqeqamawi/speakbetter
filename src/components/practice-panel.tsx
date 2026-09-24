@@ -1448,7 +1448,12 @@ export function LessonLink({ lesson, href }: { lesson: { vimeoId: string; title:
       </span>
       <span className="flex min-w-0 flex-col">
         <span className="text-[0.6rem] uppercase tracking-wider text-ink-faint">Watch the lesson</span>
-        <span className="truncate">{lesson.title}</span>
+        {/* Wrapped, not truncated. On a phone this pill is narrow
+            enough that almost every lesson title lost its end -
+            "Hand Gestures: Express Visually What You Say Verba…" -
+            and a link whose label is cut off mid-word is a link that
+            has not said where it goes. Two lines fit. */}
+        <span className="line-clamp-2 leading-snug">{lesson.title}</span>
       </span>
     </Link>
   );

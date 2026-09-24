@@ -91,13 +91,14 @@ export function TestimonialStream({
 
 function Quote({ t }: { t: Testimonial }) {
   return (
-    <figure className="flex flex-col gap-2.5 rounded-2xl border border-navy-600 bg-navy-800 p-4">
-      <blockquote className="text-sm leading-relaxed text-ink-muted">
-        &ldquo;{t.quote}&rdquo;
-      </blockquote>
+    // White, against a page that is otherwise entirely dark - so a
+    // quote reads as something lifted from elsewhere rather than as
+    // more of the seller's own copy. See .quote-card in globals.
+    <figure className="quote-card flex flex-col gap-2.5 rounded-2xl border p-4">
+      <blockquote className="text-sm leading-relaxed">&ldquo;{t.quote}&rdquo;</blockquote>
       <figcaption className="flex items-center gap-2.5">
         <Avatar name={t.name} className="size-8" />
-        <span className="text-xs font-semibold text-ink">{t.name}</span>
+        <span className="quote-name text-xs font-semibold">{t.name}</span>
       </figcaption>
     </figure>
   );

@@ -461,7 +461,15 @@ export const TalkingLion = forwardRef<
             {caption && (
               <p
                 key={captionIndex}
-                className="coach-cue max-w-full whitespace-nowrap rounded-xl bg-navy-950/85 px-4 py-2 text-center text-[0.9rem] font-semibold leading-snug shadow-lg shadow-navy-950/60"
+                // NOT whitespace-nowrap. It kept every caption to one
+                // line, which reads beautifully until a phrase is
+                // longer than the lion is wide - and then the end of
+                // the sentence is simply gone off the right edge,
+                // silently, on the component whose entire job is
+                // showing somebody the words. Wrapping is the lesser
+                // evil by a wide margin: the box already reserves its
+                // height so nothing below it jumps.
+                className="coach-cue max-w-full text-balance rounded-xl bg-navy-950/85 px-4 py-2 text-center text-[0.9rem] font-semibold leading-snug shadow-lg shadow-navy-950/60"
               >
                 {caption.words.map((w, i) => (
                   <span

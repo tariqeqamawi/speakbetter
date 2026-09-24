@@ -29,7 +29,13 @@ export function SpectrumBars({
           <div key={cat.id} className={`flex items-center gap-3 ${needed ? cat.textClass : ""}`}>
             <span
               title={cat.name}
-              className={`w-28 shrink-0 truncate text-xs sm:w-44 ${
+              // Wrapped, not truncated. "Figurative & Sensory" is
+              // wider than 7rem, so on a phone the one colour whose
+              // name a beginner is least likely to know was the one
+              // shown as "Figurative & Senso…". Two lines fit inside
+              // the row's height; the bars stay aligned because the
+              // column keeps its width either way.
+              className={`w-28 shrink-0 text-xs leading-tight sm:w-44 ${
                 needed ? "font-semibold drop-shadow-[0_0_6px_currentColor]" : lit ? "text-ink" : "text-ink-faint"
               }`}
             >
