@@ -27,9 +27,30 @@ import { StageBackdrop } from "@/components/stage-backdrop";
 const DISC_Y = 0.7;
 /** How tall the trophy stands, as a share of the frame. */
 const TROPHY_H = 0.6;
+const TROPHY_H_PHONE = 0.5;
 /** The renders carry a little black under the plinth (10-23px of 398);
  *  this much of the image is below the base and sinks into the floor. */
 const BASE_PAD = 0.04;
+
+/** Where the neighbours stand, by distance from the one in the light:
+ *  across (share of the frame's width), up the stage (share of its
+ *  height - further back is higher), size, and how far into the dark.
+ *  Index 0 is the trophy in the beam. */
+interface Slot { x: number; lift: number; scale: number; opacity: number; blur: number; dim: number }
+const RACK_WIDE: Slot[] = [
+  { x: 0, lift: 0, scale: 1, opacity: 1, blur: 0, dim: 1 },
+  { x: 0.26, lift: 0.05, scale: 0.6, opacity: 0.62, blur: 1.2, dim: 0.55 },
+  { x: 0.41, lift: 0.085, scale: 0.44, opacity: 0.4, blur: 2.4, dim: 0.42 },
+  { x: 0.52, lift: 0.11, scale: 0.34, opacity: 0.24, blur: 3.6, dim: 0.35 },
+];
+/** On a phone the frame is tall and narrow, so the neighbours stand in
+ *  close - tucked partly behind the one in the light - rather than
+ *  pushed out to edges they would fall off. */
+const RACK_PHONE: Slot[] = [
+  { x: 0, lift: 0, scale: 1, opacity: 1, blur: 0, dim: 1 },
+  { x: 0.3, lift: 0.045, scale: 0.6, opacity: 0.7, blur: 1, dim: 0.5 },
+  { x: 0.44, lift: 0.08, scale: 0.42, opacity: 0.42, blur: 2, dim: 0.4 },
+];
 
 export interface StageTrophy {
   id: string;
@@ -56,13 +77,17 @@ export function TrophyStage({
 }) {
   const frame = useRef<HTMLDivElement>(null);
   const [h, setH] = useState(0);
+  const [w, setW] = useState(0);
 
   // The zoom wants a height in pixels, and the frame's height changes
   // with the width of the screen.
   useEffect(() => {
     const el = frame.current;
     if (!el) return;
-    const ro = new ResizeObserver(([e]) => setH(e.contentRect.height));
+    const ro = new ResizeObserver(([e]) => {
+      setH(e.contentRect.height);
+      setW(e.contentRect.width);
+    });
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
@@ -95,7 +120,15 @@ export function TrophyStage({
   const here = trophies[at];
   if (!here) return null;
   const color = `var(--color-${here.color})`;
-  const trophyPx = Math.round(h * TROPHY_H);
+  // The rack for this screen: close and overlapping on a phone, where
+  // the frame is tall and narrow and the neighbours are what make it
+  // feel like a room; wider apart on a laptop, where there is room.
+  const phone = w > 0 && w < 640;
+  const rack = phone ? RACK_PHONE : RACK_WIDE;
+  // A little smaller on a phone, so the neighbours are not crowded out
+  // of a frame that is only so wide.
+  const th = phone ? TROPHY_H_PHONE : TROPHY_H;
+  const trophyPx = Math.round(h * th);
 
   return (
     <div className="flex flex-col items-center gap-5">
@@ -106,12 +139,12 @@ export function TrophyStage({
         aria-label="Trophy stage"
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
-        className="relative aspect-[3/4] w-full overflow-hidden rounded-3xl border border-navy-700 bg-[#03060d] outline-none focus-visible:ring-2 focus-visible:ring-figurative sm:aspect-[1600/893]"
+        className="relative aspect-[2/3] w-full overflow-hidden rounded-3xl border border-navy-700 bg-[#03060d] outline-none focus-visible:ring-2 focus-visible:ring-figurative sm:aspect-[1600/893]"
       >
         {/* The room. Full strength - it is a dark photograph already,
             and dimming it again took the podium away with it. The smoke
             in the beam moves (stage-backdrop.tsx). */}
-        <StageBackdrop poster="/trophy/stage.jpg" video="/trophy/stage-smoke.mp4" />
+        <StageBackdrop poster="/trophy/stage.jpg" video="/trophy/stage-smoke-v2.mp4" />
 
         {/* What the trophy throws onto the disc around it. The lamp
             stays warm white; the colour belongs to the object. */}
@@ -133,8 +166,8 @@ export function TrophyStage({
           aria-hidden
           className="trophy-arrive pointer-events-none absolute left-1/2"
           style={{
-            height: `${TROPHY_H * 100}%`,
-            top: `${(DISC_Y - TROPHY_H * BASE_PAD) * 100}%`,
+            height: `${th * 100}%`,
+            top: `${(DISC_Y - th * BASE_PAD) * 100}%`,
             transform: "translateX(-50%) scaleY(-1)",
             opacity: here.won ? 0.22 : 0.08,
             filter: here.won ? "blur(1.5px)" : "grayscale(1) blur(1.5px)",
@@ -143,26 +176,63 @@ export function TrophyStage({
           }}
         />
 
-        {/* The trophy, its plinth set down on the disc. */}
-        {h > 0 && (
-          <div
-            key={here.id}
-            className="trophy-arrive absolute left-1/2 z-10"
-            style={{
-              bottom: `${(1 - DISC_Y - TROPHY_H * BASE_PAD) * 100}%`,
-              transform: "translateX(-50%)",
-            }}
-          >
-            <TrophyZoom src={here.image} zoomSrc={here.zoom} alt={here.name} height={trophyPx} dimmed={!here.won} />
-          </div>
-        )}
+        {/* The rack: the one in the light, set down on the disc, and
+            the others standing back in the dark on either side. Every
+            trophy keeps its own element as it moves, so stepping to the
+            next one slides the whole row - the new one comes forward
+            into the beam, the last one steps back out of it. Transform,
+            opacity and filter, so the compositor does the travelling. */}
+        {h > 0 &&
+          trophies.map((t, i) => {
+            const d = i - at;
+            const away = Math.abs(d);
+            if (away > rack.length - 1) return null;
+            const slot = rack[away];
+            const x = Math.sign(d) * slot.x * w;
+            const lift = slot.lift * h;
+            const centre = away === 0;
+            return (
+              <div
+                key={t.id}
+                className="absolute left-1/2 origin-bottom transition-[transform,opacity,filter] duration-700 ease-out"
+                style={{
+                  bottom: `${(1 - DISC_Y - th * BASE_PAD) * 100}%`,
+                  transform: `translateX(-50%) translateX(${x}px) translateY(${-lift}px) scale(${slot.scale})`,
+                  opacity: centre ? 1 : slot.opacity,
+                  filter: centre ? "none" : `blur(${slot.blur}px) brightness(${slot.dim})`,
+                  zIndex: 20 - away,
+                }}
+              >
+                {centre ? (
+                  <TrophyZoom src={t.image} zoomSrc={t.zoom} alt={t.name} height={trophyPx} dimmed={!t.won} />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => onGo(i)}
+                    tabIndex={-1}
+                    aria-label={t.name}
+                    className="block cursor-pointer"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={t.image}
+                      alt=""
+                      draggable={false}
+                      style={{ height: trophyPx, width: "auto" }}
+                      className={t.won ? "" : "opacity-50 grayscale"}
+                    />
+                  </button>
+                )}
+              </div>
+            );
+          })}
 
         {at > 0 && (
           <button
             type="button"
             onClick={() => go(-1)}
             aria-label="Previous trophy"
-            className="absolute left-3 top-1/2 z-30 grid size-11 -translate-y-1/2 place-items-center rounded-full border border-navy-600 bg-navy-900/80 text-ink-muted backdrop-blur transition-colors hover:text-ink"
+            className="absolute bottom-4 left-3 z-30 grid size-11 place-items-center sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 rounded-full border border-navy-600 bg-navy-900/80 text-ink-muted backdrop-blur transition-colors hover:text-ink"
           >
             <ChevronDownIcon className="size-5 rotate-90" />
           </button>
@@ -172,7 +242,7 @@ export function TrophyStage({
             type="button"
             onClick={() => go(1)}
             aria-label="Next trophy"
-            className="absolute right-3 top-1/2 z-30 grid size-11 -translate-y-1/2 place-items-center rounded-full border border-navy-600 bg-navy-900/80 text-ink-muted backdrop-blur transition-colors hover:text-ink"
+            className="absolute bottom-4 right-3 z-30 grid size-11 place-items-center sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 rounded-full border border-navy-600 bg-navy-900/80 text-ink-muted backdrop-blur transition-colors hover:text-ink"
           >
             <ChevronDownIcon className="size-5 -rotate-90" />
           </button>
