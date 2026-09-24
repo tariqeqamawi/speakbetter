@@ -96,7 +96,7 @@ export function LessonGallery() {
                   type="button"
                   onClick={() => setIndex(i)}
                   aria-current={on ? "true" : undefined}
-                  className={`flex w-36 flex-col gap-1 rounded-lg border p-1 text-left transition-colors sm:w-full sm:flex-row sm:items-center sm:gap-3 sm:p-1.5 ${
+                  className={`flex h-full w-36 flex-col gap-1 rounded-lg border p-1 text-left transition-colors sm:w-full sm:flex-row sm:items-center sm:gap-3 sm:p-1.5 ${
                     on ? "border-current bg-navy-800" : "border-transparent hover:bg-navy-800/70"
                   }`}
                 >
@@ -104,7 +104,19 @@ export function LessonGallery() {
                     <Image src={`/thumbs/${lesson.vimeoId}.jpg`} alt="" fill sizes="(min-width: 640px) 80px, 144px" className="object-cover" />
                   </span>
                   <span className="flex min-w-0 flex-col">
-                    <span className={`truncate text-xs font-medium sm:whitespace-normal sm:leading-snug ${on ? "text-ink" : "text-ink-muted"}`}>
+                    {/* Wrapped, not truncated.
+                        
+                        On a phone every title in this rail was cut off
+                        with an ellipsis - "Storytelling: Don't Tell
+                        it, Relive The Experie…" - which is the one
+                        place a truncation costs the most, because the
+                        title IS the lesson. A visitor scrolling the
+                        library on their phone was being shown eighty
+                        one half-titles as evidence of what they would
+                        be buying. Two lines and it fits; a title long
+                        enough to need a third is clipped there, which
+                        is a fair trade in a card this size. */}
+                    <span className={`line-clamp-2 text-xs font-medium leading-snug ${on ? "text-ink" : "text-ink-muted"}`}>
                       {lesson.title}
                     </span>
                     <span className="hidden text-[0.65rem] tabular-nums text-ink-faint sm:block">

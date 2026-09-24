@@ -161,8 +161,14 @@ export function FirstChallenge() {
               
               What answers the question they actually have at this
               point - "what does the feedback look like?" - is the
-              coach demo higher up the page, which shows a real review,
-              spoken and visual, and asks nothing of them. */}
+              coach demo, which shows a sample review end to end,
+              spoken and visual, and asks nothing of them.
+              
+              This is now the ONLY place it appears. It used to be
+              mounted here and again in its own section eight screens
+              up, so a reader met the same worked review twice, the
+              first time before anything had offered them one. A
+              demonstration belongs with the offer. */}
           <CoachDemo />
         </div>
       </div>

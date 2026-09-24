@@ -17,7 +17,6 @@ import { Pricing } from "@/components/pricing";
 import { LandingShowcase } from "@/components/landing-showcase";
 import { OriginStory } from "@/components/origin-story";
 import Link from "next/link";
-import { CoachDemo } from "@/components/coach-demo";
 import { SpectrumDemo } from "@/components/spectrum-demo";
 import { HeroBeat } from "@/components/hero-beat";
 import { TheReality } from "@/components/the-reality";
@@ -75,12 +74,12 @@ export function Landing() {
               autoplay: the words are on screen and the voice is
               offered beside them. */}
           <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
-            Discover your true colors and roar on screen or stage.
+            Discover your true colors, speak, and roar on screen or stage.
           </h1>
           <SpeakLine audioSrc={HEADLINE_AUDIO} label="Hear it" />
           <p className="text-xl font-medium text-figurative text-balance sm:text-2xl">
-            Six weeks. Master public speaking in minutes a day, not months - and step into your true power as a
-            speaker.
+            Six weeks. Master public speaking in minutes a day, not months - and step into your true power on any
+            platform.
           </p>
           {/* The dates, high enough that nobody has to hunt for them.
               Two facts, in the order they are asked: when does it
@@ -90,11 +89,14 @@ export function Landing() {
             {[
               <>Overcome fears, nerves and shyness in a fully gamified, interactive app.</>,
               <>
-                Watch short <strong className="font-semibold text-ink">1-2 minute</strong> skills videos. Upload{" "}
-                <strong className="font-semibold text-ink">1-2 minute</strong> challenges.
+                Watch short <strong className="font-semibold text-ink">1-2 minute</strong> skills videos.
               </>,
               <>
-                Now you don&apos;t only get to learn - you get to{" "}
+                Upload <strong className="font-semibold text-ink">1-2 minute</strong> challenges.
+              </>,
+              <>Receive detailed feedback on your spoken delivery and physical expression.</>,
+              <>
+                Now you don&apos;t only get to learn; you get to{" "}
                 <strong className="font-semibold text-ink">practice</strong>, from the comfort of your phone.
               </>,
             ].map((line, i) => (
@@ -162,25 +164,33 @@ export function Landing() {
           A claim ABOUT a thing is always weaker than the thing. */}
       <LionPitch line={LANDING_PITCH} audioSrc={LANDING_PITCH_AUDIO} />
 
-      {/* The coach, actually coaching */}
-      <section className="flex flex-col items-center gap-4">
+      {/* What Coach does, said once.
+          
+          This used to be a section headed "Experience your Speak
+          Better Coach" with a worked review card under it - and then,
+          eight screens later, "Experience Speak Better" with the free
+          first challenge and ANOTHER review card. Two headings that
+          promise the same experience, two demonstrations of the same
+          thing, and a reader who has seen the review before they
+          reach the part that offers them one of their own.
+          
+          The demonstration belongs with the offer, so the card went
+          down there and what is left here is the explanation - which
+          is what this spot is for: the claim, before the proof. */}
+      <section className="flex max-w-2xl flex-col items-center gap-4 self-center text-center">
         <h2 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-          Experience your Speak Better &ldquo;Coach&rdquo;
+          What Coach actually does
         </h2>
-        <div className="flex max-w-2xl flex-col items-center gap-4 text-center">
-          <p className="text-lg text-ink-muted text-balance">
-            You record a challenge and, in a minute or two, Coach the lion watches your video and makes note
-            of your hand gestures, your body language, your presence, your confidence, your storytelling,
-            your acting, your sensory details and your structure.
-          </p>
-          <p className="text-ink-muted text-balance">
-            Then he gives you a detailed breakdown of what you did, what you can improve, and specific notes
-            on your spoken and physical delivery. You&apos;ll know whether you passed or missed, and
-            you&apos;ll watch your ability grow take by take.
-          </p>
-        </div>
-
-        <CoachDemo />
+        <p className="text-lg text-ink-muted text-balance">
+          You record a challenge and, in a minute or two, Coach the lion watches your video and makes note
+          of your hand gestures, your body language, your presence, your confidence, your storytelling,
+          your acting, your sensory details and your structure.
+        </p>
+        <p className="text-ink-muted text-balance">
+          Then he gives you a detailed breakdown of what you did, what you can improve, and specific notes
+          on your spoken and physical delivery. You&apos;ll know whether you passed or missed, and
+          you&apos;ll watch your ability grow take by take.
+        </p>
       </section>
 
       <ProofLine tag="teacher" />

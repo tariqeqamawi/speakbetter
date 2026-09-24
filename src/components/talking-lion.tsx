@@ -90,6 +90,14 @@ export const TalkingLion = forwardRef<
     /** Show what's being said as it's said - a phrase at a time, paced
      *  across the clip by its share of the words - like a reel's captions. */
     captions?: boolean;
+    /** The same karaoke timing, handed out instead of drawn.
+     *
+     *  The guided tour shows the words in its own caption strip at the
+     *  foot of the screen, nowhere near the lion - so it needs the
+     *  timing without the rendering. One clock either way: the phrase
+     *  and word are read off the audio element's currentTime, so the
+     *  words cannot drift from the voice no matter who draws them. */
+    onSay?: (phrase: Phrase | undefined, wordIndex: number) => void;
     /** The page has its own play control - don't draw the lion's. */
     controls?: boolean;
     /** Drawn large - the landing page's feature. */
@@ -109,7 +117,7 @@ export const TalkingLion = forwardRef<
     className?: string;
   }
 >(function TalkingLion(
-  { text, audioSrc, cues, captions = false, controls = true, large = false, bare = false, autoPlay = false, onEnded, onBlocked, className = "" },
+  { text, audioSrc, cues, captions = false, onSay, controls = true, large = false, bare = false, autoPlay = false, onEnded, onBlocked, className = "" },
   ref,
 ) {
   // The smoothed amplitude. Read by nothing now that the wave lives
@@ -133,7 +141,11 @@ export const TalkingLion = forwardRef<
   // The text as phrases, each with its share of the clip: the clip has
   // no word timings, so each phrase gets the stretch of the clip its
   // characters are of the whole. Close enough to follow along by.
-  const phrases = useMemo(() => (captions && text ? phrasesOf(text) : []), [captions, text]);
+  // Boolean(onSay) rather than onSay: a caller that rebuilds the
+  // callback each render would otherwise re-split the text into
+  // phrases each render, for an answer that cannot have changed.
+  const wantsPhrases = captions || Boolean(onSay);
+  const phrases = useMemo(() => (wantsPhrases && text ? phrasesOf(text) : []), [wantsPhrases, text]);
   const phrasesRef = useRef<Phrase[]>(phrases);
   useEffect(() => {
     phrasesRef.current = phrases;
@@ -411,6 +423,17 @@ export const TalkingLion = forwardRef<
     setSpeaking(false);
     stopLoop();
   }, [audioSrc, stopLoop]);
+
+  // Hand the karaoke out to whoever asked for it. In an effect rather
+  // than from the rAF loop, so a caller re-rendering on every word
+  // cannot slow the clock that is driving the mouth.
+  const sayRef = useRef(onSay);
+  useEffect(() => {
+    sayRef.current = onSay;
+  }, [onSay]);
+  useEffect(() => {
+    sayRef.current?.(captionIndex >= 0 ? phrases[captionIndex] : undefined, wordIndex);
+  }, [captionIndex, wordIndex, phrases]);
 
   const activeCue = cueIndex >= 0 ? cues?.[cueIndex] : undefined;
   const summaryCues = (cues ?? []).filter((c) => c.summary !== false);

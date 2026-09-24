@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
-import { TalkingLion } from "@/components/talking-lion";
+import { TalkingLion, type Phrase } from "@/components/talking-lion";
 import { ChevronDownIcon, XIcon } from "@/components/icons";
 import { hapticTap } from "@/lib/feedback-fx";
 import { stopAudio, type TourStop } from "@/data/tour-script";
@@ -109,6 +109,33 @@ export function TourRunner({
   const saysWide = wide && Boolean(stop?.bodyWide);
   const line = saysWide ? stop!.bodyWide! : stop?.body;
   const clip = saysWide ? `${stop!.id}-wide` : stop?.id;
+
+  // What Coach is saying right now, a line at a time.
+  //
+  // WHY NOT A PARAGRAPH. A tour stop used to put its whole sentence on
+  // screen at once while the voice worked through it, which asks
+  // somebody to read and listen to different words at the same time -
+  // and reading is faster, so they finish, look away, and miss what is
+  // being pointed at. One line at a time, with the word being spoken
+  // lit, means the eye is on the word the ear is on. It is the same
+  // treatment a review gets, deliberately: a student meets it here on
+  // their first minute in the app and recognises it later when it is
+  // their own take being talked about.
+  //
+  // The timing comes from the audio element itself (see onSay in
+  // talking-lion.tsx), so the highlight cannot drift from the voice.
+  // Stamped with the clip it belongs to, so a new stop starts silent
+  // rather than holding the last line of the one before - and without
+  // an effect whose only job is to clear state that a render can
+  // simply decline to use.
+  const [said, setSaid] = useState<{ clip?: string; phrase?: Phrase; word: number }>({ word: -1 });
+  const say = useCallback(
+    (phrase: Phrase | undefined, word: number) => {
+      setSaid((was) => (was.clip === clip && was.phrase === phrase && was.word === word ? was : { clip, phrase, word }));
+    },
+    [clip],
+  );
+  const live = said.clip === clip ? said : { phrase: undefined, word: -1 };
 
   // Find what this stop is pointing at, and follow it while the page
   // settles under it.
@@ -228,6 +255,8 @@ export function TourRunner({
                   bare
                   controls={false}
                   audioSrc={muted ? undefined : stopAudio(clip!)}
+                  text={muted ? undefined : line}
+                  onSay={say}
                   autoPlay={!muted}
                   onBlocked={() => setBlocked(true)}
                 />
@@ -237,7 +266,12 @@ export function TourRunner({
                   {step + offset} of {stops.length - 1 + offset}
                 </span>
                 <h2 className="text-base font-bold leading-tight text-ink">{stop.title}</h2>
-                <p className="text-sm leading-snug text-ink-muted">{line}</p>
+                {/* One line at a time, over the film. The caption box
+                    holds its height so the card doesn't jump as
+                    phrases come and go. */}
+                <span className="flex min-h-11 items-center">
+                  <Caption phrase={live.phrase} word={live.word} line={line} />
+                </span>
               </div>
             </div>
             <Controls
@@ -278,7 +312,23 @@ export function TourRunner({
           />
         </>
       ) : (
-        <div className="absolute inset-0 bg-navy-950/45" onClick={done} />
+        /* Dim, when Coach is the thing on screen.
+           
+           The tour deliberately does not black out the app while it is
+           pointing AT the app - four panels and a cut-out ring spend
+           four fifths of the screen hiding the thing being shown. But
+           the hello is the opposite case: there is nothing to look at
+           except Coach, and a half-lit dashboard behind his head is
+           competing with him for the one moment that is his. So the
+           stops with a target stay lit, and the stops without one -
+           the hello, and any stop whose target is off screen - go
+           properly dark. */
+        <div
+          className={`absolute inset-0 transition-colors duration-500 ${
+            opening ? "bg-navy-950" : "bg-navy-950/80"
+          }`}
+          onClick={done}
+        />
       )}
 
       {/* Out of the way, at the foot of the screen.
@@ -306,7 +356,7 @@ export function TourRunner({
               element, so the browser moves him; two would be a cut. */}
           <span
             className={`tour-lion shrink-0 transition-[width] duration-500 ease-out ${
-              opening ? "w-[17rem] max-w-[78vw] sm:w-[21rem]" : "w-9"
+              opening ? "w-[23rem] max-w-[88vw] sm:w-[27rem]" : "w-9"
             }`}
           >
             <TalkingLion
@@ -314,6 +364,8 @@ export function TourRunner({
               bare
               controls={false}
               audioSrc={muted ? undefined : stopAudio(clip!)}
+              text={muted ? undefined : line}
+              onSay={say}
               autoPlay={!muted}
               onBlocked={() => setBlocked(true)}
             />
@@ -330,9 +382,12 @@ export function TourRunner({
                 {stop.title} · {step + offset} of {stops.length - 1 + offset}
               </span>
             )}
-            <p className={opening ? "text-base leading-relaxed text-ink-muted text-balance" : "text-sm leading-snug text-ink"}>
-              {line}
-            </p>
+            {/* The words, one line at a time. The box keeps its height
+                so neither the card at the foot of the screen nor the
+                hello in the middle of it jumps as lines change. */}
+            <span className={`flex items-center ${opening ? "min-h-[4.5rem]" : "min-h-10"}`}>
+              <Caption phrase={live.phrase} word={live.word} line={line} big={opening} />
+            </span>
           </div>
 
           {!opening && (
@@ -368,6 +423,55 @@ export function TourRunner({
 /** The row along the bottom of every stop: where you are, his voice,
  *  back, and on. One copy, so the staged stop and the plain one cannot
  *  drift apart. */
+/**
+ * The line Coach is on, with the word he is on lit.
+ *
+ * Falls back to the whole sentence when there is no clock to follow -
+ * muted, or a browser that refused to start the sound. A caption with
+ * nothing driving it would otherwise be a blank strip where the words
+ * used to be, which is worse than the paragraph it replaced.
+ */
+function Caption({
+  phrase,
+  word,
+  line,
+  big = false,
+}: {
+  phrase?: Phrase;
+  word: number;
+  line?: string;
+  big?: boolean;
+}) {
+  if (!phrase) {
+    return (
+      <p className={`text-ink-muted text-balance ${big ? "text-base leading-relaxed" : "text-sm leading-snug"}`}>
+        {line}
+      </p>
+    );
+  }
+  return (
+    <p
+      key={phrase.text}
+      className={`coach-cue text-balance font-semibold ${big ? "text-xl leading-snug sm:text-2xl" : "text-base leading-snug"}`}
+    >
+      {phrase.words.map((w, i) => (
+        <span
+          key={i}
+          className={`inline-block origin-bottom mx-[0.2em] transition-[transform,color] duration-150 ${
+            i === word
+              ? `caption-live scale-[1.14] ${phrase.colorClass}`
+              : i < word
+                ? "text-ink"
+                : "text-ink-faint"
+          }`}
+        >
+          {w.text}
+        </span>
+      ))}
+    </p>
+  );
+}
+
 function Controls({
   step,
   stops,

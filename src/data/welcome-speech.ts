@@ -57,5 +57,5 @@ export const LANDING_PITCH_AUDIO = "/coach/landing-pitch.mp3";
 // the sound of somebody's voice. The words stay on screen and the
 // voice is offered beside them.
 
-export const HEADLINE_SPOKEN = "Discover your true colors, and roar on screen or stage.";
+export const HEADLINE_SPOKEN = "Discover your true colors, speak, and roar on screen or stage.";
 export const HEADLINE_AUDIO = "/coach/headline.mp3";

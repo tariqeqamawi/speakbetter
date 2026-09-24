@@ -29,7 +29,20 @@ export function StoryPreview() {
   const frame = useRef<HTMLDivElement>(null);
   const phase = storyPhases.find((p) => p.id === active) ?? storyPhases[0];
   const challenges = challengesInPhase(active);
-  const challenge = challenges.find((c) => c.slug === slug) ?? challenges[0];
+  // NOT challenges[0] when nothing has been picked.
+  //
+  // The first challenge of S is the speaking baseline, and the free
+  // baseline has its own live section further down the page - so this
+  // preview opened on exactly the challenge the reader was about to
+  // meet properly, and the landing page said "Record Your Speaking
+  // Baseline" twice in two screens. The second telling is the one
+  // that matters, because it is the one you can actually do.
+  //
+  // So this opens on the phase's SECOND challenge where there is one,
+  // which is a better demonstration anyway: it shows a challenge in
+  // the middle of a road rather than the one every visitor has
+  // already been sold.
+  const challenge = challenges.find((c) => c.slug === slug) ?? challenges[1] ?? challenges[0];
 
   // A phase chosen above scrolls the phone's map to that level.
   const showPhase = (id: PhaseId) => {

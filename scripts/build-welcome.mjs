@@ -65,10 +65,28 @@ const JOBS = [
   })),
 ];
 
+// One line changed, one line re-spoken:
+//
+//   node scripts/build-welcome.mjs headline
+//
+// The nine are made together the FIRST time, because a welcome with
+// half a voice is worse than one with none. But re-rendering all nine
+// because one sentence was reworded spends a daily quota that has run
+// out on this project before, and leaves eight identical files with
+// new timestamps. Named clips only re-speak what was named.
+const only = process.argv.slice(2);
+const todo = only.length ? JOBS.filter((j) => only.includes(j.out)) : JOBS;
+if (only.length && todo.length !== only.length) {
+  const known = JOBS.map((j) => j.out).join(", ");
+  console.error(`No such clip: ${only.filter((o) => !JOBS.some((j) => j.out === o)).join(", ")}
+Known: ${known}`);
+  process.exit(1);
+}
+
 mkdirSync(TMP, { recursive: true });
 mkdirSync("public/coach", { recursive: true });
 
-for (const job of JOBS) {
+for (const job of todo) {
   const line = speechFrom(job.from, job.name, job.marker);
   if (!line) {
     console.error(`Could not find ${job.name} in src/data/welcome-speech.ts`);
