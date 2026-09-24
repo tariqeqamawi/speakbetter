@@ -14,6 +14,15 @@ import { CheckIcon } from "@/components/icons";
 // alone. A restore that quietly overwrote newer work would be a worse
 // bug than the one it is fixing.
 
+/** What is on THIS device right now, worth carrying somewhere else. */
+interface Local {
+  id: string;
+  attempts: number;
+  lessons: number;
+  badges: number;
+  streak: number;
+}
+
 interface Restored {
   attemptId: string;
   challengeSlug: string;
@@ -24,11 +33,47 @@ interface Restored {
   [key: string]: unknown;
 }
 
+/**
+ * What this browser is holding, read once at mount.
+ *
+ * Shown so somebody can tell at a glance WHICH address has their work
+ * on it - which is the actual question when the same app is served
+ * from two, and storage cannot see across the gap.
+ */
+function readLocal(): Local | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const s = JSON.parse(raw) as {
+      attempts?: unknown[];
+      watchedLessons?: unknown[];
+      badges?: unknown[];
+      frozenDays?: unknown[];
+    };
+    const attempts = s.attempts?.length ?? 0;
+    const lessons = s.watchedLessons?.length ?? 0;
+    if (attempts === 0 && lessons === 0) return null;
+    return {
+      id: window.localStorage.getItem("speak-better-student-id") ?? "",
+      attempts,
+      lessons,
+      badges: s.badges?.length ?? 0,
+      streak: s.frozenDays?.length ?? 0,
+    };
+  } catch {
+    return null;
+  }
+}
+
 function RestoreInner() {
   const params = useSearchParams();
   const router = useRouter();
   const id = params.get("id") ?? "";
 
+  const [mine] = useState<Local | null>(readLocal);
+  const [saved, setSaved] = useState<"no" | "saving" | "yes">("no");
+  const [full, setFull] = useState<Record<string, unknown> | null>(null);
   const [found, setFound] = useState<Restored[] | null>(null);
   // Starts as "loading" rather than being set to it inside the effect:
   // a synchronous setState in an effect is an extra render before the
@@ -44,9 +89,13 @@ function RestoreInner() {
     void (async () => {
       try {
         const res = await fetch(`/api/restore?studentId=${encodeURIComponent(id)}`);
-        const data = (await res.json()) as { attempts?: Restored[] };
+        const data = (await res.json()) as {
+          attempts?: Restored[];
+          backup?: { at: string | null; state: Record<string, unknown> } | null;
+        };
         if (!alive) return;
         setFound(data.attempts ?? []);
+        setFull(data.backup?.state ?? null);
         setState("idle");
       } catch {
         if (alive) setState("error");
@@ -56,6 +105,40 @@ function RestoreInner() {
       alive = false;
     };
   }, [id]);
+
+  /** Push this device's record to our side so another address can
+   *  pull it down. Storage cannot cross an origin; this can. */
+  const carry = async () => {
+    if (!mine?.id) return;
+    setSaved("saving");
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      const res = await fetch("/api/backup", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ studentId: mine.id, state: JSON.parse(raw ?? "{}") }),
+      });
+      setSaved(res.ok ? "yes" : "no");
+    } catch {
+      setSaved("no");
+    }
+  };
+
+  /** The whole record, where a backup exists - not just the takes. */
+  const restoreFull = () => {
+    if (!full) return;
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...full, unlocked: true }));
+      window.localStorage.setItem("speak-better-student-id", id);
+      const n = Array.isArray((full as { attempts?: unknown[] }).attempts)
+        ? ((full as { attempts?: unknown[] }).attempts as unknown[]).length
+        : 0;
+      setAdded(n);
+      setState("done");
+    } catch {
+      setState("error");
+    }
+  };
 
   const restore = () => {
     if (!found?.length) return;
@@ -122,6 +205,57 @@ function RestoreInner() {
         <p className="rounded-xl border border-navy-600 bg-navy-800 p-4 text-sm text-ink-muted">
           Nothing found for that id.
         </p>
+      )}
+
+      {/* This device is holding something. Say so loudly - when the
+          same app is served from two addresses, knowing WHICH one has
+          the work is the whole problem. */}
+      {mine && state !== "done" && (
+        <div className="flex flex-col gap-3 rounded-xl border border-mindset/40 bg-mindset/10 p-4">
+          <p className="text-sm font-semibold text-ink">
+            This address has your work on it.
+          </p>
+          <p className="text-xs text-ink-muted">
+            {mine.attempts} take{mine.attempts === 1 ? "" : "s"}, {mine.lessons} lesson
+            {mine.lessons === 1 ? "" : "s"} watched, {mine.badges} trophies.
+          </p>
+          {mine.id && (
+            <>
+              <button
+                type="button"
+                onClick={() => void carry()}
+                disabled={saved === "saving"}
+                className="flex min-h-11 items-center justify-center rounded-full bg-mindset text-sm font-bold text-navy-950 disabled:opacity-60"
+              >
+                {saved === "saving" ? "Saving…" : saved === "yes" ? "Saved" : "Save it so another address can pull it"}
+              </button>
+              {saved === "yes" && (
+                <p className="break-all text-xs text-ink-muted">
+                  Saved. On the other address open{" "}
+                  <span className="font-semibold text-ink">/restore?id={mine.id}</span>
+                </p>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* A full backup beats the parked reviews - it has the lessons,
+          the trophies and the streak in it, not only the takes. */}
+      {full && state !== "done" && (
+        <div className="flex flex-col gap-3 rounded-xl border border-storytelling/40 bg-storytelling/10 p-4">
+          <p className="text-sm font-semibold text-ink">A full backup was found.</p>
+          <p className="text-xs text-ink-muted">
+            Everything: takes, lessons watched, trophies and your streak.
+          </p>
+          <button
+            type="button"
+            onClick={restoreFull}
+            className="flex min-h-11 items-center justify-center rounded-full bg-storytelling text-sm font-bold text-navy-950"
+          >
+            Restore everything to this device
+          </button>
+        </div>
       )}
 
       {found && found.length > 0 && state !== "done" && (
