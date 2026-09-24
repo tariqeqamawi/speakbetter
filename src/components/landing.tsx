@@ -74,7 +74,7 @@ export function Landing() {
           <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
             Discover your true colors, speak, and roar on screen or stage.
           </h1>
-          <SpeakLine audioSrc={HEADLINE_AUDIO} label="Hear it" />
+          <SpeakLine audioSrc={HEADLINE_AUDIO} label="Listen to Coach" />
           <p className="text-xl font-medium text-figurative text-balance sm:text-2xl">
             Six weeks. Master public speaking in minutes a day, not months - and step into your true power on any
             platform.
