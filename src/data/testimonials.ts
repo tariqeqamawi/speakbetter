@@ -131,12 +131,12 @@ export const testimonials: Testimonial[] = [
     check: true,
   },
   {
-    name: "Rach L.",
-    initials: "DN",
+    // Confirmed by Tariq: Rach Ael. Dictation had clipped the surname
+    // to an initial.
+    name: "Rach Ael",
     quote:
       "This course has been life-changing. I would never have dreamed of speaking before and recording myself, but now have a new comfort. Weeks later the micro lessons are easily accessible and digestible, perfect for anyone time-pressed. Tariq genuinely cares about impacting people's lives through enhancing their speaking skills, and in a time of reduced attention spans and increased distractions, this course is invaluable.",
     tag: "lessons",
-    check: true,
   },
   {
     name: "Natasha Hein",
@@ -151,11 +151,10 @@ export const testimonials: Testimonial[] = [
     tag: "teacher",
   },
   {
-    name: "Anne Awour Matoket",
-    initials: "RJ",
+    // Confirmed by Tariq: Matoke, not Matoket.
+    name: "Anne Awour Matoke",
     quote: "Tariq, you are truly amazing. Thanks for contributing to my confidence in public speaking.",
     tag: "confidence",
-    check: true,
   },
   {
     name: "Sharon Ho",
@@ -170,14 +169,12 @@ export const testimonials: Testimonial[] = [
     tag: "storytelling",
   },
   {
-    name: "Michelle",
-    initials: "LN",
+    // Confirmed by Tariq: MePower Michelle - the handle IS the name
+    // she goes by, which is why dictation ran the two together.
+    name: "MePower Michelle",
     quote:
       "So often in life, due to childhood experiences, school, work, friends or others, we can lose our voice, our ability to speak our truth, speak with confidence, and feel we can share our message powerfully. In just two live sessions plus the course resources, I am stepping back into my power, and already this journey is gifting me the ability to share my story and to find my voice. If you are ready to find your voice and take your business to the next level, I cannot recommend this enough. We can all learn to speak better. Thank you, Tariq, for gifting me the knowledge, skill and art of storytelling.",
     tag: "confidence",
-    // Dictated as "Mepower Michelle" - likely a handle rather than a
-    // surname.
-    check: true,
   },
   {
     name: "Kali Klein",
@@ -227,21 +224,22 @@ export const testimonials: Testimonial[] = [
     check: true,
   },
   {
-    name: "Teresa Ecclin",
+    // Confirmed by Tariq: Therese Ekelin.
+    name: "Therese Ekelin",
     quote:
       "I jumped into the Speak Better course a couple of days ago. Great content, short videos, easy to follow. I'm very happy so far. A really good offer.",
     tag: "lessons",
-    check: true,
   },
   {
-    name: "Kylie Klein",
+    // Confirmed by Tariq: Callie, not Kylie. Note this is a different
+    // person from Kali Klein above - two Kleins, both real.
+    name: "Callie Klein",
     quote:
       "Thanks Tariq, it's been great. My confidence has improved and now I want to improve my skill. This is the place to be to grow.",
     tag: "confidence",
     // The dictation ran on into "Thanks again Erin Ralph. The course
     // has been fantastic..." which looks like a second person's words
     // joined to hers; that part is the next entry.
-    check: true,
   },
   {
     name: "Erin Ralph",
@@ -251,19 +249,25 @@ export const testimonials: Testimonial[] = [
     check: true,
   },
   {
-    name: "Christie Xord",
+    // Confirmed by Tariq: Kristie X Ord - a K, and "X Ord" is two
+    // parts, which is why dictation ran it into one word.
+    name: "Kristie X Ord",
     quote:
       "I got asked to speak on stage in front of 7,000 people. I started preparing for this talk with Tariq so that I'm not crapping my pants on stage and I deliver something really heartfelt. My biggest win is that I won your speaking course. Perfect timing, as I felt a big shift whilst being in Japan and it's time for me to be seen and use my voice more. Thank you again, appreciate you.",
     tag: "results",
-    check: true,
   },
   {
-    // Confirmed by Tariq: she is Michaela, and the word is "Tingy" -
-    // dictation heard "Mika Ella" and "Tingly". Both now as she wrote
-    // them, which is the point of a testimonial.
-    name: "Michaela",
+    // Confirmed by Tariq: MikaElla Tingi.
+    //
+    // "Tingy." was sitting at the head of the quote as though it were
+    // the first word she said. It is not - it is the second half of
+    // her own name, which dictation split off and punctuated into the
+    // sentence. Moving it back to the name fixes both ends at once:
+    // she is credited properly, and the quote now opens on the line
+    // she actually wrote.
+    name: "MikaElla Tingi",
     quote:
-      "Tingy. So deeply aligned with your words and total soul-led purpose, brother. So deeply grateful I'm working with you.",
+      "So deeply aligned with your words and total soul-led purpose, brother. So deeply grateful I'm working with you.",
     tag: "teacher",
   },
   {
