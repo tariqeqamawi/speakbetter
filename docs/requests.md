@@ -98,6 +98,8 @@ Tariq topped up the account, so the cap is gone.
       and falls back to text-only until the image exists (`the-reality.tsx`, `STILL`)
 
 ### Asked for and not yet started
+- [ ] **Trophy room: slow looping smoke under the spotlight** (24 Sep) — a short seamless
+      video behind the stage, light enough not to weigh the page. In progress.
 
 ### Decided, for the record
 - **The streak past day ten.** 5% a day to +50% at ten days (unchanged), then 2.5% a day
@@ -190,6 +192,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **24 September**
+- Four calls to action down the landing page (Join Speak Better Now, Start My Speaking
+  Journey, I'm Ready, Sign Me Up), each gliding to the tiers — `bb59da6`
 - Landing speed pass: the page no longer scrolls itself ~9,300px down to the library on
   load; requests in the first 6s 89 -> 40, 1.95MB -> 1.39MB; idle main-thread work on a slow
   laptop roughly halved; off-screen animations sleep — `fe1b4ad`
