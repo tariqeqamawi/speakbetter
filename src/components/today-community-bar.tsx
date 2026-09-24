@@ -55,13 +55,15 @@ export function TodayCommunityBar() {
         </span>
       )}
 
-      <span className="min-w-0 flex-1 truncate text-xs font-medium text-ink-muted">
-        {others > 0 ? (
-          <>
-            <span className="font-bold text-ink">{others}</span> others are on this challenge right now
-          </>
-        ) : (
-          "See everyone's progress alongside yours"
+      {/* It is a door, so it is labelled with where it goes. The count
+          was the more interesting sentence and the wrong one: somebody
+          scanning a sticky bar needs to know what tapping it does,
+          and "31 others are on this challenge" does not say
+          Community. The number rides alongside as the reason. */}
+      <span className="min-w-0 flex-1 truncate">
+        <span className="text-sm font-bold text-ink">Community</span>
+        {others > 0 && (
+          <span className="pl-2 text-xs text-ink-muted">{others} others on this challenge</span>
         )}
       </span>
 

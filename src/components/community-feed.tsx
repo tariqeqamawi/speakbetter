@@ -123,7 +123,7 @@ export function CommunityFeed() {
   const boards = [
     {
       id: "colors",
-      title: "Speaking spectrum",
+      title: "Speaking Spectrum",
       note: "colors now lighting up",
       Icon: TrendingUpIcon,
       accent: "text-body-language",
@@ -135,7 +135,7 @@ export function CommunityFeed() {
     },
     {
       id: "takes",
-      title: "Recorded attempts",
+      title: "Recorded Attempts",
       note: "every recording counts",
       // A flame is the streak's mark everywhere else in the app; using
       // it here made two different things wear the same symbol. This
@@ -150,7 +150,7 @@ export function CommunityFeed() {
     },
     {
       id: "jump",
-      title: "Biggest improvement",
+      title: "Biggest Improvement",
       note: "baseline to latest",
       Icon: TrophyIcon,
       accent: "text-storytelling",

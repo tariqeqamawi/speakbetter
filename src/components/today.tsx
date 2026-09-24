@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useStore } from "@/lib/store";
 import { currentStreak, practicedToday } from "@/data/badges";
-import { nextUp, continueWatching } from "@/lib/next-up";
+import { nextUp } from "@/lib/next-up";
 import { challenges, storyPhases } from "@/data/challenges";
 import { categories } from "@/data/categories";
 import { SpectrumWave } from "@/components/spectrum-wave";
@@ -13,12 +13,12 @@ import { challengeProgress } from "@/lib/challenge-progress";
 import { categoryById } from "@/data/categories";
 import { VideoStill } from "@/components/video-still";
 import { DailyQuests } from "@/components/daily-quests";
-import { TapIcon, VideoIcon } from "@/components/icons";
+import { ChevronDownIcon, TapIcon, VideoIcon } from "@/components/icons";
 import { startTour } from "@/components/guided-tour";
 import { LevelIcon, levelMeta } from "@/components/level-icon";
 import { FlameIcon } from "@/components/icons";
 import { streakBonusPercent } from "@/lib/progress";
-import { CheckIcon, PlayIcon } from "@/components/icons";
+import { CheckIcon } from "@/components/icons";
 
 // The daily home. A library of 24 challenges invites browsing; this
 // screen names the one thing to do today, which is what actually
@@ -31,7 +31,6 @@ export function Today() {
   const streak = currentStreak(state);
   const doneToday = practicedToday(state);
   const up = nextUp(state);
-  const recent = continueWatching(state);
   const lastAttempt = state.attempts.at(-1);
   const passed = challenges.filter((c) => challengeProgress(c, state).passed).length;
   const meta = state.level ? levelMeta[state.level] : null;
@@ -268,38 +267,41 @@ export function Today() {
         </section>
       )}
 
-      {recent.length > 0 && (
+      {/* The challenge they are actually on.
+          
+          This block used to be "Pick up where you left off" and listed
+          half-watched LESSONS. Renaming the heading to "Current
+          challenge" without changing what was under it made the
+          heading a lie - so it shows the challenge now, and the
+          lessons it leans on are one tap inside it where they belong. */}
+      {up && (
         <section className="flex flex-col gap-3">
           <h2 className="text-sm font-medium uppercase tracking-wider text-ink-faint">
             Current challenge
           </h2>
-          <ul className="grid gap-2 sm:grid-cols-2">
-            {recent.map((lesson) => {
-              const cat = categoryById.get(lesson.category)!;
-              return (
-                <li key={lesson.vimeoId}>
-                  <Link
-                    href={`/skills/${lesson.category}/${lesson.vimeoId}`}
-                    className="group flex items-center gap-3 overflow-hidden rounded-lg border border-navy-600 bg-navy-800 transition-colors hover:border-ink-faint"
-                  >
-                    <span className="relative aspect-video w-20 shrink-0 bg-navy-950">
-                      <VideoStill
-                        vimeoId={lesson.vimeoId}
-                        accent={cat}
-                        sizes="80px"
-                      />
-                    </span>
-                    <span className="flex-1 py-2 pr-3 text-xs font-medium leading-snug text-ink">
-                      {lesson.title}
-                    </span>
-                    <PlayIcon className="mr-3 size-4 shrink-0 text-ink-faint" />
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+          <Link
+            href={`/challenges/${up.challenge.slug}`}
+            className="group flex items-center gap-3 overflow-hidden rounded-xl border border-navy-600 bg-navy-800 transition-colors hover:border-ink-faint"
+          >
+            <span className="relative aspect-video w-28 shrink-0 bg-navy-950 sm:w-36">
+              <VideoStill
+                vimeoId={up.challenge.vimeoId}
+                accent={categoryById.get(up.challenge.targetSkills[0])!}
+                sizes="(min-width: 640px) 144px, 112px"
+              />
+            </span>
+            <span className="flex min-w-0 flex-1 flex-col gap-0.5 py-2.5 pr-3">
+              <span className="text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint">
+                {storyPhases.find((p) => p.id === up.challenge.phase)?.name}
+              </span>
+              <span className="truncate text-sm font-semibold text-ink">{up.challenge.title}</span>
+              <span className="truncate text-xs text-ink-muted">{up.reason}</span>
+            </span>
+            <ChevronDownIcon className="mr-3 size-4 shrink-0 -rotate-90 text-ink-faint" />
+          </Link>
         </section>
       )}
+
     </div>
   );
 }
