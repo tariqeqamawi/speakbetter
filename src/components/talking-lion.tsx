@@ -112,7 +112,10 @@ export const TalkingLion = forwardRef<
   { text, audioSrc, cues, captions = false, controls = true, large = false, bare = false, autoPlay = false, onEnded, onBlocked, className = "" },
   ref,
 ) {
-  const [level, setLevel] = useState(0); // 0..1 live amplitude, smoothed
+  // The smoothed amplitude. Read by nothing now that the wave lives
+  // in the button - kept because the envelope that produces it is also
+  // what drives the mouth, and splitting them would be two clocks.
+  const [, setLevel] = useState(0);
   // The mouth follows a faster envelope than the bloom: quick to open
   // on a syllable, a little slower to close, so it flaps like speech
   // rather than swelling like breath.
@@ -417,26 +420,16 @@ export const TalkingLion = forwardRef<
     <div className={`flex w-full flex-col items-center ${bare ? "gap-0" : "gap-4"} ${className}`}>
       <div className={`relative w-full shrink-0 ${bare ? "" : large ? "max-w-lg" : "max-w-xs"}`}>
         <LionMouth level={mouth} className="relative w-full shrink-0" />
-        {/* The logo's wave, alive: the same ribbons as the mark, drawn
-            by the Soundwave the header uses, breathing with the level -
-            flat and faint in silence, full when the coach is speaking. */}
-        {!bare && (
-        <div
-          aria-hidden
-          className="-mx-[6%] -mt-4 w-[112%] shrink-0 will-change-transform"
-          style={{
-            // At rest the wave used to squash to a third of its height,
-            // which read as a thin line under the lion rather than as
-            // the mark's wave. It now sits most of the way up in
-            // silence and opens out when he speaks.
-            transform: `scaleY(${(0.66 + level * 0.34).toFixed(3)})`,
-            opacity: 0.8 + level * 0.2,
-            transition: "transform 90ms ease-out, opacity 120ms ease-out",
-          }}
-        >
-          <Soundwave variant="coach" className="h-24 w-full sm:h-28" />
-        </div>
-        )}
+        {/* The wave used to sit here, under the lion, AND inside the
+            button below it - the same idea drawn twice, one above the
+            other, on the one screen where the point was that there is
+            a voice and a way to hear it.
+            
+            It lives in the button now (see the control at the foot of
+            this component), where it is the thing you press rather
+            than a picture of the thing you press. Only the button
+            carries it; if it ever needs to be here again it should
+            come out of there in the same change. */}
         {/* The captions: the phrase being said, over the wave, so the
             words are heard and seen together. The box keeps its height
             so the lion doesn't shift as phrases come and go. */}

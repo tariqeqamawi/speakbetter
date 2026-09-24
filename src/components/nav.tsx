@@ -39,7 +39,7 @@ const destinations = [
   { href: "/skills", label: "Skills", tour: "skills", Icon: SkillsIcon },
   // The route stays /profile so existing links keep working; the name a
   // student sees is theirs.
-  { href: "/profile", label: "You", tour: "dashboard", Icon: ProfileIcon },
+  { href: "/profile", label: "Dash", tour: "dashboard", Icon: ProfileIcon },
 ] as const;
 
 /** Today is only "on" at the root; the rest own their whole subtree. */

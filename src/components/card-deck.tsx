@@ -8,7 +8,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { LessonCard, CardFaceDown } from "@/components/lesson-card";
 import { CategoryIcon } from "@/components/category-icons";
 import { categories, type Category, type CategoryId } from "@/data/categories";
-import { rulesCard, type DeckCardData } from "@/data/deck";
+import { type DeckCardData } from "@/data/deck";
 import { hapticTap, playXpChime } from "@/lib/feedback-fx";
 import {
   ChevronDownIcon,
@@ -397,20 +397,9 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
           </button>
         )}
 
-        <details className="w-full max-w-md rounded-xl border border-navy-600 bg-navy-900/60">
-          <summary className="flex cursor-pointer select-none items-center justify-between px-4 py-3 text-sm font-medium text-ink-muted transition-colors hover:text-ink">
-            How to use the deck
-            <ChevronDownIcon className="size-4" />
-          </summary>
-          <ul className="flex flex-col gap-2.5 px-4 pb-4">
-            {rulesCard.points.map((point) => (
-              <li key={point} className="flex gap-2 text-xs text-ink-muted">
-                <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-ink-faint" />
-                {point}
-              </li>
-            ))}
-          </ul>
-        </details>
+        {/* "How to use the deck" moved to the top of the page.
+            Instructions at the foot of a thing are read by people who
+            have already worked it out. */}
       </div>
     </div>
   );
