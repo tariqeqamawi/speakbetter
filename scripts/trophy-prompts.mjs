@@ -62,14 +62,19 @@
 // the skill it is awarded for, so the case doubles as a picture of
 // what somebody is good at.
 
+// Matched to the Speaking Spectrum (globals.css --color-*), not to what
+// sounds nice. "Warm golden yellow" and "emerald" rendered amber and
+// dark green, so storytelling collided with figurative and gold, and
+// confidence looked like a different app. The words below are what
+// came out on-spectrum; the set was hue-corrected once to match.
 export const COLORS = {
-  storytelling: "warm golden yellow",
-  figurative: "bright amber orange",
-  acting: "vivid scarlet red",
-  structure: "vivid magenta pink",
-  mindset: "luminous emerald green",
-  "body-language": "bright cyan blue",
-  advanced: "deep crimson",
+  storytelling: "bright neon lemon yellow (#ffd60a), not gold, not amber",
+  figurative: "bright orange (#ff9500)",
+  acting: "vivid scarlet red (#ff4a2b)",
+  structure: "vivid magenta leaning purple (#f53de0), not pink",
+  mindset: "bright neon green (#1fe890), not emerald",
+  "body-language": "bright cyan (#22d9f5)",
+  advanced: "deep crimson (#d11149)",
 };
 
 /** How each material is described to the renderer. */
@@ -124,7 +129,7 @@ export const TROPHIES = [
   { id: "i-see-you", color: "body-language", subject: "a single open eye", material: "ceramic" },
   { id: "storyteller", color: "storytelling", subject: "an open book with its pages curling upward", material: "ceramic" },
   { id: "oscar", color: "acting", subject: "a pair of theatre masks, comedy and tragedy, side by side", material: "obsidian" },
-  { id: "twisted", color: "acting", subject: "a twisted rope tied in a single knot", material: "ceramic" },
+  { id: "twisted", color: "storytelling", subject: "a twisted rope tied in a single knot", material: "ceramic" },
   { id: "sensational", color: "figurative", subject: "a five-pointed star with a long tail, like a shooting star", material: "ceramic" },
   { id: "composer", color: "acting", subject: "a treble clef", material: "ceramic" },
   { id: "journey-complete", color: "storytelling", subject: "a laurel wreath encircling the five letters S T O R Y", material: "obsidian" },
