@@ -114,8 +114,7 @@ Tariq topped up the account, so the cap is gone.
 ### Waiting on Tariq
 - [ ] **More obsidian trophies** - Iron Will built. Still proposed: Standing Ovation (95+), Then
       and Now (beat your baseline in all seven colours), The Golden Phase (gold on every challenge
-      in a phase), Seven Summits (80+ in each colour). And: should Unstoppable (7 days) move to
-      chrome now Iron Will is the obsidian streak?
+      in a phase), Seven Summits (80+ in each colour).
 - [ ] **2 testimonials still held back.** 25 are live, up from 13 at the start of
       24 September. Tariq named almost the whole list that evening.
 
@@ -196,6 +195,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **24 September**
+- Library trophies: one per skill for watching every lesson in it (7, enamel); Unstoppable
+  moved to chrome — `f9a087f`
 - Skill trophies need consistency across different challenges (Handy 4, I See You 6, Oscar 5,
   ...); Full Spectrum 60+; Founding Cohort once-only trophy — `34f8831`
 - Iron Will (obsidian, 30 days); The Lion's Roar with neon LEDs in its own Legendary category;
