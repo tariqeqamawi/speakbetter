@@ -187,6 +187,7 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **24 September**
+- Top Narrator: a head mid-sentence with sound waves, replacing the pocket watch — `b975b08`
 - Trophy room: neighbours receding either side, portrait stage with close neighbours on a
   phone, smoke that visibly moves (the first loop barely did), S.T.O.R.Y. letters in
   spectrum blown glass — `be84dcf`
