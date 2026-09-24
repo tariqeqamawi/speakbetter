@@ -17,10 +17,10 @@ export default function PricingPage() {
         <Link href="/" className="text-xs font-semibold uppercase tracking-[0.3em] text-ink-faint hover:text-ink">
           Speak Better
         </Link>
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Start free. Keep the method. Add the coach.</h1>
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Six weeks. One payment. Coach on every take.</h1>
         <p className="max-w-xl text-ink-muted">
-          Record your first challenge for nothing and get one real review. Then the cohort is one payment for six weeks,
-          with a {guarantee.days}-day money-back guarantee for any reason.
+          The cohort is one payment for six weeks, with a {guarantee.days}-day money-back guarantee for any reason -
+          so the way to try it is to join it.
         </p>
       </header>
       <Pricing />

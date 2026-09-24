@@ -41,3 +41,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Agent worktrees - checked out inside the repo, so Tailwind would scan
+# their build output and break the dev CSS.
+/.claude/worktrees/

@@ -62,12 +62,12 @@ export function FirstChallenge() {
             Better three times. The offer is the interesting half, so
             the offer is the heading. */}
         <h2 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-          The first one&apos;s on us
+          Challenge Preview
         </h2>
         <p className="text-lg text-ink-muted text-balance">
           Here is the first challenge, exactly as it looks inside: record yourself speaking for two minutes with no
           preparation, and Coach tells you what he saw. It is the &ldquo;before&rdquo; everything else gets measured
-          against - and it is free.
+          against.
         </p>
       </div>
 
@@ -148,7 +148,6 @@ export function FirstChallenge() {
                         </span>
                         <span className={`size-2 shrink-0 rounded-full ${cat.bgClass}`} />
                         <span className="flex-1 font-medium text-ink">{lesson.title}</span>
-                        <span className="text-xs text-ink-faint">free</span>
                       </Link>
                     </li>
                   );
@@ -170,7 +169,7 @@ export function FirstChallenge() {
               What belongs here is the door. */}
           <div className="flex flex-col items-center gap-2 rounded-xl border border-navy-600 bg-navy-800 p-5 text-center">
             <p className="text-sm text-ink-muted text-balance">
-              Coach reviews this one free when you join - your baseline, and the first mark on the road.
+              Coach reviews this one the day you join - your baseline, and the first mark on the road.
             </p>
             <a href="#pricing" className="cta-neon-wrap rounded-xl">
               <span className="cta-neon-glow rounded-xl" aria-hidden />

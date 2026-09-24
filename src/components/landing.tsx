@@ -135,10 +135,6 @@ export function Landing() {
             what this says now. */}
         <WhatItIs />
         <div className="flex flex-col items-center gap-2">
-          <a href="#try" className="cta-neon-wrap rounded-xl">
-            <span className="cta-neon-glow rounded-xl" aria-hidden />
-            <span className="cta-neon block rounded-xl px-7 py-3.5 text-sm">Try the first challenge free</span>
-          </a>
           <a href="#pricing" className="text-xs font-medium text-ink-faint underline-offset-4 hover:text-ink hover:underline">
             See what&apos;s included
           </a>
@@ -439,7 +435,7 @@ export function Landing() {
           </p>
         </div>
         <div className="w-full">
-          <Pricing hideTrial />
+          <Pricing />
         </div>
       </section>
     </div>

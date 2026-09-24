@@ -100,7 +100,7 @@ export const tiers: Tier[] = [
     has: foundations,
     accent: "mindset",
     cta: "Get Starter",
-    note: "6 weeks' access, including every weekly live session. Upgrade to Complete any time for $200.",
+    note: "6 weeks' access, including every weekly live session. Upgrade to Complete within your first 14 days for $200.",
   },
   {
     id: "coached",
@@ -144,6 +144,11 @@ export const priceCents: Record<Exclude<Plan, "trial">, number> = {
 /** Starter to Complete: the difference, not a second full price. A
  *  student who has already paid $299 is not asked for $499. */
 export const UPGRADE_CENTS = priceCents.coached - priceCents.foundations;
+
+/** How long after joining a Starter student can still upgrade for the
+ *  difference. After that the cohort is well under way and Starter is
+ *  the course they chose. */
+export const UPGRADE_WINDOW_DAYS = 14;
 
 /** The line Coach's own page shows a Starter student, and the word on
  *  the button under it. Written once, here, because it is the sentence

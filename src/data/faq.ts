@@ -1,6 +1,6 @@
 import { cohort } from "@/data/cohort";
 import { creditPacks, includedReviews } from "@/data/credits";
-import { guarantee, monthly, tiers, upgradeOffer } from "@/data/pricing";
+import { UPGRADE_WINDOW_DAYS, guarantee, monthly, tiers, upgradeOffer } from "@/data/pricing";
 
 // The questions somebody has with their card half out, answered under
 // the tiers rather than on a page of their own. Every number here is
@@ -37,7 +37,7 @@ export const faq: { q: string; a: string }[] = [
   },
   {
     q: "Can I upgrade later?",
-    a: `Yes - from ${starter.name} to ${complete.name} at any point in the six weeks, for the difference: ${upgradeOffer.cta.replace("Upgrade for ", "")}. You are never asked to pay the full price twice.`,
+    a: `Yes - from ${starter.name} to ${complete.name} within your first ${UPGRADE_WINDOW_DAYS} days, for the difference: ${upgradeOffer.cta.replace("Upgrade for ", "")}. You are never asked to pay the full price twice.`,
   },
   {
     q: "How many reviews do I get?",
@@ -50,9 +50,5 @@ export const faq: { q: string; a: string }[] = [
   {
     q: "What happens to my videos?",
     a: "They stay on your phone. A take leaves it only to be reviewed, and the copy Coach watched is deleted the moment the review comes back. The feedback is what's kept.",
-  },
-  {
-    q: "Can I try it before paying?",
-    a: "Yes - the first challenge is free. Record it, and Coach reviews it for real: your score, your seven-color spectrum, and what to do next. No card needed.",
   },
 ];
