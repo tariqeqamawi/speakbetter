@@ -43,7 +43,7 @@ export default function SpotlightPage() {
         <p className="max-w-2xl text-sm text-ink-muted text-balance">
           All {trophies.length} trophies, each standing on the podium under the light the way a student will see
           it. Arrow keys, the chevrons or a swipe to walk the case, or pick any one from the collection below.
-          The material is the rank: obsidian, neon, gold, chrome, ceramic, glass.
+          The material is the rank: obsidian, spectrum glass, gold, chrome, ceramic, glass.
         </p>
       </header>
       <TrophyRoom trophies={trophies} />

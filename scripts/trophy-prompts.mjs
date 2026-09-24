@@ -34,9 +34,11 @@
 //   gold      a top score: 90 or more on a challenge. The glass trophy
 //             is for passing it; its gold twin is for mastering it,
 //             which is a reason to record it again.
-//   neon      finishing a phase of the road - the five S.T.O.R.Y.
-//             letters, lit in every colour at once, because a phase is
-//             all seven skills working together.
+//   spectrum  finishing a phase of the road - the five S.T.O.R.Y.
+//             letters in blown glass with all seven colours swirling
+//             through them, because a phase is every skill working
+//             together. (They were neon tubes for an afternoon; solid
+//             glass reads as a prize, a sign reads as a shop front.)
 //   obsidian  the rare ones, and the whole road at the end of it.
 //
 // Four of the five still take the colour of the skill they are for -
@@ -84,7 +86,7 @@ export const MATERIALS = {
   chrome: () => "a mirror-polished chrome figure of",
   gold: () => "a polished solid gold figure of",
   obsidian: () => "a carved black obsidian figure of",
-  neon: () => "a neon sign in thick glowing glass tubes, lit in all seven of the app's colours, tracing",
+  spectrum: () => "solid hand-blown art glass, like Murano glass, with swirling ribbons of all seven neon spectrum colours flowing through it, shaped as",
 };
 
 const FINISH = {
@@ -93,7 +95,7 @@ const FINISH = {
   chrome: "liquid mirror steel, reflecting the studio lights, no colour of its own",
   gold: "warm yellow metal, mirror-polished, with bright specular highlights",
   obsidian: "deep glossy black volcanic stone, with a thin line of colour caught along its polished edges",
-  neon: "a soft coloured glow around the tubes, the colours flowing into each other along its length",
+  spectrum: "thick, polished and translucent, glowing gently from within, bright glossy highlights on its surface",
 };
 
 /** The one sentence every trophy is made of. */
@@ -135,11 +137,11 @@ export const TROPHIES = [
   { id: "journey-complete", color: "storytelling", subject: "a laurel wreath encircling the five letters S T O R Y", material: "obsidian" },
 
   // ── The five phases of the road ───────────────────────────────────
-  { id: "phase-S", color: "mindset", subject: "the capital letter S, sculpted", material: "neon" },
-  { id: "phase-T", color: "body-language", subject: "the capital letter T, sculpted", material: "neon" },
-  { id: "phase-O", color: "storytelling", subject: "the capital letter O, sculpted", material: "neon" },
-  { id: "phase-R", color: "acting", subject: "the capital letter R, sculpted", material: "neon" },
-  { id: "phase-Y", color: "structure", subject: "the capital letter Y, sculpted", material: "neon" },
+  { id: "phase-S", color: "mindset", subject: "the capital letter S, sculpted", material: "spectrum" },
+  { id: "phase-T", color: "body-language", subject: "the capital letter T, sculpted", material: "spectrum" },
+  { id: "phase-O", color: "storytelling", subject: "the capital letter O, sculpted", material: "spectrum" },
+  { id: "phase-R", color: "acting", subject: "the capital letter R, sculpted", material: "spectrum" },
+  { id: "phase-Y", color: "structure", subject: "the capital letter Y, sculpted", material: "spectrum" },
 
   // ── One for every challenge (data/challenges.ts) ──────────────────
   { id: "challenge-speaking-baseline", color: "mindset", subject: "an old-fashioned box camera on a short tripod" },

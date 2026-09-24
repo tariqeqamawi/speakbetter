@@ -25,7 +25,7 @@ export const faq: { q: string; a: string }[] = [
   },
   {
     q: "What happens after the six weeks?",
-    a: `You can stay on month to month: ${starter.name} for ${monthly.foundations} a month, or ${complete.name} for ${monthly.coached} a month. It is entirely optional - the six weeks are yours either way, and nobody is moved onto a monthly plan without choosing it.`,
+    a: `You can stay on month to month: ${starter.name} for ${monthly.foundations} a month, and ${complete.name} or ${vip.name} for ${monthly.coached} a month. It is entirely optional - the six weeks are yours either way, and nobody is moved onto a monthly plan without choosing it.`,
   },
   {
     q: "When does it start?",

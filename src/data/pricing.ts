@@ -187,7 +187,8 @@ export const guarantee = {
 /** After the six weeks: staying on, month to month. Optional - the
  *  cohort itself is still one payment - and priced per tier, so the FAQ
  *  and anything else that mentions it read the numbers from here. */
-export const monthly: Partial<Record<Exclude<Plan, "trial">, string>> = {
+export const monthly: Record<Exclude<Plan, "trial">, string> = {
   foundations: "$14.99",
   coached: "$29.99",
+  founders: "$29.99",
 };
