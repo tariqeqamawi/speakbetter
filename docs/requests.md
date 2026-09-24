@@ -19,7 +19,34 @@ Last updated: 24 September 2026.
 
 ## Open
 
-### The road — the big one
+### The road — the big one, and now specified
+
+**Tariq's spec, 24 September, in his words and to be built next:**
+
+- **One continuous terrain**, not five scenes. It changes colour as you pass from one set
+  of challenges into the next.
+- **Tapping a letter of S.T.O.R.Y. jumps you** to that stretch of the terrain.
+- **A ribbon or banner announces each phase** — "S: Start With Awareness" — that travels
+  toward you and off the screen as you enter it. The next one raises a flag saying
+  "Train Your Instrument", so crossing a boundary is something you SEE rather than infer
+  from a colour change.
+- **A lit line down the centre** is the path the player moves along.
+- **The scroll is flipped**: dragging a thumb DOWN the screen moves you forward along the
+  road. (It is currently the other way, which is correct for a page and wrong for a road.)
+- **Surprises along the way**, triggered by completing challenges — Coach appearing beside
+  the path with a word of encouragement; which other students are on the challenge you
+  are on; a comment somebody left on it. Small, occasional, and tied to progress.
+
+**Still true from before:** the travelling piece should be the student's avatar
+(`state.avatar`), challenge thumbnails play inside the circles, there is a finish line to
+pass through with a celebration on the other side, and the selection model is
+free-scroll / only-the-current-one-clickable / "Unlock previous challenge first".
+
+**And the three that must follow the swap,** as one task and never three: re-record the
+tour film (`node scripts/film-tour.mjs journey`), re-check the `adventure` tour stop's
+wording, and carry over the unlocked trophies and the what-went-well line from the old map.
+
+
 Prototype lives at `/prototype/adventure`. The live `/challenges` map is untouched.
 
 **Now blocking a landing-page section too.** The S.T.O.R.Y. section on the landing page

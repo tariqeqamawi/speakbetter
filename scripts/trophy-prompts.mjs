@@ -8,14 +8,42 @@
 // eye goes to. So the prompt lives here, in the repo, beside the code
 // that turns the render into the asset.
 //
-// THE SHAPE IS FIXED AND ONLY THE SUBJECT CHANGES. Every one of them
-// is the same object: a sculpted glass figure on a slender polished
-// chrome stem, on a square brushed-gunmetal plinth with a thin glowing
-// line along its base. That was settled by rendering one (the amber
-// flame) and standing it in the trophy room beside the drawn versions
-// - see /prototype/spotlight. What varies is the figure on top and the
-// colour of the glass, so forty-seven of them read as one collection
-// won by one person rather than forty-seven separate prizes.
+// THE SHAPE IS FIXED. Every one of them is the same object: a sculpted
+// figure on a SHORT chrome post, on a square brushed-gunmetal plinth
+// with a thin glowing line along its base.
+//
+// The post used to be a tall slender stem, and the first full set came
+// back looking like forty-seven table lamps: the object you had won
+// was a small thing on the end of a long pole, and most of the picture
+// was pole. The figure is the award - it is what says which one this
+// is and what it was for - so it gets the frame, and the post is just
+// enough to lift it off the plinth. That was settled by
+// rendering one (the amber flame) and standing it in the trophy room
+// beside the drawn versions - see /prototype/spotlight. The shared
+// stem and plinth are what make forty-seven of them read as one
+// collection won by one person rather than forty-seven separate prizes.
+//
+// THE MATERIAL IS THE RANK. Forty-seven trophies all in coloured glass
+// were one collection, and also one note held for a very long time -
+// nothing in the case said which of them were hard to get. So the
+// material carries that, and it is the only thing it carries:
+//
+//   glass     the twenty-four challenges. The everyday ones.
+//   ceramic   the ones about how you speak and how you feel doing it.
+//   chrome    the ones earned by turning up again and again.
+//   gold      finishing a level of the road. Five of these.
+//   obsidian  the rare ones, and the whole road at the end of it.
+//
+// Four of the five still take the colour of the skill they are for -
+// the glaze, the glow in the stone, the glass itself - so the case
+// keeps doubling as a picture of what somebody is good at. Chrome and
+// gold are the two that do not, which is the point of them: a trophy
+// that is only about the doing, not about which colour it was in.
+//
+// A student who has never been told any of this reads it at a glance,
+// because everybody already knows what those materials are worth.
+// That is the whole reason for using them rather than, say, five
+// sizes of plinth.
 //
 // SHOT ON PURE BLACK, on purpose. Background removal through the API
 // was rate-limited, and cutting the alpha locally from a curve-crushed
@@ -37,13 +65,31 @@ export const COLORS = {
   advanced: "deep crimson",
 };
 
+/** How each material is described to the renderer. */
+export const MATERIALS = {
+  glass: (color) => `a sculpted ${COLORS[color]} art-glass figure of`,
+  ceramic: (color) => `a glazed ${COLORS[color]} ceramic figure of`,
+  chrome: () => "a mirror-polished chrome figure of",
+  gold: () => "a polished solid gold figure of",
+  obsidian: () => "a carved black obsidian figure of",
+};
+
+const FINISH = {
+  glass: "polished and translucent with deep internal highlights",
+  ceramic: "a soft satin glaze with gentle highlights, opaque, faint crazing in the surface",
+  chrome: "liquid mirror steel, reflecting the studio lights, no colour of its own",
+  gold: "warm yellow metal, mirror-polished, with bright specular highlights",
+  obsidian: "deep glossy black volcanic stone, with a thin line of colour caught along its polished edges",
+};
+
 /** The one sentence every trophy is made of. */
-export function promptFor(subject, color) {
+export function promptFor(subject, color, material = "glass") {
   return [
-    `A small award trophy photographed in a studio: a sculpted ${COLORS[color]} art-glass figure of ${subject},`,
-    "polished and translucent with deep internal highlights, mounted on a slender polished chrome stem,",
-    "standing on a square brushed gunmetal plinth with a thin glowing neon line along its base.",
-    "Straight-on product photograph, the whole trophy centred in frame with clear space around it,",
+    `A small award trophy photographed in a studio: ${MATERIALS[material](color)} ${subject},`,
+    `${FINISH[material]}, large and bold, filling most of the frame,`,
+    "raised on a SHORT thick polished chrome post - no more than a fifth of the height of the figure above it -",
+    "on a square brushed gunmetal plinth with a thin glowing neon line along its base.",
+    "Straight-on product photograph, the trophy centred and filling the frame,",
     "dramatic warm-white key light from above left, soft rim light, high detail.",
     "Pure solid black background, no floor, no reflection, no shadow cast on anything, no text, no lettering, no logo.",
   ].join(" ");
@@ -55,31 +101,31 @@ export function promptFor(subject, color) {
 
 export const TROPHIES = [
   // ── The eighteen awards (data/badges.ts) ──────────────────────────
-  { id: "first-upload", color: "acting", subject: "a film clapperboard, open" },
-  { id: "five-uploads", color: "acting", subject: "a stack of five film reels" },
-  { id: "ten-uploads", color: "mindset", subject: "a rising staircase of ten steps" },
-  { id: "practicing-machine", color: "body-language", subject: "a pair of interlocking gear wheels" },
-  { id: "first-pass", color: "mindset", subject: "a bold check mark inside a ring" },
-  { id: "full-spectrum", color: "structure", subject: "a fanned arc of seven upright blades, like a rainbow stood on end" },
-  { id: "streak-3", color: "figurative", subject: "a leaping flame" },
-  { id: "streak-5", color: "figurative", subject: "an open hand, palm forward, fingers spread" },
-  { id: "streak-7", color: "figurative", subject: "a lightning bolt" },
-  { id: "ten-minutes", color: "acting", subject: "an hourglass" },
-  { id: "handy", color: "body-language", subject: "two open hands framing an empty space between them" },
-  { id: "i-see-you", color: "body-language", subject: "a single open eye" },
-  { id: "storyteller", color: "storytelling", subject: "an open book with its pages curling upward" },
-  { id: "oscar", color: "acting", subject: "a pair of theatre masks, comedy and tragedy, side by side" },
-  { id: "twisted", color: "acting", subject: "a twisted rope tied in a single knot" },
-  { id: "sensational", color: "figurative", subject: "a five-pointed star with a long tail, like a shooting star" },
-  { id: "composer", color: "acting", subject: "a treble clef" },
-  { id: "journey-complete", color: "storytelling", subject: "a laurel wreath encircling the five letters S T O R Y" },
+  { id: "first-upload", color: "acting", subject: "a film clapperboard, open", material: "chrome" },
+  { id: "five-uploads", color: "acting", subject: "a stack of five film reels", material: "chrome" },
+  { id: "ten-uploads", color: "mindset", subject: "a rising staircase of ten steps", material: "chrome" },
+  { id: "practicing-machine", color: "body-language", subject: "a pair of interlocking gear wheels", material: "chrome" },
+  { id: "first-pass", color: "mindset", subject: "a bold check mark inside a ring", material: "ceramic" },
+  { id: "full-spectrum", color: "structure", subject: "a fanned arc of seven upright blades, like a rainbow stood on end", material: "obsidian" },
+  { id: "streak-3", color: "figurative", subject: "a leaping flame", material: "ceramic" },
+  { id: "streak-5", color: "figurative", subject: "an open hand, palm forward, fingers spread", material: "ceramic" },
+  { id: "streak-7", color: "figurative", subject: "a lightning bolt", material: "obsidian" },
+  { id: "ten-minutes", color: "acting", subject: "an hourglass", material: "chrome" },
+  { id: "handy", color: "body-language", subject: "two open hands framing an empty space between them", material: "ceramic" },
+  { id: "i-see-you", color: "body-language", subject: "a single open eye", material: "ceramic" },
+  { id: "storyteller", color: "storytelling", subject: "an open book with its pages curling upward", material: "ceramic" },
+  { id: "oscar", color: "acting", subject: "a pair of theatre masks, comedy and tragedy, side by side", material: "obsidian" },
+  { id: "twisted", color: "acting", subject: "a twisted rope tied in a single knot", material: "ceramic" },
+  { id: "sensational", color: "figurative", subject: "a five-pointed star with a long tail, like a shooting star", material: "ceramic" },
+  { id: "composer", color: "acting", subject: "a treble clef", material: "ceramic" },
+  { id: "journey-complete", color: "storytelling", subject: "a laurel wreath encircling the five letters S T O R Y", material: "obsidian" },
 
   // ── The five phases of the road ───────────────────────────────────
-  { id: "phase-S", color: "mindset", subject: "the capital letter S, sculpted" },
-  { id: "phase-T", color: "body-language", subject: "the capital letter T, sculpted" },
-  { id: "phase-O", color: "storytelling", subject: "the capital letter O, sculpted" },
-  { id: "phase-R", color: "acting", subject: "the capital letter R, sculpted" },
-  { id: "phase-Y", color: "structure", subject: "the capital letter Y, sculpted" },
+  { id: "phase-S", color: "mindset", subject: "the capital letter S, sculpted", material: "gold" },
+  { id: "phase-T", color: "body-language", subject: "the capital letter T, sculpted", material: "gold" },
+  { id: "phase-O", color: "storytelling", subject: "the capital letter O, sculpted", material: "gold" },
+  { id: "phase-R", color: "acting", subject: "the capital letter R, sculpted", material: "gold" },
+  { id: "phase-Y", color: "structure", subject: "the capital letter Y, sculpted", material: "gold" },
 
   // ── One for every challenge (data/challenges.ts) ──────────────────
   { id: "challenge-speaking-baseline", color: "mindset", subject: "a microphone standing upright" },
