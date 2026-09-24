@@ -98,8 +98,6 @@ Tariq topped up the account, so the cap is gone.
       and falls back to text-only until the image exists (`the-reality.tsx`, `STILL`)
 
 ### Asked for and not yet started
-- [ ] **Trophy room: slow looping smoke under the spotlight** (24 Sep) — a short seamless
-      video behind the stage, light enough not to weigh the page. In progress.
 
 ### Decided, for the record
 - **The streak past day ten.** 5% a day to +50% at ten days (unchanged), then 2.5% a day
@@ -192,6 +190,9 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **24 September**
+- Trophy room: seamless 5s smoke loop in the spotlight, 118KB, loads only on screen — `bd52517`
+- 14-day money-back guarantee seal with the lion, beside the first and last calls to action
+  and under the tiers — `c481897`
 - Four calls to action down the landing page (Join Speak Better Now, Start My Speaking
   Journey, I'm Ready, Sign Me Up), each gliding to the tiers — `bb59da6`
 - Landing speed pass: the page no longer scrolls itself ~9,300px down to the library on
