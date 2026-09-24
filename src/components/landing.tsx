@@ -23,7 +23,7 @@ import { ProofLine } from "@/components/proof-line";
 import { LionPitch } from "@/components/lion-pitch";
 import { LANDING_PITCH, LANDING_PITCH_AUDIO, HEADLINE_AUDIO } from "@/data/welcome-speech";
 import { SpeakLine } from "@/components/speak-line";
-import { publishable } from "@/data/testimonials";
+import { splitForPage } from "@/data/testimonials";
 import { WhatItIs } from "@/components/what-it-is";
 import { RoarMark } from "@/components/roar-mark";
 import { LionMouth } from "@/components/lion-mouth";
@@ -37,12 +37,11 @@ import { HowItWorks } from "@/components/how-it-works";
 // Served to visitors at "/", and to anyone at "/landing" (the preview
 // route backed by an ephemeral store - see StoreProvider).
 
-// The confirmed testimonials, split in two rather than repeated. The
-// flagged ones join them the moment their names are checked - see
-// data/testimonials.ts.
-const half = Math.ceil(publishable.length / 2);
-const earlyProof = publishable.slice(0, half);
-const lateProof = publishable.slice(half);
+// The confirmed testimonials, split in two rather than repeated - and
+// split by a rule that keeps a person who is quoted twice out of the
+// same column twice. The flagged ones join them the moment their names
+// are checked; see data/testimonials.ts for both.
+const [earlyProof, lateProof] = splitForPage();
 
 export function Landing() {
   return (

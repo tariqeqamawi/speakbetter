@@ -78,23 +78,30 @@ Not credits — a per-day generation limit on the grace-period account. PLUS ann
   a streak leaderboard, and a title beside the name on the boards.
 
 ### Waiting on Tariq
-- [ ] **6 testimonials still held back.** 20 are live.
+- [ ] **2 testimonials still held back.** 25 are live, up from 13 at the start of
+      24 September. Tariq named almost the whole list that evening.
 
-      **Waiting on a name (4):** Tarns Blueweaver, Karen Lay, Preethi (her second
-      quote), Erin Ralph. Either the correct spelling or initials — `initials` in
-      `src/data/testimonials.ts` publishes an entry without a full name.
+      - **Erin Ralph** — the spelling is still unconfirmed. A name or initials will do.
+      - **"Bloody brilliant. All the very best, Tariq."** — Vincent Hazenboom is live with
+        it; Lhamo Ingrik's name arrived attached to the same dictated line, so it is not
+        known whether she said it too. Held rather than guessed.
 
-      **A different problem (2):** two quotes arrived with two names attached, so a
-      spelling cannot fix them — somebody has to say who spoke. Which of Vincent
-      Hazenboom / Lhamo Ingrik said "Bloody brilliant", and which of Liz A. Hammond /
-      Gene East said "This course is the best".
+      **Two open questions from that evening:**
 
-      **Three initials still unplaced.** Tariq gave JS, DN, RJ and LN. JS went to the one
-      quote in the file with no name at all ("To this day I still benefit from your
-      training…"). The other three have nowhere to go: every remaining held quote has a
-      name, just an unverified one. They need to be matched to quotes before they can be
-      used — and never derived from a mangled spelling, since initials guessed from a
-      misheard surname are the same false attribution the misspelling was.
+      - **Is "Rachel" the same person as "Rach Ael"?** Tariq confirmed Rach Ael, then
+        later attributed the skills-library quote to "Rachel". They are two entries on
+        the page until somebody says. Merging two people is worse than one person under
+        two spellings, so it was left as given.
+      - **DN, RJ and LN have nowhere to go.** Four initials were given; JS went to the one
+        quote with no name at all. The other three were provisionally placed on three
+        quotes that turned out to have real names, and were taken off again when Tariq
+        supplied them. They need matching to quotes, and must never be derived from a
+        spelling — initials guessed from a misheard surname are the same false
+        attribution the misspelling was.
+
+      **Also settled:** Gene East said "This course is the best" (Liz A. Hammond is kept
+      as a name with no words attached, in case hers turns up). MikaElla Tingi's quote no
+      longer opens with "Tingy." — that was the second half of her own name.
 
 - [ ] **Real testimonial photographs, with permission** — the drift currently uses the
       app's initial-avatars, deliberately, because an invented portrait beside a real name

@@ -90,10 +90,9 @@ export const testimonials: Testimonial[] = [
     check: true,
   },
   {
-    // Confirmed by Tariq: this is Dave J. Anderson's, and it is his
-    // second - he is quoted twice, on two different things, which is
-    // fine and rather good. The two are placed in different halves of
-    // the page so his name does not appear twice in one column.
+    // Dave J. Anderson's, and now his only one: the quote that used
+    // to sit under his name as a second is Rachel's, at the foot of
+    // this list.
     name: "Dave J. Anderson",
     quote:
       "I purchased Speak Better and I recommend it only if you really want to learn and grow and perfect your speaking skills and become the best speaker and presenter you can be. Then I say go for it.",
@@ -104,35 +103,38 @@ export const testimonials: Testimonial[] = [
     // running directly above a price.
   },
   {
-    name: "Dave J. Anderson",
-    quote:
-      "You've nailed the skills library and the micro lessons. I'm getting more and more from them every time I watch, and already have a clear sense that this course is invaluable. Thank you. You are so inspiring and a terrific speaker.",
-    tag: "lessons",
-  },
-  {
-    // Confirmed by Tariq: Gene East is a separate person. The dictated
-    // line ran two people together - Liz A. Hammond's name, then
-    // Gene East's, then one quote. Which of them said it is still
-    // open, so both are held back rather than guessed at.
-    name: "Liz A. Hammond",
+    // Settled by Tariq: Gene East said this one.
+    //
+    // The dictation ran two people together - Liz A. Hammond's name,
+    // then Gene East's, then a single quote - and it was held for
+    // weeks rather than guessed at, because putting one person's
+    // words in another's mouth is the one mistake a testimonial
+    // cannot survive. It was worth the wait to be told.
+    name: "Gene East",
     quote:
       "This course is the best. So easy to follow, easy to implement, and the knowledge and confidence gained from it is truly heartfelt. You are a truly beautiful, resonant, melodic human to learn from, Tariq. Thank you for this course.",
     tag: "teacher",
-    check: true,
   },
   {
-    name: "Gene East",
+    // Liz A. Hammond is a real person whose name arrived in that same
+    // run of dictation, with no words of her own attached to it. Kept
+    // as a placeholder rather than deleted so the name is not lost if
+    // her quote turns up later; it publishes nothing while `quote` is
+    // empty.
+    name: "Liz A. Hammond",
     quote: "",
     tag: "teacher",
-    // A confirmed name with no words yet - the quote that followed it
-    // in the dictation belongs to Liz A. Hammond or to her, and there
-    // is no way to tell from here. Kept as a placeholder so the name
-    // is not lost.
     check: true,
   },
   {
     // Confirmed by Tariq: Rach Ael. Dictation had clipped the surname
     // to an initial.
+    //
+    // OPEN: Tariq later attributed another quote to "Rachel". If that
+    // is this same person, the two entries should carry one spelling
+    // of her name; if not, they are two students who both liked the
+    // lessons. Left as given either way - inventing the link is the
+    // worse of the two mistakes.
     name: "Rach Ael",
     quote:
       "This course has been life-changing. I would never have dreamed of speaking before and recording myself, but now have a new comfort. Weeks later the micro lessons are easily accessible and digestible, perfect for anyone time-pressed. Tariq genuinely cares about impacting people's lives through enhancing their speaking skills, and in a time of reduced attention spans and increased distractions, this course is invaluable.",
@@ -151,8 +153,8 @@ export const testimonials: Testimonial[] = [
     tag: "teacher",
   },
   {
-    // Confirmed by Tariq: Matoke, not Matoket.
-    name: "Anne Awour Matoke",
+    // Confirmed by Tariq: Anne Awuor Matoke - Awuor, and Matoke.
+    name: "Anne Awuor Matoke",
     quote: "Tariq, you are truly amazing. Thanks for contributing to my confidence in public speaking.",
     tag: "confidence",
   },
@@ -163,7 +165,9 @@ export const testimonials: Testimonial[] = [
     tag: "worth",
   },
   {
-    name: "Melissa Richard",
+    // Confirmed by Tariq: Pritchard, not Richard. She is quoted twice;
+    // splitForPage() keeps the two out of the same column.
+    name: "Melissa Pritchard",
     quote:
       "Thank you Tariq. I feel like I have permission to tell my stories and that they hold value. Your method and guidance for transitioning into a call to action that draws people in like a warm hug is just beautiful. I can't wait to get practicing the skill so I can shift from clunky to ease and connect with my people. I'm very excited to see what's coming and see my progress from where I am now to the storyteller I'm becoming.",
     tag: "storytelling",
@@ -195,33 +199,36 @@ export const testimonials: Testimonial[] = [
     tag: "confidence",
   },
   {
-    name: "Tarns Blueweaver",
+    // Confirmed by Tariq: Tarnz Bluweaver.
+    name: "Tarnz Bluweaver",
     quote:
       "I got to a point in my business where I felt I couldn't articulate what I wanted to say. I was on a mission to find someone that would help me ignite the voice I knew I was trying to break through. What I have noticed in my first week is the impact of simplicity. Tariq's content is crystal clear, with no confusion, and the only hard thing has been me breaking through old patterns. There is strategy and there is magic in the way that Tariq has compiled this course, but for me there's also a sense of biblical presence that hits my soul on another level. I'm getting goosebumps just writing this. Tariq was born to do this, and I'd say you needn't look any further if you are searching for your voice.",
     tag: "teacher",
-    check: true,
   },
   {
-    name: "Karen Lay",
+    // Confirmed by Tariq: Karen Leigh HR - and he re-dictated the
+    // line with it, so the wording here is his second pass rather
+    // than the first, which had picked up a "so far" and a comma.
+    name: "Karen Leigh HR",
     quote:
-      "Really loving Speak Better so far. Already learning so much, and grateful for the opportunity to learn these valuable skills from such an inspiring teacher.",
+      "Really loving Speak Better. Already learning so much and grateful for the opportunity to learn these valuable skills from such an inspiring teacher.",
     tag: "lessons",
-    check: true,
   },
   {
-    name: "Preethi",
+    // Confirmed by Tariq: Peethi Premkumar.
+    name: "Peethi Premkumar",
     quote:
       "I sat on it for a week and a half before I signed up, but the nudge got stronger and I had to listen to the call. Thank God I did, because something shifted right after the first week and week 2 is just getting better. There's something about Tariq's energy that is so potent and powerful. Highly recommend signing up for this one.",
     tag: "worth",
   },
   {
-    name: "Preethi",
+    // Her second. It was dictated straight after the first with no
+    // new name, so it was held on the chance it belonged to somebody
+    // else; Tariq naming her is taken as settling that.
+    name: "Peethi Premkumar",
     quote:
       "It's no wonder you say we would see change within 6 weeks. Thank you so much. I'm changing daily from the learnings. Love the growth. It is even supporting me with my interviews. Feeling the stretch and enjoying it.",
     tag: "results",
-    // Dictated straight after Preethi's first quote with no new name,
-    // so attributed to her - worth confirming it is not somebody else.
-    check: true,
   },
   {
     // Confirmed by Tariq: Therese Ekelin.
@@ -276,6 +283,37 @@ export const testimonials: Testimonial[] = [
       "I can validate how amazing this is. I joined and it's very addictive listening to the short videos. I'm sure the frequency of your voice moves something in us when we do.",
     tag: "lessons",
   },
+  {
+    // Rachel's, not Dave J. Anderson's.
+    //
+    // This sat under Dave's name for weeks because the dictation ran
+    // his quote and this one together; Tariq has now re-dictated it
+    // and said whose it is. The wording is his second pass, which
+    // ends at "Thank you" - the line about being inspiring and a
+    // terrific speaker went with it, so it is not kept here on a
+    // guess about who said that part.
+    //
+    // Whether Rachel is the same person as Rach Ael, further up, is
+    // an open question - see the note on her entry. They are kept
+    // separate until somebody says, because merging two people is
+    // worse than showing one person under two spellings.
+    name: "Rachel",
+    quote:
+      "You've nailed the skills library and the microlessons. I'm getting more and more from them every time I watch. I already have a clear sense that this course is invaluable. Thank you.",
+    tag: "lessons",
+  },
+  {
+    // Melissa Pritchard's second. Tagged `results` rather than
+    // `storytelling`, which her first one carries: the evidence here
+    // is not that she believes she could tell a story, it is that she
+    // has already put one out in public - which is a different claim
+    // and a stronger one. Two of her quotes under the same heading
+    // would also read as one person saying the same thing twice.
+    name: "Melissa Pritchard",
+    quote:
+      "Thank you Tariq. I'm so pleased I joined this course. I've already put a clunky story out there on my socials. Onwards and upward from here!",
+    tag: "results",
+  },
 ];
 
 /** The ones safe to show: a name that has been confirmed, and words
@@ -283,6 +321,37 @@ export const testimonials: Testimonial[] = [
 // Publishable: a confirmed name, or initials Tariq has confirmed
 // stand in for one. Everything else waits - see `check` above.
 export const publishable = testimonials.filter((t) => t.quote && (t.initials || (!t.check && t.name)));
+
+/**
+ * The two drifting sections on the landing page, split so that nobody
+ * appears twice in the same one.
+ *
+ * Three people are quoted twice now, and the page used to split the
+ * list down the middle with `slice` - which put both of Dave J.
+ * Anderson's quotes in the same column, one under the other, reading
+ * as a page short of testimonials rather than as a man with two things
+ * to say. It had been fine when the comment saying so was written, and
+ * quietly stopped being fine as the list grew.
+ *
+ * Comments asking a future reader to re-check an ordering do not
+ * survive contact with a list that keeps changing, so this is a rule
+ * instead: a person's first quote goes in one half, their second in
+ * the other, and everything else fills up evenly around them.
+ */
+export function splitForPage(): [Testimonial[], Testimonial[]] {
+  const halves: [Testimonial[], Testimonial[]] = [[], []];
+  const seen = new Map<string, number>();
+  for (const t of publishable) {
+    const who = credit(t);
+    const before = seen.get(who);
+    // Somebody already quoted goes in the half they are not in.
+    // Otherwise, whichever half is currently shorter.
+    const side = before !== undefined ? (before === 0 ? 1 : 0) : halves[0].length <= halves[1].length ? 0 : 1;
+    halves[side].push(t);
+    seen.set(who, side);
+  }
+  return halves;
+}
 
 /** Everything that evidences one particular claim. */
 export function proofOf(tag: Proof, all = false): Testimonial[] {
