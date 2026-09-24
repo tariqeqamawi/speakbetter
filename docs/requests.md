@@ -179,6 +179,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **24 September**
+- Trophy colours matched to the Speaking Spectrum (every one within 2° of its swatch);
+  Twisted re-glazed storytelling yellow — `642c9ba`
 - Edge of the Seat is a tipped-forward theatre chair; Chekhov's Gun an antique flintlock;
   both gold twins re-made — `eaed221`
 - Gold twin for every scored challenge, won at 90+ (23 new, 70 trophies); S.T.O.R.Y.
