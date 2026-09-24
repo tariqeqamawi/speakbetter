@@ -227,11 +227,13 @@ export const testimonials: Testimonial[] = [
     check: true,
   },
   {
-    name: "Mika Ella",
+    // Confirmed by Tariq: she is Michaela, and the word is "Tingy" -
+    // dictation heard "Mika Ella" and "Tingly". Both now as she wrote
+    // them, which is the point of a testimonial.
+    name: "Michaela",
     quote:
-      "Tingly. So deeply aligned with your words and total soul-led purpose, brother. So deeply grateful I'm working with you.",
+      "Tingy. So deeply aligned with your words and total soul-led purpose, brother. So deeply grateful I'm working with you.",
     tag: "teacher",
-    check: true,
   },
   {
     name: "Catherine Sissons",
