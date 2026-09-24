@@ -41,7 +41,7 @@ export const ROOMS = [
   },
   {
     id: "feedback" as const,
-    name: "Feedback & improvements",
+    name: "Feedback",
     blurb: "What Coach said, what you changed, what you would tell somebody starting.",
   },
   {

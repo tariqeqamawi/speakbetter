@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ProgressFile } from "@/components/progress-file";
 import { useStore } from "@/lib/store";
 import { challenges } from "@/data/challenges";
 import { categories } from "@/data/categories";
@@ -349,6 +350,17 @@ export default function DashboardPage() {
           {badgesPanel}
         </>
       )}
+
+      {/* Their record is theirs, and this is how they keep a copy of
+          it that does not depend on us being right.
+          
+          Deliberately OUTSIDE the block above, which only draws once
+          somebody has done something. A student whose device has just
+          lost everything has no attempts, no lessons and no trophies -
+          they are precisely the person who needs the Restore button,
+          and hiding it behind having progress would hide it from the
+          only person looking for it. */}
+      <ProgressFile />
     </div>
   );
 }

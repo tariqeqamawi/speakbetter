@@ -57,7 +57,7 @@ export function Rooms() {
     <section className="flex flex-col gap-3">
       <div className="flex items-center gap-2.5">
         <ChatIcon className="size-6 shrink-0 text-storytelling" />
-        <h2 className="text-xl font-bold tracking-tight text-ink">The rooms</h2>
+        <h2 className="text-xl font-bold tracking-tight text-ink">Chat rooms</h2>
       </div>
 
       {/* Which room. The count is the invitation - an empty room asked

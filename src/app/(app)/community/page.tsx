@@ -23,8 +23,8 @@ export default function CommunityPage() {
             </span>
           </summary>
           <p className="max-w-lg pt-2 text-sm text-ink-muted">
-            Everyone&apos;s distance traveled, drawn the way yours is: where they started, under where they are now.
-            Three boards, because there&apos;s more than one way to be getting better - and one bar you all fill
+            Everyone&apos;s progress, seen alongside yours - where they started and where they are now. Three
+            leaderboards, because there is more than one way to speak better, and one community bar you all fill
             together.
           </p>
         </details>

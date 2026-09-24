@@ -6,7 +6,7 @@ import { categories, type CategoryId } from "@/data/categories";
 import { sampleShares } from "@/data/community-presence";
 import { challenges, storyPhases } from "@/data/challenges";
 import { SpectrumWave } from "@/components/spectrum-wave";
-import { CheckIcon, FlameIcon, TrendingUpIcon, TrophyIcon, ZapIcon } from "@/components/icons";
+import { CheckIcon, TrendingUpIcon, TrophyIcon, VideoIcon, ZapIcon } from "@/components/icons";
 import { hapticTap } from "@/lib/feedback-fx";
 import { Avatar } from "@/components/avatar";
 
@@ -123,7 +123,7 @@ export function CommunityFeed() {
   const boards = [
     {
       id: "colors",
-      title: "Colors gained",
+      title: "Spectrum unlocked",
       note: "since their baseline",
       Icon: TrendingUpIcon,
       accent: "text-body-language",
@@ -135,9 +135,12 @@ export function CommunityFeed() {
     },
     {
       id: "takes",
-      title: "Takes this week",
+      title: "Speaking attempts",
       note: "every recording counts",
-      Icon: FlameIcon,
+      // A flame is the streak's mark everywhere else in the app; using
+      // it here made two different things wear the same symbol. This
+      // board counts recordings, so it wears the camera.
+      Icon: VideoIcon,
       accent: "text-acting",
       rows: [...cards]
         .map((c) => ({ name: c.name, mine: c.mine, value: c.weekTakes }))
@@ -147,8 +150,8 @@ export function CommunityFeed() {
     },
     {
       id: "jump",
-      title: "Biggest jump",
-      note: "baseline to latest",
+      title: "Biggest improvement",
+      note: "spectrum before and after",
       Icon: TrophyIcon,
       accent: "text-storytelling",
       rows: [...cards]
@@ -189,14 +192,16 @@ export function CommunityFeed() {
 
       {/* Three ways to lead. */}
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-medium uppercase tracking-wider text-ink-faint">Three boards</h2>
+        <h2 className="text-xl font-bold tracking-tight text-ink">Leaderboards</h2>
         <div className="grid gap-3 sm:grid-cols-3">
           {boards.map((board) => (
             <div key={board.id} className="flex flex-col gap-2 rounded-xl border border-navy-600 bg-navy-800 p-4">
               <span className="flex items-center gap-2">
                 <board.Icon className={`size-4 ${board.accent}`} />
                 <span className="flex min-w-0 flex-col">
-                  <span className="text-xs font-semibold text-ink">{board.title}</span>
+                  {/* The board's name is the thing being competed on,
+                      so it reads as a title rather than a caption. */}
+                  <span className="text-sm font-bold text-ink">{board.title}</span>
                   <span className="text-[0.65rem] text-ink-faint">{board.note}</span>
                 </span>
               </span>

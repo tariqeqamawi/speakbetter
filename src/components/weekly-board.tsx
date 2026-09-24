@@ -158,22 +158,20 @@ export function WeeklyBoard({ compact = false }: { compact?: boolean }) {
             join();
           }}
         >
-          <label className="flex flex-1 flex-col gap-1 text-xs text-ink-muted">
-            Join with a display name - only the name and your week&apos;s XP are shared
-            <input
-              value={draftShown}
-              onChange={(e) => setDraft(e.target.value)}
-              maxLength={24}
-              placeholder="Your name on the board"
-              className="rounded-lg border border-navy-600 bg-navy-950 px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:border-ink-faint focus:outline-none"
-            />
-          </label>
+          {/* No name to type. They already told us what they are
+              called at onboarding, and asking a second time is asking
+              somebody to make the same decision twice - which is where
+              a name like "asdf" comes from. */}
+          <span className="flex-1 text-xs text-ink-muted">
+            XP earned since Monday, reset every week - so the top is whoever practiced most in the last seven
+            days. Only your name and that number are shared.
+          </span>
           <button
             type="submit"
             disabled={busy || !draftShown.trim()}
-            className="rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-navy-900 transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="shrink-0 rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-navy-900 transition-opacity hover:opacity-90 disabled:opacity-50"
           >
-            Join this week
+            Display XP on this week&apos;s board
           </button>
         </form>
       )}
