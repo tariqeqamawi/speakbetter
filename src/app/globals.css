@@ -1947,6 +1947,16 @@ html.bare .demo-banner {
     box-shadow var(--pill-fade) linear;
 }
 
+/* Coach's voice button: the same drifting ring and halo, but a dark
+   body, because the wave inside it is drawn in all seven colours with
+   a screen blend - on a solid bright pill it washed out to nothing,
+   and the one thing this button exists to show was invisible. Dark
+   inside, the wave is the brightest thing in it. */
+.coach-pill.coach-voice {
+  background-color: var(--color-navy-950);
+  color: white;
+}
+
 @property --pill {
   syntax: "<color>";
   inherits: false;
@@ -2767,24 +2777,32 @@ html.bare .demo-banner {
  *
  * It pauses on hover, because somebody who has stopped to read a
  * sentence should not have it slide out from under them. */
-.testimonial-lane {
-  animation: testimonial-drift linear infinite;
-  will-change: transform;
+.quote-float {
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-fill-mode: both;
+  will-change: transform, opacity;
 }
 
-.testimonial-lane:hover {
+/* Hold them still to finish reading one. */
+.quote-field:hover .quote-float {
   animation-play-state: paused;
 }
 
-@keyframes testimonial-drift {
-  to {
-    transform: translate3d(0, -50%, 0);
-  }
-}
-
+/* Without motion, the same quotes laid out still - every one readable,
+ * none of them moving. */
 @media (prefers-reduced-motion: reduce) {
-  .testimonial-lane {
+  .quote-field {
+    height: auto !important;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+  }
+  .quote-float {
+    position: static;
     animation: none;
+    opacity: 1;
   }
 }
 

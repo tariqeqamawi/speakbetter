@@ -29,13 +29,21 @@ export function CoachPill({
       onClick={onClick}
       disabled={disabled}
       aria-label={ariaLabel}
-      className={`coach-pill relative flex min-h-12 items-center justify-center overflow-hidden rounded-full px-7 font-bold hover:scale-[1.03] active:scale-[0.98] disabled:opacity-60 ${className}`}
+      className={`coach-pill coach-voice relative flex min-h-14 items-center justify-center overflow-hidden rounded-full px-10 font-bold hover:scale-[1.03] active:scale-[0.98] disabled:opacity-60 ${className}`}
     >
       {/* The wave, running the width of the pill behind the words. */}
-      <Soundwave variant="coach" className="pointer-events-none absolute inset-0 size-full opacity-45" />
-      {/* Its own colour: the pill paints its text in the drifting
-          colour, which is also the background. */}
-      <span className="relative flex items-center gap-2 whitespace-nowrap text-sm text-navy-950">{children}</span>
+      {/* In a layer of its own. Soundwave's root is `relative`, and
+          handed `absolute` as well it came out relative - a flex item
+          that shrank to nothing, so the wave this button was built
+          around was never actually drawn. */}
+      <span aria-hidden className="pointer-events-none absolute inset-0">
+        <Soundwave variant="coach" className="size-full" />
+      </span>
+      {/* A soft dark bar behind the words, so they stay legible where
+          the brightest part of the wave passes under them. */}
+      <span className="relative flex items-center gap-2 whitespace-nowrap rounded-full bg-navy-950/55 px-3 py-0.5 text-base text-white">
+        {children}
+      </span>
     </button>
   );
 }
