@@ -1,6 +1,6 @@
 import { cohort } from "@/data/cohort";
 import { creditPacks, includedReviews } from "@/data/credits";
-import { guarantee, tiers, upgradeOffer } from "@/data/pricing";
+import { guarantee, monthly, tiers, upgradeOffer } from "@/data/pricing";
 
 // The questions somebody has with their card half out, answered under
 // the tiers rather than on a page of their own. Every number here is
@@ -21,7 +21,11 @@ export const faq: { q: string; a: string }[] = [
   },
   {
     q: "Is this a subscription?",
-    a: `No. Each tier is one payment for ${cohort.accessLabel} - ${starter.price}, ${complete.price} or ${vip.price}. Nothing renews and nothing is charged again unless you choose to top up.`,
+    a: `No. Each tier is one payment for ${cohort.accessLabel} - ${starter.price}, ${complete.price} or ${vip.price}. Nothing renews on its own. If you want to keep going after the six weeks, there is a monthly option - but only if you choose it.`,
+  },
+  {
+    q: "What happens after the six weeks?",
+    a: `You can stay on month to month: ${starter.name} for ${monthly.foundations} a month, or ${complete.name} for ${monthly.coached} a month. It is entirely optional - the six weeks are yours either way, and nobody is moved onto a monthly plan without choosing it.`,
   },
   {
     q: "When does it start?",

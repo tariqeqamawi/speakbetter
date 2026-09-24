@@ -178,3 +178,11 @@ export const guarantee = {
   title: "14-day money-back guarantee",
   line: "Try it for 14 days. If it's not for you - for any reason whatsoever - ask, and you get every cent back.",
 } as const;
+
+/** After the six weeks: staying on, month to month. Optional - the
+ *  cohort itself is still one payment - and priced per tier, so the FAQ
+ *  and anything else that mentions it read the numbers from here. */
+export const monthly: Partial<Record<Exclude<Plan, "trial">, string>> = {
+  foundations: "$14.99",
+  coached: "$29.99",
+};
