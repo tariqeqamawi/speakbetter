@@ -6,6 +6,7 @@ import {
   readRoom,
   reword,
   say,
+  tallies,
   unsay,
   watchRoom,
   whoAmI,
@@ -33,8 +34,13 @@ import { hapticTap } from "@/lib/feedback-fx";
 // doable. So the empty state invites rather than apologises, and other
 // people's takes on the same challenge are the whole point.
 
+// The six, in the order a thumb reaches them. Thumbs up first because
+// it is the one most messages want and the one everybody already knows.
 const REACTIONS: { kind: ReactionKind; label: string; glyph: string }[] = [
+  { kind: "up", label: "Thumbs up", glyph: "👍" },
   { kind: "cheer", label: "Cheer this", glyph: "👏" },
+  { kind: "love", label: "Love this", glyph: "❤️" },
+  { kind: "fire", label: "This is great", glyph: "🔥" },
   { kind: "same", label: "Same here", glyph: "🙋" },
   { kind: "helpful", label: "This helped", glyph: "💡" },
 ];
@@ -88,6 +94,8 @@ export function Room({
   const [replyTo, setReplyTo] = useState<Post | null>(null);
   const [editing, setEditing] = useState<Post | null>(null);
   const [mine, setMine] = useState<Record<string, string[]>>({});
+  /** postId -> kind -> how many people, including you. */
+  const [counts, setCounts] = useState<Map<string, Record<string, number>>>(new Map());
   const [failed, setFailed] = useState(false);
 
   const box = useRef<HTMLDivElement>(null);
@@ -102,6 +110,8 @@ export function Room({
       setPosts(rows);
       setMe(who);
       setMine(localReactions());
+      const tally = await tallies(rows.map((r) => r.id));
+      if (alive) setCounts(tally);
     })();
     return () => {
       alive = false;
@@ -190,6 +200,18 @@ export function Room({
       else set.add(kind);
       return { ...old, [post.id]: [...set] };
     });
+    // The count moves now, not when the server answers. A reaction
+    // that takes a round trip to appear feels broken on a slow
+    // connection, and it is a single integer - if the write fails the
+    // next read puts it right.
+    setCounts((old) => {
+      const next = new Map(old);
+      const row = { ...(next.get(post.id) ?? {}) };
+      row[kind] = Math.max(0, (row[kind] ?? 0) + (have ? -1 : 1));
+      if (row[kind] === 0) delete row[kind];
+      next.set(post.id, row);
+      return next;
+    });
     hapticTap();
     await react(post.id, kind, !have);
   };
@@ -216,8 +238,27 @@ export function Room({
       <div
         ref={box}
         onScroll={onScroll}
+        /* The height is capped against the VIEWPORT, not just in rem.
+           
+           At a flat 34rem the message list was 544px tall, which on a
+           phone leaves the composer below the fold - and because the
+           list scrolls its own contents with overscroll-contain, a
+           thumb that lands on it scrolls the MESSAGES rather than the
+           page. In a quiet room that is invisible, because a list too
+           short to scroll passes the gesture through to the page. In
+           the busiest room - General, which is also the room that
+           opens by default - the list was always scrollable, so there
+           was no way to get past it to the box you write in. The room
+           you were most likely to open was the one you could not post
+           to.
+           
+           Capping at 46svh keeps the whole card - messages, composer
+           and all - inside one screen, so the thing you write in is
+           never somewhere you have to scroll to. svh rather than vh
+           because a phone's address bar must not be allowed to push
+           the composer off the bottom. */
         className={`flex flex-col gap-1 overflow-y-auto overscroll-contain px-3 py-3 ${
-          compact ? "max-h-[26rem]" : "max-h-[34rem] min-h-[18rem]"
+          compact ? "max-h-[min(26rem,40svh)]" : "max-h-[min(34rem,46svh)] min-h-[14rem]"
         }`}
       >
         {posts === null ? (
@@ -246,6 +287,7 @@ export function Room({
                   post={post}
                   me={me}
                   mine={mine[post.id] ?? []}
+                  counts={counts.get(post.id)}
                   onReply={() => {
                     setReplyTo(post);
                     setEditing(null);
@@ -263,6 +305,7 @@ export function Room({
                         post={r}
                         me={me}
                         mine={mine[r.id] ?? []}
+                        counts={counts.get(r.id)}
                         reply
                         onReply={() => {
                           setReplyTo(post);
@@ -345,6 +388,7 @@ function Message({
   post,
   me,
   mine,
+  counts,
   reply = false,
   onReply,
   onReact,
@@ -354,6 +398,7 @@ function Message({
   post: Post;
   me: string | null;
   mine: string[];
+  counts?: Record<string, number>;
   reply?: boolean;
   onReply: () => void;
   onReact: (k: ReactionKind) => void;
@@ -362,11 +407,15 @@ function Message({
 }) {
   const isMine = me !== null && post.studentId === me;
   const [open, setOpen] = useState(false);
+  const [picking, setPicking] = useState(false);
 
   return (
     <div
       className="group flex gap-2.5 rounded-xl px-1.5 py-1.5 transition-colors hover:bg-navy-900/60"
-      onMouseLeave={() => setOpen(false)}
+      onMouseLeave={() => {
+        setOpen(false);
+        setPicking(false);
+      }}
     >
       <Avatar name={post.authorName} src={post.authorAvatar ?? undefined} className={reply ? "size-7" : "size-9"} />
 
@@ -386,32 +435,88 @@ function Message({
 
         <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-ink-muted">{post.body}</p>
 
+        {/* Reactions a thumb can reach.
+            
+            Every one of the six used to be drawn under every message
+            at opacity-0, revealed on hover - which on a phone is
+            never. The feature existed and could not be used by most
+            of the people it was for, which is worse than not having
+            it: the room looked like a place where nobody reacts.
+            
+            So: the ones that have been given are always on show, with
+            their counts, because that is the information - who else
+            felt this. The rest live behind one always-visible button,
+            which is the only thing a message needs to carry when
+            nobody has reacted yet. */}
         <span className="mt-1 flex flex-wrap items-center gap-1.5">
-          {REACTIONS.map(({ kind, label, glyph }) => {
-            const on = mine.includes(kind);
-            return (
-              <button
-                key={kind}
-                type="button"
-                onClick={() => onReact(kind)}
-                aria-label={label}
-                aria-pressed={on}
-                title={label}
-                className={`rounded-full border px-2 py-0.5 text-xs transition-colors ${
-                  on
-                    ? "border-mindset/60 bg-mindset/15 text-mindset"
-                    : "border-transparent text-ink-faint opacity-0 hover:border-navy-600 hover:text-ink-muted focus-visible:opacity-100 group-hover:opacity-100"
-                }`}
-              >
-                {glyph}
-              </button>
-            );
-          })}
+          {REACTIONS.filter(({ kind }) => mine.includes(kind) || (counts?.[kind] ?? 0) > 0).map(
+            ({ kind, label, glyph }) => {
+              const on = mine.includes(kind);
+              const n = counts?.[kind] ?? 0;
+              return (
+                <button
+                  key={kind}
+                  type="button"
+                  onClick={() => onReact(kind)}
+                  aria-label={`${label}${n > 0 ? ` (${n})` : ""}`}
+                  aria-pressed={on}
+                  title={label}
+                  className={`flex min-h-7 items-center gap-1 rounded-full border px-2 text-xs transition-colors ${
+                    on
+                      ? "border-mindset/60 bg-mindset/15 text-mindset"
+                      : "border-navy-600 text-ink-muted hover:border-ink-faint hover:text-ink"
+                  }`}
+                >
+                  {glyph}
+                  {n > 0 && <span className="text-[0.65rem] font-bold tabular-nums">{n}</span>}
+                </button>
+              );
+            },
+          )}
+
+          <span className="relative">
+            <button
+              type="button"
+              onClick={() => setPicking((p) => !p)}
+              aria-label="Add a reaction"
+              aria-expanded={picking}
+              title="Add a reaction"
+              className="flex min-h-7 items-center gap-1 rounded-full border border-navy-600/70 px-2 text-xs text-ink-faint transition-colors hover:border-ink-faint hover:text-ink"
+            >
+              <span aria-hidden className="text-sm leading-none">🙂</span>
+              <span aria-hidden className="text-[0.7rem] font-bold leading-none">+</span>
+            </button>
+
+            {picking && (
+              /* Above the button, because a message near the bottom of
+                 a scrolling room would otherwise open its picker off
+                 the end of the box. */
+              <span className="absolute bottom-full left-0 z-20 mb-1.5 flex gap-0.5 rounded-full border border-navy-500 bg-navy-950 p-1 shadow-xl shadow-navy-950">
+                {REACTIONS.map(({ kind, label, glyph }) => (
+                  <button
+                    key={kind}
+                    type="button"
+                    onClick={() => {
+                      onReact(kind);
+                      setPicking(false);
+                    }}
+                    aria-label={label}
+                    title={label}
+                    className={`grid size-8 place-items-center rounded-full text-base transition-colors hover:bg-navy-800 ${
+                      mine.includes(kind) ? "bg-mindset/20" : ""
+                    }`}
+                  >
+                    {glyph}
+                  </button>
+                ))}
+              </span>
+            )}
+          </span>
 
           <button
             type="button"
             onClick={onReply}
-            className="rounded-full px-2 py-0.5 text-xs text-ink-faint opacity-0 transition-colors hover:text-ink-muted focus-visible:opacity-100 group-hover:opacity-100"
+            className="min-h-7 rounded-full px-2 text-xs text-ink-faint transition-colors hover:text-ink-muted"
           >
             Reply
           </button>

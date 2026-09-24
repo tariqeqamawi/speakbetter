@@ -1,5 +1,6 @@
-import Link from "next/link";
+import { Suspense } from "react";
 import type { Metadata } from "next";
+import { BackTo } from "@/components/back-to";
 import { CommunityFeed } from "@/components/community-feed";
 import { Rooms } from "@/components/rooms";
 import { WeeklyBoard } from "@/components/weekly-board";
@@ -15,18 +16,16 @@ export default function CommunityPage() {
     <div className="flex flex-col gap-5 pb-10 pt-4">
       {/* The way back.
           
-          Community is reached from a bar on Today, and on a phone the
-          only way home was the bottom tab - which is a different
-          gesture from the one that got you here, and on a page this
-          long it is a long way from where you are looking. A door
-          should swing both ways. */}
-      <Link
-        href="/"
-        className="-mb-1 flex w-fit items-center gap-1.5 text-sm font-semibold text-ink-faint transition-colors hover:text-ink"
-      >
-        <ChevronDownIcon className="size-4 rotate-90" />
-        Back to Today
-      </Link>
+          Community is reached from a bar on Today AND from the
+          Community panel on the dashboard, and on a phone the only
+          way home was the bottom tab - a different gesture from the
+          one that got you here, and on a page this long a long way
+          from where you are looking. A door should swing both ways,
+          and it should open onto the room you came from: see
+          back-to.tsx for why the origin travels in the URL. */}
+      <Suspense fallback={<span className="h-5" />}>
+        <BackTo />
+      </Suspense>
 
       <header>
         <details className="group">

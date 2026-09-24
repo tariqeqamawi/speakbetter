@@ -270,8 +270,12 @@ export function spectrumShare(
 ): { id: CategoryId; percent: number }[] {
   const totals = {} as Record<CategoryId, number>;
   for (const cat of categories) {
+    // Guarded although repair() in the store should have filled it in:
+    // this runs in the dashboard's first render, and a record that
+    // reaches it by some other path should draw a flat chart rather
+    // than take the page down.
     totals[cat.id] = state.attempts.reduce(
-      (sum, a) => sum + (a.spectrum[cat.id] ?? 0),
+      (sum, a) => sum + (a.spectrum?.[cat.id] ?? 0),
       0,
     );
   }
@@ -323,21 +327,69 @@ export function longestStreak(state: AppState): number {
 export const totalBadges = badgeDefs.length;
 export const totalChallenges = challenges.length;
 
+/** Where the fast climb stops and the slow one starts. */
+export const STREAK_FAST_DAYS = 10;
+/** Where the climb stops altogether. A month of daily practice. */
+export const STREAK_CAP_DAYS = 30;
+/** The most a streak can ever pay: double XP on every take. */
+export const STREAK_MAX_PERCENT = 100;
+
 /**
  * What a running streak adds to a take.
  *
- * Five per cent a day, capped at half again - so a fortnight of
- * showing up is worth a real amount on every upload, and the streak
- * stops being a number beside a flame and becomes a reason. The cap
- * exists because an uncapped multiplier makes the hundredth day worth
- * more than the work, and then the streak is the game rather than the
- * speaking.
+ * Two slopes and a ceiling:
  *
- * It is paid on the take itself, not on the whole record, so it can
- * never be lost retroactively: what a day earned, it earned.
+ *   days 1-10   +5%   a day, reaching +50% - the fast climb
+ *   days 11-30  +2.5% a day, reaching +100% - the long haul
+ *   day 30+     +100%, and it stays there
+ *
+ * WHY IT CHANGED. It used to stop dead at +50% on day ten, which made
+ * every day after the tenth pay exactly what the day before paid. A
+ * student on a nine-day run could see the ceiling coming and knew that
+ * tomorrow was the last day that would ever be worth anything - which
+ * is the opposite of what a streak is meant to do. Worse, once you are
+ * AT the ceiling the only thing a streak can still do is be lost, so
+ * the mechanic turns from a reward into a thing to be anxious about.
+ *
+ * The second slope is deliberately half the first. Days eleven through
+ * thirty still pay, but each one pays less than the early days did,
+ * because by then the habit is doing the work and the bonus is
+ * recognition rather than motivation. Halving it also means the number
+ * a student remembers - "five per cent a day" - stays true for the
+ * whole of the stretch where they are still deciding whether to keep
+ * going.
+ *
+ * It still ends. An uncapped multiplier makes the hundredth day worth
+ * more than the work, and then the streak is the game rather than the
+ * speaking. +100% is a clean, sayable ceiling - a month of showing up
+ * doubles everything you earn - and past it the reward moves to things
+ * that are not XP: the long-streak trophies, and a freeze earned every
+ * ten days rather than bought.
+ *
+ * Paid on the take itself, not on the whole record, so it can never be
+ * lost retroactively: what a day earned, it earned.
  */
 export function streakBonusPercent(streakDays: number): number {
-  return Math.min(50, Math.max(0, streakDays) * 5);
+  const days = Math.max(0, streakDays);
+  const fast = Math.min(days, STREAK_FAST_DAYS) * 5;
+  const slow = Math.max(0, Math.min(days, STREAK_CAP_DAYS) - STREAK_FAST_DAYS) * 2.5;
+  return Math.min(STREAK_MAX_PERCENT, fast + slow);
+}
+
+/**
+ * Freezes earned by showing up, rather than bought with XP.
+ *
+ * One for every ten days in a row. Past the +100% ceiling this is what
+ * a long streak still pays: the longer it runs, the more protected it
+ * is - which is the right shape, because the longer it runs the more
+ * there is to lose and the more likely life is to get in the way once.
+ *
+ * Earned freezes are counted, not granted: this returns how many a
+ * streak of this length is ENTITLED to, so it cannot be farmed by
+ * breaking and rebuilding a streak.
+ */
+export function streakFreezesEarned(streakDays: number): number {
+  return Math.floor(Math.max(0, streakDays) / 10);
 }
 
 /** The bonus in XP, rounded, for a take worth `base` on a `days` streak. */

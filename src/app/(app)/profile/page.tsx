@@ -19,7 +19,7 @@ import { useChallengeComplete } from "@/components/story-progress";
 import { CategoryIcon } from "@/components/category-icons";
 import { JourneyPhases } from "@/components/journey-phases";
 import { SpeakingTime } from "@/components/speaking-time";
-import { SectionBanner } from "@/components/section-banner";
+import { SectionBanner, SubSection } from "@/components/section-banner";
 import { ChallengesIcon, CheckIcon, ChevronDownIcon, FilmIcon, FlameIcon, GroupIcon, MedalIcon, SkillsIcon, SpectrumIcon } from "@/components/icons";
 import {
   DashboardPanel,
@@ -108,12 +108,19 @@ export default function DashboardPage() {
 
       {/* Your attempts and reviews - what used to be its own dashboard
           tab. A take belongs beside the challenges it was for: the
-          frame this device still holds, and the review it earned. */}
+          frame this device still holds, and the review it earned.
+          
+          Folded, and named the way the panel itself is named. It is
+          the longest thing on this panel and it was introduced by a
+          grey caption, so the panel opened onto a scroll rather than
+          onto its own contents. */}
       {state.attempts.length > 0 && (
-        <div className="flex flex-col gap-2">
-          <span className="text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint">
-            Your attempts and reviews
-          </span>
+        <SubSection
+          title="Recorded attempts"
+          Icon={FilmIcon}
+          accentClass="text-acting"
+          count={state.attempts.length}
+        >
           <ul className="flex flex-col gap-2">
             {[...state.attempts]
               .sort((a, b) => (a.at < b.at ? 1 : -1))
@@ -158,7 +165,12 @@ export default function DashboardPage() {
                 );
               })}
           </ul>
-        </div>
+          {state.attempts.length > 6 && (
+            <p className="pt-2 text-[0.65rem] text-ink-faint">
+              The six most recent. Every take you have ever made is kept on the challenge it was for.
+            </p>
+          )}
+        </SubSection>
       )}
       <Link
         href="/challenges"

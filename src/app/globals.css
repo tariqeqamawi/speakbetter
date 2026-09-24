@@ -3054,3 +3054,58 @@ html.bare .demo-banner {
     animation-duration: 4s;
   }
 }
+
+/* The bars you navigate by.
+ *
+ * Glass everywhere else, but not here. The blanket bg-navy-850 rule
+ * knocks anything wearing that colour down to 74% and hands the blur
+ * only to rounded panels, which left the phone's tab bar transparent
+ * with nothing behind it - page text reading straight through the
+ * tabs. A bar you steer by has to win against whatever it is over.
+ *
+ * So: 94% and a real blur, with a solid fallback where backdrop-filter
+ * is not supported. Still glass, just glass you cannot read a
+ * paragraph through. */
+.app-bar {
+  background-color: color-mix(in oklab, var(--color-navy-850) 94%, transparent);
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .app-bar {
+    background-color: var(--color-navy-850);
+  }
+}
+
+/* The daily chest, before it is opened.
+ *
+ * Gold, and the only gold on Today. It is the one line on the card
+ * that says what three quests are worth, and it was grey text under
+ * three grey quests. The sheen crosses it slowly - enough to catch
+ * the eye once on the way past, not enough to sit there glinting. */
+.chest-prize {
+  background-image: linear-gradient(105deg, #f7c948 0%, #ffe08a 42%, #e8a317 100%);
+  box-shadow:
+    0 0 0 1px rgba(255, 232, 160, 0.55),
+    0 4px 18px -6px rgba(247, 201, 72, 0.55);
+  background-size: 220% 100%;
+  animation: chest-sheen 7s ease-in-out infinite;
+}
+
+@keyframes chest-sheen {
+  0%,
+  72%,
+  100% {
+    background-position: 0% 0;
+  }
+  36% {
+    background-position: 100% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chest-prize {
+    animation: none;
+  }
+}

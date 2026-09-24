@@ -5,6 +5,7 @@ import {
   LOCAL_ME,
   localActivity,
   localRead,
+  localReactions,
   localReact,
   localReword,
   localSay,
@@ -202,7 +203,22 @@ export async function unsay(id: string): Promise<boolean> {
   return !error;
 }
 
-export type ReactionKind = "cheer" | "same" | "helpful";
+/**
+ * What you can say without typing.
+ *
+ * Six, not three. The original three were all about the CONTENT of a
+ * message - it helped, I agree, well done - which is a reasonable set
+ * for a course, and a useless one for the thing people actually do in
+ * a room, which is to acknowledge each other cheaply and often. A
+ * thumbs up is the whole gesture for most messages, and a room where
+ * the cheapest reply is a sentence is a room where most messages get
+ * no reply at all.
+ *
+ * Six is also the most that fits a phone's width in one row, which is
+ * the real limit: a picker that scrolls is a picker nobody uses past
+ * the first three.
+ */
+export type ReactionKind = "up" | "cheer" | "love" | "fire" | "same" | "helpful";
 
 /** Turn a reaction on or off. Returns where it ended up. */
 export async function react(postId: string, kind: ReactionKind, on: boolean): Promise<boolean> {
@@ -225,6 +241,45 @@ export async function react(postId: string, kind: ReactionKind, on: boolean): Pr
     .eq("kind", kind)
     .eq("student_id", me);
   return !error;
+}
+
+/**
+ * How many of each reaction the visible posts have.
+ *
+ * Counted here rather than joined onto the post, because a reaction
+ * changes far more often than a message does and a count welded to
+ * the post row would mean re-reading the whole room to learn that
+ * somebody gave a thumbs up.
+ *
+ * With no server there is only one person in the room, so the tally
+ * is your own reactions - which is the truth, not a placeholder.
+ * Inventing plausible numbers for an empty room would be the kind of
+ * lie that is discovered the moment a second person arrives.
+ */
+export async function tallies(postIds: string[]): Promise<Map<string, Record<string, number>>> {
+  const out = new Map<string, Record<string, number>>();
+  const add = (id: string, kind: string) => {
+    const row = out.get(id) ?? {};
+    row[kind] = (row[kind] ?? 0) + 1;
+    out.set(id, row);
+  };
+
+  const db = supabase();
+  if (!db) {
+    const mine = localReactions();
+    for (const id of postIds) for (const kind of mine[id] ?? []) add(id, kind);
+    return out;
+  }
+  if (postIds.length === 0) return out;
+  const { data, error } = await db
+    .from("post_reactions")
+    .select("post_id, kind")
+    .in("post_id", postIds);
+  // A failed tally is a room with no counts on it, which is a room
+  // that still works. Nothing here throws into the app.
+  if (error || !data) return out;
+  for (const r of data as { post_id: string; kind: string }[]) add(r.post_id, r.kind);
+  return out;
 }
 
 /** Tell somebody. Quiet by design: no confirmation theatre, and the

@@ -212,7 +212,9 @@ create policy "delete own post" on public.posts
 create table if not exists public.post_reactions (
   post_id uuid not null references public.posts(id) on delete cascade,
   student_id uuid not null references public.profiles(id) on delete cascade,
-  kind text not null check (kind in ('cheer','same','helpful')),
+  -- Six, matching ReactionKind in lib/chat.ts. Kept as a check rather
+  -- than an enum so adding a seventh is one migration and not two.
+  kind text not null check (kind in ('up','cheer','love','fire','same','helpful')),
   at timestamptz not null default now(),
   primary key (post_id, student_id, kind)
 );

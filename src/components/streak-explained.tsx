@@ -1,6 +1,14 @@
 "use client";
 
-import { streakBonusPercent, streakPrice, standing } from "@/lib/progress";
+import {
+  STREAK_CAP_DAYS,
+  STREAK_FAST_DAYS,
+  STREAK_MAX_PERCENT,
+  standing,
+  streakBonusPercent,
+  streakFreezesEarned,
+  streakPrice,
+} from "@/lib/progress";
 import { currentStreak } from "@/data/badges";
 import type { AppState } from "@/lib/store";
 import { FlameIcon, ZapIcon } from "@/components/icons";
@@ -30,6 +38,10 @@ export function StreakExplained({ state }: { state: AppState }) {
   const nextBonus = streakBonusPercent(streak + 1);
   const rescue = streakPrice(Math.max(1, streak));
   const canRescue = xp >= rescue;
+  const fast = streak < STREAK_FAST_DAYS;
+  const capped = bonus >= STREAK_MAX_PERCENT;
+  const freezes = streakFreezesEarned(streak);
+  const toNextFreeze = 10 - (streak % 10);
 
   return (
     <section className="flex flex-col gap-4 rounded-2xl border border-navy-600 bg-navy-800 p-5">
@@ -55,7 +67,7 @@ export function StreakExplained({ state }: { state: AppState }) {
         />
         <Step
           n={2}
-          title="Every day adds 5% XP to every challenge"
+          title={fast ? "Every day adds 5% XP to every challenge" : "Every day still adds to every challenge"}
           body={
             streak > 0
               ? `You're on +${bonus}% right now. Every challenge you pass today is worth that much more than it would be without the streak.`
@@ -68,17 +80,52 @@ export function StreakExplained({ state }: { state: AppState }) {
             </span>
           }
         />
+        {/* The second slope, named.
+            
+            This step used to say "it caps at +50%", which meant a
+            student on day nine could see that tomorrow was the last
+            day worth anything. Now it says what actually happens
+            after day ten - the climb halves, and keeps going to a
+            month - so the answer to "why keep going" is on the card
+            rather than in the code. */}
         <Step
           n={3}
-          title="It caps at +50%"
+          title={`After ${STREAK_FAST_DAYS} days it's +2.5% a day, up to +${STREAK_MAX_PERCENT}%`}
           body={
-            bonus >= 50
-              ? "You're at the ceiling. Ten days running is as good as the bonus gets - now it's about holding it."
-              : `Ten days running is the ceiling. Tomorrow takes you to +${nextBonus}%.`
+            capped
+              ? `${STREAK_CAP_DAYS} days running. Double XP on everything you pass, which is as high as the bonus goes - what a longer run earns now is a freeze every ten days.`
+              : fast
+                ? `The first ${STREAK_FAST_DAYS} days are worth 5% each. After that every day is worth 2.5%, all the way to +${STREAK_MAX_PERCENT}% at ${STREAK_CAP_DAYS} days - double XP on everything. Tomorrow takes you to +${nextBonus}%.`
+                : `You're past the fast stretch, so days are worth 2.5% each now, up to +${STREAK_MAX_PERCENT}% at ${STREAK_CAP_DAYS} days. Tomorrow takes you to +${nextBonus}%.`
+          }
+          right={
+            <span className="rounded-full bg-navy-700 px-2.5 py-1 text-xs font-bold tabular-nums text-ink-muted">
+              max +{STREAK_MAX_PERCENT}%
+            </span>
+          }
+        />
+        {/* The reward that has no ceiling - because it protects the
+            streak rather than paying it, it can keep coming forever
+            without ever making the hundredth day worth more than the
+            work. */}
+        <Step
+          n={4}
+          title="Every 10 days earns a freeze"
+          body={
+            freezes > 0
+              ? `You've earned ${freezes} from this run. A freeze covers one missed day automatically, so a single bad week doesn't cost you the streak. ${toNextFreeze} more day${toNextFreeze === 1 ? "" : "s"} earns another.`
+              : `A freeze covers one missed day automatically. The first arrives at 10 days in a row, and another every 10 after that - so the longer a streak runs, the harder it is to lose by accident.`
+          }
+          right={
+            freezes > 0 ? (
+              <span className="rounded-full bg-mindset/15 px-2.5 py-1 text-xs font-bold tabular-nums text-mindset">
+                {freezes} earned
+              </span>
+            ) : undefined
           }
         />
         <Step
-          n={4}
+          n={5}
           title="Miss a day and XP can buy it back"
           body={
             streak > 0

@@ -12,9 +12,9 @@ import {
 } from "react";
 import { usePathname } from "next/navigation";
 import type { CategoryId } from "@/data/categories";
-import { evaluateBadges, type EarnedBadge } from "@/data/badges";
+import { currentStreak, evaluateBadges, type EarnedBadge } from "@/data/badges";
 import type { Plan } from "@/data/pricing";
-import { standing } from "@/lib/progress";
+import { standing, streakFreezesEarned } from "@/lib/progress";
 import { demoState } from "@/lib/demo-state";
 import { studentId } from "@/lib/student-id";
 import { supabase } from "@/lib/supabase/client";
@@ -126,6 +126,13 @@ export interface AppState {
   /** Days (yyyy-mm-dd) a freeze covered, so a streak survives one miss */
   frozenDays: string[];
   freezesRemaining: number;
+  /** How many freezes this record has been GRANTED for streak
+   *  milestones, ever. Held so the grant cannot be farmed: a student
+   *  who breaks a streak and builds it back to ten is entitled to the
+   *  same one freeze they were entitled to the first time. Absent on
+   *  states written before earned freezes existed - treated as zero,
+   *  which hands a long-standing streak its back pay once. */
+  freezesEarned?: number;
   /** XP spent - on buying back a missed day, so far. Subtracted from
    *  the earned total by standing() in lib/progress. */
   xpSpent?: number;
@@ -162,6 +169,7 @@ const EMPTY: AppState = {
   badges: [],
   frozenDays: [],
   freezesRemaining: STARTING_FREEZES,
+  freezesEarned: 0,
   xpSpent: 0,
   creditsBought: 0,
   watchedOn: {},
@@ -238,6 +246,57 @@ interface StoreApi {
  * wipe a long streak. Runs once on load; only ever covers yesterday, and
  * only when there is a streak worth saving.
  */
+/**
+ * Make a loaded record safe to render.
+ *
+ * Seventeen places in this app read `attempt.spectrum[someColor]`, and
+ * every one of them throws on an attempt that has no spectrum at all.
+ * A real attempt always has one - the review pipeline writes it - but
+ * a record does not only ever arrive from the review pipeline: it can
+ * come from a restore file, from a backup written before a field
+ * existed, or from a hand-edit. When it does, the crash lands in the
+ * FIRST render of the dashboard, which is precisely the page somebody
+ * opens to check their progress is still there.
+ *
+ * So it is fixed once, here, on the way in, rather than seventeen
+ * times at the point of use. A spectrum-less attempt draws as a flat
+ * chart, which is honest about what is known about it, and everything
+ * else on the record still works.
+ */
+function repair(state: AppState): AppState {
+  if (state.attempts.every((a) => a.spectrum)) return state;
+  const EMPTY_SPECTRUM = {} as Attempt["spectrum"];
+  return {
+    ...state,
+    attempts: state.attempts.map((a) => (a.spectrum ? a : { ...a, spectrum: EMPTY_SPECTRUM })),
+  };
+}
+
+/**
+ * A freeze earned every ten days in a row.
+ *
+ * What a long streak pays once the XP bonus has stopped climbing. Past
+ * the +100% ceiling at thirty days the multiplier can no longer grow,
+ * and a reward that can only be LOST is not a reward - so the thing a
+ * long run keeps earning is protection for itself. The longer it has
+ * run, the more there is to lose, and the more likely it is that life
+ * gets in the way once.
+ *
+ * Entitlement, not a drip: the record remembers how many it has been
+ * granted, so breaking a streak and rebuilding it to ten does not pay
+ * twice.
+ */
+function grantStreakFreezes(state: AppState): AppState {
+  const earned = streakFreezesEarned(currentStreak(state));
+  const already = state.freezesEarned ?? 0;
+  if (earned <= already) return state;
+  return {
+    ...state,
+    freezesRemaining: state.freezesRemaining + (earned - already),
+    freezesEarned: earned,
+  };
+}
+
 function applyStreakFreeze(state: AppState): AppState {
   if (state.freezesRemaining <= 0 || state.attempts.length === 0) return state;
   const DAY = 86_400_000;
@@ -322,10 +381,17 @@ function StoreCore({
       try {
         const raw = window.localStorage.getItem(STORAGE_KEY);
         if (raw) {
-          const loaded = applyStreakFreeze({
-            ...EMPTY,
-            ...(JSON.parse(raw) as Partial<AppState>),
-          });
+          // Earn first, then spend: a student who has just crossed a
+          // ten-day milestone and missed yesterday should be covered
+          // by the freeze that run just earned them.
+          const loaded = applyStreakFreeze(
+            grantStreakFreezes(
+              repair({
+                ...EMPTY,
+                ...(JSON.parse(raw) as Partial<AppState>),
+              }),
+            ),
+          );
           // eslint-disable-next-line react-hooks/set-state-in-effect
           setState(loaded);
           stateRef.current = loaded;

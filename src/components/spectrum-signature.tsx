@@ -22,9 +22,12 @@ const MEANINGFUL = 5;
  *  shape spectrumShare gives for the whole record, so a single take and
  *  the running total can be drawn on the same trace. */
 function shareOfAttempt(attempt: Attempt): Record<CategoryId, number> {
-  const total = categories.reduce((sum, c) => sum + (attempt.spectrum[c.id] ?? 0), 0);
+  // Belt as well as braces: repair() in the store fills in a missing
+  // spectrum on the way in, and this is the render that used to take
+  // the whole dashboard down when one slipped through.
+  const total = categories.reduce((sum, c) => sum + (attempt.spectrum?.[c.id] ?? 0), 0);
   const out = {} as Record<CategoryId, number>;
-  for (const c of categories) out[c.id] = total > 0 ? Math.round(((attempt.spectrum[c.id] ?? 0) / total) * 100) : 0;
+  for (const c of categories) out[c.id] = total > 0 ? Math.round(((attempt.spectrum?.[c.id] ?? 0) / total) * 100) : 0;
   return out;
 }
 

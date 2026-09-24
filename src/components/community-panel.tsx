@@ -59,13 +59,16 @@ export function CommunityPanel() {
         )}
 
         <div className="grid grid-cols-2 gap-2">
-          <Door href="/community" Icon={ChatIcon} label="Chat rooms" note="Three, plus one per challenge" />
-          <Door href="/community" Icon={LeaderboardIcon} label="Leaderboards" note="Reset every Monday" />
+          {/* ?from=dash so Community's back link says "Back to Dash".
+              This panel is on the dashboard; a back link that says
+              Today would send them somewhere they have not been. */}
+          <Door href="/community?from=dash" Icon={ChatIcon} label="Chat rooms" note="Three, plus one per challenge" />
+          <Door href="/community?from=dash" Icon={LeaderboardIcon} label="Leaderboards" note="Reset every Monday" />
         </div>
       </div>
 
       <Link
-        href="/community"
+        href="/community?from=dash"
         className="flex min-h-12 items-center justify-center gap-2 border-t border-navy-700 bg-navy-900/60 text-sm font-bold text-mindset transition-colors hover:bg-navy-900"
       >
         Open Community

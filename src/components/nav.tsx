@@ -294,8 +294,21 @@ export function BottomTabs() {
   if (!ready || !state.unlocked) return null;
   const onCoach = pathname.startsWith("/coach");
   return (
+    // no-glass, and z-40.
+    //
+    // The glass pass added a blanket rule that drops anything painted
+    // bg-navy-850 to 74% opacity, and a separate rule that gives the
+    // BLUR only to rounded panels. This bar is square, so it got the
+    // transparency and none of the blur: page content read straight
+    // through the tabs, which is what "the UI cuts off the tabs" was.
+    // It asked for /97 in the first place - a bar you navigate by has
+    // to be legible over whatever happens to be behind it.
+    //
+    // z-40 puts it above the page's own sticky furniture (the map's
+    // preview header sits at z-40) and below the z-50 overlays, which
+    // are full-screen and SHOULD cover it.
     <nav
-      className="fixed inset-x-0 bottom-0 z-20 border-t border-navy-600 bg-navy-850/97 sm:hidden"
+      className="app-bar no-glass fixed inset-x-0 bottom-0 z-40 border-t border-navy-600 sm:hidden"
       aria-label="Primary"
     >
       <div className="pb-nav mx-auto flex max-w-md items-end justify-around">

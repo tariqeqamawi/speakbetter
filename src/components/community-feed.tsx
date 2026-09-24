@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useStore } from "@/lib/store";
 import { categories, type CategoryId } from "@/data/categories";
 import { sampleShares } from "@/data/community-presence";
@@ -82,6 +82,26 @@ export function CommunityFeed() {
   // lands - the gesture is real, the ledger isn't yet.
   const [cheered, setCheered] = useState<Set<string>>(new Set());
 
+  // Which leaderboard is open. The strip's scroll position is the
+  // truth; this only mirrors it so the tabs and the dots can be drawn.
+  const strip = useRef<HTMLDivElement | null>(null);
+  const [shown, setShown] = useState(0);
+  const onScroll = () => {
+    const el = strip.current;
+    if (!el) return;
+    const i = Math.round(el.scrollLeft / Math.max(1, el.clientWidth));
+    // Only on a change: a scroll event fires many times a swipe, and
+    // setting state on every one of them re-renders three boards and
+    // a grid of spectrum traces for no reason. This app has already
+    // been taught what per-frame work costs it.
+    setShown((was) => (was === i ? was : i));
+  };
+  const show = (i: number) => {
+    const el = strip.current;
+    if (!el) return;
+    el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
+  };
+
   if (!ready) return null;
 
   const mine: Card[] = [...state.sharedReels].reverse().map((r) => ({
@@ -123,6 +143,7 @@ export function CommunityFeed() {
   const boards = [
     {
       id: "colors",
+      tab: "Spectrum",
       title: "Speaking Spectrum",
       note: "colors now lighting up",
       Icon: TrendingUpIcon,
@@ -135,6 +156,7 @@ export function CommunityFeed() {
     },
     {
       id: "takes",
+      tab: "Attempts",
       title: "Recorded Attempts",
       note: "every recording counts",
       // A flame is the streak's mark everywhere else in the app; using
@@ -150,6 +172,7 @@ export function CommunityFeed() {
     },
     {
       id: "jump",
+      tab: "Improvement",
       title: "Biggest Improvement",
       note: "baseline to latest",
       Icon: TrophyIcon,
@@ -190,57 +213,124 @@ export function CommunityFeed() {
         </p>
       </section>
 
-      {/* Three ways to lead. */}
+      {/* Three ways to lead - one at a time.
+          
+          They used to be three cards stacked down a phone, which made
+          the third one something you only ever found by accident, and
+          put five hundred pixels between the board you were reading
+          and the board you wanted to compare it to. Now they are one
+          card you flick through, the way you already flick through
+          everything else on a phone.
+          
+          The swipe is a scroll-snap strip rather than a gesture
+          handler: it carries real momentum, it works with a trackpad
+          and a keyboard, and it cannot fight the page's own scrolling
+          the way a hand-rolled drag always ends up doing. The tabs
+          scroll the same strip, so there is one source of truth about
+          which board is open - the strip's own scroll position. */}
       <section className="flex flex-col gap-3">
         <h2 className="flex items-center gap-2 text-xl font-bold tracking-tight text-ink">
           <LeaderboardIcon className="size-5 shrink-0 text-storytelling" />
           Leaderboards
         </h2>
-        <div className="grid gap-3 sm:grid-cols-3">
+
+        <div className="flex gap-1 rounded-xl border border-navy-600 bg-navy-900/60 p-1">
+          {boards.map((board, i) => {
+            const on = i === shown;
+            return (
+              <button
+                key={board.id}
+                type="button"
+                onClick={() => show(i)}
+                aria-current={on ? "true" : undefined}
+                className={`flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-bold transition-colors ${
+                  on ? `bg-navy-700 ${board.accent}` : "text-ink-faint hover:text-ink-muted"
+                }`}
+              >
+                <board.Icon className="size-4 shrink-0" />
+                {board.tab}
+              </button>
+            );
+          })}
+        </div>
+
+        <div
+          ref={strip}
+          onScroll={onScroll}
+          className="-mx-1 flex snap-x snap-mandatory overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
           {boards.map((board) => (
-            <div key={board.id} className="flex flex-col gap-2 rounded-xl border border-navy-600 bg-navy-800 p-4">
-              <span className="flex items-center gap-2">
-                <board.Icon className={`size-4 ${board.accent}`} />
-                <span className="flex min-w-0 flex-col">
-                  {/* The board's name is the thing being competed on,
-                      so it reads as a title rather than a caption. */}
-                  <span className="text-sm font-bold text-ink">{board.title}</span>
-                  <span className="text-[0.65rem] text-ink-faint">{board.note}</span>
+            <div key={board.id} className="w-full shrink-0 snap-center px-1">
+              <div className="flex h-full flex-col gap-2 rounded-xl border border-navy-600 bg-navy-800 p-4">
+                <span className="flex items-center gap-2">
+                  <board.Icon className={`size-4 shrink-0 ${board.accent}`} />
+                  <span className="flex min-w-0 flex-col">
+                    {/* The board's name is the thing being competed
+                        on, so it reads as a title rather than a
+                        caption. The tab says the short version; here
+                        there is room to say it properly. */}
+                    <span className="text-sm font-bold text-ink">{board.title}</span>
+                    <span className="text-[0.65rem] text-ink-faint">{board.note}</span>
+                  </span>
                 </span>
-              </span>
-              <ol className="flex flex-col gap-1">
-                {board.rows.map((row, i) => (
-                  <li
-                    key={`${board.id}-${row.name}-${i}`}
-                    className={`flex items-center gap-2 rounded-lg px-2 py-1 text-sm ${row.mine ? "bg-navy-700 text-ink" : "text-ink-muted"}`}
-                  >
-                    <span className={`w-4 text-right text-[0.65rem] font-bold tabular-nums ${i === 0 ? board.accent : "text-ink-faint"}`}>
-                      {i + 1}
-                    </span>
-                    <Avatar name={row.name} src={row.mine ? state.avatar : undefined} className="size-6" ring={false} />
-                    <span className="flex-1 truncate text-xs font-medium">{row.name}</span>
-                    <span className="text-xs font-bold tabular-nums">
-                      {row.value > 0 ? "+" : ""}
-                      {row.value}
-                      {board.unit}
-                    </span>
-                  </li>
-                ))}
-              </ol>
+                <ol className="flex flex-col gap-1">
+                  {board.rows.map((row, i) => (
+                    <li
+                      key={`${board.id}-${row.name}-${i}`}
+                      className={`flex items-center gap-2 rounded-lg px-2 py-1 text-sm ${row.mine ? "bg-navy-700 text-ink" : "text-ink-muted"}`}
+                    >
+                      <span className={`w-4 text-right text-[0.65rem] font-bold tabular-nums ${i === 0 ? board.accent : "text-ink-faint"}`}>
+                        {i + 1}
+                      </span>
+                      <Avatar name={row.name} src={row.mine ? state.avatar : undefined} className="size-6" ring={false} />
+                      <span className="flex-1 truncate text-xs font-medium">{row.name}</span>
+                      <span className="text-xs font-bold tabular-nums">
+                        {row.value > 0 ? "+" : ""}
+                        {row.value}
+                        {board.unit}
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
             </div>
           ))}
         </div>
+
+        {/* Which of the three you are on, for a thumb that has just
+            swiped and is not looking at the tabs. */}
+        <span aria-hidden className="flex justify-center gap-1.5">
+          {boards.map((board, i) => (
+            <span
+              key={board.id}
+              className={`h-1.5 rounded-full transition-all ${i === shown ? "w-5 bg-ink-muted" : "w-1.5 bg-navy-600"}`}
+            />
+          ))}
+        </span>
       </section>
 
-      {/* Everyone's distance traveled, drawn. */}
+      {/* Everyone's distance traveled, drawn - and it belongs to the
+          Spectrum board.
+          
+          These traces ARE the spectrum board's evidence: the ranking
+          says who gained the most colors, and every card below shows
+          exactly which colors and by how much. Shown as its own
+          section they read as a second, unrelated thing, and sitting
+          under Attempts or Improvement they answered a question
+          nobody had asked. So they hang off the board they explain,
+          and the other two boards stay short. */}
+      {shown === 0 && (
       <section className="flex flex-col gap-3">
         <div className="flex items-center gap-2">
           <TrendingUpIcon className="size-5 text-mindset" />
-          <h2 className="text-sm font-medium uppercase tracking-wider text-ink-faint">Before and after</h2>
+          <h2 className="text-sm font-medium uppercase tracking-wider text-ink-faint">
+            Before and after · every color
+          </h2>
         </div>
         <p className="text-sm text-ink-muted">
-          Each trace is one student: where they started, dashed, under where they are now. Yours joins the feed from
-          the Challenges page, ten challenges in.
+          The board above ranks how many colors people have lit up. This is the detail behind it: each trace is one
+          student, where they started dashed under where they are now. Yours joins the feed from the Challenges page,
+          ten challenges in.
         </p>
         <ul className="grid gap-3 sm:grid-cols-2">
           {cards.map((c) => {
@@ -341,6 +431,7 @@ export function CommunityFeed() {
           })}
         </ul>
       </section>
+      )}
     </div>
   );
 }
