@@ -84,7 +84,7 @@ So that section is deliberately thin until the road lands.
 ### Higgsfield — unblocked 24 September
 Tariq topped up the account, so the cap is gone.
 
-- [x] **All 47 trophy renders — done** (`bb75ff6`). Prompts in
+- [x] **All 47 trophy renders — done** (`bb75ff6`), re-rendered in five materials (`52e2818`), staged on the podium (`fb7b687`). Prompts in
       `scripts/trophy-prompts.mjs`, alpha cut and WebP in `scripts/build-trophies.mjs`,
       and `trophyArt(id)` in `data/badges.ts` is the one way to ask for a picture.
       Preview: **/prototype/spotlight**.
@@ -190,6 +190,10 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **24 September**
+- The trophy room: every trophy standing on the podium under the light, its
+  reflection in the floor; all 47 in a grid by material below; "part-way through"
+  shows the case as a student sees it — `fb7b687`. At **/prototype/spotlight**.
+- Five materials as the rank, a shorter stem, 3:4 renders, a zoom that works — `52e2818`
 - Testimonials on white; the landing page stops selling twice; four kinds of
   text that was cut off on a phone — `12ae39d`
 - Tour captions, karaoke, and a dark screen for Coach's own moments — `6458f10`
