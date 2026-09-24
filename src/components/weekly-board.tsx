@@ -111,7 +111,7 @@ export function WeeklyBoard({ compact = false }: { compact?: boolean }) {
         <div className="flex flex-col gap-1">
           <h2 className="inline-flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-ink-faint">
             <TrophyIcon className="size-4 text-storytelling" />
-            This week&apos;s board
+            This week&apos;s leaderboard
           </h2>
           {!compact && (
             <p className="text-xs text-ink-muted">
@@ -162,16 +162,23 @@ export function WeeklyBoard({ compact = false }: { compact?: boolean }) {
               called at onboarding, and asking a second time is asking
               somebody to make the same decision twice - which is where
               a name like "asdf" comes from. */}
+          {/* The name comes from their profile; they are not asked for
+              it twice. No number is shown, because there honestly is
+              not one yet: the board fixes your starting XP the moment
+              you join and ranks the difference, so everybody who joins
+              today begins this week on zero and climbs from there.
+              Printing a figure here would be printing a lie. */}
           <span className="flex-1 text-xs text-ink-muted">
-            XP earned since Monday, reset every week - so the top is whoever practiced most in the last seven
-            days. Only your name and that number are shared.
+            Joining as <strong className="font-semibold text-ink">{draftShown || "you"}</strong>. Every XP you
+            earn from now until Sunday counts - the board resets each week, so the top is whoever practiced most
+            in the last seven days.
           </span>
           <button
             type="submit"
             disabled={busy || !draftShown.trim()}
             className="shrink-0 rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-navy-900 transition-opacity hover:opacity-90 disabled:opacity-50"
           >
-            Display XP on this week&apos;s board
+            Join leaderboard
           </button>
         </form>
       )}

@@ -390,6 +390,17 @@ export function StarIcon({ className = "size-5" }: IconProps) {
   );
 }
 
+/** Three bars on a podium - a ranking, at a glance. */
+export function LeaderboardIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <rect x="9.2" y="4" width="5.6" height="16" rx="1.2" />
+      <rect x="2.8" y="10" width="5.6" height="10" rx="1.2" />
+      <rect x="15.6" y="13" width="5.6" height="7" rx="1.2" />
+    </svg>
+  );
+}
+
 /** A date in the diary - when a cohort starts, when a session runs. */
 export function CalendarIcon({ className = "size-5" }: IconProps) {
   return (

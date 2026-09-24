@@ -32,21 +32,28 @@ import {
 // identically either way, which is also the only way to get the UI
 // right before the keys arrive.
 
-/** The three standing rooms, in the order they are shown. */
+/** The three standing rooms, in the order they are shown.
+ *
+ * `icon` names the mark each one wears, so a tab is recognisable
+ * before it is read - which is most of how somebody finds the room
+ * they want on a phone, at a glance, with a thumb already moving. */
 export const ROOMS = [
   {
     id: "challenges" as const,
     name: "Challenges",
+    icon: "challenges" as const,
     blurb: "Which one you are on, what it asked of you, how you got through it.",
   },
   {
     id: "feedback" as const,
     name: "Feedback",
+    icon: "feedback" as const,
     blurb: "What Coach said, what you changed, what you would tell somebody starting.",
   },
   {
     id: "general" as const,
     name: "General",
+    icon: "general" as const,
     blurb: "Say hello, say where you are in the world, say why you are here.",
   },
 ];

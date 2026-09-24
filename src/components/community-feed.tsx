@@ -6,7 +6,7 @@ import { categories, type CategoryId } from "@/data/categories";
 import { sampleShares } from "@/data/community-presence";
 import { challenges, storyPhases } from "@/data/challenges";
 import { SpectrumWave } from "@/components/spectrum-wave";
-import { CheckIcon, TrendingUpIcon, TrophyIcon, VideoIcon, ZapIcon } from "@/components/icons";
+import { CheckIcon, LeaderboardIcon, TrendingUpIcon, TrophyIcon, VideoIcon, ZapIcon } from "@/components/icons";
 import { hapticTap } from "@/lib/feedback-fx";
 import { Avatar } from "@/components/avatar";
 
@@ -123,8 +123,8 @@ export function CommunityFeed() {
   const boards = [
     {
       id: "colors",
-      title: "Spectrum unlocked",
-      note: "since their baseline",
+      title: "Speaking spectrum",
+      note: "colors now lighting up",
       Icon: TrendingUpIcon,
       accent: "text-body-language",
       rows: [...cards]
@@ -135,7 +135,7 @@ export function CommunityFeed() {
     },
     {
       id: "takes",
-      title: "Speaking attempts",
+      title: "Recorded attempts",
       note: "every recording counts",
       // A flame is the streak's mark everywhere else in the app; using
       // it here made two different things wear the same symbol. This
@@ -151,7 +151,7 @@ export function CommunityFeed() {
     {
       id: "jump",
       title: "Biggest improvement",
-      note: "spectrum before and after",
+      note: "baseline to latest",
       Icon: TrophyIcon,
       accent: "text-storytelling",
       rows: [...cards]
@@ -192,7 +192,10 @@ export function CommunityFeed() {
 
       {/* Three ways to lead. */}
       <section className="flex flex-col gap-3">
-        <h2 className="text-xl font-bold tracking-tight text-ink">Leaderboards</h2>
+        <h2 className="flex items-center gap-2 text-xl font-bold tracking-tight text-ink">
+          <LeaderboardIcon className="size-5 shrink-0 text-storytelling" />
+          Leaderboards
+        </h2>
         <div className="grid gap-3 sm:grid-cols-3">
           {boards.map((board) => (
             <div key={board.id} className="flex flex-col gap-2 rounded-xl border border-navy-600 bg-navy-800 p-4">

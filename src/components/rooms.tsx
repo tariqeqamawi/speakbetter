@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Room } from "@/components/room";
 import { ROOMS, roomActivity, type RoomId } from "@/lib/chat";
-import { ChatIcon } from "@/components/icons";
+import { ChallengesIcon, ChatIcon, GroupIcon, SpectrumIcon } from "@/components/icons";
 import { SUPPORT_EMAIL } from "@/data/support";
 
 // The three standing rooms, as tabs.
@@ -18,6 +18,13 @@ import { SUPPORT_EMAIL } from "@/data/support";
 // WHY TABS AND NOT THREE STACKED PANELS. A room is a conversation you
 // are in, not a feed you scroll past. Stacked, all three would be half
 // visible and none of them would feel like a place.
+
+/** The mark each room wears on its tab. */
+const MARK = {
+  challenges: ChallengesIcon,
+  feedback: SpectrumIcon,
+  general: GroupIcon,
+} as const;
 
 const COPY: Record<RoomId, { placeholder: string; empty: string }> = {
   challenges: {
@@ -79,6 +86,10 @@ export function Rooms() {
                   : "border-navy-600 text-ink-faint hover:text-ink-muted"
               }`}
             >
+              {(() => {
+                const Mark = MARK[r.icon];
+                return <Mark className="size-4 shrink-0" />;
+              })()}
               {r.name}
               {n > 0 && (
                 <span

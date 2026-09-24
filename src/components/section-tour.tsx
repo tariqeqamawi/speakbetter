@@ -43,23 +43,12 @@ export function SectionTour({ section }: { section: SectionId }) {
   const [running, setRunning] = useState(false);
   const tour = sectionTours[section];
 
-  // Offered once, a beat after the page settles - long enough that it
-  // isn't competing with the page painting, short enough that it is
-  // still obviously about this page.
-  useEffect(() => {
-    if (!ready || !state.unlocked) return;
-    let done = true;
-    try {
-      done = window.localStorage.getItem(seenKey(section)) === "1";
-      // Nobody gets two offers at once: the whole-app tour goes first.
-      if (!window.localStorage.getItem("speak-better-tour-v1")) done = true;
-    } catch {}
-    if (done) return;
-    const t = window.setTimeout(() => {
-      if (!document.body.dataset.tour) setRunning(true);
-    }, 2200);
-    return () => window.clearTimeout(t);
-  }, [ready, state.unlocked, section]);
+  // NOT offered on arrival. It used to start itself a couple of
+  // seconds after a section was opened for the first time, which meant
+  // simply tapping Community got you a tour you had not asked for -
+  // and an unasked-for tour is an interruption wearing a helpful face.
+  // The button beside the section's name is how it starts now, and it
+  // is always there for somebody who wants it.
 
   // Asked for from the top bar.
   useEffect(() => {
