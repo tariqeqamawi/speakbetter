@@ -308,22 +308,46 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
               // A face-down card rather than a dot: the thing you're
               // reaching for is a card, and it should look like one
               // before you pick it up.
-              className={`absolute flex aspect-[89/127] w-[16%] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-lg transition-all duration-300 ${
-                lit
-                  ? "z-10 scale-125 shadow-[0_0_26px_-4px_currentColor]"
-                  : "shadow-[0_8px_18px_-10px_rgba(3,7,18,0.9)]"
+              className={`deck-card absolute aspect-[89/127] w-[16%] -translate-x-1/2 -translate-y-1/2 rounded-lg transition-all duration-300 [perspective:640px] ${
+                lit ? "z-10 scale-125" : ""
               }`}
               style={{
                 left: `${x}%`,
                 top: `${y}%`,
-                background: `var(--color-${cat.id})`,
                 color: `var(--color-${cat.id})`,
               }}
             >
-              <CategoryIcon
-                category={cat.id}
-                className={`text-navy-950 transition-transform duration-300 ${lit ? "size-7" : "size-5"}`}
-              />
+              {/* Two faces on one card, turned together. The stagger
+                  is the card's place in the ring, so the flip travels
+                  round rather than happening everywhere at once. */}
+              <span
+                className="deck-turn relative block size-full"
+                style={{ animationDelay: `${i * 1.8}s` }}
+              >
+                {/* Face down: the colour, and its mark. */}
+                <span
+                  className={`deck-face absolute inset-0 flex items-center justify-center rounded-lg ${
+                    lit ? "shadow-[0_0_26px_-4px_currentColor]" : "shadow-[0_8px_18px_-10px_rgba(3,7,18,0.9)]"
+                  }`}
+                  style={{ background: `var(--color-${cat.id})` }}
+                >
+                  <CategoryIcon
+                    category={cat.id}
+                    className={`text-navy-950 transition-transform duration-300 ${lit ? "size-7" : "size-5"}`}
+                  />
+                </span>
+
+                {/* And face up: what is actually in this colour. */}
+                <span
+                  className="deck-face deck-face-back absolute inset-0 flex flex-col items-center justify-center gap-0.5 rounded-lg border-2 border-current bg-navy-900 px-1 text-center"
+                >
+                  <span className="text-[0.55rem] font-bold uppercase leading-tight tracking-wide text-ink">
+                    {cat.short}
+                  </span>
+                  <span className="text-[0.6rem] font-bold tabular-nums text-current">{count}</span>
+                  <span className="text-[0.45rem] uppercase tracking-wide text-ink-faint">cards</span>
+                </span>
+              </span>
             </button>
           );
         })}
@@ -694,6 +718,32 @@ function FullSpread({
   onDeal: () => void;
   onBack: () => void;
 }) {
+  // A deal in two beats. Swapping the hand outright made seven cards
+  // blink into different colours on the spot, which reads as a bug
+  // rather than a shuffle - so the fan closes into a pile first, the
+  // cards are changed while they are stacked and nobody can see which
+  // is which, and the new hand fans back out. It is the gesture a
+  // person makes, and it takes about as long as they take to make it.
+  const [gathering, setGathering] = useState(false);
+  const dealing = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  const deal = () => {
+    if (gathering) return;
+    hapticTap();
+    setGathering(true);
+    dealing.current = setTimeout(() => {
+      onDeal();
+      setGathering(false);
+    }, 300);
+  };
+
+  useEffect(
+    () => () => {
+      if (dealing.current) clearTimeout(dealing.current);
+    },
+    [],
+  );
+
   // The card lifted out of the fan: the one under the pointer, or the
   // one whose name is pointed at below.
   const [raised, setRaised] = useState<number | null>(null);
@@ -787,10 +837,11 @@ function FullSpread({
         </span>
         <button
           type="button"
-          onClick={onDeal}
-          className="flex items-center gap-1.5 text-sm font-semibold text-ink-muted transition-colors hover:text-ink"
+          onClick={deal}
+          disabled={gathering}
+          className="flex items-center gap-1.5 text-sm font-semibold text-ink-muted transition-colors hover:text-ink disabled:opacity-60"
         >
-          <RepeatIcon className="size-4" />
+          <RepeatIcon className={`size-4 ${gathering ? "animate-spin" : ""}`} />
           Deal again
         </button>
       </div>
@@ -829,7 +880,12 @@ function FullSpread({
           const d = i - mid;
           return (
             <span
-              key={card.vimeoId}
+              // Keyed by its SEAT in the hand rather than by which card
+              // is in it. Keying by the card would mount seven new
+              // elements on every deal, and a brand-new element has
+              // nowhere to animate FROM - the cards would appear in
+              // their new places rather than travel there.
+              key={i}
               className={`fan-card absolute left-1/2 top-[6%] ${
                 raised === i ? "is-raised" : ""
               }`}
@@ -837,7 +893,12 @@ function FullSpread({
                 {
                   width: `${FAN_CARD * 100}%`,
                   zIndex: 10 + i,
-                  "--fan": `translateX(${d * FAN_STEP * 100}%) rotate(${d * 6}deg) translateY(${d * d * 2.2}%)`,
+                  // Gathered: every card on the same spot, squared up
+                  // with a degree or two of slop so it reads as a pile
+                  // rather than one card. Fanned: its place in the hand.
+                  "--fan": gathering
+                    ? `translateX(0%) rotate(${d * 1.6}deg) translateY(0%) scale(0.94)`
+                    : `translateX(${d * FAN_STEP * 100}%) rotate(${d * 6}deg) translateY(${d * d * 2.2}%)`,
                 } as React.CSSProperties
               }
             >

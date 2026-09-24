@@ -2614,6 +2614,70 @@ html.bare .demo-banner {
   }
 }
 
+/* ── The deck turning itself over ─────────────────────────────────────
+ * Seven face-down cards ringed around the lion, each one turning to
+ * show what it is and turning back, one after another around the
+ * circle.
+ *
+ * WHY IT IS WORTH THE MOTION. A ring of seven coloured rectangles is
+ * pretty and says nothing: a student has to hover each one to find out
+ * what it holds, which means they hover none of them. The cascade
+ * tells them, without being asked, that these are CARDS - they have
+ * two sides, they can be turned over, and there is something written
+ * on the back. That is the whole invitation.
+ *
+ * WHY ONE AT A TIME. Seven cards flipping together is a flicker. One
+ * at a time is a hand being dealt, and the eye follows it around the
+ * ring - which is also, not by accident, a tour of all seven colours.
+ *
+ * The cycle is long and each card is busy for a small slice of it, so
+ * the ring is mostly still: one card turning, six waiting. Pure
+ * rotateY, so the compositor owns it.
+ */
+.deck-turn {
+  transform-style: preserve-3d;
+  animation: deck-turn var(--deck-cycle, 12.6s) ease-in-out infinite;
+}
+
+@keyframes deck-turn {
+  0%,
+  2% {
+    transform: rotateY(0deg);
+  }
+  9% {
+    transform: rotateY(180deg);
+  }
+  15% {
+    transform: rotateY(180deg);
+  }
+  22%,
+  100% {
+    transform: rotateY(0deg);
+  }
+}
+
+.deck-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.deck-face-back {
+  transform: rotateY(180deg);
+}
+
+/* Hovering takes the card off the carousel: somebody who has reached
+   for one should not have it turn away from them mid-reach. */
+.deck-card:hover .deck-turn,
+.deck-card:focus-visible .deck-turn {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deck-turn {
+    animation: none;
+  }
+}
+
 /* The one colour every lamp in the app burns at. */
 :root {
   --lamp: 255, 243, 222;

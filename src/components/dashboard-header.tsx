@@ -8,6 +8,7 @@ import { AvatarCrop } from "@/components/avatar-crop";
 import { SectionTour } from "@/components/section-tour";
 import { ChevronDownIcon, ProfileIcon } from "@/components/icons";
 import { ProTip } from "@/components/pro-tip";
+import { ProgressFile } from "@/components/progress-file";
 
 const levelOrder: Level[] = ["beginner", "intermediate", "advanced"];
 
@@ -391,6 +392,12 @@ export function DashboardHeader() {
         )}
         </div>
         <ProTip />
+
+        {/* And the copy of their record they keep themselves. Behind
+            the same fold as the reason they started and the tip: all
+            three are things about the student rather than things to do
+            today, and none of them should be spending room above it. */}
+        <ProgressFile />
       </div>
     </section>
   );

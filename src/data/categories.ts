@@ -48,8 +48,8 @@ export const categories: Category[] = [
   },
   {
     id: "figurative",
-    name: "Figurative & sensory",
-    short: "Figurative & sensory",
+    name: "Figurative & Sensory",
+    short: "Figurative & Sensory",
     code: "IMAGE",
     colorName: "Bright orange",
     blurb: "Metaphor, simile, hyperbole, analogy - language that paints instead of describes.",
@@ -92,8 +92,8 @@ export const categories: Category[] = [
   },
   {
     id: "body-language",
-    name: "Body & physical",
-    short: "Body & physical",
+    name: "Body & Physical",
+    short: "Body & Physical",
     code: "BODY",
     colorName: "Bright cyan",
     blurb: "Gestures, posture, movement - expressing visually what you say verbally.",

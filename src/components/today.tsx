@@ -38,6 +38,15 @@ export function Today() {
 
   return (
     <div className="flex flex-col gap-8 py-6">
+      {/* Who else is on the road, first thing and stuck there.
+          
+          It was halfway down the page before, which made `sticky` a
+          lie: an element only begins sticking once you have scrolled
+          to it, so a bar six sections down is a bar you meet late and
+          then never lose. The question it answers - "is anybody else
+          actually doing this?" - belongs at the top of the day. */}
+      <TodayCommunityBar />
+
       <header className="relative overflow-hidden rounded-3xl border border-navy-600 bg-navy-800 p-5 sm:p-6">
         {/* The day's own light: the spectrum, low and wide behind the
             greeting, so Today opens with color rather than a line of
@@ -259,16 +268,10 @@ export function Today() {
         </section>
       )}
 
-      {/* Who else is on the road. As a bar rather than a card, and
-          stuck under the header, because "is anybody else actually
-          doing this?" is not a question asked once on the way down a
-          page - it is asked at the moment a challenge looks hard. */}
-      <TodayCommunityBar />
-
       {recent.length > 0 && (
         <section className="flex flex-col gap-3">
           <h2 className="text-sm font-medium uppercase tracking-wider text-ink-faint">
-            Pick up where you left off
+            Current challenge
           </h2>
           <ul className="grid gap-2 sm:grid-cols-2">
             {recent.map((lesson) => {
