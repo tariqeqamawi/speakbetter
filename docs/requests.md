@@ -181,6 +181,7 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **24 September**
+- Landing headline: "Listen to Coach" in the big waveform pill, replacing "Hear it" — `5f10e2c`
 - FAQ: optional monthly plan after the six weeks — Starter $14.99, Complete $29.99 — `4dae93e`
 - Trophy colours matched to the Speaking Spectrum (every one within 2° of its swatch);
   Twisted re-glazed storytelling yellow — `642c9ba`
