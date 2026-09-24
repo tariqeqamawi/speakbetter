@@ -98,6 +98,10 @@ Tariq topped up the account, so the cap is gone.
       and falls back to text-only until the image exists (`the-reality.tsx`, `STILL`)
 
 ### Asked for and not yet started
+- [ ] **The collectible trophy case, live in the app** (24 Sep): reveal when won, silhouettes for
+      trophies not yet won, progress by material, rarity from real data only, share card,
+      cohort-only trophy - and the spotlight room replacing the old medallion case. Being built
+      in a separate worktree.
 
 ### Decided, for the record
 - **The streak past day ten.** 5% a day to +50% at ten days (unchanged), then 2.5% a day
@@ -108,10 +112,10 @@ Tariq topped up the account, so the cap is gone.
   a streak leaderboard, and a title beside the name on the boards.
 
 ### Waiting on Tariq
-- [ ] **More obsidian trophies** - proposed: Iron Will (30-day streak, with Unstoppable moved to
-      chrome), Standing Ovation (95+), Then and Now (beat your baseline in all seven colours),
-      The Golden Phase (gold on every challenge in a phase), Seven Summits (80+ in each colour).
-      Waiting on which to build.
+- [ ] **More obsidian trophies** - Iron Will built. Still proposed: Standing Ovation (95+), Then
+      and Now (beat your baseline in all seven colours), The Golden Phase (gold on every challenge
+      in a phase), Seven Summits (80+ in each colour). And: should Unstoppable (7 days) move to
+      chrome now Iron Will is the obsidian streak?
 - [ ] **2 testimonials still held back.** 25 are live, up from 13 at the start of
       24 September. Tariq named almost the whole list that evening.
 
@@ -192,6 +196,10 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **24 September**
+- Skill trophies need consistency across different challenges (Handy 4, I See You 6, Oscar 5,
+  ...); Full Spectrum 60+; Founding Cohort once-only trophy — `34f8831`
+- Iron Will (obsidian, 30 days); The Lion's Roar with neon LEDs in its own Legendary category;
+  Chekhov's Gun a level revolver; Founding Cohort bronze art — `968427d`
 - Challenge trophies painted in full, real colour (23), exotic materials kept for the special
   ones — `6658f11`
 - Coach trophies: In the Lion's Den (chrome & gold, 25 questions) and The Lion's Roar
