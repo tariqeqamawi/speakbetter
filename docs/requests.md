@@ -154,6 +154,12 @@ Tariq topped up the account, so the cap is gone.
       would avoid an hour of confusion.
 
 ### Known issues, not yet fixed
+- [ ] **The 14-day upgrade window is copy only.** Nothing records when a student joined, so
+      the in-app Starter-to-Complete offer does not close on day 14. Needs a purchase date on
+      the server-side plan (see the multi-user item below) - then `UPGRADE_WINDOW_DAYS` gates it.
+- [ ] **The free-baseline trial still exists inside the app** (`plan: "trial"`, one review).
+      All public copy offering it is gone; whether a visitor can still reach it by URL, and
+      whether to remove the trial plan itself, is a product decision for Tariq.
 - [ ] **Multi-user is not truly ready** — five gaps, all documented: no sign-out (and
       sign-in *merges* device state into the account, so a shared device cross-contaminates);
       `plan` is client-writable, so a student can grant themselves any tier from devtools;
@@ -181,6 +187,10 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **24 September**
+- Coach's pill shows its waveform at last (it had never rendered), dark body, bigger;
+  testimonials float up one by one instead of marching in columns — `55a2e93`
+- No "try it free" anywhere public; "Challenge Preview"; the free-challenge button removed;
+  upgrades within 14 days — `dc6f8dd`
 - Landing headline: "Listen to Coach" in the big waveform pill, replacing "Hear it" — `5f10e2c`
 - FAQ: optional monthly plan after the six weeks — Starter $14.99, Complete $29.99 — `4dae93e`
 - Trophy colours matched to the Speaking Spectrum (every one within 2° of its swatch);
