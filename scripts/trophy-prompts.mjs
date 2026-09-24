@@ -199,4 +199,10 @@ export const LIONS = [
   { id: "speak-better-complete", color: "figurative", subject: "the Speak Better lion mascot with its microphone, exactly as the logo draws it, sculpted, on a taller stepped base", material: "obsidian", grand: true },
 ];
 
-export const ALL_TROPHIES = [...TROPHIES, ...GOLD, ...LIONS];
+// ── Once only ─────────────────────────────────────────────────────────
+// The founding cohort's trophy: bronze, dated, and never offered again.
+export const COHORT = [
+  { id: "cohort-autumn-2026", color: "figurative", subject: "a laurel wreath around the year 2026, with a small plaque reading FOUNDING COHORT", material: "bronze" },
+];
+
+export const ALL_TROPHIES = [...TROPHIES, ...GOLD, ...LIONS, ...COHORT];

@@ -1,6 +1,7 @@
 import type { CategoryId } from "./categories";
 import { challengeBadges, challenges, storyPhases } from "./challenges";
 import { lessons } from "./lessons";
+import { cohort } from "./cohort";
 
 // Gamification layer - master plan §11. Badges recognize effort as much
 // as achievement, and apply identically at every level (never gated).
@@ -36,8 +37,19 @@ interface BadgeEvalState {
 // better take, which is also where the XP is.
 
 /** Talks in which a color reached the bar. */
-function talksAt(s: BadgeEvalState, id: CategoryId, bar: number): number {
-  return s.attempts.filter((a) => (a.spectrum[id] ?? 0) >= bar).length;
+/** How many DIFFERENT challenges somebody has cleared a skill's bar on.
+ *
+ *  The skill trophies used to count takes, so two good takes of the
+ *  same challenge - the same story told twice - won a trophy for a
+ *  skill. A skill is something you bring to everything, so these now
+ *  count challenges: to win "Handy", your hands have to be doing the
+ *  work across several different talks, not twice in one. */
+function challengesAt(s: BadgeEvalState, id: CategoryId, bar: number, passedOnly = false): number {
+  return new Set(
+    s.attempts
+      .filter((a) => (a.spectrum[id] ?? 0) >= bar && (!passedOnly || a.passed))
+      .map((a) => a.challengeSlug),
+  ).size;
 }
 const xpOf = (s: BadgeEvalState) => s.xp ?? 0;
 const minutesOf = (s: BadgeEvalState) => s.attempts.reduce((sum, a) => sum + (a.durationSec ?? 0), 0) / 60;
@@ -180,10 +192,10 @@ export const badgeDefs: BadgeDef[] = [
     message:
       "Every color lit up in a single talk. That is a genuinely dynamic speaker at work.",
     icon: "spectrum",
-    how: "Light up all seven colors in a single talk - 40 or more on every one.",
+    how: "Light up all seven colors in a single talk - 60 or more on every one.",
     earned: (s) =>
       s.attempts.some((a) =>
-        Object.values(a.spectrum).every((v) => v >= 40),
+        Object.values(a.spectrum).every((v) => v >= 60),
       ),
   },
   {
@@ -227,8 +239,8 @@ export const badgeDefs: BadgeDef[] = [
     message:
       "Your hands did the talking too - gesture that strong is rare, and it reads on camera.",
     icon: "spectrum",
-    how: "Score 75 or higher on body language in two separate talks - hands that draw what you're saying.",
-    earned: (s) => talksAt(s, "body-language", 75) >= 2,
+    how: "Score 75 or higher on body language in four different challenges - hands that draw what you're saying, every time.",
+    earned: (s) => challengesAt(s, "body-language", 75) >= 4,
   },
   {
     id: "i-see-you",
@@ -236,17 +248,16 @@ export const badgeDefs: BadgeDef[] = [
     message:
       "Five talks holding your eye line and your presence. The camera trusts you now.",
     icon: "check-circle",
-    how: "Score 65 or higher on body language in five separate talks - eye contact held throughout.",
-    earned: (s) => talksAt(s, "body-language", 65) >= 5,
+    how: "Score 70 or higher on body language in six different challenges - eye contact held throughout, talk after talk.",
+    earned: (s) => challengesAt(s, "body-language", 70) >= 6,
   },
   {
     id: "storyteller",
     title: "Storyteller",
     message: "That was a story, properly told - scene, not summary.",
     icon: "film",
-    how: "Score 80 or higher on storytelling in two passed talks, and hold the Storyteller rank (600 XP).",
-    earned: (s) =>
-      s.attempts.filter((a) => a.passed && (a.spectrum.storytelling ?? 0) >= 80).length >= 2 && xpOf(s) >= 600,
+    how: "Score 80 or higher on storytelling in four different passed challenges, and hold the Storyteller rank (600 XP).",
+    earned: (s) => challengesAt(s, "storytelling", 80, true) >= 4 && xpOf(s) >= 600,
   },
   {
     id: "oscar",
@@ -254,17 +265,17 @@ export const badgeDefs: BadgeDef[] = [
     message:
       "You didn't report the moment, you performed it. That's acting for speakers.",
     icon: "trophy",
-    how: "Score 80 or higher on acting skills in two separate talks - the moment performed, not reported.",
-    earned: (s) => talksAt(s, "acting", 80) >= 2,
+    how: "Score 85 or higher on acting skills in five different challenges - the moment performed, not reported, again and again.",
+    earned: (s) => challengesAt(s, "acting", 85) >= 5,
   },
   {
     id: "twisted",
     title: "Twisted",
     message: "You set them up and turned it on them. Plot twist landed.",
     icon: "repeat",
-    how: "Pass 'Add a Twist in Third-Person' with a score of 75 or higher.",
+    how: "Pass 'Add a Twist in Third-Person' with a score of 85 or higher.",
     earned: (s) =>
-      s.attempts.some((a) => a.challengeSlug === "twist-third-person" && a.passed && (a.score ?? 0) >= 75),
+      s.attempts.some((a) => a.challengeSlug === "twist-third-person" && a.passed && (a.score ?? 0) >= 85),
   },
   {
     id: "sensational",
@@ -272,17 +283,22 @@ export const badgeDefs: BadgeDef[] = [
     message:
       "Figurative, sensory, vivid - your listener saw it, not just heard it.",
     icon: "trending-up",
-    how: "Score 80 or higher on figurative language in two separate talks.",
-    earned: (s) => talksAt(s, "figurative", 80) >= 2,
+    how: "Score 80 or higher on figurative language in four different challenges.",
+    earned: (s) => challengesAt(s, "figurative", 80) >= 4,
   },
   {
     id: "composer",
     title: "Composer",
     message: "You made your message a melody. Range like that keeps a room.",
     icon: "zap",
-    how: "Pass 'Play With Your Voice' with a score of 75 or higher.",
+    how: "Score 85 or higher on 'Play With Your Voice', and 75 or higher on acting in three other challenges.",
     earned: (s) =>
-      s.attempts.some((a) => a.challengeSlug === "voice-melody" && a.passed && (a.score ?? 0) >= 75),
+      s.attempts.some((a) => a.challengeSlug === "voice-melody" && a.passed && (a.score ?? 0) >= 85) &&
+      new Set(
+        s.attempts
+          .filter((a) => a.challengeSlug !== "voice-melody" && (a.spectrum.acting ?? 0) >= 75)
+          .map((a) => a.challengeSlug),
+      ).size >= 3,
   },
   // One per challenge. Passing a challenge is the single most meaningful
   // thing a student does here, so each one has its own name and art
@@ -356,6 +372,20 @@ export const badgeDefs: BadgeDef[] = [
     earned: (s) =>
       storyPhases.every((p) => phaseComplete(s, p.id)) &&
       lessons.every((l) => s.watchedLessons.includes(l.vimeoId)),
+  },
+  // Only this round's students can ever hold it: any take recorded by
+  // the day the Autumn 2026 cohort closes. A trophy with a date on it
+  // that the next cohort cannot win is what makes the first cohort the
+  // founding one.
+  {
+    id: "cohort-autumn-2026",
+    title: "Founding Cohort",
+    message: "You were here for the first one - Autumn 2026. No later cohort can ever win this.",
+    icon: "trophy",
+    how: `Record a take during the founding cohort, before its final session on ${cohort.endShort}, 2026. Only this round can win it.`,
+    // Compared as instants: the two are written in different offsets,
+    // so comparing the strings would misplace a take by hours.
+    earned: (s) => s.attempts.some((a) => new Date(a.at).getTime() <= new Date(cohort.endsAt).getTime()),
   },
   {
     id: "journey-complete",
