@@ -214,6 +214,17 @@ export const badgeDefs: BadgeDef[] = [
     how: "Practice seven days in a row.",
     earned: (s) => currentStreak(s) >= 7,
   },
+  // Thirty days without a gap - the point where the streak bonus tops
+  // out, and a month is long enough that it stops being a streak and
+  // becomes how somebody lives. Obsidian.
+  {
+    id: "iron-will",
+    title: "Iron Will",
+    message: "Thirty days in a row. That is not a streak any more - that is who you are now.",
+    icon: "flame",
+    how: "Practice thirty days in a row.",
+    earned: (s) => currentStreak(s) >= 30,
+  },
   {
     id: "streak-5",
     title: "High Five",

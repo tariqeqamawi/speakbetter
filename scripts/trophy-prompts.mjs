@@ -47,6 +47,9 @@
 //             together. (They were neon tubes for an afternoon; solid
 //             glass reads as a prize, a sign reads as a shop front.)
 //   obsidian  the rare ones, and the whole road at the end of it.
+//   legendary one trophy only: The Lion's Roar, for finishing all of
+//             Speak Better - obsidian and gold lit with neon LEDs, in a
+//             category of its own because nothing else is its equal.
 //
 // Four of the five still take the colour of the skill they are for -
 // the glaze, the glow in the stone, the glass itself - so the case
@@ -135,6 +138,7 @@ export const TROPHIES = [
   { id: "streak-3", color: "figurative", subject: "a leaping flame", material: "ceramic" },
   { id: "streak-5", color: "figurative", subject: "an open hand, palm forward, fingers spread", material: "ceramic" },
   { id: "streak-7", color: "figurative", subject: "a lightning bolt", material: "obsidian" },
+  { id: "iron-will", color: "figurative", subject: "a raised clenched fist", material: "obsidian" },
   { id: "ten-minutes", color: "acting", subject: "an hourglass", material: "chrome" },
   { id: "handy", color: "body-language", subject: "two open hands framing an empty space between them", material: "ceramic" },
   { id: "i-see-you", color: "body-language", subject: "a single open eye", material: "ceramic" },
@@ -168,7 +172,7 @@ export const TROPHIES = [
   { id: "challenge-high-stakes-moment", color: "acting", subject: "a red velvet theatre seat with dark polished wooden armrests and brass fittings, tipped forward onto its two front legs", material: "painted" },
   { id: "challenge-set-and-scene", color: "storytelling", subject: "a miniature theatre stage with rich red velvet curtains drawn back, a gilded proscenium arch and a warm wooden stage floor", material: "painted" },
   { id: "challenge-twist-third-person", color: "storytelling", subject: "a classic film director's megaphone in cream and black painted metal with a dark wooden handle", material: "painted" },
-  { id: "challenge-foreshadowing", color: "storytelling", subject: "an ornate antique flintlock pistol with a walnut wooden stock, an engraved steel lock and brass fittings, standing upright on its grip", material: "painted" },
+  { id: "challenge-foreshadowing", color: "storytelling", subject: "a classic six-shot revolver, blued steel and a walnut grip, lying level and pointing straight out to the side", material: "painted" },
   { id: "challenge-three-emotions", color: "acting", subject: "a small harp with a carved, polished dark wooden frame and fine gold strings", material: "painted" },
   { id: "challenge-someone-elses-story", color: "storytelling", subject: "two overlapping speech bubbles, one white and one soft sky blue, like glossy painted enamel", material: "painted" },
   { id: "challenge-multiple-characters", color: "acting", subject: "three theatre masks side by side, each painted in real colours and with a different expression - a white comedy mask with gold trim, a dark blue tragedy mask, a red surprised mask", material: "painted" },
@@ -196,7 +200,7 @@ export const GOLD = TROPHIES.filter(
 // in the case, for finishing all of Speak Better.
 export const LIONS = [
   { id: "coach-confidant", color: "figurative", subject: "the Speak Better lion mascot with its microphone, exactly as the logo draws it, sculpted", material: "chrome" },
-  { id: "speak-better-complete", color: "figurative", subject: "the Speak Better lion mascot with its microphone, exactly as the logo draws it, sculpted, on a taller stepped base", material: "obsidian", grand: true },
+  { id: "speak-better-complete", color: "figurative", subject: "the Speak Better lion mascot with its microphone, exactly as the logo draws it, sculpted in obsidian and gold with neon LED strips in the seven spectrum colours set into its mane and base, on a taller stepped base", material: "legendary", grand: true },
 ];
 
 // ── Once only ─────────────────────────────────────────────────────────
