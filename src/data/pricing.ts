@@ -28,8 +28,12 @@ export const features: Feature[] = [
   { id: "ask", label: "Ask your coach anything about how you're developing" },
   { id: "board", label: "This week's board, and notes when your review is ready" },
   { id: "reviews", label: "Coaching credits included - and cheap to top up whenever you want more" },
-  { id: "live", label: "A monthly live group session with the teacher" },
-  { id: "cohort", label: "A live cohort: start together, finish together" },
+  { id: "live", label: "Weekly live sessions with Tariq - hot-seat coaching, every week of the six" },
+  { id: "cohort", label: "The live cohort: start together, finish together" },
+  {
+    id: "one-to-one",
+    label: "Personal 1-to-1 feedback from Tariq himself - your takes, watched and reviewed by the teacher",
+  },
   { id: "printed", label: "The physical card deck - printed, boxed and posted to you" },
   { id: "book", label: "The book, when it ships" },
   { id: "first", label: "First access to every new lesson and challenge" },
@@ -49,6 +53,10 @@ export interface Tier {
   featured?: boolean;
   /** Which of the features it has - the rest show struck out. */
   has: string[];
+  /** The one line that is the reason to choose this tier, drawn apart
+   *  from the ticks. A list of sixteen identical ticks hides the thing
+   *  somebody is actually paying the difference for. */
+  standout?: { id: string; label: string; note: string };
   /** The tier's own color, for its ticks. */
   accent: "mindset" | "structure" | "storytelling";
   cta: string;
@@ -56,9 +64,22 @@ export interface Tier {
   note?: string;
 }
 
-const foundations = ["lessons", "deck", "journey", "written", "loop", "device"];
+const foundations = [
+  "lessons",
+  "deck",
+  "journey",
+  "written",
+  "loop",
+  "device",
+  // Every tier is in the cohort and at the weekly calls. The point of
+  // a dated cohort is that everybody walks it together; gating the
+  // live sessions to the top tier would leave the students who most
+  // need to watch somebody else be coached outside the room.
+  "cohort",
+  "live",
+];
 const coached = [...foundations, "coach", "spoken", "ask", "board", "reviews"];
-const founders = [...coached, "live", "cohort", "printed", "book", "first"];
+const founders = [...coached, "one-to-one", "printed", "book", "first"];
 
 // The first cohort's prices: three one-off payments for SIX WEEKS of
 // access, not a subscription and not lifetime. A cohort starts and
@@ -66,44 +87,49 @@ const founders = [...coached, "live", "cohort", "printed", "book", "first"];
 // with everybody else on it - and that has to be said everywhere the
 // price is, not buried in terms.
 //
-// The gap between Starter and the Full Experience is exactly the
+// The gap between Starter and Complete is exactly the
 // UPGRADE price below, so upgrading mid-cohort costs the difference
 // and nothing more.
 export const tiers: Tier[] = [
   {
     id: "foundations",
     name: "Starter",
-    tagline: "The method, and Coach in writing.",
+    tagline: "The method, the live cohort, and Coach in writing.",
     price: "$299",
     term: "one payment - 6 weeks' access",
     has: foundations,
     accent: "mindset",
     cta: "Get Starter",
-    note: "6 weeks' access. Upgrade to the Full Experience any time for $200.",
+    note: "6 weeks' access, including every weekly live session. Upgrade to Complete any time for $200.",
   },
   {
     id: "coached",
-    name: "Full Experience",
-    tagline: "Coach watches every take, and answers you out loud.",
+    name: "Complete",
+    tagline: "Everything in Starter, plus Coach watching every take and answering out loud.",
     price: "$499",
     term: "one payment - 6 weeks' access",
     featured: true,
     has: coached,
     accent: "structure",
-    cta: "Get the Full Experience",
+    cta: "Get Complete",
     note: "6 weeks' access, with the AI coach on call 24/7.",
   },
   {
     id: "founders",
-    name: "Ultimate",
-    sub: "Founders complete set, including the physical card deck and the physical book",
-    tagline: "The whole system, with the teacher in the room.",
+    name: "VIP Ultimate",
+    sub: "The founders set - and the teacher reviewing your takes himself",
+    tagline: "Everything in Complete, plus Tariq working with you one to one.",
     price: "$997",
     term: "one payment - 6 weeks, and the deck and book are yours to keep",
     has: founders,
     accent: "storytelling",
-    cta: "Join the Founders cohort",
-    note: "6 weeks, live. Limited seats per cohort.",
+    standout: {
+      id: "one-to-one",
+      label: "Tariq reviews your takes personally, one to one",
+      note: "Not the AI - the teacher. Your recordings watched by the person who wrote the method, with feedback in his own words.",
+    },
+    cta: "Join VIP Ultimate",
+    note: "6 weeks, live. Strictly limited seats - one-to-one time does not scale.",
   },
 ];
 
@@ -115,8 +141,8 @@ export const priceCents: Record<Exclude<Plan, "trial">, number> = {
   founders: 99700,
 };
 
-/** Starter to the Full Experience: the difference, not a second full
- *  price. A student who has already paid $300 is not asked for $500. */
+/** Starter to Complete: the difference, not a second full price. A
+ *  student who has already paid $299 is not asked for $499. */
 export const UPGRADE_CENTS = priceCents.coached - priceCents.foundations;
 
 /** The line Coach's own page shows a Starter student, and the word on
@@ -125,7 +151,7 @@ export const UPGRADE_CENTS = priceCents.coached - priceCents.foundations;
 export const upgradeOffer = {
   title: "Upgrade to access Coach 24/7 and become the speaker you always dreamed of",
   body:
-    "Coach already watches every take you record and writes you the review. The Full Experience is him out loud - the review spoken in his voice with the words on screen - and him on call: ask him anything about how you are developing, any time, and he answers from your own record.",
+    "Coach already watches every take you record and writes you the review. Complete is him out loud - the review spoken in his voice with the words on screen - and him on call: ask him anything about how you are developing, any time, and he answers from your own record.",
   cta: "Upgrade for $200",
   /** Said under the button: what the $200 buys, and for how long. */
   term: "For the rest of your six weeks.",

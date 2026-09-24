@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { features, tiers } from "@/data/pricing";
 import { UnlockButton } from "@/components/unlock-button";
-import { CheckIcon, XIcon } from "@/components/icons";
+import { CheckIcon, StarIcon, XIcon } from "@/components/icons";
 import { TierArt } from "@/components/tier-art";
 
 // The three tiers. On a desktop they stand side by side, the membership
@@ -76,11 +76,39 @@ export function TierTabs() {
               <span className="text-xs text-ink-faint">{tier.term}</span>
             </div>
             <TierArt has={tier.has} />
+
+            {/* The one reason to choose this tier, taken out of the
+                list.
+                
+                Sixteen identical ticks is a specification, and a
+                specification hides the single thing somebody is
+                paying the difference for. On VIP that thing is not
+                another feature of the software - it is the teacher's
+                own time, which is the only part of this that cannot
+                be given to everybody. It gets its own box. */}
+            {tier.standout && (
+              <div
+                className={`flex flex-col gap-1.5 rounded-xl border p-4 ${
+                  { mindset: "border-mindset/50 bg-mindset/10", structure: "border-structure/50 bg-structure/10", storytelling: "border-storytelling/50 bg-storytelling/10" }[tier.accent]
+                }`}
+              >
+                <span className="flex items-start gap-2">
+                  <StarIcon className={`mt-0.5 size-4 shrink-0 ${ACCENT[tier.accent]} drop-shadow-[0_0_6px_currentColor]`} />
+                  <span className={`text-sm font-bold leading-snug ${ACCENT[tier.accent]}`}>
+                    {tier.standout.label}
+                  </span>
+                </span>
+                <span className="pl-6 text-xs leading-relaxed text-ink-muted">{tier.standout.note}</span>
+              </div>
+            )}
+
             {/* Every tier lists everything: what it has, lit in its
                 color; what it doesn't, greyed and struck - so the
                 columns visibly fill in from left to right. */}
             <ul className="flex flex-1 flex-col gap-2 text-sm">
               {features.map((f) => {
+                // Already said above, larger, in its own box.
+                if (tier.standout?.id === f.id) return null;
                 const has = tier.has.includes(f.id);
                 const tick = { mindset: "text-mindset", structure: "text-structure", storytelling: "text-storytelling" }[tier.accent];
                 return (

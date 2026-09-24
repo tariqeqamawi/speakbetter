@@ -64,7 +64,7 @@ export const creditPacks: CreditPack[] = [
  * How many reviews each plan includes over its six weeks.
  *
  * Set against what practice actually looks like: a take a day for six
- * weeks is 42. Starter and the Full Experience both clear that with
+ * weeks is 42. Starter and Complete both clear that with
  * room for re-records, because a student who re-records is doing
  * exactly what the course asks and should not be made to feel it.
  * Ultimate is effectively uncapped for one cohort.

@@ -26,13 +26,13 @@ const WHAT: Record<Purchase, { name: string; blurb: string; cents: number }> = {
     cents: priceCents.foundations,
   },
   coached: {
-    name: "Speak Better - Full Experience",
+    name: "Speak Better - Complete",
     blurb: "Six weeks of access: everything in Starter, plus Coach's spoken review with captions and Coach on call, 24/7.",
     cents: priceCents.coached,
   },
   founders: {
     name: "Speak Better - Ultimate",
-    blurb: "Six weeks of the Full Experience, the live cohort, the session with the teacher, and the printed deck and book to keep.",
+    blurb: "Six weeks of Complete, the live cohort, the session with the teacher, and the printed deck and book to keep.",
     cents: priceCents.founders,
   },
   "credits-small": {
@@ -51,8 +51,8 @@ const WHAT: Record<Purchase, { name: string; blurb: string; cents: number }> = {
     cents: 2000,
   },
   upgrade: {
-    name: "Speak Better - upgrade to the Full Experience",
-    blurb: "Coach out loud, and Coach on call, for the rest of your six weeks. The difference between Starter and the Full Experience.",
+    name: "Speak Better - upgrade to Complete",
+    blurb: "Coach out loud, and Coach on call, for the rest of your six weeks. The difference between Starter and Complete.",
     cents: UPGRADE_CENTS,
   },
 };
@@ -66,7 +66,7 @@ export async function POST(request: Request) {
   const item = WHAT[buy];
   if (!item) return NextResponse.json({ error: "Nothing to buy." }, { status: 400 });
 
-  // What they end up with. An upgrade lands on the Full Experience; a
+  // What they end up with. An upgrade lands on Complete; a
   // pack of credits changes no plan at all, it just adds reviews.
   const credits = CREDITS[buy] ?? 0;
   const plan = credits > 0 ? "" : buy === "upgrade" ? "coached" : buy;

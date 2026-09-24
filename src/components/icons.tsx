@@ -381,6 +381,15 @@ export function BadgeIcon({
 }
 
 /** A folded map - the day's quests as a route through it. */
+/** A star - the one thing on a list that is not like the others. */
+export function StarIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
+      <path d="M12 2.8l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3-5.6-3.3-5.6 3.3 1.4-6.3L3 9.3l6.4-.6z" />
+    </svg>
+  );
+}
+
 /** A date in the diary - when a cohort starts, when a session runs. */
 export function CalendarIcon({ className = "size-5" }: IconProps) {
   return (

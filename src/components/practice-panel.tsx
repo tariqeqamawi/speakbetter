@@ -329,13 +329,13 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
       {trialBlocked && (
         <UpgradePanel
           title="This challenge is part of the course"
-          body="The free baseline covers the two baseline challenges. The rest of the STORY journey - all twenty-four challenges, every lesson, the deck - comes with Starter, and the coach who watches every take with the Full Experience."
+          body="The free baseline covers the two baseline challenges. The rest of the STORY journey - all twenty-four challenges, every lesson, the deck - comes with Starter, and the coach who watches every take with Complete."
         />
       )}
       {trialSpent && !trialBlocked && stage.kind === "idle" && (
         <UpgradePanel
           title="Your free review is used"
-          body="That was Coach watching your take - the score, the spectrum, what to do next. Every take gets that with the Full Experience; Starter is the same method and the same review, written. One payment, six weeks."
+          body="That was Coach watching your take - the score, the spectrum, what to do next. Every take gets that with Complete; Starter is the same method and the same review, written. One payment, six weeks."
           cta="Unlock the rest of the journey"
         />
       )}
@@ -602,7 +602,7 @@ export function Feedback({
   const challengeTitle = challenge.title;
   const { state } = useStore();
   const canRevealAll = state.level !== "beginner"; // §08/§09: nested reveal
-  // Coach's voice is the Full Experience; Starter reads the same
+  // Coach's voice is Complete; Starter reads the same
   // review instead, with the way to hear it beside it.
   const spokenPlan = preview || hasCoach(state);
   const litCount = categories.filter((c) => (attempt.spectrum[c.id] ?? 0) >= 40).length;
@@ -995,7 +995,7 @@ export function Feedback({
 
 /**
  * The review as Starter gets it: Coach's face, his words in full, and
- * the one thing the Full Experience adds - his voice, and him on call.
+ * the one thing Complete adds - his voice, and him on call.
  */
 function WrittenReview({ spoken }: { spoken: string }) {
   return (

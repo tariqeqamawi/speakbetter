@@ -10,7 +10,7 @@ import { ListenIcon, SpectrumIcon, ZapIcon } from "@/components/icons";
 // Not a locked door. Coach is standing right there, and the three
 // lines under him are the three things they are not getting - said as
 // what they are, not as what is withheld. The price is the difference
-// between what they paid and the Full Experience, so the number on the
+// between what they paid and Complete, so the number on the
 // button is small and true: two hundred dollars, not five hundred.
 //
 // Their written reviews keep working exactly as before while they

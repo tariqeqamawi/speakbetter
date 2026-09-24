@@ -10,7 +10,7 @@ import { includedReviews, LOW_AT } from "@/data/credits";
 //             the score, the spectrum, the notes, the lessons - and
 //             the student reads it. No spoken review, no asking him
 //             questions.
-//   SPOKEN    Full Experience and Ultimate, and the free first review.
+//   SPOKEN    Complete and VIP Ultimate, and the free first review.
 //             Everything above, said aloud in his voice, plus Ask
 //             Coach whenever they want him.
 //

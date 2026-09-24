@@ -28,7 +28,7 @@ export default function PricingPage() {
           ["Why is the coach a membership?", "Every review is the model actually watching your video - a real cost each time. A membership keeps that honest, and lets you stop when you've got what you came for. The lessons are yours either way."],
           ["What happens to my videos?", "They never leave your phone except to be reviewed, and the copy the coach watched is deleted the moment the review is back. The feedback is what's kept."],
           ["Can I try the coach before paying?", "Yes - the free baseline includes one real review: your score, your seven-color spectrum, and what to do next."],
-          ["What's in Ultimate?", "The Founders complete set: a year of the Full Experience, a monthly live session with the teacher, a cohort that starts and finishes together, the printed deck posted to you, and the book when it ships. Seats are limited per cohort."],
+          ["What's in VIP Ultimate?", "Everything in Complete, and the part that does not scale: Tariq watches your takes personally and gives you feedback one to one. Plus the founders set - the printed deck posted to you and the book when it ships. Every tier is in the live cohort with weekly sessions; VIP Ultimate is the one where the teacher works with you directly, so seats are strictly limited."],
         ].map(([q, a]) => (
           <div key={q} className="flex flex-col gap-1.5 rounded-2xl border border-navy-600 bg-navy-800/60 p-5">
             <h3 className="text-sm font-semibold text-ink">{q}</h3>

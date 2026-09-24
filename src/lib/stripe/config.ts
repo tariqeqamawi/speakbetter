@@ -18,7 +18,7 @@ import type { Plan } from "@/data/pricing";
 export type PaidPlan = Exclude<Plan, "trial">;
 
 /** What the checkout is buying: a whole tier, or the step up from
- *  Starter to the Full Experience. */
+ *  Starter to Complete. */
 export type Purchase = PaidPlan | "upgrade" | "credits-small" | "credits-medium" | "credits-large";
 
 export function stripeEnabled(): boolean {

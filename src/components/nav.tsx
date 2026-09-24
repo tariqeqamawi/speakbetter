@@ -97,7 +97,13 @@ export function TopBar() {
  *  one of its own. */
 function TourButton() {
   const pathname = usePathname();
+  const { state, ready } = useStore();
   const section = sectionOf(pathname);
+  // Nothing to tour until there is an app to be shown around. On the
+  // landing page it offered a walkthrough of a product the visitor has
+  // not bought, right next to the logo, which reads as a demo they are
+  // about to be trapped in rather than an invitation.
+  if (!ready || !state.unlocked) return null;
   return (
     <button
       type="button"
