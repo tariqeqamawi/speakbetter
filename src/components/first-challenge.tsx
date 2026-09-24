@@ -13,9 +13,8 @@ import { CircleIcon } from "@/components/icons";
 import Image from "next/image";
 import Link from "next/link";
 
-// "The first one's on us." The first challenge, shown as it looks
-// inside: the brief, the explainer, what passing takes, the lessons to
-// warm up with.
+// The first challenge, shown as it looks inside: the brief, the
+// explainer, what passing takes, the lessons to warm up with.
 //
 // SHOWN, NOT RUN. It used to be live - the real recorder, the real
 // review, on the sales page - and a second worked review under it. Two

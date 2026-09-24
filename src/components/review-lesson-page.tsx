@@ -6,7 +6,6 @@ import { challengeBySlug } from "@/data/challenges";
 import { lessonByVimeoId } from "@/data/lessons";
 import { categoryById, type CategoryId } from "@/data/categories";
 import { LessonPlayer } from "@/components/lesson-player";
-import { LessonGate } from "@/components/lesson-gate";
 import { LessonLink } from "@/components/practice-panel";
 import { XpBadge } from "@/components/xp-badge";
 import { lessonXp } from "@/lib/progress";
@@ -103,9 +102,7 @@ export function ReviewLessonPage({
         )}
       </header>
 
-      <LessonGate vimeoId={lesson.vimeoId}>
-        <LessonPlayer vimeoId={lesson.vimeoId} title={lesson.title} />
-      </LessonGate>
+      <LessonPlayer vimeoId={lesson.vimeoId} title={lesson.title} />
 
       {others.length > 0 && (
         <section className="flex flex-col gap-2">

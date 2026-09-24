@@ -3,7 +3,7 @@
 import { supabase } from "./client";
 import type { AppState, Attempt, SharedReel } from "@/lib/store";
 import type { Level } from "@/lib/store";
-import type { Plan } from "@/data/pricing";
+import { isPlan } from "@/data/pricing";
 
 // The student's record, in both places at once.
 //
@@ -21,7 +21,9 @@ interface ProfileRow {
   display_name: string | null;
   intention: string | null;
   level: Level;
-  plan: Plan;
+  /** A tier, or the column's default ('trial', from when there was
+   *  one) until the checkout webhook writes the tier they bought. */
+  plan: string;
   avatar_url: string | null;
   freezes_remaining: number;
   xp_spent: number;
@@ -86,11 +88,12 @@ export async function pullState(): Promise<Partial<AppState> | null> {
   );
 
   return {
-    unlocked: true,
+    // An account opens the app only if it paid. One that hasn't says
+    // nothing about access, and whatever this device holds stands.
+    ...(isPlan(p?.plan) ? { unlocked: true, plan: p.plan } : {}),
     displayName: p?.display_name ?? undefined,
     intention: p?.intention ?? undefined,
     level: p?.level ?? "beginner",
-    plan: p?.plan ?? "trial",
     avatar: p?.avatar_url ?? undefined,
     freezesRemaining: p?.freezes_remaining ?? 2,
     xpSpent: p?.xp_spent ?? 0,
@@ -147,7 +150,8 @@ export async function pushProfile(state: AppState): Promise<void> {
         display_name: state.displayName ?? null,
         intention: state.intention ?? null,
         level: state.level ?? "beginner",
-        plan: state.plan ?? "trial",
+        // Only a tier goes up; no plan leaves the column as it is.
+        ...(isPlan(state.plan) ? { plan: state.plan } : {}),
         avatar_url: state.avatar ?? null,
         freezes_remaining: state.freezesRemaining,
         xp_spent: state.xpSpent ?? 0,

@@ -162,7 +162,7 @@ function LandingBody() {
           thing itself.
           
           This is the ONLY worked review on the page. It used to be
-          here and again inside the free first challenge, so a reader
+          here and again inside the challenge preview, so a reader
           met the same review twice. */}
       <section className="flex w-full flex-col items-center gap-5">
         {/* "How it works" rather than "Experience your Speak Better

@@ -1,6 +1,5 @@
 import type { AppState } from "@/lib/store";
-import type { Plan } from "@/data/pricing";
-import { challenges, type Challenge } from "@/data/challenges";
+import { isPlan, type Plan } from "@/data/pricing";
 import { includedReviews, LOW_AT } from "@/data/credits";
 
 // What a student's plan lets them do (data/pricing.ts). There are two
@@ -10,16 +9,19 @@ import { includedReviews, LOW_AT } from "@/data/credits";
 //             the score, the spectrum, the notes, the lessons - and
 //             the student reads it. No spoken review, no asking him
 //             questions.
-//   SPOKEN    Complete and VIP Ultimate, and the free first review.
-//             Everything above, said aloud in his voice, plus Ask
-//             Coach whenever they want him.
+//   SPOKEN    Complete and VIP Ultimate. Everything above, said aloud
+//             in his voice, plus Ask Coach whenever they want him.
 //
-// The free baseline is the spoken experience once, on the two baseline
-// challenges, so what's being offered is what they'd be buying.
+// Without a paid plan there is no app at all - no free tier, no trial -
+// and the gate (components/require-access.tsx) sends them to the tiers.
 // States from before plans existed count as the full experience.
 
-export function planOf(state: Pick<AppState, "plan" | "unlocked">): Plan {
-  return state.plan ?? (state.unlocked ? "coached" : "trial");
+/** The tier they paid for, or null for somebody who hasn't. A stored
+ *  plan the app no longer sells ("trial") is null too. */
+export function planOf(state: Pick<AppState, "plan" | "unlocked">): Plan | null {
+  if (!state.unlocked) return null;
+  if (state.plan === undefined) return "coached";
+  return isPlan(state.plan) ? state.plan : null;
 }
 
 /** Coach's voice, and Coach on demand - the full experience. */
@@ -29,33 +31,10 @@ export function hasCoach(state: Pick<AppState, "plan" | "unlocked">): boolean {
 }
 
 /** Coach watches the video and writes the review. Every paid plan does
- *  this; the free baseline does it for its one review. */
+ *  this. */
 export function coachWatches(state: Pick<AppState, "plan" | "unlocked">): boolean {
-  const p = planOf(state);
-  return p === "foundations" || p === "coached" || p === "founders" || p === "trial";
+  return planOf(state) !== null;
 }
-
-export function onTrial(state: Pick<AppState, "plan" | "unlocked">): boolean {
-  return planOf(state) === "trial";
-}
-
-/** The baseline's lessons - what the free baseline can watch. */
-const trialLessonIds = new Set(challenges.filter((c) => c.baseline).flatMap((c) => c.relatedLessonIds));
-
-export function trialAllowsChallenge(challenge: Pick<Challenge, "baseline">): boolean {
-  return Boolean(challenge.baseline);
-}
-
-export function trialAllowsLesson(vimeoId: string): boolean {
-  return trialLessonIds.has(vimeoId);
-}
-
-/** Real reviews the trial has used - it gets one. */
-export function trialReviewsUsed(state: Pick<AppState, "attempts">): number {
-  return state.attempts.filter((a) => !a.mock).length;
-}
-
-export const TRIAL_REVIEWS = 1;
 
 /**
  * Reviews left: what the plan included, plus anything topped up,
@@ -70,7 +49,8 @@ export const TRIAL_REVIEWS = 1;
  * impossible to offer honestly.
  */
 export function reviewsLeft(state: Pick<AppState, "plan" | "unlocked" | "attempts" | "creditsBought">): number {
-  const allowance = includedReviews[planOf(state)] ?? 0;
+  const plan = planOf(state);
+  const allowance = plan ? includedReviews[plan] : 0;
   const bought = state.creditsBought ?? 0;
   const spent = state.attempts.filter((a) => !a.mock).length;
   return Math.max(0, allowance + bought - spent);

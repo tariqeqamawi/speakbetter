@@ -13,7 +13,7 @@ import {
 import { usePathname } from "next/navigation";
 import type { CategoryId } from "@/data/categories";
 import { currentStreak, evaluateBadges, type EarnedBadge } from "@/data/badges";
-import type { Plan } from "@/data/pricing";
+import { isPlan, type Plan } from "@/data/pricing";
 import { standing, streakFreezesEarned } from "@/lib/progress";
 import { demoState } from "@/lib/demo-state";
 import { studentId } from "@/lib/student-id";
@@ -116,8 +116,8 @@ export interface SharedReel {
 
 export interface AppState {
   unlocked: boolean;
-  /** What they're on: the free baseline, or a tier (data/pricing.ts).
-   *  Absent on states from before plans existed - treated as coached. */
+  /** The tier they bought (data/pricing.ts). Absent on states from
+   *  before plans existed - treated as coached. */
   plan?: Plan;
   level: Level | null;
   attempts: Attempt[];
@@ -273,6 +273,22 @@ function repair(state: AppState): AppState {
 }
 
 /**
+ * A plan the app doesn't sell, read as no plan.
+ *
+ * There used to be a free trial, and a record from then can still say
+ * `plan: "trial"` - on this device, in a progress file, or from an
+ * account. Nothing grants that now, so it opens nothing: the record is
+ * kept, its plan is dropped and it waits for a tier to be bought. The
+ * same for any other word a hand-edit or a stale backup might hold.
+ */
+function dropUnsoldPlan(state: AppState): AppState {
+  if (state.plan === undefined || isPlan(state.plan)) return state;
+  const rest = { ...state };
+  delete rest.plan;
+  return { ...rest, unlocked: false };
+}
+
+/**
  * A freeze earned every ten days in a row.
  *
  * What a long streak pays once the XP bonus has stopped climbing. Past
@@ -386,10 +402,12 @@ function StoreCore({
           // by the freeze that run just earned them.
           const loaded = applyStreakFreeze(
             grantStreakFreezes(
-              repair({
-                ...EMPTY,
-                ...(JSON.parse(raw) as Partial<AppState>),
-              }),
+              repair(
+                dropUnsoldPlan({
+                  ...EMPTY,
+                  ...(JSON.parse(raw) as Partial<AppState>),
+                }),
+              ),
             ),
           );
           // eslint-disable-next-line react-hooks/set-state-in-effect

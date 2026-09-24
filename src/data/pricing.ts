@@ -1,14 +1,19 @@
-// The offer (master plan §15): what a student can buy, and what they
-// can try for nothing first.
+// The offer (master plan §15): what a student can buy.
 //
 // The shape is course + membership, because the method deserves a
 // price that says "this is the method" and the coach costs something
-// every time it's used. The free baseline comes first: anyone records
-// the two baseline challenges and gets one real review before paying
-// anything - the landing page shows the mechanic, the baseline makes
-// it theirs.
+// every time it's used. There is no free trial: every way into the app
+// is one of the three tiers, and the fourteen-day guarantee is how
+// somebody tries it.
 
-export type Plan = "trial" | "foundations" | "coached" | "founders";
+export type Plan = "foundations" | "coached" | "founders";
+
+/** A plan the app sells. Stored records can hold anything - "trial" in
+ *  particular, from when there was one - and anything that is not a
+ *  tier is no plan at all. */
+export function isPlan(value: unknown): value is Plan {
+  return value === "foundations" || value === "coached" || value === "founders";
+}
 
 /** Everything that's on offer, in the order the tiers fill it in. */
 export interface Feature {
@@ -40,7 +45,7 @@ export const features: Feature[] = [
 ];
 
 export interface Tier {
-  id: Exclude<Plan, "trial">;
+  id: Plan;
   name: string;
   /** A qualifier under the name, in brackets - what "Ultimate" means. */
   sub?: string;
@@ -135,7 +140,7 @@ export const tiers: Tier[] = [
 
 /** What each tier costs, in cents, for the checkout. The strings above
  *  are what a student reads; these are what they are charged. */
-export const priceCents: Record<Exclude<Plan, "trial">, number> = {
+export const priceCents: Record<Plan, number> = {
   foundations: 29900,
   coached: 49900,
   founders: 99700,
@@ -160,18 +165,6 @@ export const upgradeOffer = {
   cta: "Upgrade for $200",
   /** Said under the button: what the $200 buys, and for how long. */
   term: "For the rest of your six weeks.",
-} as const;
-
-/** What the free baseline lets a student do before paying. */
-export const trial = {
-  name: "Experience Speak Better",
-  includes: [
-    "The first challenge, live: upload a video of yourself speaking and get the feedback directly from the coach",
-    "One real review from the AI coach: your score, your seven-color spectrum, what to do next",
-    "The lessons that challenge leans on",
-    "See it in action before you ever pull out your card",
-  ],
-  cta: "Try the first challenge free",
 } as const;
 
 /** The guarantee, said once and read everywhere it appears - under the

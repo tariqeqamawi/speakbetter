@@ -66,8 +66,8 @@ export function StoryPreview() {
           
           The map used to sit beside a full challenge page, which was
           the second "Record Your Speaking Baseline" on this landing
-          page - the free challenge further down is the one that
-          matters, because it is the one you can actually do. This
+          page - the challenge preview further down is the one that
+          shows it. This
           section is about the SHAPE of the road, so the road is all
           it shows. The whole thing is being rebuilt on the projected
           terrain anyway (see story-road.tsx); there is no sense

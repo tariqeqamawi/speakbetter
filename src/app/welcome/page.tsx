@@ -30,7 +30,7 @@ export default function WelcomePage() {
   const [draft, setDraft] = useState("");
 
   useEffect(() => {
-    if (ready && !state.unlocked) router.replace("/");
+    if (ready && !state.unlocked) router.replace("/#pricing");
   }, [ready, state.unlocked, router]);
 
   if (!ready || !state.unlocked) return null;

@@ -15,11 +15,9 @@ import type { Plan } from "@/data/pricing";
 // region - that is the moment to move to Price ids in the dashboard,
 // and STRIPE_PRICE_* below is the hook for it.
 
-export type PaidPlan = Exclude<Plan, "trial">;
-
 /** What the checkout is buying: a whole tier, or the step up from
  *  Starter to Complete. */
-export type Purchase = PaidPlan | "upgrade" | "credits-small" | "credits-medium" | "credits-large";
+export type Purchase = Plan |"upgrade" | "credits-small" | "credits-medium" | "credits-large";
 
 export function stripeEnabled(): boolean {
   return Boolean(process.env.STRIPE_SECRET_KEY);

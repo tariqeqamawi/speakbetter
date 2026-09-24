@@ -23,6 +23,8 @@
 // reviews, the failures that get retried for free, and the ones a
 // student is given back when something goes wrong.
 
+import type { Plan } from "@/data/pricing";
+
 export interface CreditPack {
   id: "small" | "medium" | "large";
   /** What the student pays, in cents. */
@@ -69,8 +71,7 @@ export const creditPacks: CreditPack[] = [
  * exactly what the course asks and should not be made to feel it.
  * Ultimate is effectively uncapped for one cohort.
  */
-export const includedReviews: Record<string, number> = {
-  trial: 1,
+export const includedReviews: Record<Plan, number> = {
   foundations: 60,
   coached: 100,
   founders: 250,
