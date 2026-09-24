@@ -2678,6 +2678,36 @@ html.bare .demo-banner {
   }
 }
 
+/* Students' words drifting up the page.
+ *
+ * The list is rendered twice in each lane and the lane travels exactly
+ * half its own height, so the second copy is in the first's place at
+ * the moment it restarts - a loop with no seam to spot. One transform,
+ * composited, costing the main thread nothing.
+ *
+ * It pauses on hover, because somebody who has stopped to read a
+ * sentence should not have it slide out from under them. */
+.testimonial-lane {
+  animation: testimonial-drift linear infinite;
+  will-change: transform;
+}
+
+.testimonial-lane:hover {
+  animation-play-state: paused;
+}
+
+@keyframes testimonial-drift {
+  to {
+    transform: translate3d(0, -50%, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .testimonial-lane {
+    animation: none;
+  }
+}
+
 /* The one colour every lamp in the app burns at. */
 :root {
   --lamp: 255, 243, 222;

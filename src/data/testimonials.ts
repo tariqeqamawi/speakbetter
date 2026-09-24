@@ -49,19 +49,31 @@ export const testimonials: Testimonial[] = [
     name: "Vincent Hazenboom",
     quote: "Bloody brilliant. All the very best, Tariq.",
     tag: "worth",
-    // Dictated as "Vincent Hazenboom, LHAMO, and last name INGRIK",
-    // which looks like one name run together with two others.
+  },
+  {
+    // Confirmed by Tariq: Lhamo Ingrik is one person, not two names.
+    name: "Lhamo Ingrik",
+    quote: "Bloody brilliant. All the very best, Tariq.",
+    tag: "worth",
+    // Both names arrived attached to the same dictated line, so it is
+    // not certain which of them said it - or whether they both did.
+    // Held back until that is known: putting one person's words in
+    // another's mouth is the one mistake a testimonial cannot survive.
     check: true,
   },
   {
-    name: "",
+    // Confirmed by Tariq: this is Dave J. Anderson's, and it is his
+    // second - he is quoted twice, on two different things, which is
+    // fine and rather good. The two are placed in different halves of
+    // the page so his name does not appear twice in one column.
+    name: "Dave J. Anderson",
     quote:
-      "I purchased Speak Better and I cannot recommend it unless you really want to learn and grow and perfect your speaking skills and become the best speaker and presenter you can be. Then I say go for it.",
+      "I purchased Speak Better and I recommend it only if you really want to learn and grow and perfect your speaking skills and become the best speaker and presenter you can be. Then I say go for it.",
     tag: "worth",
-    // Reads as a deliberate construction, but "cannot recommend it
-    // unless" is one word away from the opposite of what is meant.
-    // Worth confirming before it sits on a sales page.
-    check: true,
+    // "cannot recommend it unless" reworded to "recommend it only if"
+    // at Tariq's direction. Same meaning, and it no longer reads as
+    // the opposite of itself on first pass - which is not a risk worth
+    // running directly above a price.
   },
   {
     name: "Dave J. Anderson",
@@ -70,12 +82,24 @@ export const testimonials: Testimonial[] = [
     tag: "lessons",
   },
   {
+    // Confirmed by Tariq: Gene East is a separate person. The dictated
+    // line ran two people together - Liz A. Hammond's name, then
+    // Gene East's, then one quote. Which of them said it is still
+    // open, so both are held back rather than guessed at.
     name: "Liz A. Hammond",
     quote:
       "This course is the best. So easy to follow, easy to implement, and the knowledge and confidence gained from it is truly heartfelt. You are a truly beautiful, resonant, melodic human to learn from, Tariq. Thank you for this course.",
     tag: "teacher",
-    // Her quote was dictated opening with "Gene East," - a name, not
-    // part of the sentence, so it is left out of the quote here.
+    check: true,
+  },
+  {
+    name: "Gene East",
+    quote: "",
+    tag: "teacher",
+    // A confirmed name with no words yet - the quote that followed it
+    // in the dictation belongs to Liz A. Hammond or to her, and there
+    // is no way to tell from here. Kept as a placeholder so the name
+    // is not lost.
     check: true,
   },
   {

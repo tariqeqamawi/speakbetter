@@ -21,6 +21,8 @@ import { CoachDemo } from "@/components/coach-demo";
 import { SpectrumDemo } from "@/components/spectrum-demo";
 import { HeroBeat } from "@/components/hero-beat";
 import { TheReality } from "@/components/the-reality";
+import { TestimonialStream } from "@/components/testimonial-stream";
+import { publishable } from "@/data/testimonials";
 import { WhatItIs } from "@/components/what-it-is";
 import { RoarMark } from "@/components/roar-mark";
 import { LionMouth } from "@/components/lion-mouth";
@@ -31,6 +33,13 @@ import { FirstChallenge } from "@/components/first-challenge";
 // question in §18 - the intro video stands in until decided.
 // Served to visitors at "/", and to anyone at "/landing" (the preview
 // route backed by an ephemeral store - see StoreProvider).
+
+// The confirmed testimonials, split in two rather than repeated. The
+// flagged ones join them the moment their names are checked - see
+// data/testimonials.ts.
+const half = Math.ceil(publishable.length / 2);
+const earlyProof = publishable.slice(0, half);
+const lateProof = publishable.slice(half);
 
 export function Landing() {
   return (
@@ -90,6 +99,17 @@ export function Landing() {
         {/* The premise and its punchline, each with its picture: the
             concert you watch from your seat, the lecture that ticks by. */}
         <HeroBeat />
+
+        {/* Other people, early.
+            
+            The single most sceptical moment on this page is right
+            after the promise - an AI lion that watches your videos is
+            a claim, and a claim is the point at which somebody wants
+            to know whether anyone else believed it. Half the
+            testimonials go here; the other half sit above the price,
+            where the decision is actually made. Split rather than
+            repeated: the same quote twice reads as the only quote. */}
+        <TestimonialStream items={earlyProof} columns={2} />
 
         {/* The other side of it - said, and then shown. */}
         <TheReality />
@@ -395,6 +415,7 @@ export function Landing() {
       <section id="pricing" className="flex flex-col items-center gap-6">
         <div className="flex flex-col items-center gap-2 text-center">
           <div className="spectrum-rule h-1 w-16 rounded-full" />
+          <TestimonialStream items={lateProof} columns={3} />
           <h2 className="text-2xl font-semibold tracking-tight text-balance">
             Three tiers, based on the amount of support you want
           </h2>
