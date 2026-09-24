@@ -1,6 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { StreakExplained } from "@/components/streak-explained";
+import { CommunityPanel } from "@/components/community-panel";
+import { LiveStrip } from "@/components/live-strip";
 import { useStore } from "@/lib/store";
 import { challenges } from "@/data/challenges";
 import { categories } from "@/data/categories";
@@ -17,16 +20,7 @@ import { CategoryIcon } from "@/components/category-icons";
 import { JourneyPhases } from "@/components/journey-phases";
 import { SpeakingTime } from "@/components/speaking-time";
 import { SectionBanner } from "@/components/section-banner";
-import {
-  ChallengesIcon,
-  ChevronDownIcon,
-  CheckIcon,
-  FilmIcon,
-  FlameIcon,
-  MedalIcon,
-  SkillsIcon,
-  SpectrumIcon,
-} from "@/components/icons";
+import { ChallengesIcon, CheckIcon, ChevronDownIcon, FilmIcon, FlameIcon, GroupIcon, MedalIcon, SkillsIcon, SpectrumIcon } from "@/components/icons";
 import {
   DashboardPanel,
   useIsPhone,
@@ -274,7 +268,14 @@ export default function DashboardPage() {
   );
 
   const signaturePanel = <SpectrumSignature state={state} />;
-  const streakPanel = <StreakCalendar state={state} />;
+  const streakPanel = (
+    <div className="flex flex-col gap-4">
+      <StreakCalendar state={state} />
+      {/* The calendar showed the streak and never said what it was
+          for. A reward nobody knows they are earning is a decoration. */}
+      <StreakExplained state={state} />
+    </div>
+  );
   const badgesPanel = <BadgeCollection state={state} />;
 
   const headerPanel = <DashboardHeader />;
@@ -315,10 +316,30 @@ export default function DashboardPage() {
       accentClass: "text-mindset",
       content: badgesPanel,
     },
+    // The sixth tab. Everything else here is a private record; this is
+    // the one that answers "and who else is doing this?" - which is
+    // the question a dashboard full of your own numbers provokes and
+    // then leaves hanging.
+    {
+      id: "community",
+      name: "Community",
+      Icon: GroupIcon,
+      accentClass: "text-mindset",
+      content: <CommunityPanel />,
+    },
   ];
 
   return (
     <div className="flex flex-col gap-6 py-6">
+      {/* The one thing on this page that can be missed.
+          
+          Everything else here is a record of what has already been
+          done and will be there tomorrow unchanged. A live session
+          happens at an hour, on a date, whether or not anybody turned
+          up - so it is the only thing that earns a place that follows
+          you down the screen. */}
+      <LiveStrip />
+
       {phone ? (
         <DashboardPanel
           sections={sections}
