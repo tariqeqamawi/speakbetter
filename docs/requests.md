@@ -108,6 +108,10 @@ Tariq topped up the account, so the cap is gone.
   a streak leaderboard, and a title beside the name on the boards.
 
 ### Waiting on Tariq
+- [ ] **More obsidian trophies** - proposed: Iron Will (30-day streak, with Unstoppable moved to
+      chrome), Standing Ovation (95+), Then and Now (beat your baseline in all seven colours),
+      The Golden Phase (gold on every challenge in a phase), Seven Summits (80+ in each colour).
+      Waiting on which to build.
 - [ ] **2 testimonials still held back.** 25 are live, up from 13 at the start of
       24 September. Tariq named almost the whole list that evening.
 
@@ -188,6 +192,10 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **24 September**
+- Challenge trophies painted in full, real colour (23), exotic materials kept for the special
+  ones — `6658f11`
+- Coach trophies: In the Lion's Den (chrome & gold, 25 questions) and The Lion's Roar
+  (obsidian & gold, larger, every challenge and every lesson) — `d737938`
 - The free trial removed from the app: no plan means the tiers; paid plans unchanged; a
   stored "trial" is treated as no plan without crashing — `349f59e`
 - Every trophy states its requirement (Full Spectrum, The Whole STORY, Practicing Machine
