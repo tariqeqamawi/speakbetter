@@ -7,7 +7,8 @@ import { TrophyStage, type StageTrophy } from "@/components/trophy-stage";
 /** Highest first - the order a case is read in. */
 const MATERIALS = [
   { key: "obsidian", label: "Obsidian", note: "The rare ones, and the whole road at the end of it." },
-  { key: "gold", label: "Gold", note: "Finishing a level of the road." },
+  { key: "neon", label: "Neon", note: "Finishing a phase of the road - all seven colours at once." },
+  { key: "gold", label: "Gold", note: "A top score: 90 or more on a challenge." },
   { key: "chrome", label: "Chrome", note: "Turning up again and again." },
   { key: "ceramic", label: "Ceramic", note: "How you speak, and how you feel doing it." },
   { key: "glass", label: "Glass", note: "The twenty-four challenges." },

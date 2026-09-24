@@ -107,8 +107,9 @@ function phaseComplete(s: BadgeEvalState, phaseId: string): boolean {
 /**
  * The rendered trophy for a badge, a challenge or a phase.
  *
- * All forty-seven are the same object - sculpted coloured glass on a
- * chrome stem, on a gunmetal plinth - shot on black and cut out here.
+ * Every one is the same object - a sculpted figure on a short chrome
+ * post, on a gunmetal plinth - in one of six materials that say how
+ * hard it was to win, cut out by the model that rendered it.
  * See scripts/trophy-prompts.mjs for the words that made them and
  * scripts/build-trophies.mjs for what turns a render into these two
  * files. Anything that wants a trophy picture should come through
@@ -297,6 +298,24 @@ export const badgeDefs: BadgeDef[] = [
           : s.attempts.some((a) => a.challengeSlug === challenge.slug && a.passed && (a.score ?? 0) >= 75),
     };
   }),
+  // The gold twin of every scored challenge: 90 or more. The glass
+  // trophy says you did it; this one says you mastered it - and it is
+  // the reason to record a challenge you have already passed.
+  ...challenges
+    .filter((challenge) => !challenge.passive)
+    .map((challenge) => {
+      const meta = challengeBadges[challenge.slug];
+      const title = meta?.title ?? challenge.title;
+      return {
+        id: `challenge-${challenge.slug}-gold`,
+        title: `${title} - Gold`,
+        message: `Ninety or better on "${challenge.title}". That is not a pass - that is the challenge mastered.`,
+        icon: "medal",
+        how: `Score 90 or higher on "${challenge.title}".`,
+        earned: (s: BadgeEvalState) =>
+          s.attempts.some((a) => a.challengeSlug === challenge.slug && (a.score ?? 0) >= 90),
+      };
+    }),
   ...storyPhases.map((phase) => ({
     id: `phase-${phase.id}`,
     title: `${phase.name} - Complete`,

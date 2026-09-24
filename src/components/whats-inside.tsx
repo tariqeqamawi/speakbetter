@@ -11,6 +11,7 @@ import {
   ZapIcon,
 } from "@/components/icons";
 import { CoachMark } from "@/components/coach-mark";
+import { badgeDefs } from "@/data/badges";
 
 // What is actually in the app, as a grid.
 //
@@ -82,7 +83,7 @@ const FEATURES = [
   {
     Icon: TrophyIcon,
     name: "Trophies",
-    line: "47 of them, each earned by doing one particular thing well.",
+    line: `${badgeDefs.length} of them, each earned by doing one particular thing well - and a gold one for every challenge you master.`,
     color: "text-storytelling",
   },
   {

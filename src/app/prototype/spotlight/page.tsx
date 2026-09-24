@@ -4,7 +4,7 @@ import type { StageTrophy } from "@/components/trophy-stage";
 // The prompts are the one record of which material and colour each
 // trophy was rendered in, so the page reads them rather than keeping a
 // second copy that could drift from the renders.
-import { TROPHIES } from "../../../../scripts/trophy-prompts.mjs";
+import { ALL_TROPHIES } from "../../../../scripts/trophy-prompts.mjs";
 import { TrophyRoom } from "./trophy-room";
 
 export const metadata: Metadata = { title: "Trophy room" };
@@ -17,7 +17,7 @@ export const metadata: Metadata = { title: "Trophy room" };
 // built to answer whether rendering the trophies was worth it. That
 // was answered by doing it, so what is left is the set itself.
 
-const made = new Map(TROPHIES.map((t: { id: string; color: string; material?: string }) => [t.id, t]));
+const made = new Map(ALL_TROPHIES.map((t: { id: string; color: string; material?: string }) => [t.id, t]));
 
 const trophies: StageTrophy[] = badgeDefs.flatMap((b) => {
   const t = made.get(b.id);
@@ -43,7 +43,7 @@ export default function SpotlightPage() {
         <p className="max-w-2xl text-sm text-ink-muted text-balance">
           All {trophies.length} trophies, each standing on the podium under the light the way a student will see
           it. Arrow keys, the chevrons or a swipe to walk the case, or pick any one from the collection below.
-          The material is the rank: obsidian, gold, chrome, ceramic, glass.
+          The material is the rank: obsidian, neon, gold, chrome, ceramic, glass.
         </p>
       </header>
       <TrophyRoom trophies={trophies} />

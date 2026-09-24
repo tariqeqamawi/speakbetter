@@ -31,7 +31,12 @@
 //   glass     the twenty-four challenges. The everyday ones.
 //   ceramic   the ones about how you speak and how you feel doing it.
 //   chrome    the ones earned by turning up again and again.
-//   gold      finishing a level of the road. Five of these.
+//   gold      a top score: 90 or more on a challenge. The glass trophy
+//             is for passing it; its gold twin is for mastering it,
+//             which is a reason to record it again.
+//   neon      finishing a phase of the road - the five S.T.O.R.Y.
+//             letters, lit in every colour at once, because a phase is
+//             all seven skills working together.
 //   obsidian  the rare ones, and the whole road at the end of it.
 //
 // Four of the five still take the colour of the skill they are for -
@@ -74,6 +79,7 @@ export const MATERIALS = {
   chrome: () => "a mirror-polished chrome figure of",
   gold: () => "a polished solid gold figure of",
   obsidian: () => "a carved black obsidian figure of",
+  neon: () => "a neon sign in thick glowing glass tubes, lit in all seven of the app's colours, tracing",
 };
 
 const FINISH = {
@@ -82,6 +88,7 @@ const FINISH = {
   chrome: "liquid mirror steel, reflecting the studio lights, no colour of its own",
   gold: "warm yellow metal, mirror-polished, with bright specular highlights",
   obsidian: "deep glossy black volcanic stone, with a thin line of colour caught along its polished edges",
+  neon: "a soft coloured glow around the tubes, the colours flowing into each other along its length",
 };
 
 /** The one sentence every trophy is made of. */
@@ -123,20 +130,20 @@ export const TROPHIES = [
   { id: "journey-complete", color: "storytelling", subject: "a laurel wreath encircling the five letters S T O R Y", material: "obsidian" },
 
   // ── The five phases of the road ───────────────────────────────────
-  { id: "phase-S", color: "mindset", subject: "the capital letter S, sculpted", material: "gold" },
-  { id: "phase-T", color: "body-language", subject: "the capital letter T, sculpted", material: "gold" },
-  { id: "phase-O", color: "storytelling", subject: "the capital letter O, sculpted", material: "gold" },
-  { id: "phase-R", color: "acting", subject: "the capital letter R, sculpted", material: "gold" },
-  { id: "phase-Y", color: "structure", subject: "the capital letter Y, sculpted", material: "gold" },
+  { id: "phase-S", color: "mindset", subject: "the capital letter S, sculpted", material: "neon" },
+  { id: "phase-T", color: "body-language", subject: "the capital letter T, sculpted", material: "neon" },
+  { id: "phase-O", color: "storytelling", subject: "the capital letter O, sculpted", material: "neon" },
+  { id: "phase-R", color: "acting", subject: "the capital letter R, sculpted", material: "neon" },
+  { id: "phase-Y", color: "structure", subject: "the capital letter Y, sculpted", material: "neon" },
 
   // ── One for every challenge (data/challenges.ts) ──────────────────
-  { id: "challenge-speaking-baseline", color: "mindset", subject: "a microphone standing upright" },
-  { id: "challenge-story-without-help", color: "storytelling", subject: "an open book with no pages, only a glowing gap" },
+  { id: "challenge-speaking-baseline", color: "mindset", subject: "an old-fashioned box camera on a short tripod" },
+  { id: "challenge-story-without-help", color: "storytelling", subject: "a circus trapeze: a solid bar swinging from two ropes that meet at a ring at the top" },
   { id: "challenge-mindset-toolbox", color: "mindset", subject: "a small toolbox with its lid open" },
   { id: "challenge-no-filler-words", color: "acting", subject: "a speech bubble with a clean diagonal line struck through it" },
-  { id: "challenge-avoid-boring-words", color: "figurative", subject: "a paintbrush with a curling ribbon of paint at its tip" },
-  { id: "challenge-voice-melody", color: "acting", subject: "a sound wave rising and falling like a hill" },
-  { id: "challenge-tongue-twisters", color: "acting", subject: "a ribbon twisted into a tight double knot" },
+  { id: "challenge-avoid-boring-words", color: "figurative", subject: "a friendly Tyrannosaurus rex, head and shoulders, wearing small round gold reading glasses" },
+  { id: "challenge-voice-melody", color: "acting", subject: "a vinyl record standing on its edge" },
+  { id: "challenge-tongue-twisters", color: "acting", subject: "a stylised head in side profile with a long silver tongue unfurling from its mouth, curling at the tip", material: "chrome" },
   { id: "challenge-beatbox-rhythm", color: "mindset", subject: "a pair of small drums" },
   { id: "challenge-create-storybook", color: "storytelling", subject: "a closed book with a ribbon bookmark" },
   { id: "challenge-scene-with-sound", color: "acting", subject: "a bell with rings of sound spreading from it" },
@@ -144,14 +151,27 @@ export const TROPHIES = [
   { id: "challenge-moment-from-your-day", color: "storytelling", subject: "a pocket watch with its lid open" },
   { id: "challenge-high-stakes-moment", color: "acting", subject: "a tightrope walker's balance pole, tilted" },
   { id: "challenge-set-and-scene", color: "storytelling", subject: "a miniature theatre stage with its curtains drawn back" },
-  { id: "challenge-twist-third-person", color: "storytelling", subject: "a spiral twist rising to a point" },
+  { id: "challenge-twist-third-person", color: "storytelling", subject: "a director's megaphone, cone pointing up and to the side" },
   { id: "challenge-foreshadowing", color: "storytelling", subject: "a crescent moon partly behind a cloud" },
-  { id: "challenge-three-emotions", color: "acting", subject: "three overlapping teardrops" },
+  { id: "challenge-three-emotions", color: "acting", subject: "a small harp with its strings drawn taut" },
   { id: "challenge-someone-elses-story", color: "storytelling", subject: "two overlapping speech bubbles" },
   { id: "challenge-multiple-characters", color: "acting", subject: "three theatre masks in a row, each with a different expression" },
   { id: "challenge-story-youve-healed", color: "mindset", subject: "a heart with a healed seam running through it" },
   { id: "challenge-explain-with-analogies", color: "figurative", subject: "two linked rings" },
-  { id: "challenge-podcast-introduction", color: "structure", subject: "a studio microphone on a small boom arm" },
+  { id: "challenge-podcast-introduction", color: "structure", subject: "a pair of studio headphones" },
   { id: "challenge-thirty-second-pitch", color: "structure", subject: "a stopwatch" },
   { id: "challenge-mic-drop", color: "acting", subject: "a microphone falling, tilted head-down" },
 ];
+
+// ── The gold twins ───────────────────────────────────────────────────
+// Every scored challenge has a gold edition, won at 90 or more. They are
+// not prompted from scratch: each is its own trophy passed back to the
+// model with "keep this exact trophy, change only the material to
+// polished solid gold", so the pair read as one prize in two grades.
+// The one challenge with no score (the mindset toolbox, passed by
+// watching) has none.
+export const GOLD = TROPHIES.filter(
+  (t) => t.id.startsWith("challenge-") && t.id !== "challenge-mindset-toolbox",
+).map((t) => ({ ...t, id: `${t.id}-gold`, material: "gold" }));
+
+export const ALL_TROPHIES = [...TROPHIES, ...GOLD];
