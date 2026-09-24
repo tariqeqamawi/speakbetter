@@ -108,8 +108,6 @@ Tariq topped up the account, so the cap is gone.
   a streak leaderboard, and a title beside the name on the boards.
 
 ### Waiting on Tariq
-- [ ] **VIP Ultimate after the six weeks** — the monthly option has prices for Starter and
-      Complete only. Is there a VIP monthly price, or does VIP not continue?
 - [ ] **2 testimonials still held back.** 25 are live, up from 13 at the start of
       24 September. Tariq named almost the whole list that evening.
 
@@ -160,9 +158,8 @@ Tariq topped up the account, so the cap is gone.
 - [ ] **The 14-day upgrade window is copy only.** Nothing records when a student joined, so
       the in-app Starter-to-Complete offer does not close on day 14. Needs a purchase date on
       the server-side plan (see the multi-user item below) - then `UPGRADE_WINDOW_DAYS` gates it.
-- [ ] **The free-baseline trial still exists inside the app** (`plan: "trial"`, one review).
-      All public copy offering it is gone; whether a visitor can still reach it by URL, and
-      whether to remove the trial plan itself, is a product decision for Tariq.
+- [ ] **Remove the free trial from the app** (decided 24 Sep: no free trial). In progress in a
+      separate worktree; not merged yet.
 - [ ] **Multi-user is not truly ready** — five gaps, all documented: no sign-out (and
       sign-in *merges* device state into the account, so a shared device cross-contaminates);
       `plan` is client-writable, so a student can grant themselves any tier from devtools;
@@ -190,6 +187,10 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **24 September**
+- Trophy room: neighbours receding either side, portrait stage with close neighbours on a
+  phone, smoke that visibly moves (the first loop barely did), S.T.O.R.Y. letters in
+  spectrum blown glass — `be84dcf`
+- VIP Ultimate continues at $29.99/month, same as Complete — `0282ac7`
 - Trophy room: seamless 5s smoke loop in the spotlight, 118KB, loads only on screen — `bd52517`
 - 14-day money-back guarantee seal with the lion, beside the first and last calls to action
   and under the tiers — `c481897`
