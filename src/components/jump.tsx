@@ -26,7 +26,7 @@ interface Target {
 function targets(): Target[] {
   const places: Target[] = [
     { kind: "place", label: "Today", sub: "Your home", href: "/" },
-    { kind: "place", label: "Challenges", sub: "The STORY journey", href: "/challenges" },
+    { kind: "place", label: "Challenges", sub: "The STORY adventure", href: "/challenges" },
     { kind: "place", label: "Skills", sub: "Every lesson", href: "/skills" },
     { kind: "place", label: "Cards", sub: "The deck", href: "/skills/cards" },
     { kind: "place", label: "Coach", sub: "Ask him anything", href: "/coach" },

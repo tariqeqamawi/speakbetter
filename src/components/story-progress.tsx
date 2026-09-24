@@ -38,7 +38,7 @@ export function StoryProgress({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-baseline justify-between text-xs text-ink-faint">
-        <span>Your STORY journey</span>
+        <span>Your STORY adventure</span>
         <span className="tabular-nums">
           {done} / {total} challenges
         </span>

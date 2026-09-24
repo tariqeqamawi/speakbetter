@@ -28,7 +28,7 @@ export default function ChallengesPage() {
             </span>
           </summary>
           <p className="max-w-lg pt-2 text-sm text-ink-muted">
-            The STORY journey: five phases, from your first baseline recording to your voice in the world. Watch the
+            The STORY adventure: five phases, from your first baseline recording to your impact in the world. Watch the
             challenge, warm up with its skills, then record yourself completing it.
           </p>
         </details>

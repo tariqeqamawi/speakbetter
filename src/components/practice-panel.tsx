@@ -329,7 +329,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
       {trialBlocked && (
         <UpgradePanel
           title="This challenge is part of the course"
-          body="The free baseline covers the two baseline challenges. The rest of the STORY journey - all twenty-four challenges, every lesson, the deck - comes with Starter, and the coach who watches every take with Complete."
+          body="The free baseline covers the two baseline challenges. The rest of the STORY adventure - all twenty-four challenges, every lesson, the deck - comes with Starter, and the coach who watches every take with Complete."
         />
       )}
       {trialSpent && !trialBlocked && stage.kind === "idle" && (

@@ -13,7 +13,7 @@ import { challengeXp } from "@/lib/progress";
 import { CircleIcon, UploadIcon, VideoIcon } from "@/components/icons";
 import { PlayFillIcon } from "@/components/player-icons";
 
-// The STORY journey on the landing page, opened up. A visitor shouldn't
+// The STORY adventure on the landing page, opened up. A visitor shouldn't
 // have to buy the course to find out what's in it, and the journey map
 // is the thing Speak Better has that nothing else does - so here it is,
 // live, in a phone: a worked-in student's road, their face on the

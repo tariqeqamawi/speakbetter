@@ -35,7 +35,7 @@ const FEATURES: { Icon: (p: { className?: string }) => React.ReactNode; color: s
   { Icon: VideoIcon, color: "text-acting", title: "Record with the clock in view", body: "The camera opens in the app with the challenge's own limit counting down, the brief on screen, and a stop at the limit." },
   { Icon: ListenIcon, color: "text-advanced", title: "A coach who watched", body: "Gestures, eyes, voice, the story - judged for quality, not presence, and said aloud with captions. It'll mention your shirt." },
   { Icon: SpectrumIcon, color: "text-body-language", title: "Seven colors", body: "Every take scored as a spectrum. The colors a challenge needs glow; the rest are bonus." },
-  { Icon: ChallengesIcon, color: "text-structure", title: "The STORY journey", body: "Twenty-four challenges in five phases, each opening at a rank - your own face in the circles you've passed." },
+  { Icon: ChallengesIcon, color: "text-structure", title: "The STORY adventure", body: "Twenty-four challenges in five phases, each opening at a rank - your own face in the circles you've passed." },
   { Icon: ZapIcon, color: "text-storytelling", title: "XP that pays by score", body: "A better take on a challenge you've passed is worth more. Ranks open the road; trophies are earned, not collected." },
   { Icon: DeckIcon, color: "text-figurative", title: "The card deck", body: "Seventy-nine cards, one per lesson, seven colors. Pull one of each and you have the ingredients for a talk that moves." },
   { Icon: MedalIcon, color: "text-mindset", title: "Ask your coach", body: "Hold to ask how you're developing. The answer comes from your own record - every take, every note - and nothing else." },

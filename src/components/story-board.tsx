@@ -4,6 +4,7 @@ import { useState } from "react";
 import { storyPhases, challenges, type PhaseId } from "@/data/challenges";
 import { PhasePicker } from "@/components/phase-picker";
 import { JourneyMap } from "@/components/journey-map";
+import { PhaseIntro } from "@/components/phase-intro";
 import { PhaseGraduation } from "@/components/phase-graduation";
 import { useChallengeComplete } from "@/components/story-progress";
 
@@ -27,12 +28,9 @@ export function StoryBoard() {
       <div className="sticky-under-header -mx-4 border-b border-navy-700/70 bg-navy-900/95 px-4 py-2.5">
         <PhasePicker open={shown} onOpen={setOpen} />
       </div>
-      <div className="flex flex-col gap-1">
-        <h2 className={`text-lg font-semibold tracking-tight ${phase.textClass}`}>
-          {phase.id} - {phase.name}
-        </h2>
-        <p className="text-sm text-ink-muted">{phase.tagline}</p>
-      </div>
+      {/* Coach says what this stretch of road is for, before the road.
+          Five locked circles is a wall; this is what is up there. */}
+      <PhaseIntro phase={phase} />
       <JourneyMap only={shown} />
       <PhaseGraduation />
     </div>

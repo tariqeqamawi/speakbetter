@@ -376,7 +376,7 @@ export function Landing() {
       {/* The journey */}
       <section className="flex flex-col items-center gap-4">
         <h2 className="text-2xl font-semibold tracking-tight">
-          Your STORY journey
+          Your STORY adventure
         </h2>
         <p className="max-w-lg text-center text-ink-muted">
           Twenty-four challenges across five phases, drawn as a road - your face on the challenge you&apos;re

@@ -25,7 +25,7 @@ import { listAllVideos, type StoredVideoMeta } from "@/lib/attempt-videos";
 import { CheckIcon, LockIcon, ProfileIcon, TapIcon, ZoomIcon } from "@/components/icons";
 import { StudentsHere } from "@/components/students-here";
 
-// The STORY journey as terrain: a winding path of nodes, one per
+// The STORY adventure as terrain: a winding path of nodes, one per
 // challenge, each named in the open beside its marker so the whole road
 // reads at a glance. Every phase is a level with its own lettered
 // circle and orbiting skills; passed nodes wear their phase's color,

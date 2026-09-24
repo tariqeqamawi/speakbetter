@@ -21,6 +21,19 @@ export interface StoryPhase {
    *  fill would blow out any text on top of it - a low-opacity tint
    *  colors the card while white type stays legible on all five. */
   tintClass: string;
+  /**
+   * What Coach says when a phase opens, and what is written under him.
+   *
+   * The tagline above is a label - five words for a chip. This is the
+   * phase actually being introduced: what you will be doing in it, in
+   * the order you will do it. A student standing at the foot of five
+   * locked circles wants to know what is up there, and "reflect,
+   * baseline and map your voice" does not tell them.
+   *
+   * Spoken from a file keyed by the phase letter, like every other
+   * fixed line in the app.
+   */
+  says: string;
 }
 
 export const storyPhases: StoryPhase[] = [
@@ -32,6 +45,8 @@ export const storyPhases: StoryPhase[] = [
     textClass: "text-mindset",
     borderClass: "border-mindset/35",
     tintClass: "bg-mindset/20",
+    says:
+      "Start with awareness. Discover your current speaking and storytelling baseline, and equip yourself with the skills you need for more on-screen confidence.",
   },
   {
     id: "T",
@@ -41,6 +56,8 @@ export const storyPhases: StoryPhase[] = [
     textClass: "text-body-language",
     borderClass: "border-body-language/35",
     tintClass: "bg-body-language/20",
+    says:
+      "Train your instrument. Build vocal clarity, rhythm, tone and presence. Remove filler words, make your message a melody, get good at tongue twisters, and learn the basics of beatboxing.",
   },
   {
     id: "O",
@@ -50,6 +67,8 @@ export const storyPhases: StoryPhase[] = [
     textClass: "text-storytelling",
     borderClass: "border-storytelling/35",
     tintClass: "bg-storytelling/20",
+    says:
+      "Own your stories. Create your storybook, learn the skill of sensory detail, relive a moment from your day, act out a high-stakes moment, tell a story using set and scene, and discover how to land a plot twist and use foreshadowing and fulfilment.",
   },
   {
     id: "R",
@@ -59,15 +78,19 @@ export const storyPhases: StoryPhase[] = [
     textClass: "text-acting",
     borderClass: "border-acting/35",
     tintClass: "bg-acting/20",
+    says:
+      "Reveal deeper truths. Connect emotionally, explore vulnerability and expand your empathy. Here you learn to trigger three emotions in one story, tell somebody else's story, bring a story to life with multiple characters, and share a story of something you have healed.",
   },
   {
     id: "Y",
-    name: "Your Voice in the World",
-    tagline: "Real-world speaking formats and challenges.",
+    name: "Your Impact",
+    tagline: "Analogies, podcast intros, pitches and the mic drop.",
     bgClass: "bg-structure",
     textClass: "text-structure",
     borderClass: "border-structure/35",
     tintClass: "bg-structure/20",
+    says:
+      "Your impact. Here you learn to explain a concept with analogies, deliver a podcast intro, give a thirty-second elevator pitch, and tell a story with a mic-drop moment.",
   },
 ];
 
@@ -504,11 +527,22 @@ export const challenges: Challenge[] = [
 // what the tab says on a phone, where the full title wouldn't fit two
 // across.
 export const challengesIntro = [
-  { title: "Welcome To The Challenges!", short: "Welcome", vimeoId: "1081200318" },
+  {
+    title: "Welcome To The Challenges!",
+    short: "Welcome",
+    vimeoId: "1081200318",
+    // Vimeo's own still for this one catches him mid-blink, and a
+    // thumbnail of somebody with their eyes shut reads as "asleep" or
+    // "broken" long before anybody works out it was a blink. This is a
+    // frame from the library: looking down the lens, hands open.
+    poster: "/thumbs/1081197526.jpg",
+    accent: "structure" as const,
+  },
   {
     title: "How To Use The Skills In Your Challenges",
     short: "Using the skills",
     vimeoId: "1081200420",
+    accent: "storytelling" as const,
   },
 ];
 

@@ -17,9 +17,16 @@ const TMP = ".welcome-tmp";
 
 /** Pull the string literal out of the data file without a regex full
  *  of escapes - find the marker, then read to the closing quote. */
-function speechFrom(src, name) {
-  const at = src.indexOf(`export const ${name}`);
+function speechFrom(src, name, marker) {
+  // `name` is either an exported constant or, for the phases, the line
+  // that identifies which entry of an array is wanted; `marker` then
+  // says which field inside it to read.
+  let at = src.indexOf(name.startsWith("id:") ? name : `export const ${name}`);
   if (at < 0) return null;
+  if (marker) {
+    at = src.indexOf(marker, at);
+    if (at < 0) return null;
+  }
   const open = src.indexOf('"', at);
   if (open < 0) return null;
   let out = "";
@@ -37,20 +44,30 @@ function speechFrom(src, name) {
 }
 
 const src = readFileSync("src/data/welcome-speech.ts", "utf8");
+const phases = readFileSync("src/data/challenges.ts", "utf8");
 
-// Both lines the onboarding speaks, in one run - they are made
-// together and they fail together, which is the honest coupling: a
-// welcome with only half a voice is worse than one with none.
+// Every fixed line Coach speaks outside the tour: the two the
+// onboarding asks, and the five that introduce a phase of the road.
+// Made together and failing together, which is the honest coupling -
+// a welcome with only half a voice is worse than one with none.
 const JOBS = [
-  { name: "WELCOME_SPEECH", out: "welcome" },
-  { name: "INTENTION_SPEECH", out: "intention" },
+  { name: "WELCOME_SPEECH", out: "welcome", from: src },
+  { name: "INTENTION_SPEECH", out: "intention", from: src },
+  ...["S", "T", "O", "R", "Y"].map((id) => ({
+    // The phases live in one array, so the marker is the phase's id
+    // line and the line wanted is the `says:` after it.
+    name: `id: "${id}",`,
+    marker: "says:",
+    out: `phase-${id.toLowerCase()}`,
+    from: phases,
+  })),
 ];
 
 mkdirSync(TMP, { recursive: true });
 mkdirSync("public/coach", { recursive: true });
 
 for (const job of JOBS) {
-  const line = speechFrom(src, job.name);
+  const line = speechFrom(job.from, job.name, job.marker);
   if (!line) {
     console.error(`Could not find ${job.name} in src/data/welcome-speech.ts`);
     process.exit(1);

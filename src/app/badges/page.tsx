@@ -25,7 +25,7 @@ export default function BadgeGalleryPage() {
         <p className="max-w-lg text-ink-muted">
           {badgeDefs.length} of them. Some for showing up, some for streaks,
           some for a specific thing done well - and one for every challenge on
-          the STORY journey.
+          the STORY adventure.
         </p>
       </header>
 

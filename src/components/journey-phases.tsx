@@ -38,7 +38,7 @@ const SHORT: Record<string, string> = {
   T: "Train",
   O: "Own",
   R: "Reveal",
-  Y: "Your voice",
+  Y: "Your impact",
 };
 
 export function JourneyPhases({
