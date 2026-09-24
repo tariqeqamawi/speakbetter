@@ -68,7 +68,7 @@ function ExampleQuestion() {
 }
 
 export function AskCoach() {
-  const { state, ready } = useStore();
+  const { state, ready, noteCoachAnswer } = useStore();
   const [phase, setPhase] = useState<Phase>("idle");
   const [question, setQuestion] = useState("");
   const [typed, setTyped] = useState("");
@@ -157,6 +157,7 @@ export function AskCoach() {
       if (!res.ok || !json.answer) throw new Error(json.error || "no answer");
       setQuestion(json.question ?? payload.question ?? "");
       setAnswer(json.answer);
+      noteCoachAnswer();
       // The words land in a few seconds; the voice takes about thirty
       // more. Show them now, open, and let him say he is working on
       // the rest - a student who can already read the answer is not

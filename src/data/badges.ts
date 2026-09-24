@@ -1,5 +1,6 @@
 import type { CategoryId } from "./categories";
 import { challengeBadges, challenges, storyPhases } from "./challenges";
+import { lessons } from "./lessons";
 
 // Gamification layer - master plan §11. Badges recognize effort as much
 // as achievement, and apply identically at every level (never gated).
@@ -16,6 +17,8 @@ interface BadgeEvalState {
     spectrum: Record<CategoryId, number>;
   }[];
   watchedLessons: string[];
+  /** Questions Coach has answered (store.tsx). */
+  coachAnswers?: number;
   badges: { id: string }[];
   /** Days a streak freeze covered - they count as practiced */
   frozenDays?: string[];
@@ -328,6 +331,32 @@ export const badgeDefs: BadgeDef[] = [
     how: `Complete every challenge in ${phase.name}.`,
     earned: (s: BadgeEvalState) => phaseComplete(s, phase.id),
   })),
+  // Coach himself, as a trophy - the lion from the logo in chrome and
+  // gold, for somebody who has actually talked to him. Twenty-five
+  // answers is about one every other day of the cohort: a habit, not a
+  // one-off question.
+  {
+    id: "coach-confidant",
+    title: "In the Lion's Den",
+    message: "Twenty-five questions asked and answered. Coach knows your record as well as you do now.",
+    icon: "trophy",
+    how: "Ask Coach 25 questions on his page.",
+    earned: (s) => (s.coachAnswers ?? 0) >= 25,
+  },
+  // Speak Better, finished: every challenge and every lesson. The lion
+  // in obsidian and gold, and drawn larger than any other trophy in the
+  // case - it is the one the rest of them were leading to.
+  {
+    id: "speak-better-complete",
+    title: "The Lion's Roar",
+    message:
+      "Every challenge completed and every lesson watched. You have done all of Speak Better - the whole method, with feedback, from the first baseline to the last take.",
+    icon: "trophy",
+    how: "Complete every challenge and watch every lesson video.",
+    earned: (s) =>
+      storyPhases.every((p) => phaseComplete(s, p.id)) &&
+      lessons.every((l) => s.watchedLessons.includes(l.vimeoId)),
+  },
   {
     id: "journey-complete",
     title: "The Whole STORY",

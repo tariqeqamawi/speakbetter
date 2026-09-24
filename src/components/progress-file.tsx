@@ -117,6 +117,7 @@ export function ProgressFile() {
         watchedOn: { ...(from.watchedOn ?? {}), ...((now.watchedOn as object) ?? {}) },
         xpSpent: Math.max(num(now, "xpSpent"), num(from, "xpSpent")),
         creditsBought: Math.max(num(now, "creditsBought"), num(from, "creditsBought")),
+        coachAnswers: Math.max(num(now, "coachAnswers"), num(from, "coachAnswers")),
         freezesRemaining: Math.max(num(now, "freezesRemaining"), num(from, "freezesRemaining")),
       };
 

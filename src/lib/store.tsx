@@ -122,6 +122,10 @@ export interface AppState {
   level: Level | null;
   attempts: Attempt[];
   watchedLessons: string[]; // vimeo ids
+  /** How many questions Coach has answered on his page. Counted so that
+   *  talking to him can be recognised the way practising is; absent on
+   *  records from before it was counted, which read as zero. */
+  coachAnswers?: number;
   badges: EarnedBadge[];
   /** Days (yyyy-mm-dd) a freeze covered, so a streak survives one miss */
   frozenDays: string[];
@@ -226,6 +230,8 @@ interface StoreApi {
   /** Opens today's quest chest - idempotent per day. */
   claimQuestChest: () => void;
   markLessonWatched: (vimeoId: string) => void;
+  /** Coach answered a question - counts toward his trophy. */
+  noteCoachAnswer: () => void;
   recordAttempt: (attempt: Attempt) => void;
   /** Post a before-and-after to the community (§12). */
   shareReel: (reel: SharedReel) => void;
@@ -547,6 +553,8 @@ function StoreCore({
       setIntention: (intention) =>
         applyWithBadges((p) => ({ ...p, intention: intention.trim() })),
       setProfile: (patch) => applyWithBadges((p) => ({ ...p, ...patch })),
+      noteCoachAnswer: () =>
+        applyWithBadges((p) => ({ ...p, coachAnswers: (p.coachAnswers ?? 0) + 1 })),
       markLessonWatched: (vimeoId) =>
         applyWithBadges((p) =>
           p.watchedLessons.includes(vimeoId)
