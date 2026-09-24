@@ -126,6 +126,12 @@ export function StoryRoad({
     }
     const g = canvas.getContext("2d");
     if (!g) return;
+
+    // `accent` arrives as var(--color-mindset), which canvas has never
+    // heard of. Setting it as the element's colour and reading the
+    // computed value back hands over a real rgb() the context can use.
+    canvas.style.color = accent;
+    const lit = getComputedStyle(canvas).color || "#39d98a";
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
     g.clearRect(0, 0, w, h);
 
@@ -219,6 +225,58 @@ export function StoryRoad({
     for (const [x, y] of right) g.lineTo(x, y);
     g.stroke();
 
+    // ── The lit path ─────────────────────────────────────────────────
+    //
+    // The road is the ground; this is the line you are walking along
+    // it, in the phase's own colour. It is the thing that makes the
+    // terrain feel walked rather than merely drawn - a road with
+    // nothing on it is scenery, and a road with a lit line down it is
+    // a route somebody is following.
+    //
+    // Drawn three times over itself: a wide soft bloom, a mid glow,
+    // and a bright core. One stroke with a shadow gets a halo; three
+    // strokes get a light SOURCE, which is what a neon line actually
+    // looks like on dark ground.
+    const centre: [number, number][] = [];
+    for (let i = 0; i <= 120; i++) {
+      const z = NEAR + i * 2.2;
+      const lane = laneAt(z + T) - lane0;
+      const pt = project(lane, z);
+      centre.push([pt.x, pt.y]);
+    }
+
+    const trace = () => {
+      g.beginPath();
+      g.moveTo(centre[0][0], centre[0][1]);
+      for (const [x, y] of centre) g.lineTo(x, y);
+    };
+
+    g.lineCap = "round";
+    g.lineJoin = "round";
+    // The bloom: wide, faint, and fading out towards the horizon so
+    // the far end of the path dissolves rather than stopping.
+    g.globalAlpha = 0.22;
+    g.strokeStyle = lit;
+    g.lineWidth = 26;
+    g.filter = "blur(10px)";
+    trace();
+    g.stroke();
+    g.filter = "none";
+
+    g.globalAlpha = 0.5;
+    g.lineWidth = 7;
+    trace();
+    g.stroke();
+
+    // The core, near-white so the colour reads as light rather than
+    // paint.
+    g.globalAlpha = 0.95;
+    g.lineWidth = 2.4;
+    g.strokeStyle = "rgba(255,255,255,0.85)";
+    trace();
+    g.stroke();
+    g.globalAlpha = 1;
+
     // ── The finish line, on the horizon where it belongs ─────────────
     const finishZ = stops.length * SPACING + SPACING * 0.6 - T;
     if (finishZ > NEAR) {
@@ -259,7 +317,14 @@ export function StoryRoad({
       // the time you reach it. The old factor made a checkpoint at
       // arm's length about a fifth of a phone's width, which is a dot
       // on a map rather than somewhere you have got to.
-      const size = Math.max(34, Math.min(420, p.s * 1.5));
+      // Exaggerated on purpose. Linear perspective alone is honest and
+      // undramatic - a checkpoint grows steadily and arrives without
+      // ceremony. Raising it to a power past one makes the last stretch
+      // of the approach accelerate, so a landmark does not merely get
+      // closer, it LOOMS: small for a long time, then suddenly the
+      // thing you are standing in front of. That is what arriving
+      // somewhere feels like, and it is the whole reason for a road.
+      const size = Math.max(30, Math.min(w * 0.74, 9 * Math.pow(p.s, 1.2)));
       node.style.visibility = "visible";
       node.style.width = `${size}px`;
       // The label rides with it, so text grows and fades with its
@@ -281,11 +346,11 @@ export function StoryRoad({
       const z = NEAR + 5.4;
       const lane = laneAt(z + T) - lane0;
       const p = project(lane, z);
-      const size = Math.max(52, Math.min(260, p.s * 0.62));
+      const size = Math.max(46, Math.min(118, 2.6 * Math.pow(p.s, 1.05)));
       piece.style.width = `${size}px`;
       piece.style.transform = `translate(${p.x - size / 2}px, ${p.y - size}px)`;
     }
-  }, [stops.length, travelled]);
+  }, [stops.length, travelled, accent]);
 
   useEffect(() => {
     const onScroll = () => {
@@ -372,27 +437,25 @@ function Checkpoint({ stop, accent }: { stop: RoadStop; accent: string }) {
   const colour = dim ? "#2a3654" : accent;
   return (
     <span className="relative block w-full">
-      {/* Everything that happened at this landmark, set beside it and
-          sized in fractions of it - so a checkpoint in the distance
-          carries a whisper of a label and the one you have arrived at
-          carries a readable one, without a second scroll pass to work
-          any of it out. */}
+      {/* What happened here, UNDER the landmark rather than beside it.
+          
+          Beside it, the label ran off the right of the screen the
+          moment a checkpoint got big - and a checkpoint getting big is
+          the entire point of this road, so the label was guaranteed to
+          be unreadable at exactly the moment it mattered most.
+          Underneath, centred, and sized in fractions of the circle, it
+          grows with its landmark and stays on the screen. */}
       <span
-        className="pointer-events-none absolute left-[108%] top-1/2 flex w-[130%] -translate-y-1/2 flex-col gap-[0.18em] text-left"
-        style={{ fontSize: "calc(var(--land, 80px) * 0.13)" }}
+        className="pointer-events-none absolute left-1/2 top-[104%] flex w-[150%] max-w-[92vw] -translate-x-1/2 flex-col items-center gap-[0.2em] text-center"
+        style={{ fontSize: "calc(var(--land, 80px) * 0.1)" }}
       >
-        <span className={`font-bold leading-tight ${dim ? "text-ink-faint" : "text-ink"}`}>
-          {stop.title}
-        </span>
-        <span className="flex items-center gap-[0.5em] leading-none">
+        <span className="flex items-center gap-[0.55em] leading-none">
           {stop.xp !== undefined && (
             <span className="font-bold tabular-nums" style={{ color: colour }}>
               {stop.xp} XP
             </span>
           )}
-          {stop.trophy && (
-            <span className="truncate text-[0.85em] text-advanced">{stop.trophy}</span>
-          )}
+          {stop.trophy && <span className="text-[0.9em] text-advanced">{stop.trophy}</span>}
         </span>
       </span>
 
@@ -415,8 +478,20 @@ function Checkpoint({ stop, accent }: { stop: RoadStop; accent: string }) {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={stop.poster} alt="" className="size-full object-cover" />
         ) : (
-          <span className="text-[38%] font-black tabular-nums" style={{ color: colour }}>
-            {stop.n}
+          // The number, and - once the circle is big enough to hold it
+          // - the challenge itself. A checkpoint you have arrived at
+          // should say what it IS without the eye having to go
+          // anywhere else; a distant one is just a numbered marker,
+          // because a title at that size would be a grey smudge.
+          <span className="flex flex-col items-center gap-[0.06em] px-[12%] text-center">
+            <span className="text-[26%] font-black leading-none tabular-nums" style={{ color: colour }}>
+              {stop.n}
+            </span>
+            <span
+              className={`text-[11%] font-bold leading-tight ${dim ? "text-ink-faint" : "text-ink"}`}
+            >
+              {stop.title}
+            </span>
           </span>
         )}
       </span>
