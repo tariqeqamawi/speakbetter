@@ -42,13 +42,17 @@ So that section is deliberately thin until the road lands.
       wording. These three are one task, never three — noted in `tour-script.ts` and
       `film-tour.mjs` too.
 
-### Blocked on Higgsfield's daily cap
-Not credits — a per-day generation limit on the grace-period account. PLUS annual
-(~$39/mo) clears it and covers all of this several times over.
+### Higgsfield — unblocked 24 September
+Tariq topped up the account, so the cap is gone.
 
-- [ ] **46 remaining trophy renders.** Pipeline proven end to end: render on black →
-      cut alpha locally with ffmpeg → WebP ~30KB. One done (the amber glass flame).
-      Use a fixed prompt template so all 47 read as one set.
+- [x] **All 47 trophy renders — done** (`bb75ff6`). Prompts in
+      `scripts/trophy-prompts.mjs`, alpha cut and WebP in `scripts/build-trophies.mjs`,
+      and `trophyArt(id)` in `data/badges.ts` is the one way to ask for a picture.
+      Preview: **/prototype/spotlight**.
+- [ ] **Decide where they replace the circular medallions.** The renders are tall
+      objects (2:3); `BadgeMedal` crops to a circle, so they cannot simply be swapped in.
+      The trophy case, the dashboard trophy panel and the map's won-trophy markers each
+      need a look. Nothing has been changed outside the prototype.
 - [ ] **Three landing images:** the concert seen from the back row; the lecture ticking
       by; the confident speaker under lights ("Imagine the cameras are rolling…")
 - [ ] **The "going live" hero still** for the reality section — the component is built
