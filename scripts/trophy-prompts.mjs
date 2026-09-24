@@ -45,12 +45,14 @@
 // That is the whole reason for using them rather than, say, five
 // sizes of plinth.
 //
-// SHOT ON PURE BLACK, on purpose. Background removal through the API
-// was rate-limited, and cutting the alpha locally from a curve-crushed
-// luma turns out to be better anyway: free, instant, repeatable, and
-// the glow fades out naturally instead of being clipped at an edge.
-// See build-trophies.mjs.
-//
+// SHOT ON PURE BLACK, THEN CUT BY THE MODEL. The prompt below makes the
+// trophy on black; that render is then passed back to the same model
+// as a reference with background: "transparent" and "keep this exact
+// trophy identical", which gives the alpha channel the app ships.
+// Cutting it locally from the render's brightness was tried first and
+// deleted every dark part of the trophy along with the backdrop - see
+// build-trophies.mjs.
+
 // The colours are the app's own seven. A trophy carries the colour of
 // the skill it is awarded for, so the case doubles as a picture of
 // what somebody is good at.

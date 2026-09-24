@@ -2,27 +2,25 @@
 //
 //   node scripts/build-trophies.mjs <folder-of-pngs>
 //
-// Each <id>.png in the folder becomes public/trophy/<id>.webp (242px
-// wide, the size the case draws them) and <id>-2x.webp (484px, for the
-// product-style zoom). Needs ffmpeg on PATH.
+// Each <id>.png in the folder becomes public/trophy/<id>.webp (300px
+// wide, the size the case draws them) and <id>-2x.webp (600px, for the
+// product-style zoom). Needs ffmpeg and ffprobe on PATH.
 //
-// CUTTING THE ALPHA LOCALLY, rather than through a background-removal
-// API. That route was rate-limited the first time it was tried, and
-// doing it here turns out to be better anyway: free, instant,
-// repeatable, and - because every trophy is shot on pure black by
-// construction (see trophy-prompts.mjs) - more accurate than a model
-// guessing at a subject boundary.
+// THE ALPHA COMES FROM THE RENDER. The trophies are rendered with a
+// transparent background (gpt_image_2_5, background: "transparent"),
+// so the cut-out is the model's own and this script only resizes it.
 //
-// The alpha is the luma with its blacks crushed by a curve. That does
-// two things at once: the black field goes fully transparent, and the
-// glow around a glass edge fades out on its own instead of being
-// clipped at a hard line. A hard cut on a glowing object is the tell
-// that something was cut out; this has no tell.
-//
-// The curve is deliberately gentle above the crush point. Pull it any
-// harder and the darker glass - the crimson and the deep blues - loses
-// its body and the trophy reads as an outline.
-//
+// It used to cut the alpha here, from the render's brightness: every
+// trophy was shot on pure black, and black became see-through. That
+// deleted everything dark INSIDE the trophy along with the background -
+// the obsidian figures read as clear glass, the gunmetal plinth went
+// smoky, the deep red glass lost its body. A brightness key cannot tell
+// a black stone from a black backdrop, and a trophy set has black stone
+// in it on purpose. So a render without an alpha channel is now refused
+// rather than guessed at. (A green-screen key was tried beside the
+// model's transparency and came out the same, with spill to clean off
+// the chrome; the model's own cut is one step and has none.)
+
 // WEBP RATHER THAN PNG. Identical on screen, about 30KB against 150KB.
 // Across forty-seven trophies that is the difference between a six
 // megabyte set and a one megabyte one, on a phone, on a page a student
@@ -41,10 +39,6 @@ if (!src) {
 const OUT = "public/trophy";
 mkdirSync(OUT, { recursive: true });
 
-// Black to nothing, then a fast ramp, then linear. See above for why
-// the top of the curve is left alone.
-const ALPHA = "curves=all='0/0 0.05/0 0.22/0.82 1/1'";
-
 const pngs = readdirSync(src).filter((f) => f.endsWith(".png"));
 if (pngs.length === 0) {
   console.error(`no .png files in ${src}`);
@@ -54,16 +48,20 @@ if (pngs.length === 0) {
 let made = 0;
 for (const file of pngs.sort()) {
   const id = file.replace(/\.png$/, "");
+  const fmt = execFileSync("ffprobe", [
+    "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=pix_fmt", "-of", "csv=p=0", join(src, file),
+  ]).toString().trim();
+  if (!/a/.test(fmt.replace("pal8", ""))) {
+    console.error(`  ${id}: no alpha channel (${fmt}) - render it with a transparent background`);
+    process.exitCode = 1;
+    continue;
+  }
   for (const [suffix, width] of [["", 300], ["-2x", 600]]) {
     const out = join(OUT, `${id}${suffix}.webp`);
     execFileSync("ffmpeg", [
       "-v", "error", "-y",
       "-i", join(src, file),
-      "-filter_complex",
-      // One frame, two uses: the colour, and a crushed copy of its own
-      // luma as the alpha channel.
-      `[0:v]scale=${width}:-1:flags=lanczos,format=rgba,split[c][l];` +
-        `[l]format=gray,${ALPHA}[a];[c][a]alphamerge`,
+      "-vf", `scale=${width}:-1:flags=lanczos,format=rgba`,
       "-quality", "88",
       out,
     ]);
