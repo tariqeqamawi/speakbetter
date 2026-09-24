@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { badgeDefs } from "@/data/badges";
+import { badgeDefs, trophyArt } from "@/data/badges";
 import { TrophySpotlight, type SpotlightTrophy } from "@/components/trophy-spotlight";
 
 export const metadata: Metadata = { title: "Trophy spotlight" };
@@ -21,10 +21,14 @@ const trophies: SpotlightTrophy[] = badgeDefs.map((b, i) => ({
   won: i % 2 === 0 || i < 4,
 }));
 
-/** The one trophy that has been rendered so far, in its place. */
-const rendered: SpotlightTrophy[] = trophies.map((t, i) =>
-  i === 7 ? { ...t, won: true, image: "/trophy/flame.webp", zoom: "/trophy/flame-2x.webp" } : t,
-);
+/** All of them, rendered - which is now the whole set rather than one.
+ *
+ *  The question this page was built to answer ("is modelling them
+ *  worth it?") has been answered by doing it, so what it is for now is
+ *  seeing the forty-seven together: whether they read as one
+ *  collection won by one person, which is the only thing that matters
+ *  once each of them individually looks right. */
+const rendered: SpotlightTrophy[] = trophies.map((t) => ({ ...t, won: true, ...trophyArt(t.id) }));
 
 export default function SpotlightPage() {
   return (
@@ -48,18 +52,21 @@ export default function SpotlightPage() {
         <TrophySpotlight trophies={trophies} start={2} />
       </section>
 
-      {/* The test that matters: a trophy that was MODELLED rather than
-          drawn, standing on the rendered stage. The flame is the only
-          one rendered so far, so it stands in the light and the drawn
-          ones recede beside it - which also shows the two side by side
-          at the exact sizes they would appear. */}
+      {/* All forty-seven, rendered.
+          
+          This page was built to answer one question - is modelling the
+          trophies worth it against drawing them - and the answer came
+          back yes from a single flame. What it is for now is the
+          question after that: do the forty-seven read as ONE
+          collection, won by one person, or as forty-seven separate
+          prizes? That is only visible by walking the rack, which is
+          why they are all shown won here rather than half dark. */}
       <section className="flex flex-col gap-3">
-        <h2 className="text-xl font-bold tracking-tight text-ink">C - A rendered trophy, on the stage</h2>
+        <h2 className="text-xl font-bold tracking-tight text-ink">The full set - all 47, rendered</h2>
         <p className="max-w-2xl text-sm text-ink-muted">
-          Sculpted amber glass on a chrome stem, cut out on transparency and stood in the beam. The ones
-          either side are the drawn version, so the difference is visible at the size it will be seen. Hover the
-          lit one to look at it closely - that detail is most of what a
-          render buys you.
+          Every trophy in the app. The same chrome stem and gunmetal plinth under all of them, and the glass
+          in the colour of the skill it is awarded for - so the case doubles as a picture of what somebody is
+          good at. Arrow keys or a swipe to walk the rack; hover the lit one to look at it closely.
         </p>
         <TrophySpotlight trophies={rendered} start={7} backdrop="/trophy/stage.jpg" />
       </section>

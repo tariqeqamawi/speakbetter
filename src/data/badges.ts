@@ -104,6 +104,23 @@ function phaseComplete(s: BadgeEvalState, phaseId: string): boolean {
   );
 }
 
+/**
+ * The rendered trophy for a badge, a challenge or a phase.
+ *
+ * All forty-seven are the same object - sculpted coloured glass on a
+ * chrome stem, on a gunmetal plinth - shot on black and cut out here.
+ * See scripts/trophy-prompts.mjs for the words that made them and
+ * scripts/build-trophies.mjs for what turns a render into these two
+ * files. Anything that wants a trophy picture should come through
+ * here, so if the set is ever re-rendered nothing else has to change.
+ *
+ * `zoom` is the same trophy at twice the size, fetched only when
+ * somebody leans in to look at one properly.
+ */
+export function trophyArt(id: string): { image: string; zoom: string } {
+  return { image: `/trophy/${id}.webp`, zoom: `/trophy/${id}-2x.webp` };
+}
+
 export const badgeDefs: BadgeDef[] = [
   {
     id: "first-upload",
