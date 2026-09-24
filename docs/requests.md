@@ -110,6 +110,8 @@ Tariq topped up the account, so the cap is gone.
   a streak leaderboard, and a title beside the name on the boards.
 
 ### Waiting on Tariq
+- [ ] **VIP Ultimate after the six weeks** — the monthly option has prices for Starter and
+      Complete only. Is there a VIP monthly price, or does VIP not continue?
 - [ ] **2 testimonials still held back.** 25 are live, up from 13 at the start of
       24 September. Tariq named almost the whole list that evening.
 
@@ -179,6 +181,7 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **24 September**
+- FAQ: optional monthly plan after the six weeks — Starter $14.99, Complete $29.99 — `4dae93e`
 - Trophy colours matched to the Speaking Spectrum (every one within 2° of its swatch);
   Twisted re-glazed storytelling yellow — `642c9ba`
 - Edge of the Seat is a tipped-forward theatre chair; Chekhov's Gun an antique flintlock;
