@@ -37,7 +37,7 @@ const STEPS = [
   },
   {
     n: 3,
-    title: "Upload your take",
+    title: "Upload your take for Coach",
     line: "One tap. Nobody else ever sees the video - it stays yours.",
     Icon: UploadIcon,
     color: "text-figurative",

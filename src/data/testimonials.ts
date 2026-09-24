@@ -128,13 +128,8 @@ export const testimonials: Testimonial[] = [
   },
   {
     // Confirmed by Tariq: Rach Ael. Dictation had clipped the surname
-    // to an initial.
-    //
-    // OPEN: Tariq later attributed another quote to "Rachel". If that
-    // is this same person, the two entries should carry one spelling
-    // of her name; if not, they are two students who both liked the
-    // lessons. Left as given either way - inventing the link is the
-    // worse of the two mistakes.
+    // to an initial. She is quoted twice - the other is at the foot of
+    // this list, and splitForPage() keeps the two out of one column.
     name: "Rach Ael",
     quote:
       "This course has been life-changing. I would never have dreamed of speaking before and recording myself, but now have a new comfort. Weeks later the micro lessons are easily accessible and digestible, perfect for anyone time-pressed. Tariq genuinely cares about impacting people's lives through enhancing their speaking skills, and in a time of reduced attention spans and increased distractions, this course is invaluable.",
@@ -284,20 +279,18 @@ export const testimonials: Testimonial[] = [
     tag: "lessons",
   },
   {
-    // Rachel's, not Dave J. Anderson's.
+    // Rach Ael's second, and not Dave J. Anderson's at all.
     //
-    // This sat under Dave's name for weeks because the dictation ran
-    // his quote and this one together; Tariq has now re-dictated it
-    // and said whose it is. The wording is his second pass, which
-    // ends at "Thank you" - the line about being inspiring and a
-    // terrific speaker went with it, so it is not kept here on a
-    // guess about who said that part.
+    // It sat under Dave's name from the day it arrived, because the
+    // dictation ran his quote and this one together. Tariq re-dictated
+    // it, said it was "Rachel's", and then confirmed that Rachel is
+    // Rach Ael - so it joins her first quote rather than standing as a
+    // second person who happened to like the lessons.
     //
-    // Whether Rachel is the same person as Rach Ael, further up, is
-    // an open question - see the note on her entry. They are kept
-    // separate until somebody says, because merging two people is
-    // worse than showing one person under two spellings.
-    name: "Rachel",
+    // The wording is his second pass, which ends at "Thank you"; the
+    // line about being inspiring and a terrific speaker went with it,
+    // so it is not kept here on a guess about who said that part.
+    name: "Rach Ael",
     quote:
       "You've nailed the skills library and the microlessons. I'm getting more and more from them every time I watch. I already have a clear sense that this course is invaluable. Thank you.",
     tag: "lessons",

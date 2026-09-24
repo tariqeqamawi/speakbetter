@@ -54,8 +54,16 @@ export function FirstChallenge() {
   return (
     <section id="try" className="scroll-mt-20 flex flex-col items-center gap-6">
       <div className="flex max-w-2xl flex-col items-center gap-3 text-center">
-        <span className="text-[0.7rem] font-bold uppercase tracking-[0.35em] text-mindset">The first one&apos;s on us</span>
-        <h2 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">Experience Speak Better</h2>
+        {/* One heading, not two.
+            
+            It was an eyebrow saying "The first one's on us" over an
+            H2 saying "Experience Speak Better" - and by this point in
+            the page the visitor has been invited to experience Speak
+            Better three times. The offer is the interesting half, so
+            the offer is the heading. */}
+        <h2 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+          The first one&apos;s on us
+        </h2>
         <p className="text-lg text-ink-muted text-balance">
           Here is the first challenge, exactly as it looks inside: record yourself speaking for two minutes with no
           preparation, and Coach tells you what he saw. It is the &ldquo;before&rdquo; everything else gets measured

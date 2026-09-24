@@ -31,7 +31,28 @@ interface Piece {
   born: number;
 }
 
-export function Confetti({ count = 320, duration = 7000 }: { count?: number; duration?: number }) {
+export function Confetti({
+  count = 320,
+  duration = 7000,
+  /**
+   * Keep it inside the box it is put in, rather than over the screen.
+   *
+   * The full-screen version is right when a student has just passed
+   * something: the whole app should stop and say so. It is wrong on
+   * the landing page, where the same celebration is being DEMONSTRATED
+   * - a sales page that throws confetti across your screen as you
+   * scroll past it has mistaken a description of delight for delight.
+   *
+   * Contained, it bursts from the lower corners of whatever card holds
+   * it, with the same physics and the same seven colours, and stays
+   * there. Same celebration, shown at arm's length.
+   */
+  contained = false,
+}: {
+  count?: number;
+  duration?: number;
+  contained?: boolean;
+}) {
   const ref = useRef<HTMLCanvasElement>(null);
   // Drawn at the body's level, above whatever opened it - a blurred
   // dialog makes its own stacking context and would keep it inside.
@@ -43,14 +64,16 @@ export function Confetti({ count = 320, duration = 7000 }: { count?: number; dur
 
   useEffect(() => {
     const canvas = ref.current;
-    if (!canvas || !host) return;
+    if (!canvas || (!host && !contained)) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     const dpr = Math.min(2, window.devicePixelRatio || 1);
+    // Contained, the stage is the card; loose, it is the window.
     const resize = () => {
-      canvas.width = window.innerWidth * dpr;
-      canvas.height = window.innerHeight * dpr;
+      const box = contained ? canvas.parentElement?.getBoundingClientRect() : null;
+      canvas.width = (box ? box.width : window.innerWidth) * dpr;
+      canvas.height = (box ? box.height : window.innerHeight) * dpr;
     };
     resize();
     window.addEventListener("resize", resize);
@@ -102,7 +125,11 @@ export function Confetti({ count = 320, duration = 7000 }: { count?: number; dur
 
     // A finger or mouse drawn through the fall pushes the pieces away.
     let px = -1e4, py = -1e4;
-    const onMove = (e: PointerEvent) => { px = e.clientX; py = e.clientY; };
+    const onMove = (e: PointerEvent) => {
+      const o = contained ? canvas.getBoundingClientRect() : null;
+      px = e.clientX - (o?.left ?? 0);
+      py = e.clientY - (o?.top ?? 0);
+    };
     const onLeave = () => { px = -1e4; py = -1e4; };
     window.addEventListener("pointermove", onMove, { passive: true });
     window.addEventListener("pointerdown", onMove, { passive: true });
@@ -153,8 +180,12 @@ export function Confetti({ count = 320, duration = 7000 }: { count?: number; dur
       window.removeEventListener("pointerdown", onMove);
       window.removeEventListener("pointerup", onLeave);
     };
-  }, [count, duration, host]);
+  }, [count, duration, host, contained]);
 
+  // In place, inside whatever card asked for it.
+  if (contained) {
+    return <canvas ref={ref} aria-hidden className="pointer-events-none absolute inset-0 size-full" />;
+  }
   if (!host) return null;
   return createPortal(
     <canvas ref={ref} aria-hidden className="pointer-events-none fixed inset-0 z-[80]" />,

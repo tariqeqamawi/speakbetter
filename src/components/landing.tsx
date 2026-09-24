@@ -163,8 +163,13 @@ export function Landing() {
           here and again inside the free first challenge, so a reader
           met the same review twice. */}
       <section className="flex w-full flex-col items-center gap-5">
+        {/* "How it works" rather than "Experience your Speak Better
+            Coach". The old heading promised an experience and then
+            delivered a list, and a reader who has been promised an
+            experience reads a list as a let-down. This one says
+            exactly what is underneath it. */}
         <h2 className="max-w-2xl text-center text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-          Experience your Speak Better &ldquo;Coach&rdquo;
+          How it works
         </h2>
 
         <HowItWorks />
@@ -315,7 +320,7 @@ export function Landing() {
       {/* The library, in full */}
       <section className="flex flex-col items-center gap-4">
         <h2 className="text-2xl font-semibold tracking-tight">
-          Every lesson in the course
+          Preview all 81 skill videos
         </h2>
         <p className="max-w-lg text-center text-ink-muted">
           Nothing hidden behind the checkout - here is the whole library,

@@ -62,11 +62,20 @@ export function LandingShowcase() {
           <PhoneFilm src="/film/record-to-review.mp4" poster="/film/record-to-review.jpg" label="A take sent and reviewed" />
         </Phone>
         <div className="flex max-w-md flex-col gap-4">
+          {/* The same five as the How it works section higher up.
+              
+              It used to be three of them - record, upload, receive -
+              which made the page describe its own loop two different
+              ways depending on where you were reading. A visitor who
+              notices that does not think "two summaries", they think
+              "which one is true". Repetition is the smaller cost. */}
           <ol className="flex flex-col gap-2">
             {[
+              ["Watch a challenge", "text-structure"],
               ["Record yourself speaking", "text-acting"],
-              ["Upload your take for the lion", "text-body-language"],
+              ["Upload your take for Coach", "text-body-language"],
               ["Receive detailed feedback", "text-mindset"],
+              ["Improve quickly", "text-storytelling"],
             ].map(([step, color], i) => (
               <li key={step} className="flex items-center gap-3">
                 <span className={`grid size-8 shrink-0 place-items-center rounded-full border border-current text-sm font-bold ${color}`}>

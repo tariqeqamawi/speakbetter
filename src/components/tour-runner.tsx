@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import { TalkingLion, type Phrase } from "@/components/talking-lion";
+import { Caption } from "@/components/caption";
 import { ChevronDownIcon, XIcon } from "@/components/icons";
 import { hapticTap } from "@/lib/feedback-fx";
 import { stopAudio, type TourStop } from "@/data/tour-script";
@@ -423,55 +424,6 @@ export function TourRunner({
 /** The row along the bottom of every stop: where you are, his voice,
  *  back, and on. One copy, so the staged stop and the plain one cannot
  *  drift apart. */
-/**
- * The line Coach is on, with the word he is on lit.
- *
- * Falls back to the whole sentence when there is no clock to follow -
- * muted, or a browser that refused to start the sound. A caption with
- * nothing driving it would otherwise be a blank strip where the words
- * used to be, which is worse than the paragraph it replaced.
- */
-function Caption({
-  phrase,
-  word,
-  line,
-  big = false,
-}: {
-  phrase?: Phrase;
-  word: number;
-  line?: string;
-  big?: boolean;
-}) {
-  if (!phrase) {
-    return (
-      <p className={`text-ink-muted text-balance ${big ? "text-base leading-relaxed" : "text-sm leading-snug"}`}>
-        {line}
-      </p>
-    );
-  }
-  return (
-    <p
-      key={phrase.text}
-      className={`coach-cue text-balance font-semibold ${big ? "text-xl leading-snug sm:text-2xl" : "text-base leading-snug"}`}
-    >
-      {phrase.words.map((w, i) => (
-        <span
-          key={i}
-          className={`inline-block origin-bottom mx-[0.2em] transition-[transform,color] duration-150 ${
-            i === word
-              ? `caption-live scale-[1.14] ${phrase.colorClass}`
-              : i < word
-                ? "text-ink"
-                : "text-ink-faint"
-          }`}
-        >
-          {w.text}
-        </span>
-      ))}
-    </p>
-  );
-}
-
 function Controls({
   step,
   stops,
