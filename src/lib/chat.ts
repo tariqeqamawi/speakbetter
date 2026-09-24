@@ -1,0 +1,285 @@
+"use client";
+
+import { supabase } from "@/lib/supabase/client";
+
+// Talking to the rooms. One file, so that every screen that shows
+// messages - the three standing rooms, the thread on a challenge -
+// goes through the same four calls and behaves the same way.
+//
+// NOTHING HERE THROWS INTO THE APP. The chat is the one part of Speak
+// Better that depends on somebody else's server being up, and it is
+// also the least important part: a student whose room fails to load
+// should still be able to practice. So every call returns an empty
+// result rather than an exception, exactly as the sync layer does.
+
+/** The three standing rooms, in the order they are shown. */
+export const ROOMS = [
+  {
+    id: "challenges" as const,
+    name: "Challenges",
+    blurb: "Which one you are on, what it asked of you, how you got through it.",
+  },
+  {
+    id: "feedback" as const,
+    name: "Feedback & improvements",
+    blurb: "What Coach said, what you changed, what you would tell somebody starting.",
+  },
+  {
+    id: "general" as const,
+    name: "General",
+    blurb: "Say hello, say where you are in the world, say why you are here.",
+  },
+];
+
+export type RoomId = (typeof ROOMS)[number]["id"];
+
+/** The room that belongs to one challenge. */
+export function challengeRoom(slug: string): string {
+  return `challenge:${slug}`;
+}
+
+/** The slug back out of a room name, or null if it is a standing room. */
+export function roomChallenge(room: string): string | null {
+  return room.startsWith("challenge:") ? room.slice("challenge:".length) : null;
+}
+
+export interface Post {
+  id: string;
+  studentId: string;
+  room: string;
+  cohort: string | null;
+  body: string;
+  at: string;
+  editedAt: string | null;
+  replyTo: string | null;
+  pinnedAt: string | null;
+  authorName: string;
+  authorAvatar: string | null;
+}
+
+interface PostRow {
+  id: string;
+  student_id: string;
+  room: string;
+  cohort: string | null;
+  body: string;
+  at: string;
+  edited_at: string | null;
+  reply_to: string | null;
+  pinned_at: string | null;
+  author_name: string;
+  author_avatar: string | null;
+}
+
+function shape(r: PostRow): Post {
+  return {
+    id: r.id,
+    studentId: r.student_id,
+    room: r.room,
+    cohort: r.cohort,
+    body: r.body,
+    at: r.at,
+    editedAt: r.edited_at,
+    replyTo: r.reply_to,
+    pinnedAt: r.pinned_at,
+    authorName: r.author_name || "Someone",
+    authorAvatar: r.author_avatar,
+  };
+}
+
+/** How many messages come back at once. A room is read from the bottom
+ *  up, so this is the most recent hundred and "older" fetches back. */
+const PAGE = 100;
+
+/**
+ * A room's messages, oldest first.
+ *
+ * `before` walks backwards through the history; leaving it out gets
+ * the latest page, which is what opening a room wants.
+ */
+export async function readRoom(room: string, before?: string): Promise<Post[]> {
+  const db = supabase();
+  if (!db) return [];
+  let q = db
+    .from("posts")
+    .select("*")
+    .eq("room", room)
+    .order("at", { ascending: false })
+    .limit(PAGE);
+  if (before) q = q.lt("at", before);
+
+  const { data, error } = await q;
+  if (error || !data) return [];
+  // Read newest-first for the index, handed back oldest-first for the
+  // screen, which is the order a conversation is read in.
+  return (data as PostRow[]).map(shape).reverse();
+}
+
+/** Anything Tariq has pinned to the top of this room. */
+export async function readPinned(room: string): Promise<Post[]> {
+  const db = supabase();
+  if (!db) return [];
+  const { data, error } = await db
+    .from("posts")
+    .select("*")
+    .eq("room", room)
+    .not("pinned_at", "is", null)
+    .order("pinned_at", { ascending: false })
+    .limit(5);
+  if (error || !data) return [];
+  return (data as PostRow[]).map(shape);
+}
+
+/**
+ * Say something.
+ *
+ * The author is not sent: the database fills it in from whoever is
+ * asking, so there is no version of this call that can post as
+ * somebody else. Returns the saved post, or null if it did not land -
+ * and the caller should show that rather than pretending it sent.
+ */
+export async function say(
+  room: string,
+  body: string,
+  opts: { cohort?: string; replyTo?: string } = {},
+): Promise<Post | null> {
+  const db = supabase();
+  if (!db) return null;
+  const text = body.trim();
+  if (!text || text.length > 2000) return null;
+
+  const { data, error } = await db
+    .from("posts")
+    .insert({ room, body: text, cohort: opts.cohort ?? null, reply_to: opts.replyTo ?? null })
+    .select("*")
+    .single();
+  if (error || !data) return null;
+  return shape(data as PostRow);
+}
+
+/** Fix your own words. */
+export async function reword(id: string, body: string): Promise<boolean> {
+  const db = supabase();
+  if (!db) return false;
+  const text = body.trim();
+  if (!text || text.length > 2000) return false;
+  const { error } = await db.from("posts").update({ body: text }).eq("id", id);
+  return !error;
+}
+
+/** Take it back. */
+export async function unsay(id: string): Promise<boolean> {
+  const db = supabase();
+  if (!db) return false;
+  const { error } = await db.from("posts").delete().eq("id", id);
+  return !error;
+}
+
+export type ReactionKind = "cheer" | "same" | "helpful";
+
+/** Turn a reaction on or off. Returns where it ended up. */
+export async function react(postId: string, kind: ReactionKind, on: boolean): Promise<boolean> {
+  const db = supabase();
+  if (!db) return false;
+  if (on) {
+    const { error } = await db.from("post_reactions").upsert({ post_id: postId, kind });
+    return !error;
+  }
+  const { data: auth } = await db.auth.getUser();
+  const me = auth.user?.id;
+  if (!me) return false;
+  const { error } = await db
+    .from("post_reactions")
+    .delete()
+    .eq("post_id", postId)
+    .eq("kind", kind)
+    .eq("student_id", me);
+  return !error;
+}
+
+/** Tell somebody. Quiet by design: no confirmation theatre, and the
+ *  reporter is never shown to the room. */
+export async function report(postId: string, reason?: string): Promise<boolean> {
+  const db = supabase();
+  if (!db) return false;
+  const { error } = await db
+    .from("post_reports")
+    .insert({ post_id: postId, reason: reason?.slice(0, 500) ?? null });
+  return !error;
+}
+
+/**
+ * New messages in a room, as they are said.
+ *
+ * Returns the unsubscribe. The row arrives complete - the author's
+ * name and face are on it - so a message can be drawn the moment it
+ * lands with no second request. That is the whole reason those two
+ * columns are denormalized; see the schema.
+ */
+export function watchRoom(
+  room: string,
+  on: { said?: (p: Post) => void; changed?: (p: Post) => void; gone?: (id: string) => void },
+): () => void {
+  const db = supabase();
+  if (!db) return () => {};
+
+  const channel = db
+    .channel(`room:${room}`)
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "posts", filter: `room=eq.${room}` },
+      (payload: Change) => on.said?.(shape(payload.new)),
+    )
+    .on(
+      "postgres_changes",
+      { event: "UPDATE", schema: "public", table: "posts", filter: `room=eq.${room}` },
+      (payload: Change) => on.changed?.(shape(payload.new)),
+    )
+    .on(
+      "postgres_changes",
+      { event: "DELETE", schema: "public", table: "posts", filter: `room=eq.${room}` },
+      (payload: Change) => on.gone?.(payload.old.id),
+    )
+    .subscribe();
+
+  return () => {
+    void db.removeChannel(channel);
+  };
+}
+
+/** What Realtime hands back on a row change. Named here because the
+ *  client is untyped, so there is nothing for it to be inferred from. */
+interface Change {
+  new: PostRow;
+  old: { id: string };
+}
+
+export interface RoomActivity {
+  room: string;
+  messages: number;
+  voices: number;
+  lastAt: string;
+}
+
+/**
+ * How busy each room is, without loading any of it.
+ *
+ * What the challenge list uses to put "14 messages" beside a
+ * challenge, and what tells a student which standing room is worth
+ * opening today.
+ */
+export async function roomActivity(rooms?: string[]): Promise<Map<string, RoomActivity>> {
+  const db = supabase();
+  const out = new Map<string, RoomActivity>();
+  if (!db) return out;
+
+  let q = db.from("room_activity").select("*");
+  if (rooms?.length) q = q.in("room", rooms);
+
+  const { data, error } = await q;
+  if (error || !data) return out;
+  for (const r of data as { room: string; messages: number; voices: number; last_at: string }[]) {
+    out.set(r.room, { room: r.room, messages: r.messages, voices: r.voices, lastAt: r.last_at });
+  }
+  return out;
+}
