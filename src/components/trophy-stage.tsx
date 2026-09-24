@@ -28,6 +28,8 @@ const DISC_Y = 0.7;
 /** How tall the trophy stands, as a share of the frame. */
 const TROPHY_H = 0.6;
 const TROPHY_H_PHONE = 0.5;
+/** How much larger the finishing trophy stands than every other one. */
+const GRAND = 1.12;
 /** The renders carry a little black under the plinth (10-23px of 398);
  *  this much of the image is below the base and sinks into the floor. */
 const BASE_PAD = 0.04;
@@ -64,6 +66,9 @@ export interface StageTrophy {
   color: string;
   /** The material, which is the rank - shown under the name. */
   material?: string;
+  /** The finishing trophy: drawn larger than the rest, in the light and
+   *  out of it. */
+  grand?: boolean;
 }
 
 export function TrophyStage({
@@ -197,7 +202,7 @@ export function TrophyStage({
                 className="absolute left-1/2 origin-bottom transition-[transform,opacity,filter] duration-700 ease-out"
                 style={{
                   bottom: `${(1 - DISC_Y - th * BASE_PAD) * 100}%`,
-                  transform: `translateX(-50%) translateX(${x}px) translateY(${-lift}px) scale(${slot.scale})`,
+                  transform: `translateX(-50%) translateX(${x}px) translateY(${-lift}px) scale(${slot.scale * (t.grand ? GRAND : 1)})`,
                   opacity: centre ? 1 : slot.opacity,
                   filter: centre ? "none" : `blur(${slot.blur}px) brightness(${slot.dim})`,
                   zIndex: 20 - away,

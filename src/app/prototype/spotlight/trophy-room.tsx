@@ -11,7 +11,7 @@ const MATERIALS = [
   { key: "gold", label: "Gold", note: "A top score: 90 or more on a challenge." },
   { key: "chrome", label: "Chrome", note: "Turning up again and again." },
   { key: "ceramic", label: "Ceramic", note: "How you speak, and how you feel doing it." },
-  { key: "glass", label: "Glass", note: "The twenty-four challenges." },
+  { key: "painted", label: "Painted", note: "The twenty-four challenges, each the real thing in full colour." },
 ] as const;
 
 export function TrophyRoom({ trophies }: { trophies: StageTrophy[] }) {
@@ -71,7 +71,9 @@ export function TrophyRoom({ trophies }: { trophies: StageTrophy[] }) {
             </header>
             <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 lg:grid-cols-6">
               {group.map(({ t, i }) => (
-                <li key={t.id}>
+                // The finishing trophy takes two tiles - it is the one
+                // the rest of the case was leading to.
+                <li key={t.id} className={t.grand ? "col-span-2" : undefined}>
                   <button
                     type="button"
                     onClick={() => pick(i)}

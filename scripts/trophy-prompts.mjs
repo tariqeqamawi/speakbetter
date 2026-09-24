@@ -28,7 +28,14 @@
 // nothing in the case said which of them were hard to get. So the
 // material carries that, and it is the only thing it carries:
 //
-//   glass     the twenty-four challenges. The everyday ones.
+//   painted   the twenty-four challenges. The everyday ones - each the
+//             real thing in its real colours, like a finely painted
+//             collector's miniature: the book is a red-and-gold book,
+//             the headphones are headphones. The skill's colour lives
+//             in the line of light along the plinth. (They were
+//             coloured glass until 24 Sep 2026; realism made each one
+//             recognisable at a glance and kept the exotic materials
+//             for the trophies that are harder to win.)
 //   ceramic   the ones about how you speak and how you feel doing it.
 //   chrome    the ones earned by turning up again and again.
 //   gold      a top score: 90 or more on a challenge. The glass trophy
@@ -82,6 +89,7 @@ export const COLORS = {
 /** How each material is described to the renderer. */
 export const MATERIALS = {
   glass: (color) => `a sculpted ${COLORS[color]} art-glass figure of`,
+  painted: () => "a realistic, highly detailed, fully opaque figure in its real materials and natural colours, like a finely hand-painted collector's miniature, of",
   ceramic: (color) => `a glazed ${COLORS[color]} ceramic figure of`,
   chrome: () => "a mirror-polished chrome figure of",
   gold: () => "a polished solid gold figure of",
@@ -91,6 +99,7 @@ export const MATERIALS = {
 
 const FINISH = {
   glass: "polished and translucent with deep internal highlights",
+  painted: "true-to-life colours and textures, subtle highlights",
   ceramic: "a soft satin glaze with gentle highlights, opaque, faint crazing in the surface",
   chrome: "liquid mirror steel, reflecting the studio lights, no colour of its own",
   gold: "warm yellow metal, mirror-polished, with bright specular highlights",
@@ -144,30 +153,30 @@ export const TROPHIES = [
   { id: "phase-Y", color: "structure", subject: "the capital letter Y, sculpted", material: "spectrum" },
 
   // ── One for every challenge (data/challenges.ts) ──────────────────
-  { id: "challenge-speaking-baseline", color: "mindset", subject: "an old-fashioned box camera on a short tripod" },
-  { id: "challenge-story-without-help", color: "storytelling", subject: "a circus trapeze: a solid bar swinging from two ropes that meet at a ring at the top" },
-  { id: "challenge-mindset-toolbox", color: "mindset", subject: "a small toolbox with its lid open" },
-  { id: "challenge-no-filler-words", color: "acting", subject: "a speech bubble with a clean diagonal line struck through it" },
-  { id: "challenge-avoid-boring-words", color: "figurative", subject: "a friendly Tyrannosaurus rex, head and shoulders, wearing small round gold reading glasses" },
-  { id: "challenge-voice-melody", color: "acting", subject: "a vinyl record standing on its edge" },
+  { id: "challenge-speaking-baseline", color: "mindset", subject: "an antique wooden box camera with brass fittings, black leather bellows and a glass lens, standing on a short wooden tripod", material: "painted" },
+  { id: "challenge-story-without-help", color: "storytelling", subject: "a circus trapeze: a polished wooden bar wrapped in white tape, hanging from two thick natural hemp ropes that meet at a steel ring at the top", material: "painted" },
+  { id: "challenge-mindset-toolbox", color: "mindset", subject: "a red painted steel toolbox with its lid open, steel hinges and a black handle, real tools inside - a screwdriver with a yellow handle, a steel wrench, pliers with red grips", material: "painted" },
+  { id: "challenge-no-filler-words", color: "acting", subject: "a white enamel speech-bubble sign with a bold red bar struck diagonally across it, like a painted metal road sign", material: "painted" },
+  { id: "challenge-avoid-boring-words", color: "figurative", subject: "a friendly Tyrannosaurus rex head and shoulders with textured scaly skin painted in greens and warm browns, a paler belly, darker stripes, ivory teeth and bright eyes, wearing small round gold wire reading glasses", material: "painted" },
+  { id: "challenge-voice-melody", color: "acting", subject: "a black vinyl record with fine glossy grooves and a colourful printed centre label with no readable text", material: "painted" },
   { id: "challenge-tongue-twisters", color: "acting", subject: "a stylised head in side profile with a long silver tongue unfurling from its mouth, curling at the tip", material: "chrome" },
-  { id: "challenge-beatbox-rhythm", color: "mindset", subject: "a pair of small drums" },
-  { id: "challenge-create-storybook", color: "storytelling", subject: "a closed book with a ribbon bookmark" },
-  { id: "challenge-scene-with-sound", color: "acting", subject: "a bell with rings of sound spreading from it" },
-  { id: "challenge-describe-vividly", color: "figurative", subject: "a faceted gemstone" },
-  { id: "challenge-moment-from-your-day", color: "storytelling", subject: "a smooth stylised head turned three-quarters, mouth open mid-sentence, with three sound-wave arcs radiating from the mouth" },
-  { id: "challenge-high-stakes-moment", color: "acting", subject: "a theatre chair tipped forward onto its two front legs, as if someone is on the very edge of the seat" },
-  { id: "challenge-set-and-scene", color: "storytelling", subject: "a miniature theatre stage with its curtains drawn back" },
-  { id: "challenge-twist-third-person", color: "storytelling", subject: "a director's megaphone, cone pointing up and to the side" },
-  { id: "challenge-foreshadowing", color: "storytelling", subject: "an ornate antique flintlock pistol, like a nineteenth-century stage prop, standing upright on its grip" },
-  { id: "challenge-three-emotions", color: "acting", subject: "a small harp with its strings drawn taut" },
-  { id: "challenge-someone-elses-story", color: "storytelling", subject: "two overlapping speech bubbles" },
-  { id: "challenge-multiple-characters", color: "acting", subject: "three theatre masks in a row, each with a different expression" },
-  { id: "challenge-story-youve-healed", color: "mindset", subject: "a heart with a healed seam running through it" },
-  { id: "challenge-explain-with-analogies", color: "figurative", subject: "two linked rings" },
-  { id: "challenge-podcast-introduction", color: "structure", subject: "a pair of studio headphones" },
-  { id: "challenge-thirty-second-pitch", color: "structure", subject: "a stopwatch" },
-  { id: "challenge-mic-drop", color: "acting", subject: "a microphone falling, tilted head-down" },
+  { id: "challenge-beatbox-rhythm", color: "mindset", subject: "a pair of bongo drums with warm honey-brown wooden shells, natural cream hide heads and brass tuning hardware", material: "painted" },
+  { id: "challenge-create-storybook", color: "storytelling", subject: "a closed book with a deep red cloth-bound cover, a gold-stamped decorative border and spine bands, cream page edges and a dark green silk ribbon bookmark, no readable text", material: "painted" },
+  { id: "challenge-scene-with-sound", color: "acting", subject: "a polished brass hand bell with a dark turned-wood handle, with three thin curved brass arcs around it showing its ring", material: "painted" },
+  { id: "challenge-describe-vividly", color: "figurative", subject: "a large brilliant-cut orange sapphire gemstone, sparkling, set upright", material: "painted" },
+  { id: "challenge-moment-from-your-day", color: "storytelling", subject: "a stylised painted bust of a storyteller mid-sentence, warm natural skin tone, short dark hair, mouth open, with three curved polished brass sound-wave arcs radiating from the mouth", material: "painted" },
+  { id: "challenge-high-stakes-moment", color: "acting", subject: "a red velvet theatre seat with dark polished wooden armrests and brass fittings, tipped forward onto its two front legs", material: "painted" },
+  { id: "challenge-set-and-scene", color: "storytelling", subject: "a miniature theatre stage with rich red velvet curtains drawn back, a gilded proscenium arch and a warm wooden stage floor", material: "painted" },
+  { id: "challenge-twist-third-person", color: "storytelling", subject: "a classic film director's megaphone in cream and black painted metal with a dark wooden handle", material: "painted" },
+  { id: "challenge-foreshadowing", color: "storytelling", subject: "an ornate antique flintlock pistol with a walnut wooden stock, an engraved steel lock and brass fittings, standing upright on its grip", material: "painted" },
+  { id: "challenge-three-emotions", color: "acting", subject: "a small harp with a carved, polished dark wooden frame and fine gold strings", material: "painted" },
+  { id: "challenge-someone-elses-story", color: "storytelling", subject: "two overlapping speech bubbles, one white and one soft sky blue, like glossy painted enamel", material: "painted" },
+  { id: "challenge-multiple-characters", color: "acting", subject: "three theatre masks side by side, each painted in real colours and with a different expression - a white comedy mask with gold trim, a dark blue tragedy mask, a red surprised mask", material: "painted" },
+  { id: "challenge-story-youve-healed", color: "mindset", subject: "a glossy red ceramic heart that was broken and repaired with a shining gold kintsugi seam running through it", material: "painted" },
+  { id: "challenge-explain-with-analogies", color: "figurative", subject: "two interlocking rings, one warm polished copper and one brushed steel", material: "painted" },
+  { id: "challenge-podcast-introduction", color: "structure", subject: "a pair of studio headphones in their real materials: matte black plastic and brushed metal headband, soft black leather ear cushions, silver sliders, a coiled black cable, no logo", material: "painted" },
+  { id: "challenge-thirty-second-pitch", color: "structure", subject: "a classic mechanical stopwatch with a polished chrome case, a white enamel dial with black numerals and a red sweep hand", material: "painted" },
+  { id: "challenge-mic-drop", color: "acting", subject: "a classic black and silver handheld stage microphone with a mesh grille, falling head-down, a short length of black cable trailing", material: "painted" },
 ];
 
 // ── The gold twins ───────────────────────────────────────────────────
@@ -181,4 +190,13 @@ export const GOLD = TROPHIES.filter(
   (t) => t.id.startsWith("challenge-") && t.id !== "challenge-mindset-toolbox",
 ).map((t) => ({ ...t, id: `${t.id}-gold`, material: "gold" }));
 
-export const ALL_TROPHIES = [...TROPHIES, ...GOLD];
+// ── The lion ──────────────────────────────────────────────────────────
+// Coach himself - the mascot from the logo - twice. In chrome and gold
+// for talking to him; in obsidian and gold, larger than anything else
+// in the case, for finishing all of Speak Better.
+export const LIONS = [
+  { id: "coach-confidant", color: "figurative", subject: "the Speak Better lion mascot with its microphone, exactly as the logo draws it, sculpted", material: "chrome" },
+  { id: "speak-better-complete", color: "figurative", subject: "the Speak Better lion mascot with its microphone, exactly as the logo draws it, sculpted, on a taller stepped base", material: "obsidian", grand: true },
+];
+
+export const ALL_TROPHIES = [...TROPHIES, ...GOLD, ...LIONS];
