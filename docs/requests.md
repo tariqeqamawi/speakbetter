@@ -106,8 +106,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **24 September**
-- Coach rings the nav button and waits, instead of arriving over the page — `PENDING`
-- The streak pill: cascading neon, confetti, floating XP — `PENDING`
+- Coach rings the nav button and waits, instead of arriving over the page — `0da0f67`
+- The streak pill: cascading neon, confetti, floating XP — `0da0f67`
 - One wave on the Coach page, not two — `3406f13`
 - Dashboard: streak explained, Community as the sixth tab, sticky Live sessions — `085385f`
 - "Dash" tab; "How to use this deck" moved to the top of the cards page — `3406f13`
