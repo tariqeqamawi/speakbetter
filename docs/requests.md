@@ -22,6 +22,12 @@ Last updated: 24 September 2026.
 ### The road — the big one
 Prototype lives at `/prototype/adventure`. The live `/challenges` map is untouched.
 
+**Now blocking a landing-page section too.** The S.T.O.R.Y. section on the landing page
+was cut back to the map alone on 24 September, because the challenge page beside it
+duplicated the free challenge further down. Tariq's words: *"We'll update the story
+framework and interactive challenges once we have the new UI done with the new terrain."*
+So that section is deliberately thin until the road lands.
+
 - [ ] **The travelling piece is the student's avatar** (`state.avatar`), not a generic map pin
 - [ ] **Challenge thumbnails playing inside each circle**
 - [ ] **A finish line you pass through, with a celebration** on the other side
@@ -101,9 +107,17 @@ Not credits — a per-day generation limit on the grace-period account. PLUS ann
       device id from the auth uuid; `watchedOn` never syncs. **Fix sign-out and the
       server-authoritative plan before creating the Supabase project**, so the schema goes
       up correct rather than needing a week-one migration.
-- [ ] **Landing page middle is still long** — sections 5–12 all say "here's what's inside"
-      and overlap. Tightening to three (lessons / practice loop / gamification) is the next
-      real gain in clarity.
+- [ ] **Landing page middle is still long.** Much came out on 24 September (`12ae39d`) —
+      the sample-data door, the studio lesson, a duplicate challenge page, a duplicate
+      review, the "Hear it from Coach" button. What remains overlapping: "What's in the
+      app", "See the app in action", "Speaking Spectrum", "Every lesson in the course"
+      and the S.T.O.R.Y. section all answer the same question. Three would do.
+- [ ] **One open question from 24 September, not yet answered by Tariq.** He asked to keep
+      "Experience Speak Better" *with* the coaching review card, and separately that there
+      be no second review. It was read as: one review total, in the Coach section where
+      the claim is made, with the free-challenge section left as an illustration and a
+      door. If the card should instead sit inside "Experience Speak Better", it is a
+      one-line move.
 
 ---
 
@@ -113,6 +127,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **24 September**
+- Testimonials on white; the landing page stops selling twice; four kinds of
+  text that was cut off on a phone — `12ae39d`
 - Tour captions, karaoke, and a dark screen for Coach's own moments — `6458f10`
 - Landing: one coach demo, one baseline, wrapped lesson titles, new copy — `6458f10`
 - The tab bar, the General room, chat reactions, the chest, the streak past
