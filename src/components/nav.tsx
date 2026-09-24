@@ -61,7 +61,10 @@ export function TopBar() {
               priority
               className="h-8 w-auto"
             />
-            <span className="text-lg font-semibold tracking-tight">
+            {/* Hidden only in the tablet band: below it the header
+                carries nothing else, above it the rail takes the
+                destinations away again. */}
+            <span className="text-lg font-semibold tracking-tight sm:hidden lg:inline">
               Speak Better
             </span>
           </Link>
@@ -94,7 +97,9 @@ function TourButton() {
       className="-ml-1 flex shrink-0 items-center gap-1.5 rounded-full border border-navy-600/80 px-2.5 py-1 text-[0.7rem] font-semibold text-ink-faint transition-colors hover:border-ink-faint hover:text-ink"
     >
       <TapIcon className="size-3.5 shrink-0" />
-      <span className="whitespace-nowrap">{section ? "Tour this section" : "Take the full tour"}</span>
+      <span className="whitespace-nowrap sm:hidden lg:inline">
+        {section ? "Tour this section" : "Take the full tour"}
+      </span>
     </button>
   );
 }
@@ -131,7 +136,7 @@ function CompactLinks() {
             aria-current={active ? "page" : undefined}
           >
             <Icon className="size-4.5" />
-            {label}
+            <span className="hidden md:inline">{label}</span>
           </Link>
         );
       })}
@@ -144,7 +149,7 @@ function CompactLinks() {
         }`}
       >
         <CoachFace />
-        <span className="text-xs font-bold tracking-wide text-navy-950">Coach</span>
+        <span className="hidden text-xs font-bold tracking-wide text-navy-950 md:inline">Coach</span>
       </Link>
     </nav>
   );

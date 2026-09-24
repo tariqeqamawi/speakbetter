@@ -1,6 +1,17 @@
 "use client";
 
 import { supabase } from "@/lib/supabase/client";
+import {
+  LOCAL_ME,
+  localActivity,
+  localRead,
+  localReact,
+  localReword,
+  localSay,
+  localUnsay,
+  onLocalChange,
+  type LocalPost,
+} from "@/lib/chat-local";
 
 // Talking to the rooms. One file, so that every screen that shows
 // messages - the three standing rooms, the thread on a challenge -
@@ -11,6 +22,15 @@ import { supabase } from "@/lib/supabase/client";
 // also the least important part: a student whose room fails to load
 // should still be able to practice. So every call returns an empty
 // result rather than an exception, exactly as the sync layer does.
+//
+// AND IT WORKS WITH NO SERVER AT ALL. When Supabase is not configured
+// every call falls through to chat-local, which is the same four
+// operations against localStorage. That is the app's standing rule
+// (lib/supabase/config.ts) and the chat does not get to be the
+// exception: the demo, the landing previews and local development all
+// depend on the room still being a room. The screen behaves
+// identically either way, which is also the only way to get the UI
+// right before the keys arrive.
 
 /** The three standing rooms, in the order they are shown. */
 export const ROOMS = [
@@ -71,7 +91,7 @@ interface PostRow {
   author_avatar: string | null;
 }
 
-function shape(r: PostRow): Post {
+function shape(r: PostRow | LocalPost): Post {
   return {
     id: r.id,
     studentId: r.student_id,
@@ -99,7 +119,7 @@ const PAGE = 100;
  */
 export async function readRoom(room: string, before?: string): Promise<Post[]> {
   const db = supabase();
-  if (!db) return [];
+  if (!db) return localRead(room).map(shape);
   let q = db
     .from("posts")
     .select("*")
@@ -118,7 +138,7 @@ export async function readRoom(room: string, before?: string): Promise<Post[]> {
 /** Anything Tariq has pinned to the top of this room. */
 export async function readPinned(room: string): Promise<Post[]> {
   const db = supabase();
-  if (!db) return [];
+  if (!db) return localRead(room).filter((p) => p.pinned_at).map(shape);
   const { data, error } = await db
     .from("posts")
     .select("*")
@@ -144,9 +164,9 @@ export async function say(
   opts: { cohort?: string; replyTo?: string } = {},
 ): Promise<Post | null> {
   const db = supabase();
-  if (!db) return null;
   const text = body.trim();
   if (!text || text.length > 2000) return null;
+  if (!db) return shape(localSay(room, text, opts.replyTo));
 
   const { data, error } = await db
     .from("posts")
@@ -160,9 +180,9 @@ export async function say(
 /** Fix your own words. */
 export async function reword(id: string, body: string): Promise<boolean> {
   const db = supabase();
-  if (!db) return false;
   const text = body.trim();
   if (!text || text.length > 2000) return false;
+  if (!db) return localReword(id, text);
   const { error } = await db.from("posts").update({ body: text }).eq("id", id);
   return !error;
 }
@@ -170,7 +190,7 @@ export async function reword(id: string, body: string): Promise<boolean> {
 /** Take it back. */
 export async function unsay(id: string): Promise<boolean> {
   const db = supabase();
-  if (!db) return false;
+  if (!db) return localUnsay(id);
   const { error } = await db.from("posts").delete().eq("id", id);
   return !error;
 }
@@ -180,7 +200,10 @@ export type ReactionKind = "cheer" | "same" | "helpful";
 /** Turn a reaction on or off. Returns where it ended up. */
 export async function react(postId: string, kind: ReactionKind, on: boolean): Promise<boolean> {
   const db = supabase();
-  if (!db) return false;
+  if (!db) {
+    localReact(postId, kind, on);
+    return true;
+  }
   if (on) {
     const { error } = await db.from("post_reactions").upsert({ post_id: postId, kind });
     return !error;
@@ -201,6 +224,8 @@ export async function react(postId: string, kind: ReactionKind, on: boolean): Pr
  *  reporter is never shown to the room. */
 export async function report(postId: string, reason?: string): Promise<boolean> {
   const db = supabase();
+  // Nobody to tell, and pretending otherwise would be worse than
+  // saying so - the caller shows a real answer either way.
   if (!db) return false;
   const { error } = await db
     .from("post_reports")
@@ -221,7 +246,16 @@ export function watchRoom(
   on: { said?: (p: Post) => void; changed?: (p: Post) => void; gone?: (id: string) => void },
 ): () => void {
   const db = supabase();
-  if (!db) return () => {};
+  // With no server, "live" is this tab: chat-local announces its own
+  // writes and the room re-reads. Same contract, same unsubscribe.
+  if (!db)
+    return onLocalChange((changed) => {
+      if (changed === room || changed === "*") {
+        const latest = localRead(room);
+        const last = latest[latest.length - 1];
+        if (last) on.said?.(shape(last));
+      }
+    });
 
   const channel = db
     .channel(`room:${room}`)
@@ -271,7 +305,12 @@ export interface RoomActivity {
 export async function roomActivity(rooms?: string[]): Promise<Map<string, RoomActivity>> {
   const db = supabase();
   const out = new Map<string, RoomActivity>();
-  if (!db) return out;
+
+  if (!db) {
+    for (const [room, a] of localActivity(rooms ?? []))
+      out.set(room, { room, messages: a.messages, voices: a.voices, lastAt: a.lastAt });
+    return out;
+  }
 
   let q = db.from("room_activity").select("*");
   if (rooms?.length) q = q.in("room", rooms);
@@ -282,4 +321,18 @@ export async function roomActivity(rooms?: string[]): Promise<Map<string, RoomAc
     out.set(r.room, { room: r.room, messages: r.messages, voices: r.voices, lastAt: r.last_at });
   }
   return out;
+}
+
+/**
+ * The signed-in student's id, or the local stand-in.
+ *
+ * The room needs it to know which messages are the reader's own - what
+ * can be edited, what is drawn on the right. One call so no component
+ * has to know which of the two modes it is running in.
+ */
+export async function whoAmI(): Promise<string | null> {
+  const db = supabase();
+  if (!db) return LOCAL_ME;
+  const { data } = await db.auth.getUser();
+  return data.user?.id ?? null;
 }

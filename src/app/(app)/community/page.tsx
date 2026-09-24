@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { CommunityFeed } from "@/components/community-feed";
+import { Rooms } from "@/components/rooms";
 import { WeeklyBoard } from "@/components/weekly-board";
 import { SectionTour } from "@/components/section-tour";
 import { ChevronDownIcon, GroupIcon } from "@/components/icons";
@@ -28,8 +29,12 @@ export default function CommunityPage() {
           </p>
         </details>
       </header>
-      {/* The feed is the community's before-and-afters; the rest of the
-          layer (§12) arrives with Phase 6. */}
+      {/* The rooms come first. The boards and the before-and-afters
+          are things to look at; the rooms are the thing to be IN, and
+          a student who opens Community and finds a conversation
+          already happening has a reason to come back tomorrow. */}
+      <Rooms />
+
       <CommunityFeed />
       <WeeklyBoard />
     </div>

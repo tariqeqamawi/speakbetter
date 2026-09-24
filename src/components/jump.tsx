@@ -100,7 +100,7 @@ export function JumpButton() {
         className="flex min-h-11 items-center gap-2 rounded-full border border-navy-600 px-3 text-sm text-ink-faint transition-colors hover:border-ink-faint hover:text-ink"
       >
         <SearchIcon className="size-4" />
-        <span className="hidden sm:inline">Jump to…</span>
+        <span className="hidden lg:inline">Jump to…</span>
         <kbd className="hidden rounded border border-navy-600 px-1 text-[0.6rem] font-sans text-ink-faint lg:inline">/</kbd>
       </button>
       {open && <JumpPalette onClose={() => setOpen(false)} />}

@@ -9,6 +9,7 @@ import { XpBadge } from "@/components/xp-badge";
 import { challengeXp } from "@/lib/progress";
 import { LazyVimeoPlayer } from "@/components/lazy-vimeo-player";
 import { PracticePanel } from "@/components/practice-panel";
+import { ChallengeThread } from "@/components/challenge-thread";
 import { CircleIcon } from "@/components/icons";
 import { PlayFillIcon } from "@/components/player-icons";
 
@@ -133,6 +134,11 @@ export default async function ChallengePage(props: PageProps<"/challenges/[slug]
       )}
 
       <PracticePanel challenge={challenge} />
+
+      {/* Last, and folded shut: somebody who came here to record should
+          meet the brief and the button first. The thread is for the
+          moment they hesitate. */}
+      <ChallengeThread slug={challenge.slug} title={challenge.title} />
     </div>
   );
 }
