@@ -49,3 +49,13 @@ export const LANDING_PITCH =
   "Hello. I'm Coach. Here's how this works: Tariq teaches you, and then you record yourself doing it. I watch every take you send me - your gestures, your eyes, your voice, the story you told - and I tell you what landed, what didn't, and the one thing to change next time. Not a score out of ten from a machine. A real review, in your ear, on every single take. That's the part you can't get from watching videos, and it's the part that makes you better.";
 
 export const LANDING_PITCH_AUDIO = "/coach/landing-pitch.mp3";
+
+// The headline, said aloud.
+//
+// The line is the whole promise of the course, and a promise read is
+// weaker than a promise heard - particularly this one, which is about
+// the sound of somebody's voice. The words stay on screen and the
+// voice is offered beside them.
+
+export const HEADLINE_SPOKEN = "Discover your true colors, and roar on screen or stage.";
+export const HEADLINE_AUDIO = "/coach/headline.mp3";

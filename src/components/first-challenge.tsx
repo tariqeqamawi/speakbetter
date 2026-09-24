@@ -8,7 +8,7 @@ import { CategoryChip } from "@/components/category-chip";
 import { XpBadge } from "@/components/xp-badge";
 import { challengeXp } from "@/lib/progress";
 import { LazyVimeoPlayer } from "@/components/lazy-vimeo-player";
-import { PracticePanel } from "@/components/practice-panel";
+import { CoachDemo } from "@/components/coach-demo";
 import { LionMouth } from "@/components/lion-mouth";
 import { CircleIcon } from "@/components/icons";
 import { useStore } from "@/lib/store";
@@ -149,7 +149,21 @@ export function FirstChallenge() {
             </section>
           )}
 
-          <PracticePanel challenge={challenge} />
+          {/* NOT the live practice panel.
+              
+              It mounted the real recorder on the sales page, which
+              pinned a Record / Upload bar under the navigation of
+              every screen a visitor scrolled through - a control for
+              an app they have not bought, following them down a page
+              that is trying to explain what the app is. It also asked
+              for the camera from somebody who has not decided
+              anything yet.
+              
+              What answers the question they actually have at this
+              point - "what does the feedback look like?" - is the
+              coach demo higher up the page, which shows a real review,
+              spoken and visual, and asks nothing of them. */}
+          <CoachDemo />
         </div>
       </div>
     </section>

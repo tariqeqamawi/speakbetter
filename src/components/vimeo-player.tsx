@@ -455,16 +455,85 @@ export function VimeoPlayer({
     }
   }, [captionsOn, captionLang]);
 
-  const seek = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
+  // Scrubbing, with a thumb.
+  //
+  // The bar only answered clicks before: you could tap a point and
+  // jump to it, but you could not drag along it - which is the one
+  // gesture anybody actually uses to find a moment in a video, and the
+  // only one available on a phone. A tap is a guess; a drag is a
+  // search, and you cannot search a video by guessing.
+  //
+  // While dragging, the bar owns the pointer (setPointerCapture), so
+  // the scrub survives the thumb wandering off the 4px strip - which
+  // it will, because a thumb is about forty times taller than the bar.
+  const scrubbing = useRef(false);
+
+  const ratioFrom = useCallback((el: HTMLElement, clientX: number) => {
+    const rect = el.getBoundingClientRect();
+    return Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+  }, []);
+
+  /** Where the bar is pointing, as the drag happens. The video is only
+   *  told at the end: seeking on every move of a finger is dozens of
+   *  requests a second to a player that answers them out of order. */
+  const [dragAt, setDragAt] = useState<number | null>(null);
+
+  const onScrubDown = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!duration) return;
+      scrubbing.current = true;
+      e.currentTarget.setPointerCapture(e.pointerId);
+      setDragAt(ratioFrom(e.currentTarget, e.clientX));
+    },
+    [duration, ratioFrom],
+  );
+
+  const onScrubMove = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!scrubbing.current || !duration) return;
+      setDragAt(ratioFrom(e.currentTarget, e.clientX));
+    },
+    [duration, ratioFrom],
+  );
+
+  const onScrubUp = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!scrubbing.current) return;
+      scrubbing.current = false;
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      } catch {
+        // The pointer was already gone; nothing to release.
+      }
+      const at = ratioFrom(e.currentTarget, e.clientX);
+      setDragAt(null);
       const p = playerRef.current;
       if (!p || !duration) return;
-      const rect = e.currentTarget.getBoundingClientRect();
-      const ratio = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
-      p.setCurrentTime(ratio * duration).catch(() => {});
-      setProgress(ratio);
+      p.setCurrentTime(at * duration).catch(() => {});
+      setProgress(at);
     },
-    [duration],
+    [duration, ratioFrom],
+  );
+
+  /** Arrow keys, five seconds a press - the bar says it is a slider,
+   *  so it has to behave like one. */
+  const onScrubKey = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      const p = playerRef.current;
+      if (!p || !duration) return;
+      const step = e.shiftKey ? 30 : 5;
+      let to: number | null = null;
+      if (e.key === "ArrowRight") to = progress * duration + step;
+      if (e.key === "ArrowLeft") to = progress * duration - step;
+      if (e.key === "Home") to = 0;
+      if (e.key === "End") to = duration;
+      if (to === null) return;
+      e.preventDefault();
+      const clamped = Math.min(duration, Math.max(0, to));
+      p.setCurrentTime(clamped).catch(() => {});
+      setProgress(clamped / duration);
+    },
+    [duration, progress],
   );
 
   const setFrameMode = (mode: Frame) =>
@@ -729,26 +798,42 @@ export function VimeoPlayer({
       {/* our controls */}
       <div className="flex flex-col gap-2 rounded-xl border border-navy-600 bg-navy-800 p-2.5">
         <div
-          onClick={seek}
+          onPointerDown={onScrubDown}
+          onPointerMove={onScrubMove}
+          onPointerUp={onScrubUp}
+          onPointerCancel={onScrubUp}
+          onKeyDown={onScrubKey}
           role="slider"
           tabIndex={0}
           aria-label="Seek"
-          aria-valuenow={Math.round(progress * 100)}
+          aria-valuenow={Math.round((dragAt ?? progress) * 100)}
           aria-valuemin={0}
           aria-valuemax={100}
-          className="group h-4 cursor-pointer py-1.5"
+          // Tall enough for a thumb, and it never scrolls the page out
+          // from under a scrub.
+          className="group -my-1 h-7 cursor-pointer touch-none py-3"
         >
-          <div className="h-1 overflow-hidden rounded-full bg-navy-600">
+          <div className="relative h-1 rounded-full bg-navy-600">
             <div
-              className="spectrum-rule h-full rounded-full"
-              style={{ width: `${progress * 100}%` }}
+              className="spectrum-rule absolute inset-y-0 left-0 rounded-full"
+              style={{ width: `${(dragAt ?? progress) * 100}%` }}
+            />
+            {/* The handle: always there under a mouse on hover, and
+                always there while a thumb is on it, so there is
+                something to aim at rather than a hairline. */}
+            <span
+              aria-hidden
+              className={`absolute top-1/2 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink shadow transition-opacity ${
+                dragAt === null ? "opacity-0 group-hover:opacity-100" : "opacity-100"
+              }`}
+              style={{ left: `${(dragAt ?? progress) * 100}%` }}
             />
           </div>
         </div>
 
         <div className="flex items-center gap-1.5">
           <span className="w-24 shrink-0 font-mono text-[0.7rem] tabular-nums text-ink-faint">
-            {fmt(progress * duration)} / {fmt(duration)}
+            {fmt((dragAt ?? progress) * duration)} / {fmt(duration)}
           </span>
 
           <div className="ml-auto flex items-center gap-1">

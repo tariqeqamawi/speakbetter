@@ -24,7 +24,8 @@ import { TheReality } from "@/components/the-reality";
 import { TestimonialStream } from "@/components/testimonial-stream";
 import { ProofLine } from "@/components/proof-line";
 import { LionPitch } from "@/components/lion-pitch";
-import { LANDING_PITCH, LANDING_PITCH_AUDIO } from "@/data/welcome-speech";
+import { LANDING_PITCH, LANDING_PITCH_AUDIO, HEADLINE_AUDIO } from "@/data/welcome-speech";
+import { SpeakLine } from "@/components/speak-line";
 import { publishable } from "@/data/testimonials";
 import { WhatItIs } from "@/components/what-it-is";
 import { RoarMark } from "@/components/roar-mark";
@@ -66,9 +67,17 @@ export function Landing() {
           <span className="rounded-full border border-figurative/50 bg-figurative/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-figurative">
             A guided 6-week experience
           </span>
+          {/* The promise, and Coach saying it.
+              
+              The line is the whole offer, and a promise read is weaker
+              than a promise heard - especially this one, which is
+              about the sound of somebody's voice. It does not
+              autoplay: the words are on screen and the voice is
+              offered beside them. */}
           <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
             Discover your true colors and roar on screen or stage.
           </h1>
+          <SpeakLine audioSrc={HEADLINE_AUDIO} label="Hear it" />
           <p className="text-xl font-medium text-figurative text-balance sm:text-2xl">
             Six weeks. Master public speaking in minutes a day, not months - and step into your true power as a
             speaker.

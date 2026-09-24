@@ -27,8 +27,13 @@ export function WhatItIs() {
   return (
     <div className="flex w-full max-w-4xl flex-col gap-6 rounded-2xl border border-navy-600 bg-navy-800 p-6 sm:p-8">
       <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start sm:gap-7">
+        {/* The logo mark, not lion-head.png - that one is a frame from
+            the roar animation, caught mid-open, and at ninety-six
+            pixels the open mouth reads as a rendering fault rather
+            than a roar. The mark is the lion at rest and is what the
+            brand uses everywhere else on this page. */}
         <Image
-          src="/lion-head.png"
+          src="/logo-mark.png"
           alt=""
           width={220}
           height={220}
