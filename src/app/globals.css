@@ -3142,3 +3142,27 @@ html.bare .demo-banner {
   color: #47527a;
 }
 
+
+/* A trophy set down on the podium: it settles from just above rather
+ * than appearing, so walking the rack reads as one being lifted off
+ * and the next put down. */
+.trophy-arrive {
+  animation: trophy-arrive 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes trophy-arrive {
+  from {
+    opacity: 0;
+    translate: 0 -4%;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trophy-arrive {
+    animation: none;
+  }
+}

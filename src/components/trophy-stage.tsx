@@ -1,0 +1,208 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ChevronDownIcon, LockIcon, ZoomIcon } from "@/components/icons";
+import { TrophyZoom } from "@/components/trophy-zoom";
+
+// One trophy, standing on the podium, under the light.
+//
+// WHY THE TROPHY HAS TO STAND ON SOMETHING. The first trophy room laid
+// the renders over the stage photograph at whatever height the rack
+// put them, so the plinth hung in front of the podium rather than on
+// it - a cut-out held up to a picture of a stage. The eye reads that
+// instantly as two things pasted together. A trophy that is actually
+// standing on the lit disc, with its reflection in the floor, is one
+// object in one room, and that is the whole difference between a
+// prize and an icon.
+//
+// HOW IT STAYS STANDING AT EVERY SIZE. Every position here is a share
+// of the frame's HEIGHT, and the frame is never wider than the stage
+// photograph (1600x893). object-cover then only ever crops the sides,
+// so the disc sits at the same height in the frame on a phone and on a
+// desktop, and the plinth lands on it at both.
+
+/** Where the lit disc is, as a share of the frame height, measured off
+ *  stage.jpg: the spot the beam lands on is centred at 68%. */
+const DISC_Y = 0.7;
+/** How tall the trophy stands, as a share of the frame. */
+const TROPHY_H = 0.6;
+/** The renders carry a little black under the plinth (10-23px of 398);
+ *  this much of the image is below the base and sinks into the floor. */
+const BASE_PAD = 0.04;
+
+export interface StageTrophy {
+  id: string;
+  name: string;
+  how: string;
+  won: boolean;
+  image: string;
+  zoom?: string;
+  /** The skill colour it was rendered in - the same one the render
+   *  carries, rather than one derived from the id. */
+  color: string;
+  /** The material, which is the rank - shown under the name. */
+  material?: string;
+}
+
+export function TrophyStage({
+  trophies,
+  at,
+  onGo,
+}: {
+  trophies: StageTrophy[];
+  at: number;
+  onGo: (i: number) => void;
+}) {
+  const frame = useRef<HTMLDivElement>(null);
+  const [h, setH] = useState(0);
+
+  // The zoom wants a height in pixels, and the frame's height changes
+  // with the width of the screen.
+  useEffect(() => {
+    const el = frame.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([e]) => setH(e.contentRect.height));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const go = useCallback(
+    (delta: number) => onGo(Math.min(trophies.length - 1, Math.max(0, at + delta))),
+    [at, onGo, trophies.length],
+  );
+
+  useEffect(() => {
+    const el = frame.current;
+    if (!el) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") { e.preventDefault(); go(-1); }
+      if (e.key === "ArrowRight") { e.preventDefault(); go(1); }
+    };
+    el.addEventListener("keydown", onKey);
+    return () => el.removeEventListener("keydown", onKey);
+  }, [go]);
+
+  const touch = useRef<number | null>(null);
+  const onTouchStart = (e: React.TouchEvent) => { touch.current = e.touches[0].clientX; };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touch.current === null) return;
+    const dx = e.changedTouches[0].clientX - touch.current;
+    if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1);
+    touch.current = null;
+  };
+
+  const here = trophies[at];
+  if (!here) return null;
+  const color = `var(--color-${here.color})`;
+  const trophyPx = Math.round(h * TROPHY_H);
+
+  return (
+    <div className="flex flex-col items-center gap-5">
+      <div
+        ref={frame}
+        tabIndex={0}
+        role="group"
+        aria-label="Trophy stage"
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        className="relative aspect-[3/4] w-full overflow-hidden rounded-3xl border border-navy-700 bg-[#03060d] outline-none focus-visible:ring-2 focus-visible:ring-figurative sm:aspect-[1600/893]"
+      >
+        {/* The room. Full strength - it is a dark photograph already,
+            and dimming it again took the podium away with it. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/trophy/stage.jpg"
+          alt=""
+          aria-hidden
+          className="pointer-events-none absolute inset-0 size-full object-cover"
+        />
+
+        {/* What the trophy throws onto the disc around it. The lamp
+            stays warm white; the colour belongs to the object. */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 transition-[background] duration-500"
+          style={{
+            background: `radial-gradient(34% 12% at 50% ${DISC_Y * 100}%, color-mix(in oklab, ${here.won ? color : "#000"} 30%, transparent), transparent 75%)`,
+          }}
+        />
+
+        {/* Its reflection in the wet floor, below the base. Keyed so it
+            arrives with the trophy rather than ahead of it. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          key={`${here.id}-reflection`}
+          src={here.image}
+          alt=""
+          aria-hidden
+          className="trophy-arrive pointer-events-none absolute left-1/2"
+          style={{
+            height: `${TROPHY_H * 100}%`,
+            top: `${(DISC_Y - TROPHY_H * BASE_PAD) * 100}%`,
+            transform: "translateX(-50%) scaleY(-1)",
+            opacity: here.won ? 0.22 : 0.08,
+            filter: here.won ? "blur(1.5px)" : "grayscale(1) blur(1.5px)",
+            maskImage: "linear-gradient(to top, black, transparent 45%)",
+            WebkitMaskImage: "linear-gradient(to top, black, transparent 45%)",
+          }}
+        />
+
+        {/* The trophy, its plinth set down on the disc. */}
+        {h > 0 && (
+          <div
+            key={here.id}
+            className="trophy-arrive absolute left-1/2 z-10"
+            style={{
+              bottom: `${(1 - DISC_Y - TROPHY_H * BASE_PAD) * 100}%`,
+              transform: "translateX(-50%)",
+            }}
+          >
+            <TrophyZoom src={here.image} zoomSrc={here.zoom} alt={here.name} height={trophyPx} dimmed={!here.won} />
+          </div>
+        )}
+
+        {at > 0 && (
+          <button
+            type="button"
+            onClick={() => go(-1)}
+            aria-label="Previous trophy"
+            className="absolute left-3 top-1/2 z-30 grid size-11 -translate-y-1/2 place-items-center rounded-full border border-navy-600 bg-navy-900/80 text-ink-muted backdrop-blur transition-colors hover:text-ink"
+          >
+            <ChevronDownIcon className="size-5 rotate-90" />
+          </button>
+        )}
+        {at < trophies.length - 1 && (
+          <button
+            type="button"
+            onClick={() => go(1)}
+            aria-label="Next trophy"
+            className="absolute right-3 top-1/2 z-30 grid size-11 -translate-y-1/2 place-items-center rounded-full border border-navy-600 bg-navy-900/80 text-ink-muted backdrop-blur transition-colors hover:text-ink"
+          >
+            <ChevronDownIcon className="size-5 -rotate-90" />
+          </button>
+        )}
+      </div>
+
+      {/* Fixed height so the page does not jump between a short name
+          and a long one. */}
+      <div className="flex min-h-[6rem] flex-col items-center gap-1.5 text-center">
+        <span className="flex items-center gap-2">
+          {!here.won && <LockIcon className="size-4 text-ink-faint" />}
+          <span className="text-2xl font-bold tracking-tight" style={{ color: here.won ? color : "var(--color-ink-faint)" }}>
+            {here.name}
+          </span>
+        </span>
+        {here.how && <span className="max-w-sm text-sm text-ink-muted text-balance">{here.how}</span>}
+        <span className="text-xs tabular-nums text-ink-faint">
+          {here.material && <span className="capitalize">{here.material} · </span>}
+          {at + 1} of {trophies.length}
+          {here.won ? " · awarded" : " · not yet"}
+        </span>
+        <span className="flex items-center gap-1.5 text-xs text-ink-faint">
+          <ZoomIcon className="size-3.5" />
+          Press and drag on the trophy to look closer
+        </span>
+      </div>
+    </div>
+  );
+}
