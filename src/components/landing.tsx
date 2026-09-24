@@ -17,6 +17,7 @@ import { OriginStory } from "@/components/origin-story";
 import { SpectrumDemo } from "@/components/spectrum-demo";
 import { HeroBeat } from "@/components/hero-beat";
 import { TheReality } from "@/components/the-reality";
+import { JoinCta } from "@/components/join-cta";
 import { TestimonialStream } from "@/components/testimonial-stream";
 import { ProofLine } from "@/components/proof-line";
 import { LionPitch } from "@/components/lion-pitch";
@@ -144,11 +145,7 @@ function LandingBody() {
             it. What they have not been told yet is HOW - so that is
             what this says now. */}
         <WhatItIs />
-        <div className="flex flex-col items-center gap-2">
-          <a href="#pricing" className="text-xs font-medium text-ink-faint underline-offset-4 hover:text-ink hover:underline">
-            See what&apos;s included
-          </a>
-        </div>
+        <JoinCta label="Join Speak Better Now" />
       </section>
 
       {/* Coach, in his own voice, before anything else argues for him.
@@ -199,6 +196,7 @@ function LandingBody() {
         </details>
 
         <CoachDemo />
+        <JoinCta label="Start My Speaking Journey" />
       </section>
 
       <ProofLine tag="teacher" />
@@ -332,6 +330,7 @@ function LandingBody() {
           color by color, exactly as you&apos;ll find it inside.
         </p>
         <LessonGallery />
+        <JoinCta label="I'm Ready" />
       </section>
 
       <ProofLine tag="storytelling" />
@@ -430,10 +429,12 @@ function LandingBody() {
         </div>
       </section>
 
+      <JoinCta label="Sign Me Up" />
+
       <ProofLine tag="results" />
 
       {/* Pricing */}
-      <section id="pricing" className="flex flex-col items-center gap-6">
+      <section id="pricing" className="flex scroll-mt-20 flex-col items-center gap-6">
         <div className="flex flex-col items-center gap-2 text-center">
           <div className="spectrum-rule h-1 w-16 rounded-full" />
           <TestimonialStream items={lateProof} columns={3} />

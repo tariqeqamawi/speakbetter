@@ -3192,3 +3192,13 @@ html.bare .demo-banner {
     animation: none;
   }
 }
+
+/* A page with the tiers on it glides to them rather than jumping - the
+ * join buttons are several screens above #pricing, and a cut that far
+ * leaves somebody unsure where they have landed. Scoped with :has() so
+ * no other page's anchors change. */
+@media (prefers-reduced-motion: no-preference) {
+  html:has(#pricing) {
+    scroll-behavior: smooth;
+  }
+}
