@@ -4,7 +4,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useStore } from "@/lib/store";
-import { ChallengesIcon, CommunityIcon, HomeIcon, ProfileIcon, SkillsIcon, TapIcon } from "@/components/icons";
+import {
+  ChallengesIcon,
+  CommunityIcon,
+  HomeIcon,
+  LiveIcon,
+  ProfileIcon,
+  SkillsIcon,
+  TapIcon,
+} from "@/components/icons";
 import { Soundwave } from "@/components/soundwave";
 import { LionMouth } from "@/components/lion-mouth";
 import { JumpButton } from "@/components/jump";
@@ -198,6 +206,16 @@ export function Sidebar() {
         tour="community"
         Icon={CommunityIcon}
         active={isOn(pathname, "/community")}
+      />
+      {/* The live calls. Dated, so unlike everything else in the app it
+          is a thing a student can MISS - which is exactly why it earns
+          a standing place rather than living two taps in. */}
+      <RailLink
+        href="/live"
+        label="Live sessions"
+        tour="live"
+        Icon={LiveIcon}
+        active={isOn(pathname, "/live")}
       />
     </nav>
   );

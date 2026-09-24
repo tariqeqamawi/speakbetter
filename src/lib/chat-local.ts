@@ -1,6 +1,6 @@
 "use client";
 
-import { communityPosts } from "@/data/community-activity";
+import { challengeChatter } from "@/data/challenge-chatter";
 
 // The rooms, with no server behind them.
 //
@@ -99,21 +99,20 @@ const SEEDS: Record<string, { name: string; body: string; hoursAgo: number }[]> 
   ],
 };
 
-/** A per-challenge thread's opening messages, generated so that every
- *  challenge has something rather than only the four that were typed. */
+/**
+ * A room's opening messages.
+ *
+ * Challenge threads get lines written about that particular challenge
+ * (data/challenge-chatter) rather than generic filler shuffled across
+ * twenty-four of them. Somebody reading this is standing on that
+ * challenge about to record, and the same four cheerful sentences
+ * everywhere is obvious by the second thread.
+ */
 function seedFor(room: string): { name: string; body: string; hoursAgo: number }[] {
   if (SEEDS[room]) return SEEDS[room];
-  if (!room.startsWith("challenge:")) return [];
-  // Deterministic from the room name, so a challenge always gets the
-  // same two people saying the same things - a thread that reshuffles
-  // on reload reads as broken.
-  const n = [...room].reduce((a, c) => a + c.charCodeAt(0), 0);
-  const a = communityPosts[n % communityPosts.length];
-  const b = communityPosts[(n * 7 + 3) % communityPosts.length];
-  return [
-    { name: a.name, body: a.text, hoursAgo: 28 },
-    { name: b.name, body: b.text, hoursAgo: 9 },
-  ];
+  const slug = room.startsWith("challenge:") ? room.slice("challenge:".length) : null;
+  if (!slug) return [];
+  return challengeChatter[slug] ?? [];
 }
 
 function ensure(book: Book, room: string): LocalPost[] {
