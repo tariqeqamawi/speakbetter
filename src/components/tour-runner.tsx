@@ -188,7 +188,6 @@ export function TourRunner({
           height: box.height + pad * 2,
         }
       : null;
-  const below = hole ? hole.top + hole.height < window.innerHeight * 0.55 : true;
 
   if (staged && stop.film)
     return createPortal(
@@ -260,39 +259,41 @@ export function TourRunner({
 
   return createPortal(
     <div className="fixed inset-0 z-[60]" role="dialog" aria-modal="true" aria-label={`Guided tour: ${stop.title}`}>
+      {/* The screen is NOT dimmed.
+          
+          Four black panels and a cut-out ring were four fifths of the
+          screen spent hiding the app in order to point at one twentieth
+          of it - during a tour whose entire job is showing somebody the
+          app. What is left is a ring around the thing being talked
+          about and a tap-anywhere-else to leave, so the app stays lit
+          and legible and the eye is guided rather than the alternative
+          being blacked out. */}
       {hole ? (
         <>
-          <div className="absolute inset-x-0 top-0 bg-navy-950/82" style={{ height: hole.top }} onClick={done} />
+          <div className="absolute inset-0" onClick={done} />
           <div
-            className="absolute bg-navy-950/82"
-            style={{ top: hole.top, left: 0, width: hole.left, height: hole.height }}
-            onClick={done}
+            aria-hidden
+            className="tour-ring pointer-events-none absolute rounded-2xl ring-2 ring-storytelling"
+            style={hole}
           />
-          <div
-            className="absolute bg-navy-950/82"
-            style={{ top: hole.top, left: hole.left + hole.width, right: 0, height: hole.height }}
-            onClick={done}
-          />
-          <div
-            className="absolute inset-x-0 bottom-0 bg-navy-950/82"
-            style={{ top: hole.top + hole.height }}
-            onClick={done}
-          />
-          <div aria-hidden className="tour-ring pointer-events-none absolute rounded-2xl ring-2 ring-storytelling" style={hole} />
         </>
       ) : (
-        <div className="absolute inset-0 bg-navy-950/88" onClick={done} />
+        <div className="absolute inset-0 bg-navy-950/45" onClick={done} />
       )}
 
+      {/* Out of the way, at the foot of the screen.
+          
+          It used to be a padded card that moved above or below the
+          highlight depending on where that was, which meant the words
+          arrived somewhere different each stop and often on top of the
+          thing they were describing. A caption strip stays where
+          captions stay: one place, the bottom, minimal, so the screen
+          above it belongs to the app being shown. */}
       <div
-        className={`absolute inset-x-3 mx-auto flex flex-col gap-3 transition-all duration-500 ease-out ${
+        className={`absolute inset-x-2 mx-auto flex flex-col gap-2 transition-all duration-500 ease-out ${
           opening
             ? "top-1/2 max-w-md -translate-y-1/2 items-center"
-            : `max-w-sm rounded-2xl border border-navy-500 bg-navy-850 p-4 shadow-2xl shadow-navy-950 ${
-                below
-                  ? "bottom-[max(5.5rem,env(safe-area-inset-bottom))] sm:bottom-8"
-                  : "top-[max(5rem,env(safe-area-inset-top))]"
-              }`
+            : "bottom-[max(4.75rem,env(safe-area-inset-bottom))] max-w-xl rounded-xl border border-navy-600 bg-navy-950/92 px-3 py-2 backdrop-blur sm:bottom-6"
         }`}
       >
         <div className={`flex gap-3 ${opening ? "flex-col items-center text-center" : "items-start"}`}>
@@ -305,7 +306,7 @@ export function TourRunner({
               element, so the browser moves him; two would be a cut. */}
           <span
             className={`tour-lion shrink-0 transition-[width] duration-500 ease-out ${
-              opening ? "w-[17rem] max-w-[78vw] sm:w-[21rem]" : "w-11"
+              opening ? "w-[17rem] max-w-[78vw] sm:w-[21rem]" : "w-9"
             }`}
           >
             <TalkingLion
@@ -319,15 +320,17 @@ export function TourRunner({
           </span>
 
           <div className={`flex min-w-0 flex-1 flex-col gap-1 ${opening ? "items-center" : ""}`}>
-            {!opening && (
-              <span className="text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-ink-faint">
-                {step + offset} of {stops.length - 1 + offset}
+            {/* The title is the opening's business. Mid-tour it is a
+                third line competing with the one sentence that
+                matters, so the step count carries it instead. */}
+            {opening ? (
+              <h2 className="text-2xl font-bold text-ink text-balance sm:text-3xl">{stop.title}</h2>
+            ) : (
+              <span className="text-[0.55rem] font-semibold uppercase tracking-[0.25em] text-ink-faint">
+                {stop.title} · {step + offset} of {stops.length - 1 + offset}
               </span>
             )}
-            <h2 className={opening ? "text-2xl font-bold text-ink text-balance sm:text-3xl" : "text-base font-bold text-ink"}>
-              {stop.title}
-            </h2>
-            <p className={opening ? "text-base leading-relaxed text-ink-muted text-balance" : "text-sm leading-snug text-ink-muted text-balance"}>
+            <p className={opening ? "text-base leading-relaxed text-ink-muted text-balance" : "text-sm leading-snug text-ink"}>
               {line}
             </p>
           </div>

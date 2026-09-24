@@ -1,12 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
-import { useStore } from "@/lib/store";
-import { challenges } from "@/data/challenges";
-import { presence } from "@/data/community-presence";
 import { ChevronDownIcon, GroupIcon } from "@/components/icons";
-import { Avatar } from "@/components/avatar";
 
 // The community, as a bar that stays put.
 //
@@ -23,51 +18,23 @@ import { Avatar } from "@/components/avatar";
 // the fold.
 
 export function TodayCommunityBar() {
-  const { ready, isChallengeComplete } = useStore();
-  const crowd = useMemo(() => presence(), []);
-  if (!ready) return null;
-
-  // The challenge they are on, and who else is standing on it.
-  const mine =
-    challenges.find((c) => !c.passive && !isChallengeComplete(c.slug)) ??
-    challenges.filter((c) => !c.passive).at(-1)!;
-  const here = crowd.find((c) => c.slug === mine.slug);
-  // `recent` is who has been seen on it lately - the right few faces
-  // to show, rather than every name on the challenge.
-  const faces = (here?.recent ?? []).slice(0, 3).map((r) => r.name);
-  const others = here?.count ?? 0;
-
   return (
     <Link
       href="/community"
       data-tour="community"
-      className="sticky-under-header -mx-1 flex items-center gap-3 rounded-full border border-mindset/40 bg-navy-800 px-3 py-2 transition-colors hover:border-mindset"
+      // A pill, in the community's own colour, saying one word.
+      //
+      // It carried a headcount before - "31 others are on this
+      // challenge" - which is the more interesting sentence and the
+      // wrong one for a bar somebody is scanning past. A door is
+      // labelled with where it goes; what is behind it is what you
+      // find when you open it, and everything about who is there is
+      // already on the page this opens.
+      className="sticky-under-header -mx-1 flex min-h-12 items-center justify-center gap-2.5 rounded-full bg-mindset px-5 text-navy-950 shadow-[0_0_28px_-8px_var(--color-mindset)] transition-transform hover:scale-[1.01] active:scale-[0.99]"
     >
-      <span className="grid size-7 shrink-0 place-items-center rounded-full bg-mindset/15 text-mindset">
-        <GroupIcon className="size-4" />
-      </span>
-
-      {faces.length > 0 && (
-        <span className="flex shrink-0 -space-x-2">
-          {faces.map((name: string) => (
-            <Avatar key={name} name={name} className="size-6 ring-2 ring-navy-800" />
-          ))}
-        </span>
-      )}
-
-      {/* It is a door, so it is labelled with where it goes. The count
-          was the more interesting sentence and the wrong one: somebody
-          scanning a sticky bar needs to know what tapping it does,
-          and "31 others are on this challenge" does not say
-          Community. The number rides alongside as the reason. */}
-      <span className="min-w-0 flex-1 truncate">
-        <span className="text-sm font-bold text-ink">Community</span>
-        {others > 0 && (
-          <span className="pl-2 text-xs text-ink-muted">{others} others on this challenge</span>
-        )}
-      </span>
-
-      <ChevronDownIcon className="size-4 shrink-0 -rotate-90 text-ink-faint" />
+      <GroupIcon className="size-5 shrink-0" />
+      <span className="text-base font-bold tracking-tight">Community</span>
+      <ChevronDownIcon className="size-4 shrink-0 -rotate-90 opacity-70" />
     </Link>
   );
 }
