@@ -89,12 +89,10 @@ export default function DashboardPage() {
         Icon={ChallengesIcon}
         accentClass="text-structure"
         large
+        afterTitle={<JumpTo href="/challenges" label="Go to Challenges" />}
         right={
-          <span className="flex items-center gap-2">
-            <span className="text-xs tabular-nums text-ink-faint">
-              {completed} of {challenges.length}
-            </span>
-            <JumpTo href="/challenges" label="Go to Challenges" />
+          <span className="text-xs tabular-nums text-ink-faint">
+            {completed} of {challenges.length}
           </span>
         }
       />
@@ -185,12 +183,10 @@ export default function DashboardPage() {
         Icon={SkillsIcon}
         accentClass="text-storytelling"
         large
+        afterTitle={<JumpTo href="/skills" label="Go to Skills" />}
         right={
-          <span className="flex items-center gap-2">
-            <span className="text-xs tabular-nums text-ink-faint">
-              {watched} of {lessons.length}
-            </span>
-            <JumpTo href="/skills" label="Go to Skills" />
+          <span className="text-xs tabular-nums text-ink-faint">
+            {watched} of {lessons.length}
           </span>
         }
       />

@@ -1502,6 +1502,83 @@ svg.soundwave-c {
 }
 
 /* The full-spectrum brand rule - category colors in canonical order */
+/* A border wearing all seven colors at once, cascading around the box.
+ *
+ * WHY NOT .neon-edge. That one drifts through the seven, which means
+ * that at any given instant it is ONE color - and a streak card caught
+ * mid-cycle just looks like a green card, or an orange one, depending
+ * entirely on when you happened to glance at it. It read as a bug on
+ * desktop and as a feature on a phone purely by the luck of the clock.
+ *
+ * The streak is the thing that pays a bonus on every color, so it
+ * should wear every color, always, and look the same on both devices.
+ *
+ * The ring is a gradient clipped to the border by two masks - one the
+ * full box, one the inside - composited with exclude so only the rim
+ * survives. The cascade is the gradient sliding through that rim.
+ */
+.spectrum-edge {
+  position: relative;
+  border-color: transparent !important;
+}
+
+.spectrum-edge::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(
+    115deg,
+    var(--color-storytelling),
+    var(--color-figurative),
+    var(--color-acting),
+    var(--color-structure),
+    #3b6cff,
+    var(--color-mindset),
+    var(--color-body-language),
+    var(--color-storytelling)
+  );
+  background-size: 260% 100%;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  animation: spectrum-cascade 14s linear infinite;
+}
+
+/* A matching halo, so the card glows rather than merely being outlined.
+ * Separate element because a box-shadow cannot take a gradient. */
+.spectrum-edge::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: inherit;
+  background: inherit;
+  opacity: 0.22;
+  filter: blur(10px);
+  pointer-events: none;
+}
+
+@keyframes spectrum-cascade {
+  to {
+    background-position: 260% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spectrum-edge::before {
+    animation: none;
+  }
+}
+
 .spectrum-rule {
   background: linear-gradient(
     90deg,
@@ -1643,17 +1720,14 @@ svg.soundwave-c {
 /* A dark box with a neon edge that drifts through the seven colors -
  * the pill's color cycle, as a border rather than a fill. */
 .neon-edge {
+  --pill: var(--pill-now, var(--color-figurative));
   border: 1.5px solid var(--pill);
   box-shadow:
     0 0 14px -4px var(--pill),
     inset 0 0 18px -12px var(--pill);
-  animation: coach-pill 42s linear infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .neon-edge {
-    animation: none;
-  }
+  transition:
+    border-color var(--pill-fade) linear,
+    box-shadow var(--pill-fade) linear;
 }
 
 .trophy-shine {
@@ -1843,15 +1917,20 @@ html.bare .demo-banner {
    color is one custom property animated on the element; the halo is
    a box-shadow of currentColor, so both follow one animation. */
 .coach-pill {
-  --pill: var(--color-figurative);
+  --pill: var(--pill-now, var(--color-figurative));
   background-color: var(--pill);
   color: var(--pill);
   box-shadow:
     0 0 0 1.5px color-mix(in oklab, var(--pill) 70%, white 30%),
     0 0 18px -2px var(--pill),
     0 0 36px -8px var(--pill);
-  animation: coach-pill 42s linear infinite;
-  transition: transform 150ms ease;
+  /* Transform stays quick - this is a button and a press must answer
+     instantly. The color takes its time. */
+  transition:
+    transform 150ms ease,
+    background-color var(--pill-fade) linear,
+    color var(--pill-fade) linear,
+    box-shadow var(--pill-fade) linear;
 }
 
 @property --pill {
@@ -1860,36 +1939,16 @@ html.bare .demo-banner {
   initial-value: #ff9500;
 }
 
-@keyframes coach-pill {
-  0% {
-    --pill: var(--color-figurative);
-  }
-  14% {
-    --pill: var(--color-storytelling);
-  }
-  28% {
-    --pill: var(--color-acting);
-  }
-  43% {
-    --pill: var(--color-structure);
-  }
-  57% {
-    --pill: #3b6cff;
-  }
-  71% {
-    --pill: var(--color-mindset);
-  }
-  86% {
-    --pill: var(--color-body-language);
-  }
-  100% {
-    --pill: var(--color-figurative);
-  }
+/* How long one color takes to become the next. PillCycle steps the
+ * value every 6s; this is the dissolve in between, so the drift still
+ * reads as a drift and not as a switch being flipped. */
+:root {
+  --pill-fade: 2600ms;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .coach-pill {
-    animation: none;
+  :root {
+    --pill-fade: 0ms;
   }
 }
 
@@ -2239,31 +2298,84 @@ html.bare .demo-banner {
   }
 }
 
-/* ── Glass ─────────────────────────────────────────────────────────────
- * Cards as panes rather than boxes: the surface lets the page's own
- * light through, a hairline catches along the top edge, and the big
- * panels blur what's behind them. Applied by matching the class every
- * card already carries, so the whole app changes at once rather than a
- * hundred files. Cheap where it's everywhere (translucency, a 1px
- * inset highlight) and expensive only where it's rare (the blur, on
- * the large rounded panels).
+/* ── Glass ───────────────────────────────────────────────────
+ * Cards as panes of glass rather than boxes.
+ *
+ * Four things together make the material read as glass, and leaving
+ * any one out makes it read as a grey box with a shadow:
+ *
+ *   1. The surface is genuinely see-through, so the ambient color
+ *      drifting behind the page shows through and every card picks up
+ *      a slightly different tint depending on what it is sitting over.
+ *   2. What shows through is BLURRED and over-saturated. The blur is
+ *      what makes it glass instead of tinted plastic; the extra
+ *      saturation is the part people read as "expensive", because real
+ *      frosted glass concentrates the color it scatters.
+ *   3. A bright hairline along the top edge and a dim one along the
+ *      bottom - light catching the lip of a physical pane. This is the
+ *      single most convincing detail and it costs nothing.
+ *   4. A soft drop shadow so the pane sits ABOVE the page rather than
+ *      being painted onto it.
+ *
+ * ON THE COST. The blur was suspected of the app's choppiness and
+ * measured innocent: ablating every backdrop-filter on the dashboard
+ * changed main-thread time by nothing at all. The real bill was one
+ * keyframe animation over a registered custom property (see
+ * pill-cycle.tsx), and with that gone there is room for the glass to
+ * be better rather than merely cheaper. It is still kept off small
+ * chips and pills, where nobody can see a blur through a 20px box and
+ * the compositor would be snapshotting the page for nothing.
  */
 [class*="bg-navy-800"]:not(.no-glass) {
-  background-color: color-mix(in oklab, var(--color-navy-800) 76%, transparent);
+  background-color: color-mix(in oklab, var(--color-navy-800) 68%, transparent);
   box-shadow:
-    inset 0 1px 0 rgba(231, 233, 242, 0.06),
+    inset 0 1px 0 rgba(231, 233, 242, 0.10),
+    inset 0 -1px 0 rgba(2, 5, 11, 0.35),
     0 1px 0 rgba(2, 5, 11, 0.4);
 }
 
 [class*="bg-navy-850"]:not(.no-glass) {
-  background-color: color-mix(in oklab, var(--color-navy-850) 82%, transparent);
+  background-color: color-mix(in oklab, var(--color-navy-850) 74%, transparent);
 }
 
-/* The panes big enough to be worth blurring behind. */
+/* The panes big enough to be worth looking through. A rounded-xl or
+ * larger corner is the app's tell for "this is a panel", which is
+ * exactly the set that should be glass - and it leaves the pills,
+ * chips and buttons alone. */
+[class*="bg-navy-800"][class*="rounded-xl"]:not(.no-glass),
+[class*="bg-navy-800"][class*="rounded-2xl"]:not(.no-glass),
+[class*="bg-navy-800"][class*="rounded-3xl"]:not(.no-glass),
+[class*="bg-navy-850"][class*="rounded-xl"]:not(.no-glass),
+[class*="bg-navy-850"][class*="rounded-2xl"]:not(.no-glass),
+[class*="bg-navy-850"][class*="rounded-3xl"]:not(.no-glass),
+.glass-blur,
+.sticky-under-header,
+.record-bar {
+  backdrop-filter: blur(22px) saturate(1.7);
+  -webkit-backdrop-filter: blur(22px) saturate(1.7);
+}
+
+/* The large panels get the lift as well - the shadow that says the
+ * pane is floating a few millimetres off the page. Restricted to the
+ * big corners so a row of small cards doesn't turn muddy. */
 [class*="bg-navy-800"][class*="rounded-2xl"]:not(.no-glass),
 [class*="bg-navy-800"][class*="rounded-3xl"]:not(.no-glass) {
-  backdrop-filter: blur(14px) saturate(1.12);
-  -webkit-backdrop-filter: blur(14px) saturate(1.12);
+  box-shadow:
+    inset 0 1px 0 rgba(231, 233, 242, 0.12),
+    inset 0 -1px 0 rgba(2, 5, 11, 0.35),
+    0 8px 28px -14px rgba(2, 5, 11, 0.85);
+}
+
+/* Safari on an old iPhone, and any browser without backdrop-filter,
+ * would show a flat 68% panel over a busy background - unreadable.
+ * Those get an opaque surface instead. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  [class*="bg-navy-800"]:not(.no-glass) {
+    background-color: var(--color-navy-800);
+  }
+  [class*="bg-navy-850"]:not(.no-glass) {
+    background-color: var(--color-navy-850);
+  }
 }
 
 /* A card that shouldn't be see-through - anything drawn over video, or

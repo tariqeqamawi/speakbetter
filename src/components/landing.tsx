@@ -1,3 +1,4 @@
+import { CohortDates } from "@/components/cohort-dates";
 import Image from "next/image";
 import { CheckIcon, XIcon } from "@/components/icons";
 import { Soundwave } from "@/components/soundwave";
@@ -58,6 +59,10 @@ export function Landing() {
             Six weeks. Master public speaking in minutes a day, not months - and step into your true power as a
             speaker.
           </p>
+          {/* The dates, high enough that nobody has to hunt for them.
+              Two facts, in the order they are asked: when does it
+              start, and what happens if I buy right now. */}
+          <CohortDates />
           <p className="max-w-xl text-lg text-ink-muted text-balance">
             Overcome fears, nerves and shyness in a fully gamified, interactive app. Watch short one-to-two-minute
             lessons and upload one-to-two-minute challenges. Now you don&apos;t only get to learn - you get to

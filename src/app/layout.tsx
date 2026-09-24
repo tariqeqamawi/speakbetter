@@ -9,6 +9,7 @@ import { CelebrationHost } from "@/components/celebrations";
 import { PushSync } from "@/components/push-sync";
 import { BareMode } from "@/components/bare-mode";
 import { CoachPopIn } from "@/components/coach-popin";
+import { PillCycle } from "@/components/pill-cycle";
 import { ServiceWorkerRegister } from "@/components/sw-register";
 import "./globals.css";
 
@@ -70,6 +71,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="flex min-h-full flex-col font-sans">
         <AmbientBackground />
+        <PillCycle />
         <StoreProvider>
           <TopBar />
           {/* bottom padding clears the mobile tab bar */}

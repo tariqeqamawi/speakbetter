@@ -112,10 +112,10 @@ export function Today() {
           cards. */}
       <section
         className={`relative flex items-center gap-4 overflow-hidden rounded-xl border p-4 ${
-          streak > 0 ? "neon-edge border-transparent bg-navy-800" : "border-navy-600 bg-navy-800"
+          streak > 0 ? "spectrum-edge bg-navy-800" : "border-navy-600 bg-navy-800"
         }`}
       >
-        {streak > 0 && <span aria-hidden className="spectrum-rule absolute inset-x-0 top-0 h-1" />}
+        {streak > 0 && <span aria-hidden className="spectrum-rule absolute inset-x-0 top-0 z-[1] h-1" />}
         <span
           className={`relative flex size-11 shrink-0 items-center justify-center rounded-full ${
             doneToday ? "bg-mindset/15 text-mindset" : streak > 0 ? "bg-acting/15 text-acting" : "bg-navy-700 text-ink-faint"

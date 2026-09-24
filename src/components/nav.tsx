@@ -46,8 +46,13 @@ export function TopBar() {
       {/* The soundwave lives in the band between the two rules */}
       <div className="relative border-b border-navy-700/80">
         <Soundwave variant="header" className="pointer-events-none absolute inset-0 h-full w-full" />
-        <div className="relative mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4 xl:max-w-[96rem]">
-          <Link href="/" className="-mx-2 flex min-h-11 items-center gap-2.5 px-2">
+        <div className="relative mx-auto flex h-14 max-w-5xl items-center gap-3 px-4 xl:max-w-[96rem]">
+          {/* The logo and the tour travel together on the left. Held
+              apart by justify-between, the tour button drifted into
+              the middle of a wide header and read as though it
+              belonged to whatever happened to be under it. Beside the
+              wordmark it reads as what it is: the way in. */}
+          <Link href="/" className="-mx-2 flex min-h-11 shrink-0 items-center gap-2.5 px-2">
             <Image
               src="/logo-mark.png"
               alt=""
@@ -67,7 +72,7 @@ export function TopBar() {
               Anywhere else, being shown the section they are standing
               in is what they actually wanted. */}
           <TourButton />
-          <div className="flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-2">
             <JumpButton />
             <CompactLinks />
           </div>

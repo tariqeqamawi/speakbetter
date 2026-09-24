@@ -13,6 +13,7 @@ export function SectionBanner({
   Icon,
   accentClass = "text-ink",
   right,
+  afterTitle,
   /** Headline treatment: the title sits large beside its icon, for the
    *  panels where the section name is the headline rather than a label. */
   large = false,
@@ -23,6 +24,11 @@ export function SectionBanner({
   Icon: ComponentType<{ className?: string }>;
   accentClass?: string;
   right?: ReactNode;
+  /** Sits immediately after the title, not out at the frame edge.
+   *  For a control that belongs to the WORD - "Challenges ->" reads as
+   *  one thing, where the same arrow pinned to the right margin reads
+   *  as unrelated furniture and is a longer reach on a phone. */
+  afterTitle?: ReactNode;
   large?: boolean;
 }) {
   const accentVar = accentClass === "text-ink" ? "var(--color-ink-faint)" : `var(--color-${accentClass.replace("text-", "")})`;
@@ -41,6 +47,7 @@ export function SectionBanner({
         <h2 className={large ? "text-2xl font-bold tracking-tight text-ink sm:text-3xl" : "text-base font-semibold text-ink"}>
           {title}
         </h2>
+        {afterTitle}
         {right && <span className="ml-auto">{right}</span>}
       </div>
       <span aria-hidden className="mx-5 h-px" style={{ background: `linear-gradient(90deg, ${accentVar}, transparent)`, opacity: 0.5 }} />

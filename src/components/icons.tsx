@@ -381,6 +381,37 @@ export function BadgeIcon({
 }
 
 /** A folded map - the day's quests as a route through it. */
+/** A date in the diary - when a cohort starts, when a session runs. */
+export function CalendarIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" />
+      <path d="M3.5 9.8h17" />
+      <path d="M8 3.5v3M16 3.5v3" />
+    </svg>
+  );
+}
+
+/** Broadcasting - a live session in progress. */
+export function LiveIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none" />
+      <path d="M7.8 7.8a6 6 0 0 0 0 8.4M16.2 16.2a6 6 0 0 0 0-8.4" />
+      <path d="M4.9 4.9a10 10 0 0 0 0 14.2M19.1 19.1a10 10 0 0 0 0-14.2" />
+    </svg>
+  );
+}
+
+/** A speech bubble - somebody said something. */
+export function ChatIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <path d="M20.5 12.2c0 4-3.8 7.2-8.5 7.2a9.7 9.7 0 0 1-2.9-.43L4.5 20.5l1.2-3.4A6.9 6.9 0 0 1 3.5 12.2C3.5 8.2 7.3 5 12 5s8.5 3.2 8.5 7.2Z" />
+    </svg>
+  );
+}
+
 export function MapIcon({ className = "size-5" }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>

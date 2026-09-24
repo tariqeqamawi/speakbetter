@@ -24,13 +24,21 @@ import { CheckIcon, LockIcon } from "@/components/icons";
 // job is to show what a student has and what is left - it hid the
 // answer to the question they came to ask.
 
-/** A word for each phase that fits under a circle. */
+/**
+ * A word for each phase that fits under a circle.
+ *
+ * These are the VERBS the phase names open with, not the nouns they
+ * end on - Start, Train, Own, Reveal, Your voice. Read down the row
+ * they spell the thing out: S-T-O-R-Y, and each letter is an
+ * instruction rather than a topic. "Awareness" and "Instrument" named
+ * the subject; these name what the student does about it.
+ */
 const SHORT: Record<string, string> = {
-  S: "Awareness",
-  T: "Instrument",
-  O: "Stories",
-  R: "Truth",
-  Y: "The world",
+  S: "Start",
+  T: "Train",
+  O: "Own",
+  R: "Reveal",
+  Y: "Your voice",
 };
 
 export function JourneyPhases({
