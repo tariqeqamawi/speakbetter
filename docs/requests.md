@@ -98,20 +98,8 @@ Tariq topped up the account, so the cap is gone.
       and falls back to text-only until the image exists (`the-reality.tsx`, `STILL`)
 
 ### Asked for and not yet started
-- [ ] **Karaoke captions on the welcome and intention pages.** The guided tour has them
-      (`2c9b0a1`); these two still show their paragraph all at once. The hard part is
-      done — `onSay` in `talking-lion.tsx` hands the timing to whoever wants to draw it.
-- [ ] **"Send it" goes straight into the tour** — no "Show me around / Straight in" choice,
-      with a skip available
-- [ ] **The intro video edit** — first ~20s after "screen or stage", then cut to ~1:38.
-      *Needs a decision:* a real edit and re-upload (seamless, honest scrub bar, needs the
-      source file) or a player-controlled seek (no re-upload, visible half-second stall,
-      scrub bar shows the original duration).
-- [ ] **The new tour copy** — Tariq wrote a full replacement script; it has not been sent
-      through yet. The live tour is the version written from the earlier spec.
-- [ ] **Master plan write-up** — ~40 commits of changes since 23 September are not yet in
-      `docs/master-plan.md`
-
+- [ ] **Landing page: faster load, smoother animation on laptop and desktop** (24 Sep).
+      In progress.
 ### Decided, for the record
 - **The streak past day ten.** 5% a day to +50% at ten days (unchanged), then 2.5% a day
   to **+100% at thirty days**, and it stops there. Past the ceiling the reward is a
@@ -190,6 +178,12 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **24 September**
+- The trophies whole again: every one re-cut by the model's own transparent background
+  instead of by brightness, which had deleted the obsidian, the plinths and the deep
+  glass — `b80867b`
+- Every button under Coach is the big waveform pill (`CoachPill`) — `71726a4`
+- The lesson library fills its card on desktop; the list runs the preview's full
+  height — `71726a4`
 - The trophy room: every trophy standing on the podium under the light, its
   reflection in the floor; all 47 in a grid by material below; "part-way through"
   shows the case as a student sees it — `fb7b687`. At **/prototype/spotlight**.
