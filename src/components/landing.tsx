@@ -22,6 +22,9 @@ import { SpectrumDemo } from "@/components/spectrum-demo";
 import { HeroBeat } from "@/components/hero-beat";
 import { TheReality } from "@/components/the-reality";
 import { TestimonialStream } from "@/components/testimonial-stream";
+import { ProofLine } from "@/components/proof-line";
+import { LionPitch } from "@/components/lion-pitch";
+import { LANDING_PITCH, LANDING_PITCH_AUDIO } from "@/data/welcome-speech";
 import { publishable } from "@/data/testimonials";
 import { WhatItIs } from "@/components/what-it-is";
 import { RoarMark } from "@/components/roar-mark";
@@ -146,6 +149,53 @@ export function Landing() {
         <PreviewChip />
       </section>
 
+      {/* Coach, in his own voice, before anything else argues for him.
+          A claim ABOUT a thing is always weaker than the thing. */}
+      <LionPitch line={LANDING_PITCH} audioSrc={LANDING_PITCH_AUDIO} />
+
+      {/* The coach, actually coaching */}
+      <section className="flex flex-col items-center gap-4">
+        <h2 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+          Experience your Speak Better coach now
+        </h2>
+        <div className="flex max-w-2xl flex-col items-center gap-4 text-center">
+          <p className="text-lg text-ink-muted text-balance">
+            The whole Speak Better system is built on this. How do you teach a methodology this effective at scale?
+            With a competent AI coach trained on the methodology itself.
+          </p>
+          <p className="text-ink-muted text-balance">
+            Record a challenge and, in a minute or two, your coach - the lion - watches your video and makes note of:
+          </p>
+          <ul className="flex flex-wrap justify-center gap-2">
+            {[
+              ["your hand gestures", "text-body-language"],
+              ["your body language", "text-body-language"],
+              ["your eye contact", "text-body-language"],
+              ["your storytelling", "text-storytelling"],
+              ["your figurative language", "text-figurative"],
+              ["your acting", "text-acting"],
+              ["your energy", "text-acting"],
+              ["your tone of voice", "text-acting"],
+            ].map(([label, color]) => (
+              <li
+                key={label}
+                className={`rounded-full border border-navy-600 bg-navy-800/70 px-3 py-1 text-xs font-semibold ${color}`}
+              >
+                {label}
+              </li>
+            ))}
+          </ul>
+          <p className="text-ink-muted text-balance">
+            Then it gives you a detailed breakdown of how you did against the lessons in the course, and specific
+            notes on your performance. You&apos;ll know whether you passed or missed, what to improve next time, and
+            you&apos;ll watch your ability grow, take by take.
+          </p>
+        </div>
+        <CoachDemo />
+      </section>
+
+      <ProofLine tag="teacher" />
+
       {/* The method, as a side-by-side: every other course vs this one.
           The left card is deliberately drained of color - the palette
           belongs to the right card only, so the difference is felt
@@ -237,47 +287,6 @@ export function Landing() {
         </div>
       </section>
 
-      {/* The coach, actually coaching */}
-      <section className="flex flex-col items-center gap-4">
-        <h2 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-          Experience your Speak Better coach now
-        </h2>
-        <div className="flex max-w-2xl flex-col items-center gap-4 text-center">
-          <p className="text-lg text-ink-muted text-balance">
-            The whole Speak Better system is built on this. How do you teach a methodology this effective at scale?
-            With a competent AI coach trained on the methodology itself.
-          </p>
-          <p className="text-ink-muted text-balance">
-            Record a challenge and, in a minute or two, your coach - the lion - watches your video and makes note of:
-          </p>
-          <ul className="flex flex-wrap justify-center gap-2">
-            {[
-              ["your hand gestures", "text-body-language"],
-              ["your body language", "text-body-language"],
-              ["your eye contact", "text-body-language"],
-              ["your storytelling", "text-storytelling"],
-              ["your figurative language", "text-figurative"],
-              ["your acting", "text-acting"],
-              ["your energy", "text-acting"],
-              ["your tone of voice", "text-acting"],
-            ].map(([label, color]) => (
-              <li
-                key={label}
-                className={`rounded-full border border-navy-600 bg-navy-800/70 px-3 py-1 text-xs font-semibold ${color}`}
-              >
-                {label}
-              </li>
-            ))}
-          </ul>
-          <p className="text-ink-muted text-balance">
-            Then it gives you a detailed breakdown of how you did against the lessons in the course, and specific
-            notes on your performance. You&apos;ll know whether you passed or missed, what to improve next time, and
-            you&apos;ll watch your ability grow, take by take.
-          </p>
-        </div>
-        <CoachDemo />
-      </section>
-
       <LandingShowcase />
 
       {/* The spectrum */}
@@ -304,6 +313,8 @@ export function Landing() {
         </ul>
       </section>
 
+      <ProofLine tag="lessons" />
+
       {/* The library, in full */}
       <section className="flex flex-col items-center gap-4">
         <h2 className="text-2xl font-semibold tracking-tight">
@@ -315,6 +326,26 @@ export function Landing() {
         </p>
         <LessonGallery />
       </section>
+
+      <ProofLine tag="storytelling" />
+
+      {/* The journey */}
+      <section className="flex flex-col items-center gap-4">
+        <h2 className="text-2xl font-semibold tracking-tight">
+          Your STORY adventure
+        </h2>
+        <p className="max-w-lg text-center text-ink-muted">
+          Twenty-four challenges across five phases, drawn as a road - your face on the challenge you&apos;re
+          at, your own takes in the circles you&apos;ve passed, your trophies pinned where you won them, and
+          the other students walking it beside you. Scroll it, pinch to look closer, and tap a stop to see
+          its page the way you&apos;ll find it inside.
+        </p>
+        <StoryPreview />
+      </section>
+
+      {/* The first challenge, live - the free baseline as the thing
+          itself rather than a description of it */}
+      <FirstChallenge />
 
       {/* How Speak Better came to be - four moments, zigzagging */}
       <OriginStory />
@@ -393,23 +424,7 @@ export function Landing() {
         </div>
       </section>
 
-      {/* The journey */}
-      <section className="flex flex-col items-center gap-4">
-        <h2 className="text-2xl font-semibold tracking-tight">
-          Your STORY adventure
-        </h2>
-        <p className="max-w-lg text-center text-ink-muted">
-          Twenty-four challenges across five phases, drawn as a road - your face on the challenge you&apos;re
-          at, your own takes in the circles you&apos;ve passed, your trophies pinned where you won them, and
-          the other students walking it beside you. Scroll it, pinch to look closer, and tap a stop to see
-          its page the way you&apos;ll find it inside.
-        </p>
-        <StoryPreview />
-      </section>
-
-      {/* The first challenge, live - the free baseline as the thing
-          itself rather than a description of it */}
-      <FirstChallenge />
+      <ProofLine tag="results" />
 
       {/* Pricing */}
       <section id="pricing" className="flex flex-col items-center gap-6">

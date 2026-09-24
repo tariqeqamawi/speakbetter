@@ -53,6 +53,7 @@ const phases = readFileSync("src/data/challenges.ts", "utf8");
 const JOBS = [
   { name: "WELCOME_SPEECH", out: "welcome", from: src },
   { name: "INTENTION_SPEECH", out: "intention", from: src },
+  { name: "LANDING_PITCH", out: "landing-pitch", from: src },
   ...["S", "T", "O", "R", "Y"].map((id) => ({
     // The phases live in one array, so the marker is the phase's id
     // line and the line wanted is the `says:` after it.

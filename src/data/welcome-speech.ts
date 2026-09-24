@@ -34,3 +34,18 @@ export const INTENTION_SPEECH =
 
 /** Where that clip lives. */
 export const INTENTION_AUDIO = "/coach/intention.mp3";
+
+// And what Coach says to somebody who has not bought yet.
+//
+// Everything else on the landing page is a claim ABOUT him - that an
+// AI coach watches your videos and gives real feedback - and a claim
+// about a thing is always weaker than the thing. Him saying it, in his
+// own voice, settles in ten seconds what a page of copy argues for.
+//
+// It names the one doubt a visitor actually has at that point, which
+// is not "does it work" but "will it be any good, or is it a gimmick".
+
+export const LANDING_PITCH =
+  "Hello. I'm Coach. Here's how this works: Tariq teaches you, and then you record yourself doing it. I watch every take you send me - your gestures, your eyes, your voice, the story you told - and I tell you what landed, what didn't, and the one thing to change next time. Not a score out of ten from a machine. A real review, in your ear, on every single take. That's the part you can't get from watching videos, and it's the part that makes you better.";
+
+export const LANDING_PITCH_AUDIO = "/coach/landing-pitch.mp3";
