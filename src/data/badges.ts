@@ -45,9 +45,11 @@ export interface BadgeDef {
   message: string;
   /** Line-icon name - the fallback, and what celebrations use inline. */
   icon: string;
-  /** What to do to win it, shown on hover before it's earned. Left off
-   *  deliberately on a few, which show as hidden achievements - a
-   *  collection with nothing unknown in it stops being worth exploring. */
+  /** What to do to win it, shown under the trophy before it's earned.
+   *  A few used to be left off as hidden achievements; every trophy has
+   *  one now (24 Sep 2026) - a student looking at the rarest trophies in
+   *  the case wants to know what they are reaching for, and a blank
+   *  under the obsidian ones read as missing, not mysterious. */
   how?: string;
   earned: (s: BadgeEvalState) => boolean;
 }
@@ -153,6 +155,7 @@ export const badgeDefs: BadgeDef[] = [
     message:
       "You are a practicing machine. You've already tried the same challenge five times. Go you - you're getting so much better.",
     icon: "repeat",
+    how: "Record the same challenge five times.",
     earned: (s) => {
       const counts = new Map<string, number>();
       for (const a of s.attempts)
@@ -174,6 +177,7 @@ export const badgeDefs: BadgeDef[] = [
     message:
       "Every color lit up in a single talk. That is a genuinely dynamic speaker at work.",
     icon: "spectrum",
+    how: "Light up all seven colors in a single talk - 40 or more on every one.",
     earned: (s) =>
       s.attempts.some((a) =>
         Object.values(a.spectrum).every((v) => v >= 40),
@@ -330,6 +334,7 @@ export const badgeDefs: BadgeDef[] = [
     message:
       "All five phases complete. You can now produce a dynamic, full-spectrum talk on demand - because you've done it, with feedback, dozens of times.",
     icon: "trophy",
+    how: "Complete all five phases of the S.T.O.R.Y. road - every challenge in every phase.",
     earned: (s) => storyPhases.every((p) => phaseComplete(s, p.id)),
   },
 ];

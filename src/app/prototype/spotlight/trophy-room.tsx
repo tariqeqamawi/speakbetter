@@ -76,7 +76,7 @@ export function TrophyRoom({ trophies }: { trophies: StageTrophy[] }) {
                     type="button"
                     onClick={() => pick(i)}
                     aria-current={i === at ? "true" : undefined}
-                    className={`group flex w-full flex-col items-center gap-1 rounded-2xl border p-2 pb-3 transition-colors ${
+                    className={`group flex h-full w-full flex-col items-center justify-start gap-1 rounded-2xl border p-2 pb-3 transition-colors ${
                       i === at ? "border-ink-muted bg-navy-800" : "border-navy-700 bg-navy-900/60 hover:border-navy-500"
                     }`}
                     style={{ background: i === at ? undefined : "radial-gradient(80% 60% at 50% 30%, #101a33, #070c18)" }}
@@ -94,6 +94,11 @@ export function TrophyRoom({ trophies }: { trophies: StageTrophy[] }) {
                       {!t.won && <LockIcon className="size-3 shrink-0 text-ink-faint" />}
                       {t.name}
                     </span>
+                    {/* What it takes, under every one - not only the trophy
+                        in the light. */}
+                    {t.how && (
+                      <span className="text-center text-[0.65rem] leading-snug text-balance text-ink-muted">{t.how}</span>
+                    )}
                   </button>
                 </li>
               ))}
