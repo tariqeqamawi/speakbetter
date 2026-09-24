@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ShapeOnPlinth } from "@/components/trophy-shapes";
+import { PlinthMount } from "@/components/trophy-mounts";
 import { trophyColor } from "@/components/trophy-stand";
 import { ChevronDownIcon, LockIcon } from "@/components/icons";
 import { LightBeam } from "@/components/light-beam";
@@ -31,10 +31,18 @@ export interface SpotlightTrophy {
   name: string;
   how: string;
   won: boolean;
+  /** A rendered trophy, cut out on transparency. When one exists it is
+   *  the trophy; the drawn plinth is what stands in until it does.
+   *  Sculpted objects survive being lit far better than flat symbols,
+   *  which is the whole argument for rendering them. */
+  image?: string;
 }
 
-/** How far each step to the side moves, scales, dims and blurs. */
-const STEP_X = 168;
+/** How far each step to the side moves, scales, dims and blurs.
+ *  The medallion on its plinth is a wider object than a cut-out
+ *  symbol, so the neighbours stand further out or they crowd the one
+ *  in the light - which is the one thing this layout exists to avoid. */
+const STEP_X = 210;
 const STEP_SCALE = 0.34;
 const STEP_BLUR = 2.6;
 /** Past this many either side, a trophy is not worth painting. */
@@ -163,7 +171,19 @@ export function TrophySpotlight({
                   cursor: away === 0 ? "default" : "pointer",
                 }}
               >
-                <ShapeOnPlinth id={t.id} icon={t.icon} won={t.won} size={away === 0 ? 132 : 120} />
+                {t.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={t.image}
+                    alt=""
+                    style={{ height: away === 0 ? 250 : 230, width: "auto" }}
+                    // Not-yet-won trophies go dark and grey, the way an
+                    // empty slot in a real case reads.
+                    className={t.won ? "" : "opacity-40 grayscale"}
+                  />
+                ) : (
+                  <PlinthMount id={t.id} icon={t.icon} won={t.won} size={away === 0 ? 118 : 108} />
+                )}
               </button>
             );
           })}

@@ -21,6 +21,11 @@ const trophies: SpotlightTrophy[] = badgeDefs.map((b, i) => ({
   won: i % 2 === 0 || i < 4,
 }));
 
+/** The one trophy that has been rendered so far, in its place. */
+const rendered: SpotlightTrophy[] = trophies.map((t, i) =>
+  i === 7 ? { ...t, won: true, image: "/trophy/flame.webp" } : t,
+);
+
 export default function SpotlightPage() {
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-10 px-4 py-10">
@@ -41,6 +46,21 @@ export default function SpotlightPage() {
           own palette.
         </p>
         <TrophySpotlight trophies={trophies} start={2} />
+      </section>
+
+      {/* The test that matters: a trophy that was MODELLED rather than
+          drawn, standing on the rendered stage. The flame is the only
+          one rendered so far, so it stands in the light and the drawn
+          ones recede beside it - which also shows the two side by side
+          at the exact sizes they would appear. */}
+      <section className="flex flex-col gap-3">
+        <h2 className="text-xl font-bold tracking-tight text-ink">C - A rendered trophy, on the stage</h2>
+        <p className="max-w-2xl text-sm text-ink-muted">
+          Sculpted amber glass on a chrome stem, cut out on transparency and stood in the beam. The ones
+          either side are the drawn version, so the difference is visible at the size it will be seen. If this
+          is the look, the other forty-six get made the same way.
+        </p>
+        <TrophySpotlight trophies={rendered} start={7} backdrop="/trophy/stage.jpg" />
       </section>
 
       <section className="flex flex-col gap-3">
