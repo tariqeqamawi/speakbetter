@@ -23,7 +23,7 @@ const trophies: SpotlightTrophy[] = badgeDefs.map((b, i) => ({
 
 /** The one trophy that has been rendered so far, in its place. */
 const rendered: SpotlightTrophy[] = trophies.map((t, i) =>
-  i === 7 ? { ...t, won: true, image: "/trophy/flame.webp" } : t,
+  i === 7 ? { ...t, won: true, image: "/trophy/flame.webp", zoom: "/trophy/flame-2x.webp" } : t,
 );
 
 export default function SpotlightPage() {
@@ -57,8 +57,9 @@ export default function SpotlightPage() {
         <h2 className="text-xl font-bold tracking-tight text-ink">C - A rendered trophy, on the stage</h2>
         <p className="max-w-2xl text-sm text-ink-muted">
           Sculpted amber glass on a chrome stem, cut out on transparency and stood in the beam. The ones
-          either side are the drawn version, so the difference is visible at the size it will be seen. If this
-          is the look, the other forty-six get made the same way.
+          either side are the drawn version, so the difference is visible at the size it will be seen. Hover the
+          lit one to look at it closely - that detail is most of what a
+          render buys you.
         </p>
         <TrophySpotlight trophies={rendered} start={7} backdrop="/trophy/stage.jpg" />
       </section>

@@ -5,6 +5,7 @@ import { PlinthMount } from "@/components/trophy-mounts";
 import { trophyColor } from "@/components/trophy-stand";
 import { ChevronDownIcon, LockIcon } from "@/components/icons";
 import { LightBeam } from "@/components/light-beam";
+import { TrophyZoom } from "@/components/trophy-zoom";
 
 // The trophy room: one trophy in the spotlight, the rest receding into
 // the dark on either side.
@@ -36,6 +37,9 @@ export interface SpotlightTrophy {
    *  Sculpted objects survive being lit far better than flat symbols,
    *  which is the whole argument for rendering them. */
   image?: string;
+  /** The same render, larger, for looking at closely. Fetched only
+   *  when somebody leans in. */
+  zoom?: string;
 }
 
 /** How far each step to the side moves, scales, dims and blurs.
@@ -172,15 +176,28 @@ export function TrophySpotlight({
                 }}
               >
                 {t.image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={t.image}
-                    alt=""
-                    style={{ height: away === 0 ? 250 : 230, width: "auto" }}
-                    // Not-yet-won trophies go dark and grey, the way an
-                    // empty slot in a real case reads.
-                    className={t.won ? "" : "opacity-40 grayscale"}
-                  />
+                  away === 0 ? (
+                    // Only the one in the light can be inspected. The
+                    // others are blurred and half a size down; a zoom
+                    // on those would be a magnified blur.
+                    <TrophyZoom
+                      src={t.image}
+                      zoomSrc={t.zoom}
+                      alt={t.name}
+                      height={250}
+                      dimmed={!t.won}
+                    />
+                  ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={t.image}
+                      alt=""
+                      style={{ height: 230, width: "auto" }}
+                      // Not-yet-won trophies go dark and grey, the way
+                      // an empty slot in a real case reads.
+                      className={t.won ? "" : "opacity-40 grayscale"}
+                    />
+                  )
                 ) : (
                   <PlinthMount id={t.id} icon={t.icon} won={t.won} size={away === 0 ? 118 : 108} />
                 )}
