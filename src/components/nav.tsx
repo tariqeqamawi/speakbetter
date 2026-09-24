@@ -18,6 +18,7 @@ import { LionMouth } from "@/components/lion-mouth";
 import { JumpButton } from "@/components/jump";
 import { startTour } from "@/components/guided-tour";
 import { sectionOf, startSectionTour } from "@/components/section-tour";
+import { answerCoach, useCoachCalling } from "@/lib/coach-call";
 
 // Five destinations, one set of names, in the same order everywhere:
 // Today, Challenges, Skills, Coach, You. Coach sits in the middle and
@@ -118,6 +119,31 @@ function TourButton() {
   );
 }
 
+/**
+ * The Coach button when Coach is waiting to say something.
+ *
+ * Returns the class that makes it ring and the click that answers it.
+ * All three navigations - the phone's bar, the tablet header and the
+ * laptop rail - share this, because the student sees exactly one Coach
+ * button on any given screen and it must behave the same way on all of
+ * them.
+ *
+ * Answering does NOT follow the link. Somebody who taps a ringing
+ * button wants the thing that was ringing; taking them to a different
+ * page instead makes the ring feel like bait, and loses the message on
+ * the way. The message opens where they already are.
+ */
+function useCoachRing() {
+  const calling = useCoachCalling();
+  return {
+    calling,
+    ring: calling ? "coach-calling" : "",
+    onClick: (e: React.MouseEvent) => {
+      if (answerCoach()) e.preventDefault();
+    },
+  };
+}
+
 /** The lion's head, as a destination. */
 function CoachFace({ className = "size-9" }: { className?: string }) {
   return (
@@ -134,6 +160,7 @@ function CoachFace({ className = "size-9" }: { className?: string }) {
 function CompactLinks() {
   const pathname = usePathname();
   const { state, ready } = useStore();
+  const coach = useCoachRing();
   if (!ready || !state.unlocked) return null;
   return (
     <nav className="hidden gap-1 sm:flex lg:hidden" aria-label="Primary">
@@ -157,8 +184,9 @@ function CompactLinks() {
       <Link
         href="/coach"
         data-tour="coach"
-        aria-label="Coach"
-        className={`coach-pill flex min-h-11 items-center gap-2 rounded-full py-1 pl-1 pr-3.5 ${
+        aria-label={coach.calling ? "Coach has something to say" : "Coach"}
+        onClick={coach.onClick}
+        className={`coach-pill flex min-h-11 items-center gap-2 rounded-full py-1 pl-1 pr-3.5 ${coach.ring} ${
           pathname.startsWith("/coach") ? "ring-2 ring-ink/70" : ""
         }`}
       >
@@ -177,6 +205,7 @@ function CompactLinks() {
 export function Sidebar() {
   const pathname = usePathname();
   const { state, ready } = useStore();
+  const coach = useCoachRing();
   if (!ready || !state.unlocked) return null;
   return (
     <nav
@@ -191,13 +220,16 @@ export function Sidebar() {
       <Link
         href="/coach"
         data-tour="coach"
-        className={`coach-pill my-1 flex min-h-12 items-center gap-3 rounded-full py-1 pl-1 pr-4 ${
+        onClick={coach.onClick}
+        className={`coach-pill my-1 flex min-h-12 items-center gap-3 rounded-full py-1 pl-1 pr-4 ${coach.ring} ${
           pathname.startsWith("/coach") ? "ring-2 ring-ink/70" : ""
         }`}
         aria-current={pathname.startsWith("/coach") ? "page" : undefined}
       >
         <CoachFace className="size-10" />
-        <span className="text-sm font-bold tracking-wide text-navy-950">Coach</span>
+        <span className="text-sm font-bold tracking-wide text-navy-950">
+          {coach.calling ? "Coach…" : "Coach"}
+        </span>
       </Link>
 
       {destinations.slice(3).map(({ href, label, tour, Icon }) => (
@@ -258,6 +290,7 @@ function RailLink({
 export function BottomTabs() {
   const pathname = usePathname();
   const { state, ready } = useStore();
+  const coach = useCoachRing();
   if (!ready || !state.unlocked) return null;
   const onCoach = pathname.startsWith("/coach");
   return (
@@ -277,14 +310,18 @@ export function BottomTabs() {
           href="/coach"
           data-tour="coach"
           aria-current={onCoach ? "page" : undefined}
+          aria-label={coach.calling ? "Coach has something to say" : undefined}
+          onClick={coach.onClick}
           className="flex flex-1 flex-col items-center gap-0.5 pb-2"
         >
           <span
-            className={`coach-pill -mt-5 grid size-14 place-items-center rounded-full ${onCoach ? "ring-2 ring-ink/70" : ""}`}
+            className={`coach-pill -mt-5 grid size-14 place-items-center rounded-full ${coach.ring} ${onCoach ? "ring-2 ring-ink/70" : ""}`}
           >
             <CoachFace className="size-12" />
           </span>
-          <span className={`text-[0.7rem] font-semibold ${onCoach ? "text-ink" : "text-ink-faint"}`}>Coach</span>
+          <span className={`text-[0.7rem] font-semibold ${onCoach ? "text-ink" : "text-ink-faint"}`}>
+            {coach.calling ? "Coach…" : "Coach"}
+          </span>
         </Link>
 
         {destinations.slice(2).map(({ href, label, tour, Icon }) => (

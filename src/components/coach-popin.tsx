@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useStore } from "@/lib/store";
 import { buildContext } from "@/lib/encouragement";
 import { hapticTap } from "@/lib/feedback-fx";
+import { chime, setCoachCalling } from "@/lib/coach-call";
 import { speakUrl } from "@/lib/coach/voice";
 
 // The coach, dropping in unprompted to say something true about how the
@@ -50,15 +51,19 @@ export function CoachPopIn() {
   const { state, ready, celebrations } = useStore();
   const [message, setMessage] = useState<string | null>(null);
   const [leaving, setLeaving] = useState(false);
+  /** Whether the message is open, or still ringing in the bar. */
+  const [open, setOpen] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [jaw, setJaw] = useState(0);
   const askedRef = useRef(false);
+  const spokeRef = useRef(false);
   const rafRef = useRef<number | null>(null);
   const envRef = useRef(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const dismiss = useCallback(() => {
     setLeaving(true);
+    setCoachCalling(false);
     window.speechSynthesis?.cancel();
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     setTimeout(() => setMessage(null), 260);
@@ -189,12 +194,45 @@ export function CoachPopIn() {
 
   useEffect(() => () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); }, []);
 
+  // Coach rings, rather than arriving.
+  //
+  // The card used to slide in over whatever the student was reading.
+  // Interrupting is the one thing a good coach does not do, and it is
+  // also the worst moment for the message itself: encouragement read
+  // while your attention is elsewhere is noise. So the message waits
+  // behind the Coach button in the navigation, which rings, and it
+  // opens when the student decides to hear it - by which point they
+  // are listening.
+  const waiting = Boolean(message) && !open && !onTour && pathname !== "/coach";
+  useEffect(() => {
+    if (!waiting) {
+      setCoachCalling(false);
+      return;
+    }
+    setCoachCalling(true, () => setOpen(true));
+    chime();
+    hapticTap();
+    return () => setCoachCalling(false);
+  }, [waiting]);
+
+  // Opening it is a tap, so this is allowed to make sound - which is
+  // the point. Tariq asked that selecting the icon plays the line and
+  // shows the words, rather than offering a second button to press
+  // before anything happens.
+  useEffect(() => {
+    if (!open || spokeRef.current) return;
+    spokeRef.current = true;
+    void speak();
+  }, [open, speak]);
+
   // The tour owns the screen while it's running - two cards in the
   // same corner is one too many.
   // Not on Coach's own page: he is standing right there, full size,
   // waiting to be asked something. A pop-in of him over himself is one
   // lion too many.
-  if (!message || onTour || pathname === "/coach") return null;
+  // Nothing on screen until the student answers: while it is waiting,
+  // the whole of Coach's presence is the ringing button.
+  if (!message || !open || onTour || pathname === "/coach") return null;
 
   return (
     <div
@@ -219,14 +257,14 @@ export function CoachPopIn() {
               onClick={speaking ? stop : speak}
               className="min-h-9 rounded-lg border border-navy-600 px-3 py-1.5 text-[0.7rem] font-semibold text-ink-muted transition-colors hover:text-ink"
             >
-              {speaking ? "Stop" : "Hear it"}
+              {speaking ? "Stop" : "Again"}
             </button>
             <button
               type="button"
               onClick={dismiss}
               className="min-h-9 px-2 py-1.5 text-[0.7rem] font-medium text-ink-faint transition-colors hover:text-ink-muted"
             >
-              Thanks
+              Close
             </button>
           </div>
         </div>

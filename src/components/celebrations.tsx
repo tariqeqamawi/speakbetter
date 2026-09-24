@@ -2,8 +2,9 @@
 
 import { useEffect } from "react";
 import { useStore } from "@/lib/store";
+import { streakBonusPercent } from "@/lib/progress";
 import { currentStreak } from "@/data/badges";
-import { BadgeIcon, FlameIcon } from "@/components/icons";
+import { BadgeIcon, FlameIcon, ZapIcon } from "@/components/icons";
 import { BadgeMedal } from "@/components/badge-medal";
 import { hapticCelebrate, playCelebration } from "@/lib/feedback-fx";
 import { isBare } from "@/components/bare-mode";
@@ -63,18 +64,53 @@ export function CelebrationHost() {
   );
 }
 
+/**
+ * The streak, worn where the challenges are.
+ *
+ * It was a small grey pill in one colour, which is how you draw a
+ * status - and a streak is not a status, it is the thing paying a
+ * bonus on everything below it. So it wears all seven colours
+ * cascading through it, confetti crosses it every few seconds, and the
+ * XP the streak has earned floats up off the top of it.
+ *
+ * The floating figure is the real number: the bonus percentage applied
+ * to what the streak-days actually paid, not a decorative sparkle. A
+ * reward you can watch arriving is a different thing from one you are
+ * told about.
+ */
 export function StreakFlame() {
   const { state, ready } = useStore();
   if (!ready) return null;
   const streak = currentStreak(state);
   if (streak < 2) return null;
+  const bonus = streakBonusPercent(streak);
+
   return (
-    <span
-      title={`${streak}-day practice streak`}
-      className="inline-flex items-center gap-1.5 rounded-full border border-navy-600 bg-navy-800 px-2.5 py-1 text-xs font-semibold text-storytelling"
-    >
-      <FlameIcon className="size-3.5" />
-      {streak}-day streak
+    <span className="relative inline-flex">
+      {/* The XP the streak has been quietly paying, drifting up off
+          the pill. Two of them, offset, so it reads as a trickle
+          rather than a single tick. */}
+      <span aria-hidden className="pointer-events-none absolute inset-x-0 -top-1">
+        <span className="streak-xp absolute left-2 flex items-center gap-0.5 text-[0.6rem] font-black text-storytelling">
+          <ZapIcon className="size-2.5" />+{bonus}%
+        </span>
+        <span
+          className="streak-xp absolute right-2 flex items-center gap-0.5 text-[0.6rem] font-black text-mindset"
+          style={{ animationDelay: "2.4s" }}
+        >
+          <ZapIcon className="size-2.5" />XP
+        </span>
+      </span>
+
+      <span
+        title={`${streak}-day practice streak - +${bonus}% XP on every challenge`}
+        className="streak-pill relative inline-flex items-center gap-1.5 overflow-hidden rounded-full px-3.5 py-1.5 text-sm font-bold text-navy-950"
+      >
+        {/* Confetti crossing the pill, every few seconds. */}
+        <span aria-hidden className="streak-confetti pointer-events-none absolute inset-0" />
+        <FlameIcon className="relative size-4" />
+        <span className="relative">{streak}-day streak</span>
+      </span>
     </span>
   );
 }

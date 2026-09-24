@@ -59,10 +59,6 @@ Not credits — a per-day generation limit on the grace-period account. PLUS ann
       *Needs a decision:* a real edit and re-upload (seamless, honest scrub bar, needs the
       source file) or a player-controlled seek (no re-upload, visible half-second stall,
       scrub bar shows the original duration).
-- [ ] **Challenges streak pill** — larger, cascading neon, confetti through it every few
-      seconds, floating XP icons above it
-- [ ] **Coach button rings** — a ring sound, tap opens a tooltip with positive
-      reinforcement and a Close button, played in place rather than navigating to Coach
 - [ ] **The new tour copy** — Tariq wrote a full replacement script; it has not been sent
       through yet. The live tour is the version written from the earlier spec.
 - [ ] **Master plan write-up** — ~40 commits of changes since 23 September are not yet in
@@ -110,6 +106,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **24 September**
+- Coach rings the nav button and waits, instead of arriving over the page — `PENDING`
+- The streak pill: cascading neon, confetti, floating XP — `PENDING`
 - One wave on the Coach page, not two — `3406f13`
 - Dashboard: streak explained, Community as the sixth tab, sticky Live sessions — `085385f`
 - "Dash" tab; "How to use this deck" moved to the top of the cards page — `3406f13`

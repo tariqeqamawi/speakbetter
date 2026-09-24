@@ -1953,6 +1953,86 @@ html.bare .demo-banner {
   initial-value: #ff9500;
 }
 
+/* Coach, ringing.
+ *
+ * When he has something to say he does not put a card over the page -
+ * he rings this button and waits. The ring is three borrowed signals
+ * at once, because a notification nobody recognises is not one: the
+ * shake of a phone on a desk, the expanding rings of a call coming in,
+ * and a chime (synthesised in lib/coach-call.ts).
+ *
+ * Transform and opacity only. The seven-colour drift on this same
+ * button already taught this app what animating a registered custom
+ * property costs - thirteen times the main-thread work of everything
+ * else on the screen - so the ring stays on the compositor.
+ *
+ * The shake is two beats and then four seconds of stillness. A button
+ * that jiggles continuously stops being a signal and becomes a fault;
+ * one that goes quiet and then moves again is a thing still waiting.
+ */
+.coach-calling {
+  position: relative;
+  animation: coach-shake 5s ease-in-out infinite;
+}
+
+.coach-calling::before,
+.coach-calling::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 9999px;
+  border: 2px solid currentColor;
+  opacity: 0;
+  pointer-events: none;
+  animation: coach-ring 2.5s ease-out infinite;
+}
+
+/* The second ring leaves after the first, so they read as a pulse
+   travelling outwards rather than as one thick edge. */
+.coach-calling::after {
+  animation-delay: 0.85s;
+}
+
+@keyframes coach-shake {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  3% {
+    transform: rotate(-7deg);
+  }
+  6% {
+    transform: rotate(6deg);
+  }
+  9% {
+    transform: rotate(-5deg);
+  }
+  12% {
+    transform: rotate(4deg);
+  }
+  15% {
+    transform: rotate(-2deg);
+  }
+  18%,
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes coach-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  70% {
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.75);
+    opacity: 0;
+  }
+}
+
 /* How long one color takes to become the next. PillCycle steps the
  * value every 6s; this is the dissolve in between, so the drift still
  * reads as a drift and not as a switch being flipped. */
@@ -2708,6 +2788,104 @@ html.bare .demo-banner {
   }
 }
 
+/* ── The streak pill ───────────────────────────────────────────────────
+ * A streak is not a status, it is the thing paying a bonus on
+ * everything below it - so it is drawn like a reward rather than a
+ * label. All seven colours cascade through it, confetti crosses it
+ * every few seconds, and the XP it has earned floats up off the top.
+ *
+ * All three are transform and background-position on three small
+ * elements, and the pill only exists once somebody has a streak worth
+ * two days. Nothing here runs on a page that has no streak on it.
+ */
+.streak-pill {
+  background-image: linear-gradient(
+    100deg,
+    var(--color-storytelling),
+    var(--color-figurative),
+    var(--color-acting),
+    var(--color-structure),
+    #3b6cff,
+    var(--color-mindset),
+    var(--color-body-language),
+    var(--color-storytelling)
+  );
+  background-size: 260% 100%;
+  box-shadow: 0 0 22px -6px var(--color-figurative);
+  animation: streak-cascade 9s linear infinite;
+}
+
+@keyframes streak-cascade {
+  to {
+    background-position: 260% 0;
+  }
+}
+
+/* Confetti, as a band of flecks sweeping across and away. Every seven
+   seconds, so it is a moment rather than a texture. */
+.streak-confetti {
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.95) 0 1.2px, transparent 1.5px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.7) 0 1px, transparent 1.3px);
+  background-size: 14px 9px, 9px 13px;
+  background-position: 0 0, 5px 4px;
+  opacity: 0;
+  animation: streak-confetti 7s ease-in-out infinite;
+}
+
+@keyframes streak-confetti {
+  0%,
+  72% {
+    transform: translate3d(-120%, 0, 0);
+    opacity: 0;
+  }
+  78% {
+    opacity: 0.9;
+  }
+  92% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate3d(120%, 0, 0);
+    opacity: 0;
+  }
+}
+
+/* The XP the streak has paid, drifting up and fading. */
+.streak-xp {
+  animation: streak-xp 6s ease-out infinite;
+  opacity: 0;
+}
+
+@keyframes streak-xp {
+  0% {
+    transform: translate3d(0, 4px, 0) scale(0.7);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+    transform: translate3d(0, -2px, 0) scale(1);
+  }
+  55% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate3d(0, -22px, 0) scale(1);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .streak-pill,
+  .streak-confetti,
+  .streak-xp {
+    animation: none;
+  }
+  .streak-xp {
+    opacity: 0.9;
+  }
+}
+
 /* The one colour every lamp in the app burns at. */
 :root {
   --lamp: 255, 243, 222;
@@ -2860,5 +3038,19 @@ html.bare .demo-banner {
   .trophy-lamp,
   .trophy-sheen {
     animation: none;
+  }
+}
+
+/* Reduced motion keeps the ring but stops the shake: the expanding
+   rings are the part that says "waiting for you", and taking both
+   away would leave the button looking exactly as it does when Coach
+   has nothing to say. */
+@media (prefers-reduced-motion: reduce) {
+  .coach-calling {
+    animation: none;
+  }
+  .coach-calling::before,
+  .coach-calling::after {
+    animation-duration: 4s;
   }
 }
