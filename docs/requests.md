@@ -33,9 +33,21 @@ Last updated: 24 September 2026.
 - **A lit line down the centre** is the path the player moves along.
 - **The scroll is flipped**: dragging a thumb DOWN the screen moves you forward along the
   road. (It is currently the other way, which is correct for a page and wrong for a road.)
-- **Surprises along the way**, triggered by completing challenges — Coach appearing beside
-  the path with a word of encouragement; which other students are on the challenge you
-  are on; a comment somebody left on it. Small, occasional, and tied to progress.
+- **Surprises along the way**, triggered by completing challenges — which other students
+  are on the challenge you are on; a comment somebody left on it. Small, occasional, and
+  tied to progress.
+- **Coach standing beside the road, three times.** He appears as an icon; as you move
+  past his head he animates and speaks. His words, verbatim:
+
+  1. *"Welcome to the adventure of a lifetime, becoming the speaker you've always wanted
+     to be."*
+  2. *"Keep going. I'm here as your guide. Who knows what you'll discover about yourself
+     along the way?"*
+  3. *"The path to mastery is littered with challenges. Luckily for you, they're fun."*
+
+  These need rendering through `scripts/build-welcome.mjs` (it takes clip names now), and
+  they should speak in **captions** — one line at a time, word lit — like the tour and the
+  welcome page, using `onSay` in `talking-lion.tsx` and the shared `Caption` component.
 
 **Still true from before:** the travelling piece should be the student's avatar
 (`state.avatar`), challenge thumbnails play inside the circles, there is a finish line to
