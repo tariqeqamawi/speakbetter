@@ -47,13 +47,24 @@ export interface RoadStop {
   state: "done" | "here" | "ahead" | "locked";
   /** The take's still, once there is one - it replaces the marker. */
   poster?: string;
+  /** What passing it paid. */
   xp?: number;
+  /** The trophy standing at this checkpoint, if one was won here. */
+  trophy?: string;
 }
 
-/** World units between one checkpoint and the next. */
-const SPACING = 26;
-/** How close the camera gets before a stop is behind you. */
-const NEAR = 3.2;
+/** World units between one checkpoint and the next.
+ *
+ *  Wide, and deliberately so. A checkpoint a thumb-flick away is a
+ *  list; one that takes a moment of travelling to reach is a journey -
+ *  and the ground in between is where the trophy you won there, the XP
+ *  it paid and what Coach said about the take all belong. Scrolling
+ *  longer on a phone is the correct trade for that. */
+const SPACING = 38;
+/** How close the camera gets before a stop is behind you. Small, so a
+ *  landmark is still filling the frame when it finally passes rather
+ *  than winking out while it is still the size of a house. */
+const NEAR = 2.1;
 /** Lens. Bigger is a longer lens: less dramatic, more readable. */
 const FOCAL = 620;
 /** How high the camera rides above the road. */
@@ -64,7 +75,11 @@ const HORIZON = 0.26;
 /** The road's lateral wander at a given distance - a gentle S, so the
  *  path has somewhere to go rather than running dead straight. */
 function laneAt(z: number): number {
-  return Math.sin(z / 34) * 5.2 + Math.sin(z / 13) * 1.4;
+  // Small numbers, because lateral offset is multiplied by focal/z -
+  // a wander of five world units is barely a nudge at the horizon and
+  // throws the road a thousand pixels sideways at your feet. The bend
+  // has to be gentle in WORLD space to look like a bend on screen.
+  return Math.sin(z / 40) * 2.2 + Math.sin(z / 15) * 0.6;
 }
 
 export function StoryRoad({
@@ -118,7 +133,20 @@ export function StoryRoad({
     const cx = w / 2;
     const hy = h * HORIZON;
 
-    /** World point to screen. */
+    // Where the road is under the camera's own feet. Everything is
+    // measured relative to THIS, which is the difference between a
+    // camera flying alongside a road and a camera travelling on one.
+    //
+    // Without it the lane offset at close range is multiplied by
+    // focal/distance - roughly three hundred at arm's length - so a
+    // gentle two-unit bend threw the road six hundred pixels sideways
+    // and pushed the marker clean off the edge of the screen. Riding
+    // the lane keeps the road centred beneath you and lets it curve
+    // away ahead, which is what driving actually looks like.
+    const lane0 = laneAt(T);
+
+    /** World point to screen. `lateral` is offset from the road's
+     *  centre line, not from the world's. */
     const project = (lateral: number, distance: number) => {
       const d = Math.max(NEAR * 0.5, distance);
       const s = FOCAL / d;
@@ -144,9 +172,9 @@ export function StoryRoad({
     for (let i = 0; i < 90; i++) {
       const z = first + i * 6 - T;
       if (z < NEAR) continue;
-      const lane = laneAt(z + T);
-      const a = project(lane - 30, z);
-      const b = project(lane + 30, z);
+      const lane = laneAt(z + T) - lane0;
+      const a = project(lane - 16, z);
+      const b = project(lane + 16, z);
       // Fades out with distance, so the horizon dissolves.
       const fade = Math.max(0, Math.min(0.5, 14 / z));
       g.strokeStyle = `rgba(120,160,220,${fade * 0.5})`;
@@ -163,9 +191,9 @@ export function StoryRoad({
     const right: [number, number][] = [];
     for (let i = 0; i <= 120; i++) {
       const z = NEAR + i * 2.2;
-      const lane = laneAt(z + T);
-      const a = project(lane - 6.2, z);
-      const b = project(lane + 6.2, z);
+      const lane = laneAt(z + T) - lane0;
+      const a = project(lane - 3.1, z);
+      const b = project(lane + 3.1, z);
       left.push([a.x, a.y]);
       right.push([b.x, b.y]);
     }
@@ -194,9 +222,9 @@ export function StoryRoad({
     // ── The finish line, on the horizon where it belongs ─────────────
     const finishZ = stops.length * SPACING + SPACING * 0.6 - T;
     if (finishZ > NEAR) {
-      const lane = laneAt(finishZ + T);
-      const a = project(lane - 7, finishZ);
-      const b = project(lane + 7, finishZ);
+      const lane = laneAt(finishZ + T) - lane0;
+      const a = project(lane - 3.6, finishZ);
+      const b = project(lane + 3.6, finishZ);
       const band = Math.max(1.5, (a.s * 2.2) | 0);
       const squares = 8;
       for (let i = 0; i < squares; i++) {
@@ -212,17 +240,32 @@ export function StoryRoad({
       const node = pieces.current[i];
       if (!node) continue;
       const z = (i + 1) * SPACING - T;
-      if (z < NEAR || z > SPACING * 9) {
+      // Culled only once genuinely behind the camera, or so far off it
+      // is a speck near the horizon.
+      if (z < NEAR || z > SPACING * 7) {
         node.style.visibility = "hidden";
         continue;
       }
-      const lane = laneAt(z + T);
+      const lane = laneAt(z + T) - lane0;
       const p = project(lane, z);
       // Sat ON the road: the projected point is the ground, and the
       // disc stands up from it, so its foot is what is anchored.
-      const size = Math.max(26, Math.min(190, p.s * 0.42));
+      // Landmarks rather than dots. A checkpoint you arrive AT should
+      // fill a good part of the frame by the time you reach it - that
+      // arrival is the whole feeling this is built for - and at that
+      // size there is finally room beside it for the title, the XP it
+      // paid and the trophy won there.
+      // A landmark you arrive AT fills a good part of the frame by
+      // the time you reach it. The old factor made a checkpoint at
+      // arm's length about a fifth of a phone's width, which is a dot
+      // on a map rather than somewhere you have got to.
+      const size = Math.max(34, Math.min(420, p.s * 1.5));
       node.style.visibility = "visible";
       node.style.width = `${size}px`;
+      // The label rides with it, so text grows and fades with its
+      // landmark instead of being a fixed-size caption on a shrinking
+      // object.
+      node.style.setProperty("--land", `${size}px`);
       node.style.transform = `translate(${p.x - size / 2}px, ${p.y - size}px)`;
       node.style.opacity = String(Math.max(0.15, Math.min(1, 34 / z)));
       node.style.zIndex = String(1000 - Math.round(z));
@@ -236,9 +279,9 @@ export function StoryRoad({
     const piece = avatar.current;
     if (piece) {
       const z = NEAR + 5.4;
-      const lane = laneAt(z + T);
+      const lane = laneAt(z + T) - lane0;
       const p = project(lane, z);
-      const size = Math.max(40, Math.min(150, p.s * 0.3));
+      const size = Math.max(52, Math.min(260, p.s * 0.62));
       piece.style.width = `${size}px`;
       piece.style.transform = `translate(${p.x - size / 2}px, ${p.y - size}px)`;
     }
@@ -264,7 +307,17 @@ export function StoryRoad({
       className="relative"
       // Tall, because travelling is the point. Each stop earns its own
       // screenful of road.
-      style={{ height: `${Math.max(2, stops.length) * 85}vh` }}
+      // Two and a half screens of scroll per checkpoint.
+      //
+      // The first attempt gave each one 85vh, and the arithmetic of
+      // that is the whole reason it felt wrong: the camera crossed a
+      // checkpoint's entire near field - the part where it is large
+      // and arriving - in about a fifth of a screen of scrolling. So
+      // at any given moment every landmark was either far away or
+      // already behind you, and the size that was meant to say "you
+      // have arrived" flashed past unseen. Slower travel is not
+      // padding; it is what makes arriving legible.
+      style={{ height: `${Math.max(2, stops.length) * 210}vh` }}
     >
       <div className="sticky top-0 h-screen overflow-hidden">
         <canvas ref={sky} className="absolute inset-0 size-full" />
@@ -312,12 +365,37 @@ export function StoryRoad({
   );
 }
 
-/** A checkpoint: a disc standing up out of the ground, facing you. */
+/** A checkpoint: a disc standing up out of the ground, facing you,
+ *  with what happened there written beside it. */
 function Checkpoint({ stop, accent }: { stop: RoadStop; accent: string }) {
   const dim = stop.state === "locked";
   const colour = dim ? "#2a3654" : accent;
   return (
     <span className="relative block w-full">
+      {/* Everything that happened at this landmark, set beside it and
+          sized in fractions of it - so a checkpoint in the distance
+          carries a whisper of a label and the one you have arrived at
+          carries a readable one, without a second scroll pass to work
+          any of it out. */}
+      <span
+        className="pointer-events-none absolute left-[108%] top-1/2 flex w-[130%] -translate-y-1/2 flex-col gap-[0.18em] text-left"
+        style={{ fontSize: "calc(var(--land, 80px) * 0.13)" }}
+      >
+        <span className={`font-bold leading-tight ${dim ? "text-ink-faint" : "text-ink"}`}>
+          {stop.title}
+        </span>
+        <span className="flex items-center gap-[0.5em] leading-none">
+          {stop.xp !== undefined && (
+            <span className="font-bold tabular-nums" style={{ color: colour }}>
+              {stop.xp} XP
+            </span>
+          )}
+          {stop.trophy && (
+            <span className="truncate text-[0.85em] text-advanced">{stop.trophy}</span>
+          )}
+        </span>
+      </span>
+
       {/* The only flat thing in the scene. A shadow on the ground is
           how the eye knows the disc is standing on it. */}
       <span

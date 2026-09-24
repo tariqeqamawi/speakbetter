@@ -15,6 +15,9 @@ const stops: RoadStop[] = challengesInPhase(phase.id).map((c, i) => ({
   n: i + 1,
   title: c.title,
   state: i === 0 ? "done" : i === 1 ? "here" : i < 3 ? "ahead" : "locked",
+  xp: 100,
+  // What a passed checkpoint leaves standing on the road behind you.
+  trophy: i === 0 ? "Um-Free" : undefined,
 }));
 
 export default function AdventurePrototype() {
