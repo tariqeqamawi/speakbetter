@@ -82,11 +82,16 @@ export function LessonGallery() {
         })}
       </div>
 
-      <div className={`grid gap-4 sm:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] sm:items-start ${cat.textClass}`}>
-        {/* The cascade: the whole color, every title, scrolled or arrowed. */}
+      <div className={`grid gap-4 sm:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] ${cat.textClass}`}>
+        {/* The cascade: the whole color, every title, scrolled or arrowed.
+            On a wide screen it runs the full height of the preview beside
+            it - h-0 so it adds nothing to the row, min-h-full so it then
+            fills the row the preview made. A fixed height here left the
+            preview towering over an empty column once it grew to the
+            card's full width. */}
         <ul
           ref={list}
-          className="order-2 -mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:order-1 sm:mx-0 sm:max-h-[30rem] sm:flex-col sm:overflow-y-auto sm:px-0 sm:pb-0 sm:pr-1 [scrollbar-width:thin] [&::-webkit-scrollbar]:hidden sm:[&::-webkit-scrollbar]:block"
+          className="order-2 -mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:order-1 sm:mx-0 sm:h-0 sm:min-h-full sm:flex-col sm:overflow-y-auto sm:px-0 sm:pb-0 sm:pr-1 [scrollbar-width:thin] [&::-webkit-scrollbar]:hidden sm:[&::-webkit-scrollbar]:block"
         >
           {shown.map((lesson, i) => {
             const on = i === index;
@@ -142,14 +147,14 @@ export function LessonGallery() {
               {shown.length} lessons · about {minutes} minutes · one to two minutes each · yours from day one
             </span>
           </div>
-          <div className="relative w-full max-w-xl overflow-hidden rounded-xl border border-navy-600 bg-navy-950">
+          <div className="relative w-full overflow-hidden rounded-xl border border-navy-600 bg-navy-950">
             <div className="relative aspect-video w-full">
               <Image
                 key={current.vimeoId}
                 src={`/thumbs/${current.vimeoId}.jpg`}
                 alt=""
                 fill
-                sizes="(min-width: 640px) 576px, 100vw"
+                sizes="(min-width: 640px) 720px, 100vw"
                 className="gallery-in object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/30 to-transparent" />

@@ -31,6 +31,7 @@ import {
   UploadIcon,
 } from "@/components/icons";
 import { LionMouth } from "@/components/lion-mouth";
+import { CoachPill } from "@/components/coach-pill";
 import { setPendingReview } from "@/lib/push-client";
 import { studentId } from "@/lib/student-id";
 import { PushPrompt } from "@/components/push-prompt";
@@ -1087,26 +1088,14 @@ function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => v
         className="scale-90"
       />
       {(state === "loading" || state === "ready" || state === "done") && (
-        <button
-          type="button"
-          onClick={hear}
-          disabled={state === "loading"}
-          className="coach-pill inline-flex min-h-11 items-center gap-2.5 rounded-full py-1.5 pl-1.5 pr-5 text-sm font-bold text-navy-950 hover:scale-[1.03] active:scale-[0.98] disabled:opacity-70"
-        >
-          <span className="grid size-9 place-items-center overflow-hidden rounded-full bg-navy-950/25">
-            <LionMouth level={0} className="w-10 translate-y-0.5" />
-          </span>
-          {/* Its own color: the pill paints its text in the drifting
-              color, which is the background. */}
-          <span className="flex items-center gap-2 text-navy-950">
-            <ListenIcon className="size-4" />
-            {state === "loading"
-              ? "Coach is putting his thoughts together…"
-              : state === "done"
-                ? "Hear it again"
-                : "Coach's review"}
-          </span>
-        </button>
+        <CoachPill onClick={hear} disabled={state === "loading"}>
+          <ListenIcon className="size-4" />
+          {state === "loading"
+            ? "Coach is putting his thoughts together…"
+            : state === "done"
+              ? "Hear it again"
+              : "Coach's review"}
+        </CoachPill>
       )}
       {state === "failed" && (
         <p className="max-w-prose text-center text-sm text-ink-muted">{spoken}</p>

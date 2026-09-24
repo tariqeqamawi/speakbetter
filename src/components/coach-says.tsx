@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { CoachPill } from "@/components/coach-pill";
 import { TalkingLion, type Phrase, type TalkingLionHandle } from "@/components/talking-lion";
 import { Caption } from "@/components/caption";
 
@@ -97,17 +98,15 @@ export function CoachSays({
       {/* The browser refused to start the sound. Say so with a button
           rather than leaving him mute for no visible reason. */}
       {offerPlay && playable && (
-        <button
-          type="button"
+        <CoachPill
           onClick={() => {
             lion.current?.prime();
             setOfferPlay(false);
             setAttempt((n) => n + 1);
           }}
-          className="rounded-full border border-navy-600 px-4 py-1.5 text-xs font-semibold text-ink-muted transition-colors hover:border-ink-faint hover:text-ink"
         >
           Hear it from Coach
-        </button>
+        </CoachPill>
       )}
 
       {children}

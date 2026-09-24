@@ -1,7 +1,7 @@
 "use client";
 
 import { LionMouth } from "@/components/lion-mouth";
-import { Soundwave } from "@/components/soundwave";
+import { CoachPill } from "@/components/coach-pill";
 import {
   forwardRef,
   useCallback,
@@ -543,27 +543,9 @@ export const TalkingLion = forwardRef<
           control and the picture of what it does, and it reads as a
           thing to press because it is shaped like one. */}
       {controls && (
-      <button
-        type="button"
-        onClick={speaking ? stop : speak}
-        disabled={!supported}
-        className={`relative flex min-h-12 items-center justify-center overflow-hidden rounded-full border px-7 font-bold transition-colors disabled:opacity-50 ${
-          large
-            ? "coach-pill border-transparent !text-navy-950 hover:scale-[1.03]"
-            : blocked
-              ? "border-ink-faint bg-navy-700 text-ink hover:bg-navy-600"
-              : "border-navy-600 bg-navy-800 text-ink hover:bg-navy-700"
-        }`}
-      >
-        {/* The wave, running the width of the pill behind the words. */}
-        <Soundwave
-          variant="coach"
-          className={`pointer-events-none absolute inset-0 size-full ${large ? "opacity-45" : "opacity-30"}`}
-        />
-        <span className="relative text-sm">
-          {speaking ? "Stop" : blocked ? "Tap to hear Coach’s review" : "Coach’s review"}
-        </span>
-      </button>
+      <CoachPill onClick={speaking ? stop : speak} disabled={!supported}>
+        {speaking ? "Stop" : blocked ? "Tap to hear Coach’s review" : "Coach’s review"}
+      </CoachPill>
       )}
       {blocked && (
         <p className="text-xs text-ink-faint">
