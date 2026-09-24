@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { challengeBySlug, storyPhases } from "@/data/challenges";
 import { lessonByVimeoId } from "@/data/lessons";
 import { categoryById } from "@/data/categories";
@@ -8,7 +8,7 @@ import { CategoryChip } from "@/components/category-chip";
 import { XpBadge } from "@/components/xp-badge";
 import { challengeXp } from "@/lib/progress";
 import { LazyVimeoPlayer } from "@/components/lazy-vimeo-player";
-import { LionMouth } from "@/components/lion-mouth";
+import { LionMouth, paintMouth } from "@/components/lion-mouth";
 import { CircleIcon } from "@/components/icons";
 import Image from "next/image";
 import Link from "next/link";
@@ -36,19 +36,36 @@ export function FirstChallenge() {
   const phase = storyPhases.find((p) => p.id === challenge.phase)!;
   const warmUp = challenge.relatedLessonIds.map((id) => lessonByVimeoId.get(id)).filter((l) => l !== undefined);
 
-  // The lion's line changes with what the visitor has done: it draws
-  // breath on the way in, and speaks once there's a review to speak of.
-  const [breath, setBreath] = useState(0);
+  // The lion draws breath while the visitor reads.
+  //
+  // Written straight to the lion's two frames in a rAF, and only while
+  // it is on screen. It used to be React state set every frame, which
+  // re-rendered this whole section - brief, player, lesson list - sixty
+  // times a second from the moment the page loaded, a dozen screens
+  // below wherever the visitor actually was. On a throttled laptop
+  // that alone was most of the main thread's work while scrolling.
+  const lionBox = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    const lion = lionBox.current?.firstElementChild;
+    if (!lion) return;
+    // Held at rest for anyone who asked for less motion.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let raf = 0;
     const t0 = performance.now();
     const tick = (now: number) => {
       // a slow breath, never a word: the coach is waiting, not talking
-      setBreath(0.06 + 0.05 * (0.5 + 0.5 * Math.sin((now - t0) / 900)));
+      paintMouth(lion, 0.06 + 0.05 * (0.5 + 0.5 * Math.sin((now - t0) / 900)));
       raf = requestAnimationFrame(tick);
     };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    const io = new IntersectionObserver(([entry]) => {
+      cancelAnimationFrame(raf);
+      raf = entry.isIntersecting ? requestAnimationFrame(tick) : 0;
+    });
+    io.observe(lion);
+    return () => {
+      io.disconnect();
+      cancelAnimationFrame(raf);
+    };
   }, []);
 
   return (
@@ -74,7 +91,9 @@ export function FirstChallenge() {
       <div className="grid w-full max-w-4xl gap-4 lg:grid-cols-[minmax(0,17rem)_minmax(0,1fr)] lg:items-start">
         {/* The coach, waiting - and what it will do. */}
         <aside className="flex flex-col items-center gap-3 rounded-2xl border border-advanced/40 bg-navy-800/70 p-5 text-center shadow-[0_0_40px_-16px_var(--color-advanced)] lg:sticky lg:top-24">
-          <LionMouth level={breath} className="w-40" />
+          <div ref={lionBox} className="w-40">
+            <LionMouth level={0} live className="w-full" />
+          </div>
           <p className="text-sm font-medium text-ink text-balance">
             This is challenge one of twenty-four. Every one of them works like this.
           </p>

@@ -20,12 +20,21 @@ export const ROAR_H = 332;
 
 export function RoarMark({ className = "" }: { className?: string }) {
   const [src, setSrc] = useState(STILL);
+  // Not until the page itself has finished loading: the animation is
+  // the one thing at the top that can wait, and fetched during
+  // hydration its 640 KB shared the connection with the hero's own
+  // pictures and held back the page's load event.
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const img = new Image();
     img.onload = () => setSrc(ROAR);
-    img.src = ROAR;
+    const start = () => {
+      img.src = ROAR;
+    };
+    if (document.readyState === "complete") start();
+    else window.addEventListener("load", start, { once: true });
     return () => {
+      window.removeEventListener("load", start);
       img.onload = null;
     };
   }, []);

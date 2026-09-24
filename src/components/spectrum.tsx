@@ -1,4 +1,5 @@
 import { categories, type CategoryId } from "@/data/categories";
+import { SleepOffscreen } from "@/components/sleep-offscreen";
 
 // The color-spectrum breakdown (master plan §05): which categories a
 // performance lit up, and how strongly. Reads at a glance - full bars
@@ -18,8 +19,10 @@ export function SpectrumBars({
   required?: CategoryId[];
 }) {
   const marks = required && required.length > 0;
+  // Asleep off screen, so the needed bars only glow while they can be
+  // seen (sleep-offscreen.tsx says why that matters).
   return (
-    <div className="flex flex-col gap-2">
+    <SleepOffscreen className="flex flex-col gap-2">
       {categories.map((cat, i) => {
         const value = Math.max(0, Math.min(100, spectrum[cat.id] ?? 0));
         const shown = revealCount === undefined || i < revealCount;
@@ -66,7 +69,7 @@ export function SpectrumBars({
           </div>
         );
       })}
-    </div>
+    </SleepOffscreen>
   );
 }
 

@@ -25,7 +25,7 @@ import { SpeakLine } from "@/components/speak-line";
 import { splitForPage } from "@/data/testimonials";
 import { WhatItIs } from "@/components/what-it-is";
 import { RoarMark } from "@/components/roar-mark";
-import { LionMouth } from "@/components/lion-mouth";
+import { LionArtWhenNear, LionMouth } from "@/components/lion-mouth";
 import { FirstChallenge } from "@/components/first-challenge";
 import { CoachDemo } from "@/components/coach-demo";
 import { HowItWorks } from "@/components/how-it-works";
@@ -43,6 +43,16 @@ import { HowItWorks } from "@/components/how-it-works";
 const [earlyProof, lateProof] = splitForPage();
 
 export function Landing() {
+  // Every lion on this page is a few screens down, so none of them
+  // fetches the 540 KB mouth sprite until it is nearly in view.
+  return (
+    <LionArtWhenNear>
+      <LandingBody />
+    </LionArtWhenNear>
+  );
+}
+
+function LandingBody() {
   return (
     <div className="flex flex-col gap-16 py-8">
 

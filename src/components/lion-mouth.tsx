@@ -1,3 +1,7 @@
+"use client";
+
+import { createContext, useContext, useEffect, useRef, useState } from "react";
+
 // The lion, mouth moving.
 //
 // Twenty-eight frames of the brand animation - ten cut from the
@@ -54,15 +58,73 @@ export function mouthFrame(level: number): number {
   return Math.round(mouthPosition(level));
 }
 
-function frameStyle(frame: number): React.CSSProperties {
+/** A vertical sprite: percentage position k/(N-1) lands exactly on
+ *  frame k, whatever the rendered size. */
+function framePosition(frame: number): string {
+  return `0 ${(frame / (MOUTH_FRAMES - 1)) * 100}%`;
+}
+
+function frameStyle(frame: number, art: boolean): React.CSSProperties {
   return {
-    backgroundImage: "url(/lion-mouth.webp)",
+    backgroundImage: art ? "url(/lion-mouth.webp)" : undefined,
     backgroundRepeat: "no-repeat",
     backgroundSize: "100% auto",
-    // A vertical sprite: percentage position k/(N-1) lands exactly
-    // on frame k, whatever the rendered size.
-    backgroundPosition: `0 ${(frame / (MOUTH_FRAMES - 1)) * 100}%`,
+    backgroundPosition: framePosition(frame),
   };
+}
+
+// The sprite is 540 KB - most of what the landing page used to fetch
+// before a visitor had scrolled at all, for lions that are all a few
+// screens down. A background image is fetched the moment its element
+// exists, on screen or not, so inside this provider each lion waits
+// until it is within a couple of screens of the viewport before it
+// asks for its art. Opt-in rather than everywhere: in the app the lion
+// is usually on screen from the first paint, and there the server's
+// HTML should carry it rather than have it arrive after hydration.
+const ArtWhenNear = createContext(false);
+
+export function LionArtWhenNear({ children }: { children: React.ReactNode }) {
+  return <ArtWhenNear.Provider value>{children}</ArtWhenNear.Provider>;
+}
+
+function useArt(ref: React.RefObject<HTMLDivElement | null>): boolean {
+  const lazy = useContext(ArtWhenNear);
+  const [near, setNear] = useState(!lazy);
+  useEffect(() => {
+    const el = ref.current;
+    if (near || !el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setNear(true);
+          io.disconnect();
+        }
+      },
+      // Far enough ahead that a steady scroll never catches it
+      // unpainted.
+      { rootMargin: "1500px 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [near, ref]);
+  return near;
+}
+
+/**
+ * Move a mouth drawn by <LionMouth live> to a new level, straight on
+ * its nodes; `lion` is the LionMouth's own element. For a caller that
+ * animates the level every frame: through React state that is a render
+ * of the caller per frame, forever.
+ */
+export function paintMouth(lion: Element, level: number, roar = false) {
+  const [lowerEl, upperEl] = lion.children as HTMLCollectionOf<HTMLElement>;
+  if (!lowerEl || !upperEl) return;
+  const pos = mouthPosition(level, roar ? MOUTH_FRAMES - 1 : MOUTH_TOP);
+  const lower = Math.floor(pos);
+  const mix = pos - lower;
+  lowerEl.style.backgroundPosition = framePosition(lower);
+  upperEl.style.backgroundPosition = framePosition(Math.min(MOUTH_FRAMES - 1, lower + 1));
+  upperEl.style.opacity = mix > 0.01 ? String(mix) : "0";
 }
 
 /**
@@ -76,6 +138,7 @@ export function LionMouth({
   className = "",
   style,
   roar = false,
+  live = false,
 }: {
   /** 0 closed .. 1 as open as talking gets. */
   level: number;
@@ -84,21 +147,27 @@ export function LionMouth({
   /** Let 1 reach the roar itself - the last frame - rather than
    *  stopping where talking stops. */
   roar?: boolean;
+  /** Keep the upper frame in the DOM even when it is fully faded, so
+   *  paintMouth always has both layers to write to. */
+  live?: boolean;
 }) {
+  const own = useRef<HTMLDivElement>(null);
+  const art = useArt(own);
   const pos = mouthPosition(level, roar ? MOUTH_FRAMES - 1 : MOUTH_TOP);
   const lower = Math.floor(pos);
   const upper = Math.min(MOUTH_FRAMES - 1, lower + 1);
   const mix = pos - lower;
   return (
     <div
+      ref={own}
       role="img"
       aria-label="Speak Better coach"
       className={className}
       style={{ aspectRatio: MOUTH_ASPECT, position: "relative", ...style }}
     >
-      <div className="absolute inset-0" style={frameStyle(lower)} />
-      {mix > 0.01 && (
-        <div className="absolute inset-0" style={{ ...frameStyle(upper), opacity: mix }} />
+      <div className="absolute inset-0" style={frameStyle(lower, art)} />
+      {(live || mix > 0.01) && (
+        <div className="absolute inset-0" style={{ ...frameStyle(upper, art), opacity: mix > 0.01 ? mix : 0 }} />
       )}
     </div>
   );

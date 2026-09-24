@@ -5,6 +5,10 @@ import { useEffect, useRef } from "react";
 // A film of the app playing inside a phone frame on the landing page,
 // running only while it's on screen - a film costs almost nothing, a
 // live page costs a page. Muted, looping, with a poster until it plays.
+// preload="none": the poster is what shows until then anyway, and
+// asking for each film's metadata up front was four more requests
+// competing with the top of the page for films a visitor may never
+// scroll to. play() fetches what it needs when the film comes into view.
 
 export function PhoneFilm({ src, poster, label }: { src: string; poster: string; label: string }) {
   const ref = useRef<HTMLVideoElement>(null);
@@ -31,7 +35,7 @@ export function PhoneFilm({ src, poster, label }: { src: string; poster: string;
       muted
       loop
       playsInline
-      preload="metadata"
+      preload="none"
       aria-label={label}
       className="size-full object-cover"
     />

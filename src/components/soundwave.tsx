@@ -1,3 +1,5 @@
+import { SleepOffscreen } from "@/components/sleep-offscreen";
+
 // The soundwave from the brand mark, animated. Three waves stroked with
 // the category-color gradient, scrolling at different speeds so they
 // drift in and out of phase and never visibly repeat.
@@ -209,8 +211,11 @@ export function Soundwave({
   const [f0, f1, f2, f3] = spec.fade;
   const fade = `linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.85) ${f0}%, #000 ${f1}%, rgba(0,0,0,0.85) ${f2}%, transparent ${f3}%)`;
 
+  // Asleep off screen: the coach's wave sits a few screens down the
+  // landing page, and there its three ribbons were keeping the main
+  // thread busy every frame (sleep-offscreen.tsx says why).
   return (
-    <div
+    <SleepOffscreen
       className={`relative overflow-hidden ${className}`}
       style={{
         WebkitMaskImage: fade,
@@ -261,6 +266,6 @@ export function Soundwave({
           </svg>
         );
       })}
-    </div>
+    </SleepOffscreen>
   );
 }

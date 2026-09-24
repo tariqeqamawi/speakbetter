@@ -397,20 +397,28 @@ export function JourneyMap({
   // Written straight to the nodes inside a rAF, never through React
   // state. This runs on every scroll frame, and this app has already
   // paid once for putting something like it in the render path.
+  //
+  // And only while the map is on screen. On the landing page it sits in
+  // a phone a dozen screens down, and this listener used to measure
+  // every row on every scroll frame of the whole page regardless. The
+  // rows are all measured first and all written after: measuring one
+  // straight after writing the one before made the browser redo style
+  // and layout once per row, per frame.
   useEffect(() => {
     const scene = sceneRef.current;
-    if (!scene) return;
+    if (!scene || !onScreen) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     let raf = 0;
     const draw = () => {
       raf = 0;
-      const rows = scene.querySelectorAll<HTMLElement>(".map-row");
+      const rows = [...scene.querySelectorAll<HTMLElement>(".map-row")];
+      const boxes = rows.map((row) => row.getBoundingClientRect());
       const vh = window.innerHeight;
       // The walker stands low in the window; everything above is ahead.
       const eye = vh * 0.86;
-      for (const row of rows) {
-        const box = row.getBoundingClientRect();
+      for (const [i, row] of rows.entries()) {
+        const box = boxes[i];
         const centre = box.top + box.height / 2;
         // 0 at the walker's feet, 1 at the horizon.
         const depth = Math.max(0, Math.min(1, (eye - centre) / (vh * 0.95)));

@@ -2354,6 +2354,14 @@ html.bare .demo-banner {
   animation-play-state: paused !important;
 }
 
+/* The same, for anything wrapped in SleepOffscreen (sleep-offscreen.tsx):
+   off screen, an animation leaves the compositor for the main thread. */
+[data-asleep] *,
+[data-asleep] *::after,
+[data-asleep] *::before {
+  animation-play-state: paused !important;
+}
+
 /* A lesson stepping into the middle of the library's shelf. */
 .gallery-in {
   animation: gallery-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;

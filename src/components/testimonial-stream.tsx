@@ -1,4 +1,5 @@
 import { Avatar } from "@/components/avatar";
+import { SleepOffscreen } from "@/components/sleep-offscreen";
 import { credit, type Testimonial } from "@/data/testimonials";
 
 // Students' own words, floating up the page.
@@ -59,8 +60,10 @@ export function TestimonialStream({
   const share = (RISE / cycle) * 100;
   const name = `quote-float-${items.length}-${aloft}`;
 
+  // Asleep off screen, so the quotes only float while somebody can see
+  // them (sleep-offscreen.tsx says why that matters).
   return (
-    <div
+    <SleepOffscreen
       className="quote-field relative w-full overflow-hidden"
       style={{ height: "var(--field)", ["--field" as string]: "min(34rem, 80vh)" }}
     >
@@ -105,7 +108,7 @@ export function TestimonialStream({
         className="pointer-events-none absolute inset-x-0 bottom-0 h-20"
         style={{ background: "linear-gradient(0deg, var(--color-navy-950), transparent)" }}
       />
-    </div>
+    </SleepOffscreen>
   );
 }
 

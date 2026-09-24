@@ -37,10 +37,28 @@ export function LessonGallery() {
     [shown.length],
   );
 
-  // The cascade keeps the chosen lesson in view.
+  // The cascade keeps the chosen lesson in view - by scrolling the
+  // cascade, and only the cascade.
+  //
+  // This was scrollIntoView, which scrolls every scrolling ancestor,
+  // the page included. The effect runs on mount too, so a visitor
+  // arriving at the top of the landing page was carried nine thousand
+  // pixels down to the library, smoothly, while the page was still
+  // loading - every section in between painting on the way past, and
+  // every lazy image in between fetched. Measuring the offset against
+  // the list and scrolling the list does the one job it was for.
   useEffect(() => {
-    const el = list.current?.children[index] as HTMLElement | undefined;
-    el?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+    const ul = list.current;
+    const el = ul?.children[index] as HTMLElement | undefined;
+    if (!ul || !el) return;
+    const u = ul.getBoundingClientRect();
+    const e = el.getBoundingClientRect();
+    // Sideways (the phone's strip): centred. Downwards (the column on
+    // a wider screen): only as far as it takes to show it.
+    const left = ul.scrollWidth > ul.clientWidth ? e.left + e.width / 2 - (u.left + ul.clientWidth / 2) : 0;
+    const bottom = u.top + ul.clientHeight;
+    const top = e.top < u.top ? e.top - u.top : e.bottom > bottom ? e.bottom - bottom : 0;
+    if (left || top) ul.scrollBy({ left, top, behavior: "smooth" });
   }, [index, color]);
 
   useEffect(() => {
