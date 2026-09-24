@@ -98,8 +98,6 @@ Tariq topped up the account, so the cap is gone.
       and falls back to text-only until the image exists (`the-reality.tsx`, `STILL`)
 
 ### Asked for and not yet started
-- [ ] **Landing page: faster load, smoother animation on laptop and desktop** (24 Sep).
-      In progress.
 
 ### Decided, for the record
 - **The streak past day ten.** 5% a day to +50% at ten days (unchanged), then 2.5% a day
@@ -154,6 +152,11 @@ Tariq topped up the account, so the cap is gone.
       would avoid an hour of confusion.
 
 ### Known issues, not yet fixed
+- [ ] **Left over from the speed pass:** the Coach pill's colour drift repaints its glow
+      (most of what is left at idle - a known trade-off); coach-demo lesson thumbnails load
+      960px files into 60px slots; the story phone frame captures the mouse wheel; on a
+      phone the gallery's title overlay covers its Next button; the gallery's arrow keys
+      listen page-wide.
 - [ ] **The 14-day upgrade window is copy only.** Nothing records when a student joined, so
       the in-app Starter-to-Complete offer does not close on day 14. Needs a purchase date on
       the server-side plan (see the multi-user item below) - then `UPGRADE_WINDOW_DAYS` gates it.
@@ -187,6 +190,9 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **24 September**
+- Landing speed pass: the page no longer scrolls itself ~9,300px down to the library on
+  load; requests in the first 6s 89 -> 40, 1.95MB -> 1.39MB; idle main-thread work on a slow
+  laptop roughly halved; off-screen animations sleep — `fe1b4ad`
 - Coach's pill shows its waveform at last (it had never rendered), dark body, bigger;
   testimonials float up one by one instead of marching in columns — `55a2e93`
 - No "try it free" anywhere public; "Challenge Preview"; the free-challenge button removed;
