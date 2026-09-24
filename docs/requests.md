@@ -158,8 +158,9 @@ Tariq topped up the account, so the cap is gone.
 - [ ] **The 14-day upgrade window is copy only.** Nothing records when a student joined, so
       the in-app Starter-to-Complete offer does not close on day 14. Needs a purchase date on
       the server-side plan (see the multi-user item below) - then `UPGRADE_WINDOW_DAYS` gates it.
-- [ ] **Remove the free trial from the app** (decided 24 Sep: no free trial). In progress in a
-      separate worktree; not merged yet.
+- [ ] **Supabase still defaults `profiles.plan` to 'trial'** (`schema.sql`; `chat.sql` checks
+      `plan <> 'trial'`). The app treats it as no plan, so it is safe; fix the default in the
+      schema before the project is created, with the multi-user work below.
 - [ ] **Multi-user is not truly ready** — five gaps, all documented: no sign-out (and
       sign-in *merges* device state into the account, so a shared device cross-contaminates);
       `plan` is client-writable, so a student can grant themselves any tier from devtools;
@@ -187,6 +188,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **24 September**
+- The free trial removed from the app: no plan means the tiers; paid plans unchanged; a
+  stored "trial" is treated as no plan without crashing — `349f59e`
 - Every trophy states its requirement (Full Spectrum, The Whole STORY, Practicing Machine
   had none); shown under each tile in the trophy room — `40ba2b6`
 - Top Narrator: a head mid-sentence with sound waves, replacing the pocket watch — `b975b08`
