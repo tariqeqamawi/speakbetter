@@ -587,6 +587,20 @@ svg.soundwave-c {
   transform-style: preserve-3d;
 }
 
+/* The resting state of a checkpoint, before the scroll pass in
+ * journey-map has measured it. That pass then owns this element's
+ * transform outright - how near a checkpoint is, is a thing that
+ * changes every frame, so it is written straight to the node rather
+ * than routed through a custom property the engine has to re-resolve.
+ *
+ * The origin is the foot of the disc: a checkpoint shrinking into the
+ * distance should sink towards the road, not towards its own middle. */
+.map-row {
+  transform: translate(-50%, -50%);
+  transform-origin: 50% 100%;
+  transition: opacity 180ms linear;
+}
+
 .map-pin {
   transform-style: preserve-3d;
   transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);

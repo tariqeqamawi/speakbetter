@@ -379,6 +379,69 @@ export function JourneyMap({
     setHeld(null);
   };
 
+  // ── Depth, driven by where a checkpoint sits on the screen ───────
+  //
+  // The tilted plane already makes the far end of the road smaller,
+  // but it does so ONCE: the whole plane scrolls past as a single
+  // rigid object, so nothing ever comes towards you. Walking is the
+  // relationship changing - the next checkpoint swelling out of the
+  // distance as you approach it and sliding past your shoulder - and
+  // that only happens if depth is measured against the viewport rather
+  // than against the plane.
+  //
+  // So each row is scaled and faded by how far up the screen it is.
+  // The checkpoint nearest the bottom is the one you are standing at:
+  // biggest, brightest, closest. Everything above it recedes towards
+  // the finish line.
+  //
+  // Written straight to the nodes inside a rAF, never through React
+  // state. This runs on every scroll frame, and this app has already
+  // paid once for putting something like it in the render path.
+  useEffect(() => {
+    const scene = sceneRef.current;
+    if (!scene) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let raf = 0;
+    const draw = () => {
+      raf = 0;
+      const rows = scene.querySelectorAll<HTMLElement>(".map-row");
+      const vh = window.innerHeight;
+      // The walker stands low in the window; everything above is ahead.
+      const eye = vh * 0.86;
+      for (const row of rows) {
+        const box = row.getBoundingClientRect();
+        const centre = box.top + box.height / 2;
+        // 0 at the walker's feet, 1 at the horizon.
+        const depth = Math.max(0, Math.min(1, (eye - centre) / (vh * 0.95)));
+        // Eased, because true linear perspective makes the far
+        // checkpoints unreadable long before they feel distant.
+        const scale = 1 - 0.42 * Math.pow(depth, 0.72);
+        // The transform is written whole rather than through a custom
+        // property. A registered property is re-resolved by the engine
+        // on every write and this app has already lost its smoothness
+        // to exactly that once (pill-cycle.tsx); measured here too, it
+        // was 36ms of extra style recalc per second of scrolling for
+        // no benefit. The centring translate has to come along,
+        // because one transform replaces the other.
+        row.style.transform = `translate(-50%, -50%) scale(${scale.toFixed(3)})`;
+        row.style.opacity = (1 - 0.45 * depth).toFixed(3);
+      }
+    };
+
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(draw);
+    };
+    draw();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  });
+
   // Lay the trail out top to bottom, phase by phase.
   const nodes: Node[] = [];
   const banners: { phase: StoryPhase; index: number; y: number; locked: boolean; gate: PhaseGate }[] = [];
@@ -501,7 +564,7 @@ export function JourneyMap({
           </span>
         ) : (
           <span className="flex min-w-0 flex-col">
-            <span className="text-sm font-medium uppercase tracking-wider text-ink-faint">The journey</span>
+            <span className="text-sm font-medium uppercase tracking-wider text-ink-faint">The adventure</span>
             <span className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[0.65rem] text-ink-faint">
               <span className="flex items-center gap-1">
                 <TapIcon className="size-3" />
@@ -993,7 +1056,10 @@ export function JourneyMap({
                 </span>
               </span>
             );
-            const cls = "map-row group absolute -translate-x-1/2 -translate-y-1/2";
+            // The centring translate moved into the .map-row rule, which also
+    // carries the scroll-driven scale - two sources of `transform` on
+    // one element means whichever loses is silently dropped.
+    const cls = "map-row group absolute";
             const pos = { left: `${node.x}%`, top: node.y };
             const hasTake = node.passed && takes.has(node.slug);
             return clickable ? (

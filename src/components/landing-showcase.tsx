@@ -80,7 +80,7 @@ export function LandingShowcase() {
           your gamified student dashboard - your trophies, your streak, the speaking spectrum, and more.
         </p>
         <div className="-mx-4 flex w-[calc(100%+2rem)] gap-6 overflow-x-auto px-4 pb-2 sm:mx-0 sm:w-full sm:justify-center sm:overflow-visible sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <Phone label="The journey">
+          <Phone label="The adventure">
             <PhoneFilm src="/film/tour-journey.mp4" poster="/film/tour-journey.jpg" label="The journey, scrolled" />
           </Phone>
           <Phone label="Skills, into a color">
