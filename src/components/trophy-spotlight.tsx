@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ShapeOnPlinth } from "@/components/trophy-shapes";
 import { trophyColor } from "@/components/trophy-stand";
 import { ChevronDownIcon, LockIcon } from "@/components/icons";
+import { LightBeam } from "@/components/light-beam";
 
 // The trophy room: one trophy in the spotlight, the rest receding into
 // the dark on either side.
@@ -104,28 +105,39 @@ export function TrophySpotlight({
           <img src={backdrop} alt="" aria-hidden className="pointer-events-none absolute inset-0 size-full object-cover opacity-55" />
         )}
 
-        {/* The beam. A cone from above, tinted with the trophy's own
-            color so the whole room changes as you travel along it. */}
+        {/* The beam, and the pool where it lands. Warm white, always.
+            
+            This used to take the colour of whichever trophy was
+            standing in it, which sounded good and looked wrong: when
+            the light and the object shift hue together the whole frame
+            just tints, and every trophy ends up looking like the same
+            trophy in a different filter. A stage lamp is one
+            temperature all night. The CONTRAST between a fixed warm
+            light and a coloured object is the thing that makes a lit
+            trophy read as precious. */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background: `
+              radial-gradient(38% 68% at 50% -6%, rgba(var(--lamp), 0.22), transparent 70%),
+              radial-gradient(22% 30% at 50% 78%, rgba(var(--lamp), 0.18), transparent 72%)
+            `,
+          }}
+        />
+        {/* What the trophy itself throws back into the room - this is
+            where the colour belongs, and it still changes as you
+            travel. */}
         <span
           aria-hidden
           className="pointer-events-none absolute inset-0 transition-[background] duration-500"
           style={{
-            background: `
-              radial-gradient(38% 68% at 50% -6%, color-mix(in oklab, ${color} 30%, transparent), transparent 70%),
-              radial-gradient(22% 30% at 50% 78%, color-mix(in oklab, ${color} 26%, transparent), transparent 72%)
-            `,
+            background: `radial-gradient(30% 34% at 50% 54%, color-mix(in oklab, ${color} 24%, transparent), transparent 72%)`,
           }}
         />
-        {/* The hard edges of the cone, so it reads as a beam of light
-            in haze rather than a soft vignette. */}
-        <span
-          aria-hidden
-          className="pointer-events-none absolute left-1/2 top-0 h-[78%] w-[62%] -translate-x-1/2 opacity-40 blur-xl"
-          style={{
-            background: "linear-gradient(180deg, rgba(255,255,255,0.5), rgba(255,255,255,0.04) 70%, transparent)",
-            clipPath: "polygon(41% 0%, 59% 0%, 84% 100%, 16% 100%)",
-          }}
-        />
+        {/* The shaft itself - hard-edged, with smoke and dust in it,
+            which is the only reason a beam is visible at all. */}
+        <LightBeam height="88%" />
 
         {/* The rack. */}
         <div className="absolute inset-0">

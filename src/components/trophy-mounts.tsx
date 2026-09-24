@@ -1,6 +1,7 @@
 "use client";
 
 import { BadgeMedal } from "@/components/badge-medal";
+import { LightBeam } from "@/components/light-beam";
 import { trophyColor } from "@/components/trophy-stand";
 
 // The original medallions, mounted as trophies.
@@ -76,12 +77,34 @@ function Disc({ id, icon, won, size, tilt = 0 }: Props & { size: number; tilt?: 
 }
 
 /** The pool of light a trophy stands in. */
-function Pool({ color, won, width }: { color: string; won: boolean; width: number }) {
+/**
+ * The glow on the floor under a trophy.
+ *
+ * `lit` means this is the lamp's own light landing, and it stays warm
+ * white whatever is standing in it. Everywhere else it is the trophy's
+ * colour spilling, which is a different thing and should stay coloured.
+ */
+function Pool({
+  color,
+  won,
+  width,
+  lit = false,
+}: {
+  color: string;
+  won: boolean;
+  width: number;
+  lit?: boolean;
+}) {
   return (
     <span
       aria-hidden
       className="rounded-[50%] blur-md"
-      style={{ width, height: width * 0.14, background: won ? color : "rgba(30,42,75,0.8)", opacity: won ? 0.42 : 0.18 }}
+      style={{
+        width,
+        height: width * 0.14,
+        background: won ? (lit ? "rgb(var(--lamp))" : color) : "rgba(30,42,75,0.8)",
+        opacity: won ? (lit ? 0.5 : 0.42) : 0.18,
+      }}
     />
   );
 }
@@ -104,22 +127,51 @@ export function PlinthMount({ id, icon, won, size = 150 }: Props) {
       <span style={{ filter: won ? `drop-shadow(0 0 ${size * 0.16}px color-mix(in oklab, ${color} 55%, transparent))` : "none" }}>
         <Disc id={id} icon={icon} won={won} size={size} tilt={10} />
       </span>
-      {/* the reflection, fading out */}
+      {/* THE STEM. The disc used to sit straight down on the block,
+          which reads as a coin propped against something rather than a
+          trophy: the thing that makes a trophy a trophy is that the
+          prize is HELD UP, clear of its base, with air under it.
+          
+          The mirrored reflection went with it. A reflection directly
+          under the disc said the disc was resting on a polished
+          surface, which is exactly the reading the stem exists to
+          undo; the floor glow below still grounds the whole object. */}
       <span
         aria-hidden
-        className="-mt-[1px] block overflow-hidden"
+        className="-mt-[2%]"
         style={{
-          width: size,
-          height: size * 0.3,
-          opacity: won ? 0.3 : 0.12,
-          transform: "scaleY(-1)",
-          maskImage: "linear-gradient(180deg, rgba(0,0,0,0.9), transparent)",
-          WebkitMaskImage: "linear-gradient(180deg, rgba(0,0,0,0.9), transparent)",
+          width: size * 0.115,
+          height: size * 0.2,
+          // The vertical pass is the metal; the horizontal one over it
+          // is the cylinder - dark at both edges, a highlight just off
+          // centre - which is what stops a flat bar reading as a
+          // rectangle of colour.
+          background: `
+            linear-gradient(90deg,
+              rgba(0,0,0,0.55) 0%,
+              rgba(0,0,0,0.15) 22%,
+              rgba(255,255,255,0.45) 42%,
+              rgba(255,255,255,0.12) 58%,
+              rgba(0,0,0,0.25) 80%,
+              rgba(0,0,0,0.6) 100%),
+            ${metal}
+          `,
         }}
-      >
-        <BadgeMedal id={id} icon={icon} earned={won} className="w-full" />
-      </span>
-      <span aria-hidden className="-mt-[6%] rounded-[3px]" style={{ width: size * 0.74, height: size * 0.06, background: metal }} />
+      />
+      {/* The collar where the stem meets the block - a tiny flare, the
+          way a real stem is cast into its base rather than butted
+          against it. */}
+      <span
+        aria-hidden
+        className="rounded-[2px]"
+        style={{
+          width: size * 0.2,
+          height: size * 0.035,
+          background: metal,
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.35)",
+        }}
+      />
+      <span aria-hidden className="rounded-[3px]" style={{ width: size * 0.74, height: size * 0.06, background: metal }} />
       <span aria-hidden style={{ width: size * 0.62, height: size * 0.12, background: won ? `linear-gradient(180deg, color-mix(in oklab, ${color} 35%, #000 65%), #080d1a)` : "linear-gradient(180deg,#1b2440,#080d1a)" }} />
       <span aria-hidden className="rounded-[4px]" style={{ width: size * 0.86, height: size * 0.07, background: metal, boxShadow: "0 10px 26px -10px rgba(0,0,0,0.9)" }} />
       <Pool color={color} won={won} width={size} />
@@ -178,21 +230,33 @@ export function SpotlightMount({ id, icon, won, size = 140 }: Props) {
     : "linear-gradient(90deg,#141c33,#3a4770 42%,#26304f 58%,#141c33)";
   return (
     <span className="relative flex flex-col items-center overflow-hidden rounded-2xl bg-navy-950 px-4 pb-4 pt-8" style={{ width: size * 1.9, perspective: size * 6 }}>
-      {/* the cone */}
-      <span aria-hidden className="trophy-spot pointer-events-none absolute inset-x-0 top-0" style={{ height: size * 2 }} />
+      {/* the cone, with smoke and dust hanging in it */}
+      <LightBeam height={size * 2} />
       <span
         aria-hidden
         className="trophy-lamp pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 rounded-full blur-xl"
-        style={{ width: size * 0.5, height: size * 0.5, background: won ? color : "rgba(231,233,242,0.5)" }}
+        style={{
+          width: size * 0.42,
+          height: size * 0.42,
+          background: "rgb(var(--lamp))",
+          opacity: 0.85,
+        }}
       />
-      <span className="relative" style={{ filter: won ? `drop-shadow(0 0 ${size * 0.2}px color-mix(in oklab, ${color} 60%, transparent))` : "none" }}>
+      <span
+        className="relative"
+        style={{
+          filter: won
+            ? `drop-shadow(0 0 ${size * 0.09}px color-mix(in oklab, ${color} 55%, transparent))`
+            : "none",
+        }}
+      >
         <Disc id={id} icon={icon} won={won} size={size} tilt={8} />
       </span>
       <span aria-hidden className="relative" style={{ width: size * 0.12, height: size * 0.26, background: metal, marginTop: -size * 0.02 }} />
       <span aria-hidden className="relative rounded-[4px]" style={{ width: size * 0.8, height: size * 0.08, background: metal }} />
       <span aria-hidden className="relative" style={{ width: size * 0.95, height: size * 0.05, borderRadius: 3, background: won ? `color-mix(in oklab, ${color} 30%, #000 70%)` : "#131b33" }} />
       <span className="relative pt-2">
-        <Pool color={color} won={won} width={size * 1.1} />
+        <Pool color={color} won={won} width={size * 1.1} lit />
       </span>
     </span>
   );

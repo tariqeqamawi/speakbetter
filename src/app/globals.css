@@ -2398,13 +2398,108 @@ html.bare .demo-banner {
 /* The cone a lamp throws down over the trophy, swinging slowly. A
  * still beam reads as a painted triangle; a moving one reads as a
  * light that is on. */
+/* ── What makes a beam visible ─────────────────────────────────────────
+ * A spotlight in clean air is invisible. You do not see light; you see
+ * what it is bouncing off. Every stage that has ever had a beam you
+ * could point at had a smoke machine running - the haze IS the effect,
+ * and a cone drawn without it always looks like a pale triangle
+ * painted on the backdrop rather than light in a room.
+ *
+ * Two layers do it. Slow smoke that swells and drifts, and dust motes
+ * that fall through the beam at two speeds so the air has depth.
+ *
+ * ON THE COST. Both are pure transform animations on a handful of
+ * elements, which the compositor handles without touching the main
+ * thread. After what one custom-property keyframe did to this app's
+ * frame budget (see pill-cycle.tsx) that is a rule here, not a
+ * preference: if an effect cannot be done in transform and opacity, it
+ * does not go in.
+ *
+ * The dust tiles, and each layer travels exactly one tile before
+ * repeating, so the loop has no seam to spot.
+ */
+.trophy-beam {
+  /* Everything inside is clipped to the shape of the cone and faded
+     out towards the floor, so smoke never escapes the light. */
+  -webkit-mask-image:
+    conic-gradient(from 180deg at 50% -10%, transparent 37%, #000 45%, #000 55%, transparent 63%),
+    linear-gradient(180deg, #000 10%, transparent 92%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    conic-gradient(from 180deg at 50% -10%, transparent 37%, #000 45%, #000 55%, transparent 63%),
+    linear-gradient(180deg, #000 10%, transparent 92%);
+  mask-composite: intersect;
+}
+
+.trophy-smoke {
+  background:
+    radial-gradient(46% 38% at 46% 24%, rgba(var(--lamp), 0.13), transparent 70%),
+    radial-gradient(38% 30% at 58% 52%, rgba(var(--lamp), 0.1), transparent 72%),
+    radial-gradient(30% 26% at 44% 74%, rgba(var(--lamp), 0.08), transparent 74%);
+  filter: blur(7px);
+  animation: trophy-smoke 17s ease-in-out infinite;
+}
+
+@keyframes trophy-smoke {
+  0%,
+  100% {
+    transform: translate3d(-4%, 1%, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(5%, -3%, 0) scale(1.12);
+  }
+}
+
+/* The motes. Near ones bigger and quicker, far ones small and slow -
+   which is the whole of the parallax and costs one extra element. */
+.trophy-dust-near {
+  background-image: radial-gradient(rgba(var(--lamp), 0.9) 0.9px, transparent 1.4px);
+  background-size: 34px 34px;
+  animation: trophy-dust-near 9s linear infinite;
+}
+
+.trophy-dust-far {
+  background-image: radial-gradient(rgba(var(--lamp), 0.5) 0.7px, transparent 1.1px);
+  background-size: 21px 21px;
+  opacity: 0.75;
+  animation: trophy-dust-far 16s linear infinite;
+}
+
+@keyframes trophy-dust-near {
+  to {
+    transform: translate3d(3px, -34px, 0);
+  }
+}
+
+@keyframes trophy-dust-far {
+  to {
+    transform: translate3d(-4px, -21px, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trophy-smoke,
+  .trophy-dust-near,
+  .trophy-dust-far {
+    animation: none;
+  }
+}
+
+/* The one colour every lamp in the app burns at. */
+:root {
+  --lamp: 255, 243, 222;
+}
+
 .trophy-spot {
+  /* Tungsten, not daylight. The cone used to be the app's cool ink
+     white, which read as a fluorescent tube rather than a stage lamp -
+     and a cool beam makes warm trophies look dirty. */
   background: conic-gradient(
     from 180deg at 50% -10%,
     transparent 38%,
-    rgba(231, 233, 242, 0.06) 45%,
-    rgba(231, 233, 242, 0.2) 50%,
-    rgba(231, 233, 242, 0.06) 55%,
+    rgba(255, 243, 222, 0.1) 44%,
+    rgba(255, 243, 222, 0.42) 50%,
+    rgba(255, 243, 222, 0.1) 56%,
     transparent 62%
   );
   mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.95), transparent 88%);
