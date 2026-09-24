@@ -49,10 +49,9 @@ Not credits — a per-day generation limit on the grace-period account. PLUS ann
       and falls back to text-only until the image exists (`the-reality.tsx`, `STILL`)
 
 ### Asked for and not yet started
-- [ ] **Karaoke captions** — word-by-word highlighting on the welcome page, the intention
-      page, and the guided tour, matching how Coach's video feedback works.
-      `talking-lion.tsx` already has `phrasesOf`, `captionIndex` and `wordIndex`; it is a
-      matter of exposing that rather than inventing it.
+- [ ] **Karaoke captions on the welcome and intention pages.** The guided tour has them
+      (`2c9b0a1`); these two still show their paragraph all at once. The hard part is
+      done — `onSay` in `talking-lion.tsx` hands the timing to whoever wants to draw it.
 - [ ] **"Send it" goes straight into the tour** — no "Show me around / Straight in" choice,
       with a skip available
 - [ ] **The intro video edit** — first ~20s after "screen or stage", then cut to ~1:38.
@@ -63,6 +62,14 @@ Not credits — a per-day generation limit on the grace-period account. PLUS ann
       through yet. The live tour is the version written from the earlier spec.
 - [ ] **Master plan write-up** — ~40 commits of changes since 23 September are not yet in
       `docs/master-plan.md`
+
+### Decided, for the record
+- **The streak past day ten.** 5% a day to +50% at ten days (unchanged), then 2.5% a day
+  to **+100% at thirty days**, and it stops there. Past the ceiling the reward is a
+  **freeze every ten days** rather than more XP — it protects the streak instead of
+  paying it, so it can keep coming forever without making the hundredth day worth more
+  than the work. Still on the table if more is wanted: long-streak trophies at 14/30/100,
+  a streak leaderboard, and a title beside the name on the boards.
 
 ### Waiting on Tariq
 - [ ] **15 testimonials still need names confirmed** — see `src/data/testimonials.ts`,
@@ -106,6 +113,10 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **24 September**
+- Tour captions, karaoke, and a dark screen for Coach's own moments — `PENDING2`
+- Landing: one coach demo, one baseline, wrapped lesson titles, new copy — `PENDING2`
+- The tab bar, the General room, chat reactions, the chest, the streak past
+  day ten, folded attempts, swipeable boards, "Back to Dash" — `2351968`
 - Coach rings the nav button and waits, instead of arriving over the page — `0da0f67`
 - The streak pill: cascading neon, confetti, floating XP — `0da0f67`
 - One wave on the Coach page, not two — `3406f13`
