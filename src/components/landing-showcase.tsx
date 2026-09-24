@@ -1,16 +1,6 @@
-import { LazyVimeoPlayer } from "@/components/lazy-vimeo-player";
 import { PhoneFilm } from "@/components/phone-film";
-import {
-  ChallengesIcon,
-  DeckIcon,
-  FlameIcon,
-  ListenIcon,
-  MedalIcon,
-  SpectrumIcon,
-  TrophyIcon,
-  VideoIcon,
-  ZapIcon,
-} from "@/components/icons";
+import { WhatsInside } from "@/components/whats-inside";
+import { ListenIcon, TrophyIcon } from "@/components/icons";
 
 // The app, shown rather than described (master plan §15): a lesson as
 // it plays inside, with the words and symbols that land on the sentence
@@ -31,53 +21,27 @@ function Phone({ children, label }: { children: React.ReactNode; label: string }
   );
 }
 
-const FEATURES: { Icon: (p: { className?: string }) => React.ReactNode; color: string; title: string; body: string }[] = [
-  { Icon: VideoIcon, color: "text-acting", title: "Record with the clock in view", body: "The camera opens in the app with the challenge's own limit counting down, the brief on screen, and a stop at the limit." },
-  { Icon: ListenIcon, color: "text-advanced", title: "A coach who watched", body: "Gestures, eyes, voice, the story - judged for quality, not presence, and said aloud with captions. It'll mention your shirt." },
-  { Icon: SpectrumIcon, color: "text-body-language", title: "Seven colors", body: "Every take scored as a spectrum. The colors a challenge needs glow; the rest are bonus." },
-  { Icon: ChallengesIcon, color: "text-structure", title: "The STORY adventure", body: "Twenty-four challenges in five phases, each opening at a rank - your own face in the circles you've passed." },
-  { Icon: ZapIcon, color: "text-storytelling", title: "XP that pays by score", body: "A better take on a challenge you've passed is worth more. Ranks open the road; trophies are earned, not collected." },
-  { Icon: DeckIcon, color: "text-figurative", title: "The card deck", body: "Seventy-nine cards, one per lesson, seven colors. Pull one of each and you have the ingredients for a talk that moves." },
-  { Icon: MedalIcon, color: "text-mindset", title: "Ask your coach", body: "Hold to ask how you're developing. The answer comes from your own record - every take, every note - and nothing else." },
-  { Icon: FlameIcon, color: "text-acting", title: "Streaks, board, notes", body: "A streak that glows, this week's board, and a note when your review is ready. Recordings stay on your phone." },
-];
 
 export function LandingShowcase() {
   return (
     <>
-      {/* A lesson, as it plays inside */}
-      <section className="flex flex-col items-center gap-4">
-        <h2 className="text-2xl font-semibold tracking-tight text-balance">A lesson, exactly as you&apos;ll see it</h2>
-        <p className="max-w-lg text-center text-ink-muted">
-          Short, taught to camera, and with the idea of each sentence landing beside the teacher as he says it - a
-          word, a symbol - so the lesson is seen as well as heard. Press play.
-        </p>
-        <div className="w-full max-w-2xl">
-          <LazyVimeoPlayer vimeoId="1081030429" title="Stories Make The World Go Round" poster="/thumbs/1081030429.jpg" />
-        </div>
-        <p className="text-xs text-ink-faint">Storytelling · &ldquo;Stories Make The World Go Round&rdquo; · 2 minutes</p>
-      </section>
-
-      {/* Everything in it */}
-      <section className="flex flex-col items-center gap-6">
-        <h2 className="text-2xl font-semibold tracking-tight">What&apos;s in the app</h2>
-        <ul className="grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {FEATURES.map((f) => (
-            <li key={f.title} className="flex flex-col gap-2 rounded-2xl border border-navy-600 bg-navy-800/70 p-4">
-              <f.Icon className={`size-6 ${f.color}`} />
-              <h3 className="text-sm font-semibold text-ink">{f.title}</h3>
-              <p className="text-xs leading-relaxed text-ink-muted">{f.body}</p>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {/* The standalone lesson player is gone.
+          
+          "A lesson, exactly as you'll see it" sat between the coach
+          demo and the feature list saying nothing the page was not
+          already saying - there is a studio lesson playing in the hero
+          and the whole library further down, both of which show the
+          same thing in context. A third video of the same kind in the
+          middle is not more proof, it is a longer page. */}
+      <WhatsInside />
 
       {/* A preview of the app - three short films of the real pages */}
       <section className="flex flex-col items-center gap-4">
-        <h2 className="text-2xl font-semibold tracking-tight">A preview of how the app looks and feels</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">See the app in action</h2>
         <p className="max-w-lg text-center text-ink-muted">
-          Your STORY challenge journey; the skills and lesson videos, reached through a color-coded dial; and
-          your gamified student dashboard - your trophies, your streak, the speaking spectrum, and more.
+          Your interactive challenges in the S.T.O.R.Y. framework; color-coded skills that you can dial into
+          and watch; and your gamified dashboard - trophies, streak, speaking spectrum, leaderboards and the
+          community, all in one place.
         </p>
         <div className="-mx-4 flex w-[calc(100%+2rem)] gap-6 overflow-x-auto px-4 pb-2 sm:mx-0 sm:w-full sm:justify-center sm:overflow-visible sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <Phone label="The adventure">

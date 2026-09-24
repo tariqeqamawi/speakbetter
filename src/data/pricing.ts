@@ -94,7 +94,7 @@ export const tiers: Tier[] = [
   {
     id: "foundations",
     name: "Starter",
-    tagline: "The method, the live cohort, and Coach in writing.",
+    tagline: "The full six weeks - the interactive challenges, the skills, and visual feedback on every take.",
     price: "$299",
     term: "one payment - 6 weeks' access",
     has: foundations,
@@ -105,7 +105,7 @@ export const tiers: Tier[] = [
   {
     id: "coached",
     name: "Complete",
-    tagline: "Everything in Starter, plus Coach watching every take and answering out loud.",
+    tagline: "The full digital experience - everything in Starter, plus the interactive Coach and his spoken feedback.",
     price: "$499",
     term: "one payment - 6 weeks' access",
     featured: true,
@@ -118,7 +118,7 @@ export const tiers: Tier[] = [
     id: "founders",
     name: "VIP Ultimate",
     sub: "The founders set - and the teacher reviewing your takes himself",
-    tagline: "Everything in Complete, plus Tariq working with you one to one.",
+    tagline: "The full experience - the AI coach, the weekly live sessions, and personal one-to-one feedback from Tariq himself.",
     price: "$997",
     term: "one payment - 6 weeks, and the deck and book are yours to keep",
     has: founders,

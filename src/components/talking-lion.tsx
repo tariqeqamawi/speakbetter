@@ -510,20 +510,35 @@ export const TalkingLion = forwardRef<
           only downloads when the visitor asks to hear it. */}
       <audio ref={audioRef} preload="none" hidden />
 
+      {/* The wave lives INSIDE the button.
+          
+          It used to be a band under the lion with a separate pill
+          beneath it, which drew the same idea twice - a voice, and
+          then a button about the voice - and spent two rows of screen
+          saying it. One pill with the wave running through it is the
+          control and the picture of what it does, and it reads as a
+          thing to press because it is shaped like one. */}
       {controls && (
       <button
         type="button"
         onClick={speaking ? stop : speak}
         disabled={!supported}
-        className={`flex min-h-11 items-center rounded-full border font-semibold transition-colors disabled:opacity-50 ${
+        className={`relative flex min-h-12 items-center justify-center overflow-hidden rounded-full border px-7 font-bold transition-colors disabled:opacity-50 ${
           large
-            ? "coach-pill border-transparent px-8 py-3 text-base !text-navy-950 hover:scale-[1.03]"
+            ? "coach-pill border-transparent !text-navy-950 hover:scale-[1.03]"
             : blocked
-              ? "border-ink-faint bg-navy-700 px-5 py-2.5 text-sm text-ink hover:bg-navy-600"
-              : "border-navy-600 bg-navy-800 px-5 py-2.5 text-sm text-ink hover:bg-navy-700"
+              ? "border-ink-faint bg-navy-700 text-ink hover:bg-navy-600"
+              : "border-navy-600 bg-navy-800 text-ink hover:bg-navy-700"
         }`}
       >
-        {speaking ? "Stop" : blocked ? "Tap to listen to Coach" : "Listen to Coach"}
+        {/* The wave, running the width of the pill behind the words. */}
+        <Soundwave
+          variant="coach"
+          className={`pointer-events-none absolute inset-0 size-full ${large ? "opacity-45" : "opacity-30"}`}
+        />
+        <span className="relative text-sm">
+          {speaking ? "Stop" : blocked ? "Tap to hear Coach’s review" : "Coach’s review"}
+        </span>
       </button>
       )}
       {blocked && (

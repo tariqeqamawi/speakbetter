@@ -165,41 +165,21 @@ export function Landing() {
       {/* The coach, actually coaching */}
       <section className="flex flex-col items-center gap-4">
         <h2 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-          Experience your Speak Better coach now
+          Experience your Speak Better &ldquo;Coach&rdquo;
         </h2>
         <div className="flex max-w-2xl flex-col items-center gap-4 text-center">
           <p className="text-lg text-ink-muted text-balance">
-            The whole Speak Better system is built on this. How do you teach a methodology this effective at scale?
-            With a competent AI coach trained on the methodology itself.
+            You record a challenge and, in a minute or two, Coach the lion watches your video and makes note
+            of your hand gestures, your body language, your presence, your confidence, your storytelling,
+            your acting, your sensory details and your structure.
           </p>
           <p className="text-ink-muted text-balance">
-            Record a challenge and, in a minute or two, your coach - the lion - watches your video and makes note of:
-          </p>
-          <ul className="flex flex-wrap justify-center gap-2">
-            {[
-              ["your hand gestures", "text-body-language"],
-              ["your body language", "text-body-language"],
-              ["your eye contact", "text-body-language"],
-              ["your storytelling", "text-storytelling"],
-              ["your figurative language", "text-figurative"],
-              ["your acting", "text-acting"],
-              ["your energy", "text-acting"],
-              ["your tone of voice", "text-acting"],
-            ].map(([label, color]) => (
-              <li
-                key={label}
-                className={`rounded-full border border-navy-600 bg-navy-800/70 px-3 py-1 text-xs font-semibold ${color}`}
-              >
-                {label}
-              </li>
-            ))}
-          </ul>
-          <p className="text-ink-muted text-balance">
-            Then it gives you a detailed breakdown of how you did against the lessons in the course, and specific
-            notes on your performance. You&apos;ll know whether you passed or missed, what to improve next time, and
-            you&apos;ll watch your ability grow, take by take.
+            Then he gives you a detailed breakdown of what you did, what you can improve, and specific notes
+            on your spoken and physical delivery. You&apos;ll know whether you passed or missed, and
+            you&apos;ll watch your ability grow take by take.
           </p>
         </div>
+
         <CoachDemo />
       </section>
 
@@ -301,13 +281,13 @@ export function Landing() {
       {/* The spectrum */}
       <section className="flex flex-col items-center gap-4">
         <h2 className="text-2xl font-semibold tracking-tight">
-          The spectrum of speaking
+          Speaking Spectrum
         </h2>
         <p className="max-w-lg text-center text-ink-muted">
-          Every skill belongs to one of seven colors. The more colors your talk
-          lights up, the more dynamic a speaker you&apos;re becoming - this is
-          the same speaker, before and after.
+          Every skill belongs to one of seven colors. The more colors your talk lights up, the more dynamic a
+          speaker you&apos;re becoming.
         </p>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ink-faint">Before and after</p>
         <SpectrumDemo />
         <ul className="flex max-w-2xl flex-wrap justify-center gap-2">
           {categories.map((cat) => (
@@ -341,15 +321,15 @@ export function Landing() {
       {/* The journey */}
       <section className="flex flex-col items-center gap-4">
         <h2 className="text-2xl font-semibold tracking-tight">
-          Your STORY adventure
+          Your interactive challenges in the S.T.O.R.Y. framework
         </h2>
         <p className="max-w-lg text-center text-ink-muted">
-          Twenty-four challenges across five phases, drawn as a road - your face on the challenge you&apos;re
-          at, your own takes in the circles you&apos;ve passed, your trophies pinned where you won them, and
-          the other students walking it beside you. Scroll it, pinch to look closer, and tap a stop to see
-          its page the way you&apos;ll find it inside.
+          24 challenges across 5 levels, experienced as an adventure. Unlock trophies, see which challenges
+          other students are on, and complete them together.
         </p>
-        <StoryPreview />
+        <div className="w-full max-w-2xl">
+          <StoryPreview />
+        </div>
       </section>
 
       {/* The first challenge, live - the free baseline as the thing
@@ -417,9 +397,9 @@ export function Landing() {
           </h2>
           <p className="text-sm leading-relaxed text-ink-muted">
             One of the ideas behind the app was to give you the experience of having a mentor in your
-            pocket. Now you have two: <b className="font-semibold text-ink">Tariq</b>, delivering every
-            lesson, and <b className="font-semibold text-ink">the lion coach</b>, giving you feedback on
-            every take.
+            pocket. Now you have two! <b className="font-semibold text-ink">Tariq</b> delivers every lesson
+            and introduces every challenge. <b className="font-semibold text-ink">Coach, the lion</b>, gives
+            you all of your feedback and guides you through the app.
           </p>
           <p className="text-sm leading-relaxed text-ink-muted">
             Every lesson is recorded in the studio in landscape, so you get the full picture on a monitor,
@@ -444,7 +424,7 @@ export function Landing() {
             Three tiers, based on the amount of support you want
           </h2>
           <p className="max-w-md text-sm text-ink-muted">
-            The first challenge above is free. Then choose how far to take it.
+            Choose the experience that you most want to have.
           </p>
         </div>
         <div className="w-full">
