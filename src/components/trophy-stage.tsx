@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronDownIcon, LockIcon, ZoomIcon } from "@/components/icons";
 import { TrophyZoom } from "@/components/trophy-zoom";
+import { StageBackdrop } from "@/components/stage-backdrop";
 
 // One trophy, standing on the podium, under the light.
 //
@@ -108,14 +109,9 @@ export function TrophyStage({
         className="relative aspect-[3/4] w-full overflow-hidden rounded-3xl border border-navy-700 bg-[#03060d] outline-none focus-visible:ring-2 focus-visible:ring-figurative sm:aspect-[1600/893]"
       >
         {/* The room. Full strength - it is a dark photograph already,
-            and dimming it again took the podium away with it. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/trophy/stage.jpg"
-          alt=""
-          aria-hidden
-          className="pointer-events-none absolute inset-0 size-full object-cover"
-        />
+            and dimming it again took the podium away with it. The smoke
+            in the beam moves (stage-backdrop.tsx). */}
+        <StageBackdrop poster="/trophy/stage.jpg" video="/trophy/stage-smoke.mp4" />
 
         {/* What the trophy throws onto the disc around it. The lamp
             stays warm white; the colour belongs to the object. */}
