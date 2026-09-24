@@ -64,9 +64,12 @@ export default function SpotlightPage() {
       <section className="flex flex-col gap-3">
         <h2 className="text-xl font-bold tracking-tight text-ink">The full set - all 47, rendered</h2>
         <p className="max-w-2xl text-sm text-ink-muted">
-          Every trophy in the app. The same chrome stem and gunmetal plinth under all of them, and the glass
-          in the colour of the skill it is awarded for - so the case doubles as a picture of what somebody is
-          good at. Arrow keys or a swipe to walk the rack; hover the lit one to look at it closely.
+          Every trophy in the app. The same short chrome post and gunmetal plinth under all of them, and five
+          materials that say how hard the thing was to get: glass for the twenty-four challenges, ceramic for
+          the ones about how you speak, chrome for turning up again and again, gold for finishing a level of
+          the road, and obsidian for the rare ones. Four of the five still carry the colour of the skill, so
+          the case keeps doubling as a picture of what somebody is good at. Arrow keys or a swipe to walk the
+          rack; press and drag on the lit one to look at it closely.
         </p>
         <TrophySpotlight trophies={rendered} start={7} backdrop="/trophy/stage.jpg" />
       </section>

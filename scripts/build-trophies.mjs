@@ -54,7 +54,7 @@ if (pngs.length === 0) {
 let made = 0;
 for (const file of pngs.sort()) {
   const id = file.replace(/\.png$/, "");
-  for (const [suffix, width] of [["", 242], ["-2x", 484]]) {
+  for (const [suffix, width] of [["", 300], ["-2x", 600]]) {
     const out = join(OUT, `${id}${suffix}.webp`);
     execFileSync("ffmpeg", [
       "-v", "error", "-y",

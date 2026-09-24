@@ -36,6 +36,20 @@ import { ZoomIcon } from "@/components/icons";
 /** How far in. Enough to see the glass, not so far it turns to mush. */
 const ZOOM = 2.8;
 
+// PRESS AND DRAG, on every device.
+//
+// It used to zoom on hover on a mouse and on a tap on a phone, which
+// is two interactions to learn for one job - and the hover one barely
+// worked: the trophy frame is a narrow column, so the pointer spent
+// most of its time just outside it and the zoom flickered on and off
+// as the mouse crossed the edge.
+//
+// Press and drag is one gesture, identical with a thumb and with a
+// mouse, and it is also the right METAPHOR: you are holding the thing
+// up to the light and turning it. Pointer capture means the drag
+// survives leaving the frame, so sliding off the narrow column no
+// longer drops the zoom halfway through looking at something.
+
 export function TrophyZoom({
   src,
   /** The bigger file, fetched only on demand. */
@@ -125,27 +139,26 @@ export function TrophyZoom({
   return (
     <div
       ref={frame}
-      className="relative overflow-hidden rounded-xl"
-      style={{ height, width: "auto", aspectRatio: "752 / 1921" }}
-      onPointerEnter={(e) => {
-        if (e.pointerType !== "touch") enter();
-      }}
-      onPointerMove={(e) => {
-        if (e.pointerType === "touch" && !on) return;
+      // The trophies are 3:4. This used to declare 752/1921 - the
+      // proportions of the very first render - so every trophy was
+      // letterboxed into a column half the width it needed and drawn
+      // at about two thirds the size it should have been. The zoom
+      // "not working" was mostly this: there was very little trophy
+      // there to zoom into.
+      className="relative touch-none select-none overflow-hidden rounded-xl"
+      style={{ height, width: "auto", aspectRatio: "3 / 4", cursor: on ? "zoom-out" : "zoom-in" }}
+      onPointerDown={(e) => {
+        // Capture, so the drag survives leaving this narrow box.
+        e.currentTarget.setPointerCapture?.(e.pointerId);
+        enter();
         track(e.clientX, e.clientY);
       }}
-      onPointerLeave={leave}
-      onPointerDown={(e) => {
-        // Tap to inspect, tap again to stop - the only thing that works
-        // without a hover.
-        if (e.pointerType !== "touch") return;
-        if (on) {
-          leave();
-        } else {
-          enter();
-          track(e.clientX, e.clientY);
-        }
+      onPointerMove={(e) => {
+        if (!on) return;
+        track(e.clientX, e.clientY);
       }}
+      onPointerUp={leave}
+      onPointerCancel={leave}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
@@ -174,8 +187,8 @@ export function TrophyZoom({
           caption underneath, where there is width for them; up here
           only the glass is needed. */}
       {!on && (
-        <span className="pointer-events-none absolute right-1 top-1 grid size-6 place-items-center rounded-full bg-navy-950/70 text-ink-muted backdrop-blur">
-          <ZoomIcon className="size-3.5" />
+        <span className="pointer-events-none absolute right-1 top-1 grid size-7 place-items-center rounded-full bg-navy-950/70 text-ink-muted backdrop-blur">
+          <ZoomIcon className="size-4" />
         </span>
       )}
     </div>

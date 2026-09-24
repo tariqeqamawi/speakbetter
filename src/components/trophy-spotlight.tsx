@@ -46,7 +46,11 @@ export interface SpotlightTrophy {
  *  The medallion on its plinth is a wider object than a cut-out
  *  symbol, so the neighbours stand further out or they crowd the one
  *  in the light - which is the one thing this layout exists to avoid. */
-const STEP_X = 210;
+// Wider apart, because the trophy in the light is bigger now: the
+// figure fills its frame rather than sitting on top of a long stem,
+// so a 3:4 object at 340px is a much broader thing than the old 2:3
+// at 250 and the neighbours were touching it.
+const STEP_X = 250;
 const STEP_SCALE = 0.34;
 const STEP_BLUR = 2.6;
 /** Past this many either side, a trophy is not worth painting. */
@@ -184,7 +188,7 @@ export function TrophySpotlight({
                       src={t.image}
                       zoomSrc={t.zoom}
                       alt={t.name}
-                      height={250}
+                      height={340}
                       dimmed={!t.won}
                     />
                   ) : (
@@ -192,7 +196,7 @@ export function TrophySpotlight({
                     <img
                       src={t.image}
                       alt=""
-                      style={{ height: 230, width: "auto" }}
+                      style={{ height: 300, width: "auto" }}
                       // Not-yet-won trophies go dark and grey, the way
                       // an empty slot in a real case reads.
                       className={t.won ? "" : "opacity-40 grayscale"}
@@ -259,7 +263,7 @@ export function TrophySpotlight({
           {here.image && (
             <span className="flex items-center gap-1.5 text-xs text-ink-faint">
               <ZoomIcon className="size-3.5" />
-              <span className="hover-verb">Hover the trophy to look closer</span>
+              <span>Press and drag on the trophy to look closer</span>
               <span className="tap-verb">Tap the trophy to look closer</span>
             </span>
           )}
