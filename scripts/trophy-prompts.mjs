@@ -155,7 +155,7 @@ export const TROPHIES = [
   { id: "challenge-create-storybook", color: "storytelling", subject: "a closed book with a ribbon bookmark" },
   { id: "challenge-scene-with-sound", color: "acting", subject: "a bell with rings of sound spreading from it" },
   { id: "challenge-describe-vividly", color: "figurative", subject: "a faceted gemstone" },
-  { id: "challenge-moment-from-your-day", color: "storytelling", subject: "a pocket watch with its lid open" },
+  { id: "challenge-moment-from-your-day", color: "storytelling", subject: "a smooth stylised head turned three-quarters, mouth open mid-sentence, with three sound-wave arcs radiating from the mouth" },
   { id: "challenge-high-stakes-moment", color: "acting", subject: "a theatre chair tipped forward onto its two front legs, as if someone is on the very edge of the seat" },
   { id: "challenge-set-and-scene", color: "storytelling", subject: "a miniature theatre stage with its curtains drawn back" },
   { id: "challenge-twist-third-person", color: "storytelling", subject: "a director's megaphone, cone pointing up and to the side" },
