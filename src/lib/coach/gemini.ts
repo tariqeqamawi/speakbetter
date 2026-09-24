@@ -8,7 +8,7 @@
 // delete from the moment the answer is back; nothing about the
 // recording persists on our side (§13).
 
-import { GoogleGenAI, createPartFromUri } from "@google/genai";
+import { GoogleGenAI, MediaResolution, createPartFromUri } from "@google/genai";
 import type { CoachContext } from "./context";
 import { RESPONSE_SCHEMA, type CoachVerdict } from "./rubric";
 
@@ -86,6 +86,17 @@ export async function review(
         systemInstruction: context.system,
         responseMimeType: "application/json",
         responseJsonSchema: RESPONSE_SCHEMA,
+        // Low resolution on the video, which is the single biggest
+        // line on the bill: 66 tokens a second instead of 263, so a
+        // two-minute take costs 12k tokens of frames rather than 35k.
+        //
+        // The judgement is about gestures, where the eyes are pointed
+        // and how much of the body is in frame - none of which needs
+        // detail a low-resolution frame loses, as long as the room is
+        // lit. It is NOT free of risk: if reviews start missing hands
+        // or misreading eye contact, this is the first thing to put
+        // back, and MEDIA_RESOLUTION_MEDIUM is the middle setting.
+        mediaResolution: MediaResolution.MEDIA_RESOLUTION_LOW,
         // The judgement is the product: let the model think. Cost is
         // bounded by the clip length either way - a minute of video is
         // ~18k tokens and the thinking is a fraction of that.
