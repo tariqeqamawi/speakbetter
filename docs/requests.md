@@ -78,21 +78,24 @@ Not credits — a per-day generation limit on the grace-period account. PLUS ann
   a streak leaderboard, and a title beside the name on the boards.
 
 ### Waiting on Tariq
-- [ ] **9 testimonials still held back.** 17 are live. Initials are the way through —
-      see `initials` in `src/data/testimonials.ts` — and they must come from Tariq, never
-      be derived from the mangled spelling, because initials guessed from a misheard
-      surname are the same false attribution as the misspelling was.
+- [ ] **6 testimonials still held back.** 20 are live.
 
-      **Needing initials (7):** Tarns Blueweaver, Karen Lay, Preethi (her second quote),
-      Teresa Ecclin, Kylie Klein, Erin Ralph, Christie Xord.
+      **Waiting on a name (4):** Tarns Blueweaver, Karen Lay, Preethi (her second
+      quote), Erin Ralph. Either the correct spelling or initials — `initials` in
+      `src/data/testimonials.ts` publishes an entry without a full name.
 
-      **A different problem (2):** two quotes arrived with two names attached, so initials
-      cannot fix them — somebody has to say who spoke. Which of Vincent Hazenboom /
-      Lhamo Ingrik said "Bloody brilliant", and which of Liz A. Hammond / Gene East said
-      "This course is the best".
+      **A different problem (2):** two quotes arrived with two names attached, so a
+      spelling cannot fix them — somebody has to say who spoke. Which of Vincent
+      Hazenboom / Lhamo Ingrik said "Bloody brilliant", and which of Liz A. Hammond /
+      Gene East said "This course is the best".
 
-      **Given so far, and worth checking the mapping:** JS, DN, RJ and LN were applied in
-      file order to the four quotes that needed them — see the commit for which is which.
+      **Three initials still unplaced.** Tariq gave JS, DN, RJ and LN. JS went to the one
+      quote in the file with no name at all ("To this day I still benefit from your
+      training…"). The other three have nowhere to go: every remaining held quote has a
+      name, just an unverified one. They need to be matched to quotes before they can be
+      used — and never derived from a mangled spelling, since initials guessed from a
+      misheard surname are the same false attribution the misspelling was.
+
 - [ ] **Real testimonial photographs, with permission** — the drift currently uses the
       app's initial-avatars, deliberately, because an invented portrait beside a real name
       is a picture of somebody who does not exist presented as them. Photos drop into the
