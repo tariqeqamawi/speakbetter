@@ -100,6 +100,7 @@ Tariq topped up the account, so the cap is gone.
 ### Asked for and not yet started
 - [ ] **Landing page: faster load, smoother animation on laptop and desktop** (24 Sep).
       In progress.
+
 ### Decided, for the record
 - **The streak past day ten.** 5% a day to +50% at ten days (unchanged), then 2.5% a day
   to **+100% at thirty days**, and it stops there. Past the ceiling the reward is a
@@ -178,6 +179,9 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **24 September**
+- A 14-day money-back guarantee, for any reason, under the tiers; nine FAQs folded
+  beneath it, every figure read from the pricing and cohort data; no separate pricing
+  page needed — `f825ca2`
 - The trophies whole again: every one re-cut by the model's own transparent background
   instead of by brightness, which had deleted the obsidian, the plinths and the deep
   glass — `b80867b`
