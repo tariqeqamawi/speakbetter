@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { isStudentId, listJson } from "@/lib/server/store";
+import { getJson, isStudentId, listJson } from "@/lib/server/store";
 
 // Getting a student's work back after their device forgot it.
 //
@@ -55,5 +55,15 @@ export async function GET(request: Request) {
     .filter((a) => a.attemptId && a.challengeSlug)
     .sort((a, b) => String(a.at ?? "").localeCompare(String(b.at ?? "")));
 
-  return NextResponse.json({ attempts });
+  // A full backup, if this student's device has written one since
+  // backups existed. It carries everything - lessons watched, badges,
+  // streak days - where the parked reviews carry only the takes.
+  const backup = await getJson<{ at?: string; state?: Record<string, unknown> }>(
+    `backup/${studentId}.json`,
+  );
+
+  return NextResponse.json({
+    attempts,
+    backup: backup?.state ? { at: backup.at ?? null, state: backup.state } : null,
+  });
 }

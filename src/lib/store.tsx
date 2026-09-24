@@ -16,6 +16,7 @@ import { evaluateBadges, type EarnedBadge } from "@/data/badges";
 import type { Plan } from "@/data/pricing";
 import { standing } from "@/lib/progress";
 import { demoState } from "@/lib/demo-state";
+import { studentId } from "@/lib/student-id";
 import { supabase } from "@/lib/supabase/client";
 import { supabaseConfigured } from "@/lib/supabase/config";
 import {
@@ -172,6 +173,39 @@ const EMPTY: AppState = {
 };
 
 export const STORAGE_KEY = "speak-better-state-v1";
+
+// ── The safety net ────────────────────────────────────────────────────
+// Until accounts land, a student's record lives in one browser and
+// nowhere else - and browsers throw storage away. iOS clears it for any
+// site unopened for a week; a second address is a second empty bucket;
+// clearing website data takes the lot. So a copy goes to our side as
+// the record changes, and /restore can put it back.
+//
+// It is one-way and debounced. Not a sync: two devices do not merge
+// through this, and the newest write wins - the right shape for a
+// safety net, the wrong one for multi-device, which is Supabase's job.
+
+let backupTimer: ReturnType<typeof setTimeout> | undefined;
+
+function backUp(next: AppState): void {
+  // Nothing worth keeping yet, and an empty record is exactly what
+  // must never be allowed to overwrite a full one.
+  if (next.attempts.length === 0 && next.watchedLessons.length === 0) return;
+  if (backupTimer) clearTimeout(backupTimer);
+  backupTimer = setTimeout(() => {
+    try {
+      void fetch("/api/backup", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ studentId: studentId(), state: next }),
+        keepalive: true,
+      }).catch(() => {});
+    } catch {
+      // A failed backup is a backup we do without. It must never be
+      // able to interrupt somebody practising.
+    }
+  }, 4000);
+}
 
 interface StoreApi {
   state: AppState;
@@ -365,6 +399,11 @@ function StoreCore({
       } catch {
         // storage full/unavailable - state still lives in memory
       }
+      // And a copy on our side, so a browser throwing its storage away
+      // stops being the end of somebody's work. Debounced, because
+      // this fires on every XP tick and nobody needs a hundred copies
+      // of the same afternoon.
+      backUp(next);
       // And up to the account, if there is one. What changed is worked
       // out by comparing with what was there a moment ago, so callers
       // don't each have to remember to sync.

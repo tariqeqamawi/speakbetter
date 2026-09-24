@@ -285,19 +285,29 @@ export function TourRunner({
       )}
 
       <div
-        className={`absolute inset-x-3 mx-auto flex max-w-sm flex-col gap-3 rounded-2xl border border-navy-500 bg-navy-850 p-4 shadow-2xl shadow-navy-950 ${
+        className={`absolute inset-x-3 mx-auto flex flex-col gap-3 transition-all duration-500 ease-out ${
           opening
-            ? "top-1/2 -translate-y-1/2"
-            : below
-              ? "bottom-[max(5.5rem,env(safe-area-inset-bottom))] sm:bottom-8"
-              : "top-[max(5rem,env(safe-area-inset-top))]"
+            ? "top-1/2 max-w-md -translate-y-1/2 items-center"
+            : `max-w-sm rounded-2xl border border-navy-500 bg-navy-850 p-4 shadow-2xl shadow-navy-950 ${
+                below
+                  ? "bottom-[max(5.5rem,env(safe-area-inset-bottom))] sm:bottom-8"
+                  : "top-[max(5rem,env(safe-area-inset-top))]"
+              }`
         }`}
       >
         <div className={`flex gap-3 ${opening ? "flex-col items-center text-center" : "items-start"}`}>
           {/* Coach: centre stage for the hello, then into the corner.
               He is the same element either way, so the browser moves
               him rather than swapping one lion for another. */}
-          <span className={`tour-lion shrink-0 ${opening ? "w-32" : "w-11"}`}>
+          {/* Coach at full size for the hello - the face IS the screen
+              for those fifteen seconds - then the same element travels
+              down to a thumbnail in the corner of the card. One
+              element, so the browser moves him; two would be a cut. */}
+          <span
+            className={`tour-lion shrink-0 transition-[width] duration-500 ease-out ${
+              opening ? "w-[17rem] max-w-[78vw] sm:w-[21rem]" : "w-11"
+            }`}
+          >
             <TalkingLion
               key={clip}
               bare
@@ -314,10 +324,12 @@ export function TourRunner({
                 {step + offset} of {stops.length - 1 + offset}
               </span>
             )}
-            <h2 className={opening ? "text-xl font-bold text-ink text-balance" : "text-base font-bold text-ink"}>
+            <h2 className={opening ? "text-2xl font-bold text-ink text-balance sm:text-3xl" : "text-base font-bold text-ink"}>
               {stop.title}
             </h2>
-            <p className="text-sm leading-snug text-ink-muted text-balance">{line}</p>
+            <p className={opening ? "text-base leading-relaxed text-ink-muted text-balance" : "text-sm leading-snug text-ink-muted text-balance"}>
+              {line}
+            </p>
           </div>
 
           {!opening && (

@@ -128,6 +128,19 @@ export const mainTour: TourStop[] = [
     film: REVIEW,
   },
   {
+    id: "challenge-chat",
+    route: "/challenges/speaking-baseline",
+    title: "You're not doing this alone",
+    body: "Every challenge has a thread on it. You can leave a comment and read what other students said when they recorded the same one - what they found hard, what finally worked. Remember, you're not alone in this. We're doing it together.",
+  },
+  {
+    id: "live-sessions",
+    target: "[data-tour='live']",
+    route: "/live",
+    title: "The live sessions",
+    body: "Six live sessions across the six weeks, and all of them are hot-seat coaching - students on camera, being worked with there and then by Tariq. Watching somebody else be coached is most of the value, so come along even when you don't want the chair. Every session is recorded and kept here for you.",
+  },
+  {
     id: "skills-v2",
     target: "[data-tour='skills']",
     route: "/skills",
