@@ -88,7 +88,7 @@ Tariq topped up the account, so the cap is gone.
       `scripts/trophy-prompts.mjs`, alpha cut and WebP in `scripts/build-trophies.mjs`,
       and `trophyArt(id)` in `data/badges.ts` is the one way to ask for a picture.
       Preview: **/prototype/spotlight**.
-- [ ] **Decide where they replace the circular medallions.** The renders are tall
+- [ ] **Decide where they replace the circular medallions** (70 now, with the gold twins). The renders are tall
       objects (2:3); `BadgeMedal` crops to a circle, so they cannot simply be swapped in.
       The trophy case, the dashboard trophy panel and the map's won-trophy markers each
       need a look. Nothing has been changed outside the prototype.
@@ -179,6 +179,10 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **24 September**
+- Gold twin for every scored challenge, won at 90+ (23 new, 70 trophies); S.T.O.R.Y.
+  letters now multicolour neon; eight look-alike trophies redrawn (Silver Tongue, Heartstrings,
+  Hitmaker, Hollywood Worthy, Thesaurus Rex in reading glasses, The Before Shot, On the Air,
+  No Net) — `dccd6c2`
 - A 14-day money-back guarantee, for any reason, under the tiers; nine FAQs folded
   beneath it, every figure read from the pricing and cohort data; no separate pricing
   page needed — `f825ca2`
