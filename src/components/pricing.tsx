@@ -1,7 +1,8 @@
-import { trial } from "@/data/pricing";
+import { guarantee, trial } from "@/data/pricing";
 import { TierTabs } from "@/components/tier-tabs";
 import Link from "next/link";
-import { CheckIcon } from "@/components/icons";
+import { CheckIcon, ShieldCheckIcon } from "@/components/icons";
+import { PricingFaq } from "@/components/pricing-faq";
 
 // The offer, laid out (master plan §15): the free baseline first -
 // what anyone can do before paying - then the three tiers side by
@@ -35,9 +36,25 @@ export function Pricing({ hideTrial = false }: { hideTrial?: boolean }) {
 
       {/* The tiers - side by side on a desktop, tabs on a phone */}
       <TierTabs />
+
+      {/* The guarantee, directly under the prices - it answers the one
+          question every price raises, so it sits where that question is
+          asked rather than in the small print. */}
+      <div className="mx-auto flex max-w-xl items-center gap-4 rounded-2xl border border-mindset/40 bg-navy-800 px-5 py-4 shadow-[0_0_40px_-18px_var(--color-mindset)]">
+        <ShieldCheckIcon className="size-9 shrink-0 text-mindset" />
+        <div className="flex flex-col gap-0.5">
+          <span className="text-sm font-bold text-ink">{guarantee.title}</span>
+          <span className="text-sm text-ink-muted">{guarantee.line}</span>
+        </div>
+      </div>
+
       <p className="text-center text-xs text-ink-faint">
         Checkout stub - Stripe payment arrives with service integration. Prices in USD.
       </p>
+
+      <div className="flex justify-center">
+        <PricingFaq />
+      </div>
     </div>
   );
 }

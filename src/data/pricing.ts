@@ -168,3 +168,13 @@ export const trial = {
   ],
   cta: "Try the first challenge free",
 } as const;
+
+/** The guarantee, said once and read everywhere it appears - under the
+ *  tiers, in the FAQ and on /pricing. "For any reason" is the promise:
+ *  a refund that needs a reason is a negotiation, and nobody buys a
+ *  course they might have to argue their way out of. */
+export const guarantee = {
+  days: 14,
+  title: "14-day money-back guarantee",
+  line: "Try it for 14 days. If it's not for you - for any reason whatsoever - ask, and you get every cent back.",
+} as const;

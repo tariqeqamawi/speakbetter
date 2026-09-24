@@ -14,7 +14,6 @@ import {
 import { Pricing } from "@/components/pricing";
 import { LandingShowcase } from "@/components/landing-showcase";
 import { OriginStory } from "@/components/origin-story";
-import Link from "next/link";
 import { SpectrumDemo } from "@/components/spectrum-demo";
 import { HeroBeat } from "@/components/hero-beat";
 import { TheReality } from "@/components/the-reality";
@@ -442,9 +441,6 @@ export function Landing() {
         <div className="w-full">
           <Pricing hideTrial />
         </div>
-        <Link href="/pricing" className="text-xs font-semibold text-ink-muted underline-offset-4 hover:text-ink hover:underline">
-          Compare the tiers in full →
-        </Link>
       </section>
     </div>
   );

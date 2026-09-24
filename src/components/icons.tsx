@@ -482,3 +482,13 @@ export function SearchIcon({ className = "size-5" }: IconProps) {
     </svg>
   );
 }
+
+/** A shield with a tick - the guarantee. */
+export function ShieldCheckIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M12 3.25 5 6v5.25c0 4.25 2.9 7.9 7 9.5 4.1-1.6 7-5.25 7-9.5V6l-7-2.75Z" />
+      <path d="m8.75 12 2.25 2.25 4.25-4.5" />
+    </svg>
+  );
+}
