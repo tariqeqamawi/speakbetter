@@ -5,6 +5,13 @@ import { useRouter } from "next/navigation";
 import { useStore, type Level } from "@/lib/store";
 import { LevelIcon, levelMeta } from "@/components/level-icon";
 import { startTour } from "@/components/guided-tour";
+import { CoachSays } from "@/components/coach-says";
+import {
+  INTENTION_AUDIO,
+  INTENTION_SPEECH,
+  WELCOME_AUDIO,
+  WELCOME_SPEECH,
+} from "@/data/welcome-speech";
 
 // Onboarding (master plan §09): one plain, human question decides the
 // starting level. Level changes stay manual, in the student's hands.
@@ -15,9 +22,6 @@ import { startTour } from "@/components/guided-tour";
 // of their dashboard from then on.
 
 const order: Level[] = ["beginner", "intermediate", "advanced"];
-
-const INTENTION_PROMPT =
-  "Tell us why you're doing this course. What is the fear you're overcoming, or the outcome you're reaching for? Write it succinctly, and with the full emotional weight of what it means to you - so we can remind you to keep going.";
 
 export default function WelcomePage() {
   const { state, ready, setLevel, setIntention } = useStore();
@@ -45,19 +49,24 @@ export default function WelcomePage() {
       <header className="flex flex-col gap-3 text-center">
         <div className="spectrum-rule mx-auto h-1 w-16 rounded-full" />
         <h1 className="text-3xl font-semibold tracking-tight">
-          {step === "level" ? "Welcome to Speak Better" : "One more thing"}
+          {step === "level" ? "Welcome to Speak Better" : "Tell us why you're here"}
         </h1>
-        <p className="text-lg text-ink-muted">
-          {step === "level"
-            ? "How do you feel about speaking?"
-            : "Why are you really here?"}
-        </p>
-        <p className="text-xs text-ink-faint">
-          {step === "level"
-            ? "This sets your starting level. You can change it any time - it never changes without you."
-            : "Only you ever see this. It lives at the top of your dashboard."}
-        </p>
       </header>
+
+      {/* Coach does the talking on both steps. A heading and two radio
+          buttons is a form; the lion saying it is a welcome - and the
+          second question gets a far better answer when somebody asks
+          it than when a label does. */}
+      <CoachSays
+        text={step === "level" ? WELCOME_SPEECH : INTENTION_SPEECH}
+        audioSrc={step === "level" ? WELCOME_AUDIO : INTENTION_AUDIO}
+      />
+
+      <p className="text-center text-xs text-ink-faint">
+        {step === "level"
+          ? "You can change your level at any time - it never changes without you."
+          : "Only you ever see this. It lives at the top of your dashboard."}
+      </p>
 
       {step === "level" ? (
         <div className="flex flex-col gap-3">
@@ -97,9 +106,6 @@ export default function WelcomePage() {
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          <p className="rounded-xl border border-navy-600 bg-navy-800 p-4 text-sm leading-relaxed text-ink-muted">
-            {INTENTION_PROMPT}
-          </p>
           <label className="flex flex-col gap-2">
             <span className="sr-only">Your reason for taking this course</span>
             <textarea

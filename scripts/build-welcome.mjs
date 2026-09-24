@@ -1,0 +1,89 @@
+// Speaks Coach's welcome once, into the file the app ships.
+//
+//   node scripts/build-welcome.mjs
+//
+// Needs the dev server on :3001 (it holds the Gemini key and the
+// coach's settled voice - Charon, British, at his pace) and ffmpeg on
+// PATH to turn the WAV it returns into an mp3 a tenth the size.
+//
+// The line lives in src/data/welcome-speech.ts, so there is one copy
+// of it and the app and the clip cannot drift apart.
+
+import { execFileSync } from "node:child_process";
+import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync, statSync } from "node:fs";
+
+const BASE = process.env.SPEAK_BASE ?? "http://localhost:3001";
+const TMP = ".welcome-tmp";
+
+/** Pull the string literal out of the data file without a regex full
+ *  of escapes - find the marker, then read to the closing quote. */
+function speechFrom(src, name) {
+  const at = src.indexOf(`export const ${name}`);
+  if (at < 0) return null;
+  const open = src.indexOf('"', at);
+  if (open < 0) return null;
+  let out = "";
+  for (let i = open + 1; i < src.length; i++) {
+    const c = src[i];
+    if (c === "\\") {
+      out += src[i + 1];
+      i += 1;
+      continue;
+    }
+    if (c === '"') return out;
+    out += c;
+  }
+  return null;
+}
+
+const src = readFileSync("src/data/welcome-speech.ts", "utf8");
+
+// Both lines the onboarding speaks, in one run - they are made
+// together and they fail together, which is the honest coupling: a
+// welcome with only half a voice is worse than one with none.
+const JOBS = [
+  { name: "WELCOME_SPEECH", out: "welcome" },
+  { name: "INTENTION_SPEECH", out: "intention" },
+];
+
+mkdirSync(TMP, { recursive: true });
+mkdirSync("public/coach", { recursive: true });
+
+for (const job of JOBS) {
+  const line = speechFrom(src, job.name);
+  if (!line) {
+    console.error(`Could not find ${job.name} in src/data/welcome-speech.ts`);
+    process.exit(1);
+  }
+  console.log(`${job.out}: speaking ${line.length} characters…`);
+
+  const res = await fetch(`${BASE}/api/speak`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ text: line }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    // The quota is a DAILY one and says so plainly. Reporting it as
+    // itself rather than as a mystery failure matters: working that
+    // out the hard way cost real time once already on this project.
+    if (res.status === 429 || /quota/i.test(body)) {
+      console.error("voice quota spent - the daily text-to-speech limit. It resets at midnight Pacific.");
+    } else {
+      console.error(`speak failed: ${res.status} ${body.slice(0, 200)}`);
+    }
+    process.exit(1);
+  }
+
+  const wav = `${TMP}/${job.out}.wav`;
+  writeFileSync(wav, Buffer.from(await res.arrayBuffer()));
+  execFileSync("ffmpeg", ["-v", "error", "-y", "-i", wav, "-b:a", "96k", `public/coach/${job.out}.mp3`]);
+  console.log(
+    existsSync(`public/coach/${job.out}.mp3`)
+      ? `  public/coach/${job.out}.mp3 (${Math.round(statSync(`public/coach/${job.out}.mp3`).size / 1024)}KB)`
+      : "  nothing written",
+  );
+}
+
+rmSync(TMP, { recursive: true, force: true });
