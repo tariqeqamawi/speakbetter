@@ -35,11 +35,39 @@ export interface Testimonial {
   tag: Proof;
   /** The name or a phrase in it needs confirming before publishing. */
   check?: boolean;
+  /**
+   * Published as initials instead of a name.
+   *
+   * Several of these arrived with a name that dictation mangled, or
+   * with no name at all, and they were all held back: a real person's
+   * name misspelled on a sales page is worse than one fewer quote.
+   * But holding them back has its own cost - the words are real and
+   * they were sitting in this file doing nothing.
+   *
+   * Initials are the way out, and they are Tariq's to supply, not
+   * mine to derive: the initials of the person who said it, confirmed
+   * by him. Never invented from the mangled spelling, because "A.M."
+   * guessed from a misheard surname is the same false attribution as
+   * the misspelling was, just harder to spot.
+   *
+   * An entry with initials publishes even while `check` is still set -
+   * the flag then means "the full name is still unconfirmed", which is
+   * true, and no longer means "do not publish", because what gets
+   * published is not the full name.
+   */
+  initials?: string;
+}
+
+/** What goes under the quote: the initials where there are any. */
+export function credit(t: Testimonial): string {
+  return t.initials || t.name;
 }
 
 export const testimonials: Testimonial[] = [
   {
+    // No name came with this one at all. Initials confirmed by Tariq.
     name: "",
+    initials: "JS",
     quote:
       "To this day I still benefit from your training when I joined in the past. I highly recommend joining this course.",
     tag: "worth",
@@ -104,6 +132,7 @@ export const testimonials: Testimonial[] = [
   },
   {
     name: "Rach L.",
+    initials: "DN",
     quote:
       "This course has been life-changing. I would never have dreamed of speaking before and recording myself, but now have a new comfort. Weeks later the micro lessons are easily accessible and digestible, perfect for anyone time-pressed. Tariq genuinely cares about impacting people's lives through enhancing their speaking skills, and in a time of reduced attention spans and increased distractions, this course is invaluable.",
     tag: "lessons",
@@ -123,6 +152,7 @@ export const testimonials: Testimonial[] = [
   },
   {
     name: "Anne Awour Matoket",
+    initials: "RJ",
     quote: "Tariq, you are truly amazing. Thanks for contributing to my confidence in public speaking.",
     tag: "confidence",
     check: true,
@@ -141,6 +171,7 @@ export const testimonials: Testimonial[] = [
   },
   {
     name: "Michelle",
+    initials: "LN",
     quote:
       "So often in life, due to childhood experiences, school, work, friends or others, we can lose our voice, our ability to speak our truth, speak with confidence, and feel we can share our message powerfully. In just two live sessions plus the course resources, I am stepping back into my power, and already this journey is gifting me the ability to share my story and to find my voice. If you are ready to find your voice and take your business to the next level, I cannot recommend this enough. We can all learn to speak better. Thank you, Tariq, for gifting me the knowledge, skill and art of storytelling.",
     tag: "confidence",
@@ -245,7 +276,9 @@ export const testimonials: Testimonial[] = [
 
 /** The ones safe to show: a name that has been confirmed, and words
  *  that say what they are meant to say. */
-export const publishable = testimonials.filter((t) => !t.check && t.name);
+// Publishable: a confirmed name, or initials Tariq has confirmed
+// stand in for one. Everything else waits - see `check` above.
+export const publishable = testimonials.filter((t) => t.quote && (t.initials || (!t.check && t.name)));
 
 /** Everything that evidences one particular claim. */
 export function proofOf(tag: Proof, all = false): Testimonial[] {

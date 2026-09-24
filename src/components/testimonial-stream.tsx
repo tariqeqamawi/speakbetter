@@ -1,7 +1,7 @@
 "use client";
 
 import { Avatar } from "@/components/avatar";
-import type { Testimonial } from "@/data/testimonials";
+import { credit, type Testimonial } from "@/data/testimonials";
 
 // Students' own words, drifting up the page.
 //
@@ -66,7 +66,7 @@ export function TestimonialStream({
             >
               {/* Twice, so the loop has somewhere to come round from. */}
               {[...lane, ...lane].map((t, j) => (
-                <Quote key={`${t.name}-${j}`} t={t} />
+                <Quote key={`${credit(t)}-${t.quote.slice(0, 12)}-${j}`} t={t} />
               ))}
             </div>
           </div>
@@ -90,6 +90,10 @@ export function TestimonialStream({
 }
 
 function Quote({ t }: { t: Testimonial }) {
+  // Initials where there are initials - and the avatar takes the same
+  // string, so the letter on the chip and its colour both come from
+  // what is actually shown rather than from a name being withheld.
+  const who = credit(t);
   return (
     // White, against a page that is otherwise entirely dark - so a
     // quote reads as something lifted from elsewhere rather than as
@@ -97,8 +101,8 @@ function Quote({ t }: { t: Testimonial }) {
     <figure className="quote-card flex flex-col gap-2.5 rounded-2xl border p-4">
       <blockquote className="text-sm leading-relaxed">&ldquo;{t.quote}&rdquo;</blockquote>
       <figcaption className="flex items-center gap-2.5">
-        <Avatar name={t.name} className="size-8" />
-        <span className="quote-name text-xs font-semibold">{t.name}</span>
+        <Avatar name={who} className="size-8" />
+        <span className="quote-name text-xs font-semibold">{who}</span>
       </figcaption>
     </figure>
   );

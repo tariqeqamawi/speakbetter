@@ -78,11 +78,21 @@ Not credits — a per-day generation limit on the grace-period account. PLUS ann
   a streak leaderboard, and a title beside the name on the boards.
 
 ### Waiting on Tariq
-- [ ] **15 testimonials still need names confirmed** — see `src/data/testimonials.ts`,
-      anything marked `check: true`. Two quotes arrived with two names attached and are
-      held back rather than guessed at: which of Vincent Hazenboom / Lhamo Ingrik said
-      "Bloody brilliant", and which of Liz A. Hammond / Gene East said "This course is
-      the best". 13 are live.
+- [ ] **9 testimonials still held back.** 17 are live. Initials are the way through —
+      see `initials` in `src/data/testimonials.ts` — and they must come from Tariq, never
+      be derived from the mangled spelling, because initials guessed from a misheard
+      surname are the same false attribution as the misspelling was.
+
+      **Needing initials (7):** Tarns Blueweaver, Karen Lay, Preethi (her second quote),
+      Teresa Ecclin, Kylie Klein, Erin Ralph, Christie Xord.
+
+      **A different problem (2):** two quotes arrived with two names attached, so initials
+      cannot fix them — somebody has to say who spoke. Which of Vincent Hazenboom /
+      Lhamo Ingrik said "Bloody brilliant", and which of Liz A. Hammond / Gene East said
+      "This course is the best".
+
+      **Given so far, and worth checking the mapping:** JS, DN, RJ and LN were applied in
+      file order to the four quotes that needed them — see the commit for which is which.
 - [ ] **Real testimonial photographs, with permission** — the drift currently uses the
       app's initial-avatars, deliberately, because an invented portrait beside a real name
       is a picture of somebody who does not exist presented as them. Photos drop into the
