@@ -50,10 +50,25 @@ const FILMS = {
       .evaluate((el) => el.getBoundingClientRect().top + window.scrollY - 120);
     await ease(p, 0, top, 1600);
     await p.waitForTimeout(1000);
+    // How far to travel, as a share of the road rather than a fixed
+    // 1500px.
+    //
+    // THIS MATTERS FOR THE NEW ROAD. The projected terrain gives each
+    // checkpoint about two and a half screens of scroll, so a phase is
+    // several times longer than the old map was - and a fixed 1500px
+    // would film the first checkpoint arriving and then stop, which is
+    // a tour of a journey that never goes anywhere. Travelling a share
+    // of whatever the scene turns out to be survives the change.
+    //
+    // When the projected road replaces the live map, re-record this:
+    //     node scripts/film-tour.mjs journey
+    // and check the result actually shows a checkpoint approaching and
+    // passing, because that is the whole thing the stop is describing.
     const h = await p.evaluate(() => document.body.scrollHeight);
-    await ease(p, top, Math.min(top + 1500, h - 900), 6000);
+    const far = Math.min(top + Math.max(1500, (h - top) * 0.55), h - 900);
+    await ease(p, top, far, 6000);
     await p.waitForTimeout(1200);
-    await ease(p, Math.min(top + 1500, h - 900), top, 2400);
+    await ease(p, far, top, 2400);
     await p.waitForTimeout(700);
   },
 
@@ -64,9 +79,17 @@ const FILMS = {
     const dial = p.locator(".touch-pan-y.aspect-square").first();
     await dial.evaluate((el) => el.scrollIntoView({ block: "center" }));
     await p.waitForTimeout(800);
-    for (const n of ["Confidence & Presence", "Figurative language", "Storytelling techniques"]) {
+    // These are the categories' `name` field, which changed when the
+    // seven were given one short name each - and this recipe was not
+    // updated with them, so every lookup missed and `continue` quietly
+    // filmed a dial nobody touched. A film that records nothing
+    // happening is the worst kind of broken: it ships.
+    for (const n of ["Confidence", "Figurative & Sensory", "Storytelling"]) {
       const box = await p.getByLabel(`${n} - open lessons`).boundingBox();
-      if (!box) continue;
+      if (!box) {
+        console.warn(`  ! no dial node for "${n}" - has the category name changed again?`);
+        continue;
+      }
       await p.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 18 });
       await p.waitForTimeout(1000);
     }

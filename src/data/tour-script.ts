@@ -47,6 +47,16 @@ export interface TourStop {
   intro?: boolean;
 }
 
+// The adventure's film. IT IS OF THE OLD MAP - the tilted plane, not
+// the projected road at /prototype/adventure. The moment that road
+// replaces the live map this clip is showing a screen that no longer
+// exists, which is worse than no film: a tour whose pictures disagree
+// with the app teaches somebody the wrong thing and then makes them
+// distrust the rest of it.
+//
+// Re-record with `node scripts/film-tour.mjs journey` once the swap
+// lands. The recipe already travels a share of the scene rather than a
+// fixed distance, so it will follow the longer road.
 const JOURNEY = { src: "/film/tour-journey.mp4", poster: "/film/tour-journey.jpg" };
 const SKILLS = { src: "/film/tour-skills.mp4", poster: "/film/tour-skills.jpg" };
 const DASHBOARD = { src: "/film/tour-dashboard.mp4", poster: "/film/tour-dashboard.jpg" };
