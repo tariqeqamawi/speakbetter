@@ -113,8 +113,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **24 September**
-- Tour captions, karaoke, and a dark screen for Coach's own moments — `PENDING2`
-- Landing: one coach demo, one baseline, wrapped lesson titles, new copy — `PENDING2`
+- Tour captions, karaoke, and a dark screen for Coach's own moments — `6458f10`
+- Landing: one coach demo, one baseline, wrapped lesson titles, new copy — `6458f10`
 - The tab bar, the General room, chat reactions, the chest, the streak past
   day ten, folded attempts, swipeable boards, "Back to Dash" — `2351968`
 - Coach rings the nav button and waits, instead of arriving over the page — `0da0f67`
