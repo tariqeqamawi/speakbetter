@@ -38,6 +38,8 @@
 //             for the trophies that are harder to win.)
 //   ceramic   the ones about how you speak and how you feel doing it.
 //   chrome    the ones earned by turning up again and again.
+//   enamel    the library: every lesson in one skill watched, one per
+//             colour, glossy enamel in that colour detailed in gold.
 //   gold      a top score: 90 or more on a challenge. The glass trophy
 //             is for passing it; its gold twin is for mastering it,
 //             which is a reason to record it again.
@@ -137,7 +139,7 @@ export const TROPHIES = [
   { id: "full-spectrum", color: "structure", subject: "a fanned arc of seven upright blades, like a rainbow stood on end", material: "obsidian" },
   { id: "streak-3", color: "figurative", subject: "a leaping flame", material: "ceramic" },
   { id: "streak-5", color: "figurative", subject: "an open hand, palm forward, fingers spread", material: "ceramic" },
-  { id: "streak-7", color: "figurative", subject: "a lightning bolt", material: "obsidian" },
+  { id: "streak-7", color: "figurative", subject: "a lightning bolt", material: "chrome" },
   { id: "iron-will", color: "figurative", subject: "a raised clenched fist", material: "obsidian" },
   { id: "ten-minutes", color: "acting", subject: "an hourglass", material: "chrome" },
   { id: "handy", color: "body-language", subject: "two open hands framing an empty space between them", material: "ceramic" },
@@ -203,10 +205,23 @@ export const LIONS = [
   { id: "speak-better-complete", color: "figurative", subject: "the Speak Better lion mascot with its microphone, exactly as the logo draws it, sculpted in obsidian and gold with neon LED strips in the seven spectrum colours set into its mane and base, on a taller stepped base", material: "legendary", grand: true },
 ];
 
+// ── The library ───────────────────────────────────────────────────────
+// One per skill, for watching every lesson in it: an object for the
+// skill in glossy enamel of its own colour, detailed in gold.
+export const LIBRARY = [
+  { id: "library-mindset", color: "mindset", subject: "a human brain", material: "enamel" },
+  { id: "library-storytelling", color: "storytelling", subject: "a quill pen standing in an inkwell", material: "enamel" },
+  { id: "library-figurative", color: "figurative", subject: "an artist's paint palette with a brush through its thumb hole", material: "enamel" },
+  { id: "library-acting", color: "acting", subject: "a theatre stage spotlight lamp on its yoke", material: "enamel" },
+  { id: "library-structure", color: "structure", subject: "a classical stone archway with its keystone", material: "enamel" },
+  { id: "library-body-language", color: "body-language", subject: "an artist's wooden posing mannequin in a dynamic pose", material: "enamel" },
+  { id: "library-advanced", color: "advanced", subject: "a chess king", material: "enamel" },
+];
+
 // ── Once only ─────────────────────────────────────────────────────────
 // The founding cohort's trophy: bronze, dated, and never offered again.
 export const COHORT = [
   { id: "cohort-autumn-2026", color: "figurative", subject: "a laurel wreath around the year 2026, with a small plaque reading FOUNDING COHORT", material: "bronze" },
 ];
 
-export const ALL_TROPHIES = [...TROPHIES, ...GOLD, ...LIONS, ...COHORT];
+export const ALL_TROPHIES = [...TROPHIES, ...GOLD, ...LIONS, ...LIBRARY, ...COHORT];

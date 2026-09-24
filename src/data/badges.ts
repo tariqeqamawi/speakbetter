@@ -1,6 +1,7 @@
 import type { CategoryId } from "./categories";
 import { challengeBadges, challenges, storyPhases } from "./challenges";
-import { lessons } from "./lessons";
+import { lessons, lessonsInCategory } from "./lessons";
+import { categoryById } from "./categories";
 import { cohort } from "./cohort";
 
 // Gamification layer - master plan §11. Badges recognize effort as much
@@ -53,6 +54,17 @@ function challengesAt(s: BadgeEvalState, id: CategoryId, bar: number, passedOnly
 }
 const xpOf = (s: BadgeEvalState) => s.xp ?? 0;
 const minutesOf = (s: BadgeEvalState) => s.attempts.reduce((sum, a) => sum + (a.durationSec ?? 0), 0) / 60;
+
+/** One trophy per skill, for watching every lesson in it. */
+const LIBRARY: { category: CategoryId; title: string; message: string }[] = [
+  { category: "mindset", title: "Mind Over Matter", message: "Every Confidence lesson watched. The part of speaking that happens before you open your mouth - done." },
+  { category: "storytelling", title: "Once Upon a Time", message: "Every Storytelling lesson watched. You know how a story is built now; go and tell one." },
+  { category: "figurative", title: "Word Painter", message: "Every Figurative & Sensory lesson watched. The palette is yours." },
+  { category: "acting", title: "Method Actor", message: "Every Acting lesson watched. Now perform the moment instead of reporting it." },
+  { category: "structure", title: "The Architect", message: "Every Structure lesson watched. You can build a talk that stands up on its own." },
+  { category: "body-language", title: "Body of Work", message: "Every Body & Physical lesson watched. Your whole body is part of the talk now." },
+  { category: "advanced", title: "Grandmaster", message: "Every Advanced lesson watched. The tricks the professionals use - all of them." },
+];
 
 export interface BadgeDef {
   id: string;
@@ -398,6 +410,20 @@ export const badgeDefs: BadgeDef[] = [
     // so comparing the strings would misplace a take by hours.
     earned: (s) => s.attempts.some((a) => new Date(a.at).getTime() <= new Date(cohort.endsAt).getTime()),
   },
+  // The library, one skill at a time: every lesson in a colour watched.
+  // Challenges are how you practise; these are for the other half of the
+  // method, the teaching - and they give a student who is working
+  // through the lessons something to show for it before they have
+  // recorded much.
+  ...LIBRARY.map((l) => ({
+    id: `library-${l.category}`,
+    title: l.title,
+    message: l.message,
+    icon: "trophy",
+    how: `Watch all ${lessonsInCategory(l.category).length} ${categoryById.get(l.category)?.name ?? l.category} lessons.`,
+    earned: (s: BadgeEvalState) =>
+      lessonsInCategory(l.category).every((lesson) => s.watchedLessons.includes(lesson.vimeoId)),
+  })),
   {
     id: "journey-complete",
     title: "The Whole STORY",

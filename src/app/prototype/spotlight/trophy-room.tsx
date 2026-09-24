@@ -10,6 +10,7 @@ const MATERIALS = [
   { key: "obsidian", label: "Obsidian", note: "The rare ones, and the whole road at the end of it." },
   { key: "spectrum", label: "Spectrum glass", note: "Finishing a phase of the road - all seven colours at once." },
   { key: "gold", label: "Gold", note: "A top score: 90 or more on a challenge." },
+  { key: "enamel", label: "Library", note: "Every lesson in one skill watched - one for each colour." },
   { key: "chrome", label: "Chrome", note: "Turning up again and again." },
   { key: "ceramic", label: "Ceramic", note: "How you speak, and how you feel doing it." },
   { key: "painted", label: "Painted", note: "The twenty-four challenges, each the real thing in full colour." },
