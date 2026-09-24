@@ -28,6 +28,8 @@ export function LightBeam({
           without an edge appearing. */}
       <span className="trophy-beam absolute inset-0 overflow-hidden">
         <span className="trophy-smoke absolute -inset-x-[10%] -inset-y-[15%]" />
+        <span className="trophy-smoke-2 absolute -inset-x-[14%] -inset-y-[18%]" />
+        <span className="trophy-smoke-3 absolute -inset-x-[18%] -inset-y-[22%]" />
         <span className="trophy-dust-far absolute -inset-y-[20%] inset-x-0" />
         <span className="trophy-dust-near absolute -inset-y-[20%] inset-x-0" />
       </span>

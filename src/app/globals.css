@@ -2431,22 +2431,87 @@ html.bare .demo-banner {
   mask-composite: intersect;
 }
 
+/* Volumetric fog, in three layers.
+ *
+ * ONE DRIFTING LAYER IS NOT FOG. A single cloud sliding back and forth
+ * reads as a texture being moved, because the eye locks onto its shape
+ * and watches it travel. Real fog has no shape to follow: it is
+ * several depths of it, swelling and thinning at different rates, and
+ * the parts nearer the lamp are brighter and softer than the parts
+ * further back.
+ *
+ * So: three layers, each with its own drift, its own swell, and its
+ * own blur for depth. Their periods are 13s, 19s and 29s - chosen to
+ * share no common factor, so the combination does not visibly repeat
+ * for nearly an hour even though each layer loops in under half a
+ * minute. That is the trick that makes a short loop stop looking like
+ * a loop, and it is free.
+ *
+ * Opacity and transform only, both composited. A rendered fog video
+ * with an alpha channel would look better still, but it costs a
+ * megabyte or two and needs two codecs to cover Safari - worth doing
+ * later, not worth blocking on.
+ */
 .trophy-smoke {
   background:
-    radial-gradient(46% 38% at 46% 24%, rgba(var(--lamp), 0.13), transparent 70%),
-    radial-gradient(38% 30% at 58% 52%, rgba(var(--lamp), 0.1), transparent 72%),
-    radial-gradient(30% 26% at 44% 74%, rgba(var(--lamp), 0.08), transparent 74%);
-  filter: blur(7px);
-  animation: trophy-smoke 17s ease-in-out infinite;
+    radial-gradient(46% 38% at 46% 24%, rgba(var(--lamp), 0.15), transparent 70%),
+    radial-gradient(38% 30% at 58% 52%, rgba(var(--lamp), 0.11), transparent 72%);
+  filter: blur(8px);
+  animation: trophy-fog-a 13s ease-in-out infinite;
 }
 
-@keyframes trophy-smoke {
+.trophy-smoke-2 {
+  background:
+    radial-gradient(52% 34% at 62% 32%, rgba(var(--lamp), 0.1), transparent 72%),
+    radial-gradient(34% 40% at 38% 62%, rgba(var(--lamp), 0.09), transparent 74%);
+  filter: blur(14px);
+  opacity: 0.85;
+  animation: trophy-fog-b 19s ease-in-out infinite;
+}
+
+.trophy-smoke-3 {
+  background:
+    radial-gradient(64% 46% at 48% 58%, rgba(var(--lamp), 0.07), transparent 76%);
+  filter: blur(22px);
+  opacity: 0.7;
+  animation: trophy-fog-c 29s ease-in-out infinite;
+}
+
+/* Each one drifts a different way and breathes on its own clock. The
+   scale change is what reads as fog thickening rather than sliding. */
+@keyframes trophy-fog-a {
   0%,
   100% {
-    transform: translate3d(-4%, 1%, 0) scale(1);
+    transform: translate3d(-5%, 2%, 0) scale(1);
+    opacity: 0.9;
   }
   50% {
-    transform: translate3d(5%, -3%, 0) scale(1.12);
+    transform: translate3d(6%, -4%, 0) scale(1.16);
+    opacity: 1;
+  }
+}
+
+@keyframes trophy-fog-b {
+  0%,
+  100% {
+    transform: translate3d(7%, -1%, 0) scale(1.1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translate3d(-6%, 4%, 0) scale(1);
+    opacity: 0.95;
+  }
+}
+
+@keyframes trophy-fog-c {
+  0%,
+  100% {
+    transform: translate3d(2%, 4%, 0) scale(1.2);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translate3d(-3%, -3%, 0) scale(1);
+    opacity: 0.8;
   }
 }
 
@@ -2479,9 +2544,27 @@ html.bare .demo-banner {
 
 @media (prefers-reduced-motion: reduce) {
   .trophy-smoke,
+  .trophy-smoke-2,
+  .trophy-smoke-3,
   .trophy-dust-near,
   .trophy-dust-far {
     animation: none;
+  }
+}
+
+/* "Hover" or "Tap", decided by the device rather than by JavaScript.
+ * Saying the wrong verb is a small thing that makes an interface feel
+ * like it was built for somebody else's hardware. */
+.tap-verb {
+  display: none;
+}
+
+@media (hover: none) {
+  .hover-verb {
+    display: none;
+  }
+  .tap-verb {
+    display: inline;
   }
 }
 

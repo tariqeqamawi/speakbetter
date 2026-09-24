@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PlinthMount } from "@/components/trophy-mounts";
 import { trophyColor } from "@/components/trophy-stand";
-import { ChevronDownIcon, LockIcon } from "@/components/icons";
+import { ChevronDownIcon, LockIcon, ZoomIcon } from "@/components/icons";
 import { LightBeam } from "@/components/light-beam";
 import { TrophyZoom } from "@/components/trophy-zoom";
 
@@ -254,6 +254,15 @@ export function TrophySpotlight({
             {at + 1} of {trophies.length}
             {here.won ? " · awarded" : " · not yet"}
           </span>
+          {/* The words that did not fit over the trophy. Only offered
+              where there is actually something to look at closely. */}
+          {here.image && (
+            <span className="flex items-center gap-1.5 text-xs text-ink-faint">
+              <ZoomIcon className="size-3.5" />
+              <span className="hover-verb">Hover the trophy to look closer</span>
+              <span className="tap-verb">Tap the trophy to look closer</span>
+            </span>
+          )}
         </div>
       )}
     </div>

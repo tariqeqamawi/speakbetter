@@ -61,13 +61,6 @@ export function TrophyZoom({
   const [bigReady, setBigReady] = useState(false);
   const pending = useRef<number | null>(null);
 
-  // A coarse pointer has no hover, so the whole thing is opt-in by tap
-  // there and the affordance has to say so.
-  const [touch, setTouch] = useState(false);
-  useEffect(() => {
-    setTouch(window.matchMedia("(hover: none)").matches);
-  }, []);
-
   /** Scale about the point under the cursor, as one matrix. The
    *  translate is what keeps that point still while everything around
    *  it grows - which is the whole illusion. */
@@ -172,12 +165,17 @@ export function TrophyZoom({
         <img src={zoomSrc} alt="" aria-hidden className="hidden" onLoad={() => setBigReady(true)} />
       )}
 
-      {/* The invitation. Without it nobody discovers the zoom, because
-          nothing on a dark stage suggests a thing is interactive. */}
+      {/* The invitation, as a mark rather than a sentence.
+          
+          A trophy frame is tall and narrow - a hundred pixels wide at
+          the size this is shown - so three words wrapped onto three
+          lines and sat squarely over the plinth, hiding the part of
+          the object the zoom exists to reveal. The words belong in the
+          caption underneath, where there is width for them; up here
+          only the glass is needed. */}
       {!on && (
-        <span className="pointer-events-none absolute bottom-1 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-navy-950/70 px-2.5 py-1 text-[0.65rem] font-semibold text-ink-muted backdrop-blur">
+        <span className="pointer-events-none absolute right-1 top-1 grid size-6 place-items-center rounded-full bg-navy-950/70 text-ink-muted backdrop-blur">
           <ZoomIcon className="size-3.5" />
-          {touch ? "Tap to look closer" : "Hover to look closer"}
         </span>
       )}
     </div>
