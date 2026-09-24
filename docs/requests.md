@@ -179,6 +179,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **24 September**
+- Edge of the Seat is a tipped-forward theatre chair; Chekhov's Gun an antique flintlock;
+  both gold twins re-made — `eaed221`
 - Gold twin for every scored challenge, won at 90+ (23 new, 70 trophies); S.T.O.R.Y.
   letters now multicolour neon; eight look-alike trophies redrawn (Silver Tongue, Heartstrings,
   Hitmaker, Hollywood Worthy, Thesaurus Rex in reading glasses, The Before Shot, On the Air,
