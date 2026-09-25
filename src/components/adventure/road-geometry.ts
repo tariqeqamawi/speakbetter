@@ -138,3 +138,11 @@ export function seeded(seed: number) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
+
+/** Where Coach stands at the roadside, by distance: near the start, and
+ *  twice further on. Shared by the world (which draws him) and the page
+ *  (which plays his line as the traveller comes level). */
+export function coachSpots(road: RoadLayout): number[] {
+  const n = road.stops.length;
+  return [road.stops[0] - 6, road.stops[Math.round(n * 0.4)] + 10, road.stops[Math.round(n * 0.75)] + 10];
+}

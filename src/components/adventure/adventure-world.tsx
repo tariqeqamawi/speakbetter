@@ -3,8 +3,9 @@
 import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
+import { Classmate, CoachPost, Fireflies, Scenery, ScoreTag } from "./world-extras";
 import { AHEAD, PhaseGate, RoadsideComment, RoadsideTrophy, Traveller } from "./world-details";
-import { GATE_BEFORE, hills, layoutRoad, pointAt, seeded, sideAt, type RoadLayout, type Travel } from "./road-geometry";
+import { GATE_BEFORE, coachSpots, hills, layoutRoad, pointAt, seeded, sideAt, type RoadLayout, type Travel } from "./road-geometry";
 
 // The S.T.O.R.Y. adventure as a world you travel through.
 //
@@ -36,6 +37,10 @@ export interface WorldStop {
   trophy?: string;
   /** Something another student said about this challenge. */
   comment?: { name: string; body: string };
+  /** Its best score, once passed. */
+  score?: number;
+  /** Other students standing at this checkpoint right now. */
+  classmates?: string[];
 }
 
 export interface WorldPhase {
@@ -523,6 +528,28 @@ export function AdventureWorld({
             body={stop.comment.body}
           />
         ) : null,
+      )}
+      <Fireflies road={road} spans={spans} />
+      <Scenery road={road} spans={spans} />
+      {coachSpots(road).map((cs, i) => (
+        <CoachPost key={i} road={road} s={cs} side={i % 2 ? -1 : 1} travel={travel} />
+      ))}
+      {stops.map((stop, i) =>
+        stop.state === "done" && stop.score !== undefined ? (
+          <ScoreTag key={`s-${stop.slug}`} road={road} s={road.stops[i]} score={stop.score} color={phaseCol.get(stop.phase)?.getStyle() ?? "#fff"} />
+        ) : null,
+      )}
+      {stops.flatMap((stop, i) =>
+        (stop.classmates ?? []).map((name, k) => (
+          <Classmate
+            key={`m-${stop.slug}-${k}`}
+            road={road}
+            s={road.stops[i] - 2 + k * 1.6}
+            offset={(k % 2 ? 1 : -1) * (4 + k)}
+            name={name}
+            color={phaseCol.get(stop.phase)?.getStyle() ?? "#fff"}
+          />
+        )),
       )}
       <Traveller road={road} travel={travel} image={avatar} trail={trail} colourAt={colourAlong} />
       {glow &&

@@ -33,6 +33,10 @@ const stops: WorldStop[] = challenges.map((c, i) => ({
   state: i < 7 ? "done" : i === 7 ? "here" : i < 10 ? "ahead" : "locked",
   image: c.vimeoId ? `/thumbs/${c.vimeoId}.jpg` : "/lion-head.png",
   trophy: `/trophy/challenge-${c.slug}.webp`,
+  score: i < 7 ? [82, 91, 77, 88, 79, 94, 85][i] : undefined,
+  // Stand-ins for the cohort: a few people at the checkpoints just
+  // ahead, where most of a cohort is at any moment.
+  classmates: i === 7 ? ["Maya Chen", "Leo"] : i === 8 ? ["Amara", "Jonas Berg", "Priya"] : i === 10 ? ["Sam"] : undefined,
   comment: challengeChatter[c.slug]?.[0] && {
     name: challengeChatter[c.slug][0].name,
     body: challengeChatter[c.slug][0].body,

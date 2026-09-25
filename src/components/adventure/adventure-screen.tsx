@@ -2,7 +2,11 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AHEAD, GATE_BEFORE, Travel, layoutRoad } from "./road-geometry";
+import Link from "next/link";
+import { AHEAD, GATE_BEFORE, Travel, coachSpots, layoutRoad } from "./road-geometry";
+import { ROAD_LINES, roadLineClip } from "@/data/greetings";
+import { playApplause, playCoachLine, playGateChime, playRoadWhoosh } from "@/lib/feedback-fx";
+import { Confetti } from "@/components/confetti";
 import type { WorldPhase, WorldStop } from "./adventure-world";
 
 // The adventure screen: the 3D road filling the frame, and the few
@@ -22,7 +26,8 @@ export function AdventureScreen({ stops, phases }: { stops: WorldStop[]; phases:
   const road = useMemo(() => layoutRoad(stops.length), [stops.length]);
   // Start a little before the checkpoint the student is on.
   const hereIndex = Math.max(0, stops.findIndex((s) => s.state === "here"));
-  const start = Math.max(0, road.stops[hereIndex] - AHEAD - 8);
+  // The traveller opens level with it, its Start button showing.
+  const start = Math.max(0, road.stops[hereIndex] - AHEAD - 2);
   const [travel] = useState(() => new Travel(start));
   const [s, setS] = useState(start);
   const frame = useRef<HTMLDivElement>(null);
@@ -112,6 +117,83 @@ export function AdventureScreen({ stops, phases }: { stops: WorldStop[]; phases:
     return Math.max(0, road.stops[i] - GATE_BEFORE + 4 - AHEAD);
   };
 
+
+  // SOUND - off until the student turns it on, and remembered.
+  const [sound, setSound] = useState(false);
+  useEffect(() => {
+    try {
+      // Read after mounting, so the server's render (always off) and the
+      // first client render agree.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSound(localStorage.getItem("road-sound") === "on");
+    } catch {
+      // no storage: stays off
+    }
+  }, []);
+  const toggleSound = () => {
+    setSound((v) => {
+      try {
+        localStorage.setItem("road-sound", v ? "off" : "on");
+      } catch {
+        // fine
+      }
+      return !v;
+    });
+  };
+
+  // A whoosh through each checkpoint, a chime under each gate.
+  const lastStop = useRef(nearest);
+  useEffect(() => {
+    if (nearest === lastStop.current) return;
+    lastStop.current = nearest;
+    if (sound) playRoadWhoosh();
+  }, [nearest, sound]);
+  const lastPhase = useRef(phase?.id);
+  useEffect(() => {
+    if (phase?.id === lastPhase.current) return;
+    lastPhase.current = phase?.id;
+    if (sound) playGateChime();
+  }, [phase, sound]);
+
+  // COACH AT THE ROADSIDE. Each time the traveller comes level with him,
+  // once per visit: his line, captioned, and spoken if sound is on.
+  const spots = useMemo(() => coachSpots(road), [road]);
+  const spoken = useRef(new Set<number>());
+  const [caption, setCaption] = useState<string | null>(null);
+  useEffect(() => {
+    const i = spots.findIndex((cs, k) => !spoken.current.has(k) && at > cs - 4 && at < cs + 14);
+    if (i < 0) return;
+    spoken.current.add(i);
+    setCaption(ROAD_LINES[i]);
+    if (sound) playCoachLine(roadLineClip(i));
+  }, [at, spots, sound]);
+  // The caption stays as long as the line takes to say, whatever the
+  // traveller does meanwhile.
+  useEffect(() => {
+    if (!caption) return;
+    const t = setTimeout(() => setCaption(null), 1500 + caption.length * 65);
+    return () => clearTimeout(t);
+  }, [caption]);
+
+  // THE CHECKPOINT UNDER THE TRAVELLER: what can be done here.
+  const level = stop && Math.abs(road.stops[nearest] - at) < 7;
+  const canStart = level && stop.state === "here";
+  const locked = level && (stop.state === "locked" || stop.state === "ahead");
+  const passed = level && stop.state === "done";
+
+  // THE FINISH: once, when the traveller passes under the arch.
+  const [finished, setFinished] = useState(false);
+  const didFinish = useRef(false);
+  useEffect(() => {
+    if (!atFinish || didFinish.current) return;
+    didFinish.current = true;
+    setFinished(true);
+    if (sound) {
+      playApplause();
+      playCoachLine(roadLineClip(3), 900);
+    }
+  }, [atFinish, sound]);
+
   return (
     <div
       ref={frame}
@@ -139,6 +221,45 @@ export function AdventureScreen({ stops, phases }: { stops: WorldStop[]; phases:
         </div>
       )}
 
+      {/* Sound, off by default. */}
+      <button
+        type="button"
+        onClick={toggleSound}
+        aria-pressed={sound}
+        className="absolute right-3 top-3 z-20 grid size-10 place-items-center rounded-full border border-navy-600 bg-navy-900/80 text-sm text-ink-muted"
+        aria-label={sound ? "Turn road sound off" : "Turn road sound on"}
+      >
+        {sound ? "🔊" : "🔈"}
+      </button>
+
+      {/* What Coach said, as he said it. */}
+      {caption && (
+        <div className="pointer-events-none absolute inset-x-0 top-[22%] z-10 flex justify-center px-6">
+          <p className="coach-note-in max-w-md rounded-2xl border border-figurative/50 bg-[#070c18]/85 px-4 py-3 text-center text-base font-semibold text-ink shadow-xl backdrop-blur">
+            &ldquo;{caption}&rdquo; <span className="font-normal text-ink-faint">- Coach</span>
+          </p>
+        </div>
+      )}
+
+      {/* The finish. */}
+      {finished && (
+        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-4 bg-[#070c18]/80 px-6 text-center backdrop-blur-sm">
+          <Confetti contained />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/trophy/journey-complete-2x.webp" alt="" className="h-56 w-auto drop-shadow-[0_0_40px_rgba(255,214,10,0.45)]" />
+          <p className="text-xs font-bold uppercase tracking-[0.3em] text-storytelling">The whole S.T.O.R.Y.</p>
+          <h2 className="text-3xl font-bold tracking-tight text-ink text-balance">You made it to the end of the road</h2>
+          <p className="max-w-sm text-sm text-ink-muted text-balance">Every phase, every challenge. Take a bow - you earned every step.</p>
+          <button
+            type="button"
+            onClick={() => setFinished(false)}
+            className="mt-2 rounded-full border border-navy-600 bg-navy-800 px-6 py-2.5 text-sm font-semibold text-ink"
+          >
+            Look back down the road
+          </button>
+        </div>
+      )}
+
       {/* Where you are. */}
       <div className="pointer-events-none absolute inset-x-0 top-0 flex flex-col items-center gap-1 bg-gradient-to-b from-[#070c18]/90 to-transparent px-4 pb-10 pt-4 text-center">
         {phase && (
@@ -152,6 +273,25 @@ export function AdventureScreen({ stops, phases }: { stops: WorldStop[]; phases:
       </div>
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-1 bg-gradient-to-t from-[#070c18]/95 to-transparent px-4 pb-6 pt-16 text-center">
+        {canStart && (
+          <Link
+            href={`/challenges/${stop.slug}`}
+            className="pointer-events-auto mb-2 rounded-full px-7 py-3 text-base font-bold text-navy-950 shadow-lg"
+            style={{ background: phase?.color, boxShadow: `0 0 30px ${phase?.color}` }}
+          >
+            Start challenge
+          </Link>
+        )}
+        {locked && (
+          <span className="mb-2 rounded-full border border-navy-600 bg-navy-900/85 px-4 py-2 text-sm text-ink-muted">
+            🔒 Unlock previous challenge first
+          </span>
+        )}
+        {passed && stop.score !== undefined && (
+          <span className="mb-2 rounded-full border border-navy-600 bg-navy-900/85 px-4 py-2 text-sm text-ink">
+            Passed · <b style={{ color: phase?.color }}>{stop.score}</b>
+          </span>
+        )}
         {atFinish ? (
           <span className="text-lg font-bold text-ink">The finish line</span>
         ) : (

@@ -366,3 +366,57 @@ export function playCoachLine(src: string, delayMs = 0): () => void {
   });
   return () => stop();
 }
+
+// The road's two sounds, both made here rather than downloaded - the
+// adventure plays them only when the student has turned its sound on.
+
+/** Air rushing past as the traveller goes through a checkpoint. */
+export function playRoadWhoosh() {
+  const ac = audio();
+  if (!ac || !touched()) return;
+  void ac.resume().catch(() => {});
+  const now = ac.currentTime;
+  const len = Math.floor(ac.sampleRate * 0.7);
+  const buf = ac.createBuffer(1, len, ac.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+  const src = ac.createBufferSource();
+  src.buffer = buf;
+  const band = ac.createBiquadFilter();
+  band.type = "bandpass";
+  band.Q.value = 1.2;
+  band.frequency.setValueAtTime(300, now);
+  band.frequency.exponentialRampToValueAtTime(2400, now + 0.35);
+  band.frequency.exponentialRampToValueAtTime(500, now + 0.7);
+  const gain = ac.createGain();
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.16, now + 0.3);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.7);
+  src.connect(band);
+  band.connect(gain);
+  gain.connect(ac.destination);
+  src.start(now);
+  src.stop(now + 0.72);
+}
+
+/** A bright bell-like chord as the traveller passes under a phase gate. */
+export function playGateChime() {
+  const ac = audio();
+  if (!ac || !touched()) return;
+  void ac.resume().catch(() => {});
+  const now = ac.currentTime;
+  [659.25, 987.77, 1318.51].forEach((f, i) => {
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.type = "triangle";
+    osc.frequency.value = f;
+    const at = now + i * 0.06;
+    gain.gain.setValueAtTime(0.0001, at);
+    gain.gain.exponentialRampToValueAtTime(0.09, at + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, at + 1.4);
+    osc.connect(gain);
+    gain.connect(ac.destination);
+    osc.start(at);
+    osc.stop(at + 1.5);
+  });
+}
