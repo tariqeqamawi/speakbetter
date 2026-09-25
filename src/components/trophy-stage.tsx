@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { ChevronDownIcon, LockIcon, ZoomIcon } from "@/components/icons";
 import { TrophyZoom } from "@/components/trophy-zoom";
 import { StageBackdrop } from "@/components/stage-backdrop";
+import { TrophyArt, TrophyPlaceholder } from "@/components/trophy-art";
 
 // One trophy, standing on the podium, under the light.
 //
@@ -24,15 +25,15 @@ import { StageBackdrop } from "@/components/stage-backdrop";
 
 /** Where the lit disc is, as a share of the frame height, measured off
  *  stage.jpg: the spot the beam lands on is centred at 68%. */
-const DISC_Y = 0.7;
+export const DISC_Y = 0.7;
 /** How tall the trophy stands, as a share of the frame. */
-const TROPHY_H = 0.6;
-const TROPHY_H_PHONE = 0.5;
+export const TROPHY_H = 0.6;
+export const TROPHY_H_PHONE = 0.5;
 /** How much larger the finishing trophy stands than every other one. */
-const GRAND = 1.12;
+export const GRAND = 1.12;
 /** The renders carry a little black under the plinth (10-23px of 398);
  *  this much of the image is below the base and sinks into the floor. */
-const BASE_PAD = 0.04;
+export const BASE_PAD = 0.04;
 
 /** Where the neighbours stand, by distance from the one in the light:
  *  across (share of the frame's width), up the stage (share of its
@@ -69,16 +70,25 @@ export interface StageTrophy {
   /** The finishing trophy: drawn larger than the rest, in the light and
    *  out of it. */
   grand?: boolean;
+  /** What the badge says to the student who wins it. */
+  message?: string;
+  /** When it was won, for a trophy that has been. */
+  earnedAt?: string;
+  /** Only one round of students can ever win it. */
+  onceOnly?: boolean;
 }
 
 export function TrophyStage({
   trophies,
   at,
   onGo,
+  caption,
 }: {
   trophies: StageTrophy[];
   at: number;
   onGo: (i: number) => void;
+  /** More under the name of the one in the light - rarity, sharing. */
+  caption?: (t: StageTrophy) => ReactNode;
 }) {
   const frame = useRef<HTMLDivElement>(null);
   const [h, setH] = useState(0);
@@ -162,8 +172,10 @@ export function TrophyStage({
         />
 
         {/* Its reflection in the wet floor, below the base. Keyed so it
-            arrives with the trophy rather than ahead of it. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
+            arrives with the trophy rather than ahead of it. A silhouette
+            has none - there is nothing lit there to reflect. */}
+        {here.won && (
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           key={`${here.id}-reflection`}
           src={here.image}
@@ -174,12 +186,16 @@ export function TrophyStage({
             height: `${th * 100}%`,
             top: `${(DISC_Y - th * BASE_PAD) * 100}%`,
             transform: "translateX(-50%) scaleY(-1)",
-            opacity: here.won ? 0.22 : 0.08,
-            filter: here.won ? "blur(1.5px)" : "grayscale(1) blur(1.5px)",
+            opacity: 0.22,
+            filter: "blur(1.5px)",
             maskImage: "linear-gradient(to top, black, transparent 45%)",
             WebkitMaskImage: "linear-gradient(to top, black, transparent 45%)",
           }}
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
         />
+        )}
 
         {/* The rack: the one in the light, set down on the disc, and
             the others standing back in the dark on either side. Every
@@ -209,7 +225,23 @@ export function TrophyStage({
                 }}
               >
                 {centre ? (
-                  <TrophyZoom src={t.image} zoomSrc={t.zoom} alt={t.name} height={trophyPx} dimmed={!t.won} />
+                  t.won ? (
+                    <TrophyZoom
+                      src={t.image}
+                      zoomSrc={t.zoom}
+                      alt={t.name}
+                      height={trophyPx}
+                      fallback={<TrophyPlaceholder won label={t.name} style={{ height: trophyPx }} />}
+                    />
+                  ) : (
+                    <TrophyArt
+                      src={t.image}
+                      won={false}
+                      grand={t.grand}
+                      alt={`${t.name}, not yet won`}
+                      style={{ height: trophyPx }}
+                    />
+                  )
                 ) : (
                   <button
                     type="button"
@@ -218,14 +250,7 @@ export function TrophyStage({
                     aria-label={t.name}
                     className="block cursor-pointer"
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={t.image}
-                      alt=""
-                      draggable={false}
-                      style={{ height: trophyPx, width: "auto" }}
-                      className={t.won ? "" : "opacity-50 grayscale"}
-                    />
+                    <TrophyArt src={t.image} won={t.won} grand={t.grand} style={{ height: trophyPx }} />
                   </button>
                 )}
               </div>
@@ -267,13 +292,34 @@ export function TrophyStage({
         <span className="text-xs tabular-nums text-ink-faint">
           {here.material && <span className="capitalize">{here.material} · </span>}
           {at + 1} of {trophies.length}
-          {here.won ? " · awarded" : " · not yet"}
+          {here.won
+            ? here.earnedAt
+              ? ` · won ${new Date(here.earnedAt).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" })}`
+              : " · awarded"
+            : " · not yet"}
         </span>
-        <span className="flex items-center gap-1.5 text-xs text-ink-faint">
-          <ZoomIcon className="size-3.5" />
-          Press and drag on the trophy to look closer
-        </span>
+        {here.onceOnly && <OnceOnlyNote />}
+        {caption?.(here)}
+        {/* Only a won trophy zooms - a silhouette has nothing in it to
+            look closer at. */}
+        {here.won && (
+          <span className="flex items-center gap-1.5 text-xs text-ink-faint">
+            <ZoomIcon className="size-3.5" />
+            Press and drag on the trophy to look closer
+          </span>
+        )}
       </div>
     </div>
+  );
+}
+
+/** The founding cohort's trophy says so wherever it stands. */
+export function OnceOnlyNote({ className = "" }: { className?: string }) {
+  return (
+    <span
+      className={`rounded-full border border-[#c98a4b]/50 bg-[#c98a4b]/10 px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wider text-[#e0a86d] ${className}`}
+    >
+      Founding cohort only
+    </span>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { ZoomIcon } from "@/components/icons";
 
 // Examining a trophy up close, the way a shop lets you inspect a
@@ -57,12 +57,16 @@ export function TrophyZoom({
   alt,
   height,
   dimmed = false,
+  fallback,
 }: {
   src: string;
   zoomSrc?: string;
   alt: string;
   height: number;
   dimmed?: boolean;
+  /** Shown instead when the render will not load - a trophy defined
+   *  before its art has landed. */
+  fallback?: ReactNode;
 }) {
   const frame = useRef<HTMLDivElement>(null);
   const art = useRef<HTMLImageElement>(null);
@@ -130,11 +134,15 @@ export function TrophyZoom({
     paint(on);
   }, [on, paint]);
 
+  const [broken, setBroken] = useState(false);
+
   const enter = () => {
     setWantBig(true);
     setOn(true);
   };
   const leave = () => setOn(false);
+
+  if (broken && fallback) return <>{fallback}</>;
 
   return (
     <div
@@ -166,6 +174,7 @@ export function TrophyZoom({
         src={bigReady && zoomSrc ? zoomSrc : src}
         alt={alt}
         draggable={false}
+        onError={() => setBroken(true)}
         className={`size-full select-none object-contain will-change-transform ${
           dimmed ? "opacity-40 grayscale" : ""
         } ${on ? "" : "transition-transform duration-300 ease-out"}`}
