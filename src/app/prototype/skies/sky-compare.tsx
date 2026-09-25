@@ -8,7 +8,8 @@ import type { WorldPhase, WorldStop } from "@/components/adventure/adventure-wor
 // each is judged moving, over the land, at the size it will be seen.
 
 export const SKIES = [
-  { key: "stars", name: "Stars (today)", image: undefined, note: "The sky as it is now: points of light, nothing else." },
+  { key: "stars", name: "Stars only", image: null, note: "The sky as it is now: points of light, nothing else." },
+  { key: "purple", name: "Purple planet (chosen)", image: "/sky/purple-planet.webp", note: "The shattered-moon sky without the moon: the great purple planet, the haze - and stars over it all." },
   { key: "ringed", name: "Ringed giant", image: "/prototype/skies/ringed.webp", note: "A colossal ringed gas giant low on one side, a cratered moon high on the other, a faint spiral galaxy between." },
   { key: "nebula", name: "Nebula river", image: "/prototype/skies/nebula.webp", note: "A violet-magenta nebula arcing across the whole sky, a pale ice planet, a small red one far off." },
   { key: "eclipse", name: "Eclipse", image: "/prototype/skies/eclipse.webp", note: "A giant dark planet eclipsing its star - a burning ring of light - with two crescent moons and aurora ribbons." },
@@ -19,7 +20,7 @@ export const SKIES = [
 ] as const;
 
 export function SkyCompare({ stops, phases }: { stops: WorldStop[]; phases: WorldPhase[] }) {
-  const [at, setAt] = useState(6);
+  const [at, setAt] = useState(1);
   const sky = SKIES[at];
   return (
     <div>

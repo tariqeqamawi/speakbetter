@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { AdventureScreen } from "./adventure-screen";
 import { Adventure2D } from "./adventure-2d";
 import { LevelPicker } from "@/components/level-picker";
+import { ROAD_SKY } from "./world-phases";
 import type { WorldPhase, WorldStop } from "./adventure-world";
 
 // The adventure, as a world or as a page - the student's choice, kept on
@@ -17,13 +18,15 @@ export function AdventureView({
   stops,
   phases,
   fallbackAvatar,
-  skyImage,
+  skyImage = ROAD_SKY,
+  heightClass,
 }: {
   stops: WorldStop[];
   phases: WorldPhase[];
   fallbackAvatar?: string;
-  /** A painted sky for the 3D road (see SkyDome). */
-  skyImage?: string;
+  /** A painted sky for the 3D road (see SkyDome); null for stars alone. */
+  skyImage?: string | null;
+  heightClass?: string;
 }) {
   const [mode, setMode] = useState<Mode>("3d");
   useEffect(() => {
@@ -77,7 +80,8 @@ export function AdventureView({
           stops={stops}
           phases={phases}
           fallbackAvatar={fallbackAvatar}
-          skyImage={skyImage}
+          skyImage={skyImage ?? undefined}
+          heightClass={heightClass}
         />
       ) : (
         <div className="pt-14">

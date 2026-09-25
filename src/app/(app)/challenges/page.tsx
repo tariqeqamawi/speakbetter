@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { challengesIntro } from "@/data/challenges";
-import { StoryBoard } from "@/components/story-board";
+import { LiveAdventure } from "@/components/adventure/live-adventure";
 import { StreakFlame } from "@/components/celebrations";
 import { ChallengesIcon, ChevronDownIcon } from "@/components/icons";
 import { IntroTabs } from "@/components/intro-tabs";
@@ -13,7 +13,9 @@ export const metadata: Metadata = {
 
 export default function ChallengesPage() {
   return (
-    <div className="flex flex-col gap-6 pb-10 pt-4">
+    // No padding below: the road is the last thing on the page, sized to
+    // fill the screen between the header and the tab bar once scrolled to.
+    <div className="flex flex-col gap-6 pt-4">
       <header>
         <details className="group">
           <summary className="flex cursor-pointer list-none items-center gap-2.5 [&::-webkit-details-marker]:hidden">
@@ -44,7 +46,9 @@ export default function ChallengesPage() {
           between them - see then-and-now.tsx. */}
       <ThenAndNow />
 
-      <StoryBoard />
+      {/* The S.T.O.R.Y. road: a 3D world to travel, or a 2D map to scroll
+          - the student's choice, remembered on the device. */}
+      <LiveAdventure />
     </div>
   );
 }

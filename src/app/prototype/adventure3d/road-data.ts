@@ -1,26 +1,12 @@
-import { challenges, storyPhases } from "@/data/challenges";
+import { challenges } from "@/data/challenges";
 import { challengeChatter } from "@/data/challenge-chatter";
 import type { WorldPhase, WorldStop } from "@/components/adventure/adventure-world";
+import { worldPhases } from "@/components/adventure/world-phases";
 
 // The preview's road: a student part-way through - seven challenges
 // done, on the eighth. Shared by the 3D road and the sky comparison.
 
-// three.js cannot read the app's CSS variables, so the five phase
-// colours are spelled out here - the same values as --color-* in
-// globals.css.
-const HEX: Record<string, string> = {
-  mindset: "#1fe890",
-  "body-language": "#22d9f5",
-  storytelling: "#ffd60a",
-  acting: "#ff4a2b",
-  structure: "#f53de0",
-};
-
-export const phases: WorldPhase[] = storyPhases.map((p) => ({
-  id: p.id,
-  name: p.name,
-  color: HEX[p.bgClass.replace("bg-", "")] ?? "#ffffff",
-}));
+export const phases: WorldPhase[] = worldPhases;
 
 export const stops: WorldStop[] = challenges.map((c, i) => ({
   slug: c.slug,
