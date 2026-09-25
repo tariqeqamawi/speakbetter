@@ -57,9 +57,13 @@ function JoinNow() {
   const pathname = usePathname();
   if (!ready || state.unlocked || pathname !== "/") return null;
   return (
-    <a href="#pricing" className="cta-neon-wrap hidden shrink-0 rounded-full sm:inline-flex">
-      <span className="cta-neon block rounded-full px-4 py-1.5 text-sm sm:px-5">Join Now</span>
-    </a>
+    // Wrapped, because the button's own class sets its display and would
+    // override "hidden" on it.
+    <span className="hidden shrink-0 sm:block">
+      <a href="#pricing" className="cta-neon-wrap rounded-full">
+        <span className="cta-neon block rounded-full px-5 py-1.5 text-sm">Join Now</span>
+      </a>
+    </span>
   );
 }
 
