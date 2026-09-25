@@ -208,6 +208,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **25 September**
+- Road: challenges further apart; GI-style lighting, haze and valley mist; 3D/2D switch with a
+  scrolling 2D map — `3d05a54`
 - Road: LED-glow grid drawn in the land's surface, a wave of light rolling through; the
   student's photo at full strength with no glow — `eb1fc8b`
 - 3D road goes Tron: bloom, square grid, portals (vortex + number + name banner), Start with
