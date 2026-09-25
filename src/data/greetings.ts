@@ -161,14 +161,13 @@ export function pickTrophyLine(): { text: string; src: string } {
 }
 
 // Coach at the roadside of the S.T.O.R.Y. road: three times on the
-// way, and once at the finish. The first three are Tariq's, verbatim;
-// the fourth is a draft for the finish line, awaiting his word.
+// way, and once at the finish. All four are Tariq's, verbatim.
 // Rendered once each into /coach/road-NN.mp3.
 export const ROAD_LINES: string[] = [
   "Welcome to the adventure of a lifetime, becoming the speaker you've always wanted to be.",
   "Keep going. I'm here as your guide. Who knows what you'll discover about yourself along the way?",
   "The path to mastery is littered with challenges. Luckily for you, they're fun.",
-  "You made it to the end of the road. Take a bow - you earned every step.",
+  "Well, well, well. You've gone and done it. You've completed all of the challenges and I bet you don't even recognize yourself. Look who you've become. Do you remember where you started? You deserve every ounce of praise. Congratulations! Take a bow. You've just completed Speak Better. Oh and remember, you can always go back and do the challenges again, unlock even higher scores, and get the coveted gold trophies. See you soon.",
 ];
 
 export function roadLineClip(index: number): string {

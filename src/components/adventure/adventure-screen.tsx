@@ -24,6 +24,12 @@ const AdventureWorld = dynamic(() => import("./adventure-world").then((m) => m.A
   loading: () => <div className="absolute inset-0 grid place-items-center text-sm text-ink-faint">Loading the road…</div>,
 });
 
+// Coach's words at the finish: when he starts after the arch, and how
+// long each character takes him to say (his clip, ~29.8s, over its text).
+const FINISH_DELAY = 900;
+const FINISH_SENTENCES = ROAD_LINES[3].match(/[^.!?]+[.!?]+/g)!.map((t) => t.trim());
+const FINISH_MS_PER_CHAR = 28800 / ROAD_LINES[3].length;
+
 export function AdventureScreen({
   stops,
   phases,
@@ -229,15 +235,36 @@ export function AdventureScreen({
   // THE FINISH: once, when the traveller passes under the arch.
   const [finished, setFinished] = useState(false);
   const didFinish = useRef(false);
+  const hushFinish = useRef<() => void>(() => {});
   useEffect(() => {
     if (!atFinish || didFinish.current) return;
     didFinish.current = true;
     setFinished(true);
     if (sound) {
       playApplause();
-      playCoachLine(roadLineClip(3), 900);
+      hushFinish.current = playCoachLine(roadLineClip(3), FINISH_DELAY);
     }
   }, [atFinish, sound]);
+  // His finishing words, a sentence at a time, as he says them - each
+  // held for its share of the clip by length.
+  const [finishLine, setFinishLine] = useState(-1);
+  useEffect(() => {
+    if (!finished) return;
+    let at = FINISH_DELAY;
+    const timers = FINISH_SENTENCES.map((line, i) => {
+      const t = setTimeout(() => setFinishLine(i), at);
+      at += line.length * FINISH_MS_PER_CHAR;
+      return t;
+    });
+    return () => {
+      timers.forEach(clearTimeout);
+      setFinishLine(-1);
+    };
+  }, [finished]);
+  const closeFinish = () => {
+    hushFinish.current();
+    setFinished(false);
+  };
 
   return (
     <div
@@ -312,10 +339,22 @@ export function AdventureScreen({
           <img src="/trophy/journey-complete-2x.webp" alt="" className="h-56 w-auto drop-shadow-[0_0_40px_rgba(255,214,10,0.45)]" />
           <p className="text-xs font-bold uppercase tracking-[0.3em] text-storytelling">The whole S.T.O.R.Y.</p>
           <h2 className="text-3xl font-bold tracking-tight text-ink text-balance">You made it to the end of the road</h2>
-          <p className="max-w-sm text-sm text-ink-muted text-balance">Every phase, every challenge. Take a bow - you earned every step.</p>
+          {/* What Coach is saying, as he says it. */}
+          <p
+            key={finishLine}
+            aria-live="polite"
+            className="coach-note-in flex min-h-[3.5rem] max-w-sm items-start justify-center text-base font-semibold leading-snug text-ink text-balance"
+          >
+            {finishLine >= 0 && (
+              <span>
+                <span className="text-figurative">Coach: </span>
+                {FINISH_SENTENCES[finishLine]}
+              </span>
+            )}
+          </p>
           <button
             type="button"
-            onClick={() => setFinished(false)}
+            onClick={closeFinish}
             className="mt-2 rounded-full border border-navy-600 bg-navy-800 px-6 py-2.5 text-sm font-semibold text-ink"
           >
             Look back down the road
