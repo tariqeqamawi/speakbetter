@@ -208,6 +208,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **25 September**
+- Tour: 19 stops to 10 (one dashboard stop, new challenges words), section-tour voice fix;
+  landing phones show the new road in 3D and 2D — `e08516f`
 - Coach's 17 road lines recorded and placed; one Coach voice at a time app-wide (voice-floor);
   two nebula-eclipse skies — `2ac86b8`
 - Sky options: five painted space skies on /prototype/skies, switchable on the road — `20a491d`
