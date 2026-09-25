@@ -206,6 +206,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **24 September**
+- 3D road (/prototype/adventure3d): traveller with neon trail, higher camera, phase gates +
+  "Now entering" banner, S.T.O.R.Y. jump letters, roadside trophies and comments — `6eaa46e`
 - Coach says one of 21 pre-recorded lines as each trophy lands (captioned); five missing
   record-button lines rendered — `8381e51`
 - The trophy room is the real case in the app: the reveal (wherever a trophy is won, applause,
