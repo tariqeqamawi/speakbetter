@@ -208,6 +208,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **25 September**
+- Origin story refinements (titles, message bubbles, all-black TEDx, lion aura, mission); price hints and
+  a sticky phone join bar — `49848ef`
 - Real-looking creator stills in the collage; Ask Coach tile; saturated neon-border CTAs; How it works
   and podcast re-shot in Soul 2.0 — `c676b99`
 - Origin story: seven dream-memory neon film images (style chosen on /prototype/origin-styles) — `5233901`
