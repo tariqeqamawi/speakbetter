@@ -185,10 +185,10 @@ export function AdventureScreen({
   const [caption, setCaption] = useState<string | null>(null);
   const [talking, setTalking] = useState<number | null>(null);
   useEffect(() => {
-    // As the traveller approaches, while he is still ahead of them and
-    // in view - not once they are level, when on a phone he has already
-    // slid out of the side of the frame.
-    const i = spots.findIndex((cs, k) => !spoken.current.has(k) && at > cs - 20 && at < cs + 2);
+    // As the traveller comes to each of his places on the road - he
+    // appears in the sky, so anywhere round it will do, including just
+    // past it where a jump to the start of a phase lands.
+    const i = spots.findIndex((cs, k) => !spoken.current.has(k) && at > cs - 20 && at < cs + 12);
     if (i < 0) return;
     spoken.current.add(i);
     setCaption(ROAD_LINES[i]);
@@ -305,10 +305,9 @@ export function AdventureScreen({
       </button>
 
       {/* What Coach said, as he said it. */}
-      {/* A subtitle in the sky under the phase name - no box, nothing
-          laid over the road. */}
+      {/* A subtitle in the sky, under his floating head - no box. */}
       {caption && (
-        <div className="pointer-events-none absolute inset-x-0 top-[8rem] z-10 sm:top-[5.5rem] flex justify-center px-8">
+        <div className="pointer-events-none absolute inset-x-0 top-[44%] z-10 flex justify-center px-8">
           <p
             className="coach-note-in max-w-sm text-center text-sm font-semibold leading-snug text-ink text-balance"
             style={{ textShadow: "0 1px 10px rgba(0,0,0,0.95), 0 0 2px rgba(0,0,0,0.9)" }}

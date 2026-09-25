@@ -3,7 +3,7 @@
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { pointAt, seeded, sideAt, type RoadLayout, type Travel, AHEAD } from "./road-geometry";
+import { pointAt, seeded, sideAt, type RoadLayout } from "./road-geometry";
 
 // The life of the road: Coach waiting at the roadside, fireflies in each
 // phase's colour, scenery that makes each stretch a different place,
@@ -33,25 +33,20 @@ function glow() {
   return glowTex;
 }
 
-/** Coach at the roadside: the talking lion on a lit plinth, turned to
- *  the road. As the traveller comes level he rises and glows, and while
- *  his line is being said his mouth moves - the same 28 frames the lion
- *  talks with everywhere else in the app (public/lion-mouth.webp). */
+/** Coach in the sky: not standing on the land but a head of light that
+ *  appears above the road when he has something to say - swelling out of
+ *  a glow, talking with the same 28 mouth frames the lion talks with
+ *  everywhere else in the app (public/lion-mouth.webp) - and fading up
+ *  and away once he has said it. He rides with the view rather than
+ *  standing at a spot, so he stays in the sky however far the traveller
+ *  moves while he talks. */
 const MOUTH_FRAMES = 28;
-export function CoachPost({
-  road,
-  s,
-  side,
-  travel,
-  talking,
-}: {
-  road: RoadLayout;
-  s: number;
-  side: number;
-  travel: Travel;
-  talking: boolean;
-}) {
-  const lion = useRef<THREE.Sprite>(null);
+/** Where he hangs, in the camera's own space: ahead, and high in the sky. */
+const SKY_AT = new THREE.Vector3(0, 4.5, -16);
+
+export function SkyCoach({ talking }: { talking: boolean }) {
+  const group = useRef<THREE.Group>(null);
+  const lion = useRef<THREE.SpriteMaterial>(null);
   const halo = useRef<THREE.SpriteMaterial>(null);
   const map = useMemo(() => {
     const t = new THREE.TextureLoader().load("/lion-mouth.webp");
@@ -61,20 +56,29 @@ export function CoachPost({
     return t;
   }, []);
   const mouth = useRef({ frame: 0, target: 0, next: 0, open: false });
-  // The frame loop steps the mouth and slides the texture to its frame -
-  // per-frame state and a texture's offset, both meant to change here.
+  // How present he is: 0 gone, 1 fully here. Rises quickly, lingers a
+  // moment after the last word, then fades.
+  const here = useRef(0);
+  const off = useMemo(() => new THREE.Vector3(), []);
+  // The frame loop moves him with the view, steps the mouth and slides
+  // the texture to its frame - per-frame state, meant to change here.
   /* eslint-disable react-hooks/immutability */
-  const at = useMemo(() => pointAt(road, s).add(sideAt(road, s).multiplyScalar(side * 6.5)), [road, s, side]);
-  useFrame(({ clock }, dt) => {
-    const d = Math.abs(travel.s + AHEAD - s);
-    const on = talking ? 1 : 1 - THREE.MathUtils.smoothstep(d, 4, 22);
+  useFrame(({ clock, camera }, dt) => {
+    const g = group.current;
+    if (!g) return;
     const t = clock.elapsedTime;
-    if (lion.current) {
-      const k = 1 + on * 0.25;
-      lion.current.scale.set(4.4 * k, 3.43 * k, 1);
-      lion.current.position.y = 3.2 + on * 1.2 + Math.sin(t * 1.5) * 0.15;
-    }
-    if (halo.current) halo.current.opacity = 0.25 + on * 0.6;
+    const was = here.current;
+    here.current += ((talking ? 1 : 0) - was) * Math.min(1, dt * (talking ? 3.5 : 1.6));
+    const k = here.current;
+    g.visible = k > 0.005;
+    if (!g.visible) return;
+    // Arriving he swells from small with a little overshoot; leaving he
+    // drifts upward as he fades.
+    const grow = talking ? 0.55 + 0.45 * k + Math.sin(k * Math.PI) * 0.12 : 0.85 + 0.15 * k;
+    const rise = talking ? 0 : (1 - k) * 2.2;
+    off.set(SKY_AT.x, SKY_AT.y + rise + Math.sin(t * 1.3) * 0.18, SKY_AT.z).applyQuaternion(camera.quaternion);
+    g.position.copy(camera.position).add(off);
+    g.scale.setScalar(grow);
     // Talking: open on a syllable, shut between them - about two opens a
     // second with a little randomness, never the same shape twice.
     const m = mouth.current;
@@ -86,24 +90,30 @@ export function CoachPost({
     m.frame += (m.target - m.frame) * Math.min(1, dt * 22);
     const f = Math.round(THREE.MathUtils.clamp(m.frame, 0, MOUTH_FRAMES - 1));
     map.offset.y = (MOUTH_FRAMES - 1 - f) / MOUTH_FRAMES;
+    if (lion.current) lion.current.opacity = k;
+    // The glow behind him breathes with his voice.
+    if (halo.current) halo.current.opacity = k * (0.12 + (m.frame / MOUTH_FRAMES) * 0.25);
   });
   /* eslint-enable react-hooks/immutability */
   return (
-    <group position={at}>
-      <sprite position={[0, 3.2, -0.1]} scale={[8, 8, 1]}>
-        <spriteMaterial ref={halo} map={glow()} color="#ff9a3c" transparent blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
+    <group ref={group} visible={false}>
+      <sprite scale={[6.2, 6.2, 1]} renderOrder={20}>
+        <spriteMaterial
+          ref={halo}
+          map={glow()}
+          color="#ff9a3c"
+          transparent
+          opacity={0}
+          blending={THREE.AdditiveBlending}
+          depthTest={false}
+          depthWrite={false}
+          toneMapped={false}
+          fog={false}
+        />
       </sprite>
-      <sprite ref={lion} position={[0, 3.2, 0]}>
-        <spriteMaterial map={map} transparent toneMapped={false} />
+      <sprite scale={[4.9, 3.82, 1]} renderOrder={21}>
+        <spriteMaterial ref={lion} map={map} transparent opacity={0} depthTest={false} depthWrite={false} toneMapped={false} fog={false} />
       </sprite>
-      <mesh position={[0, 0.5, 0]}>
-        <cylinderGeometry args={[1.3, 1.5, 1, 24]} />
-        <meshStandardMaterial color="#1a2340" metalness={0.6} roughness={0.35} />
-      </mesh>
-      <mesh position={[0, 1.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[1.15, 1.3, 32]} />
-        <meshBasicMaterial color="#ff9a3c" toneMapped={false} />
-      </mesh>
     </group>
   );
 }

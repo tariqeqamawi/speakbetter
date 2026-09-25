@@ -3,12 +3,12 @@
 import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import { Classmate, CoachPost, Fireflies, Scenery } from "./world-extras";
+import { Classmate, Fireflies, Scenery, SkyCoach } from "./world-extras";
 import { Portal } from "./portal";
 import { City } from "./city";
 import { Bloom, GateSparks, Sky } from "./fx";
 import { AHEAD, ColourWall, RoadsideComment, RoadsideTrophy, Traveller } from "./world-details";
-import { GATE_BEFORE, coachSpots, hills, layoutRoad, pointAt, seeded, sideAt, type RoadLayout, type Travel } from "./road-geometry";
+import { GATE_BEFORE, hills, layoutRoad, pointAt, seeded, sideAt, type RoadLayout, type Travel } from "./road-geometry";
 
 // The S.T.O.R.Y. adventure as a world you travel through.
 //
@@ -36,8 +36,11 @@ export interface WorldStop {
   state: "done" | "here" | "ahead" | "locked";
   /** Still shown inside the checkpoint's ring. */
   image: string;
-  /** The trophy won here, shown at the roadside once passed. */
+  /** This checkpoint's trophy, beside its portal - a silhouette until won. */
   trophy?: string;
+  /** Whether it has been won (pass at 75+); worked out from state and
+   *  score when not given. */
+  trophyWon?: boolean;
   /** Something another student said about this challenge. */
   comment?: { name: string; body: string };
   /** Its best score, once passed. */
@@ -694,9 +697,20 @@ export function AdventureWorld({
       {spans.map((sp) => (
         <ColourWall key={sp.id} road={road} s={Math.max(4, sp.from)} colour={sp.color} />
       ))}
+      {/* Each checkpoint's trophy beside its portal: a silhouette until
+          won, so you can see what passing it earns - on the side away
+          from its comment card. */}
       {stops.map((stop, i) =>
-        stop.trophy && stop.state === "done" ? (
-          <RoadsideTrophy key={`t-${stop.slug}`} road={road} s={road.stops[i] + 6} side={i % 2 ? -1 : 1} image={stop.trophy} />
+        stop.trophy ? (
+          <RoadsideTrophy
+            key={`t-${stop.slug}`}
+            road={road}
+            s={road.stops[i] + 1.5}
+            side={i % 2 ? -1 : 1}
+            image={stop.trophy}
+            won={stop.trophyWon ?? (stop.state === "done" && (stop.score ?? 0) >= 75)}
+            colour={phaseCol.get(stop.phase) ?? new THREE.Color("#ffffff")}
+          />
         ) : null,
       )}
       {stops.map((stop, i) =>
@@ -723,9 +737,7 @@ export function AdventureWorld({
       {spans.find((sp) => sp.id === "Y") && (
         <City road={road} travel={travel} revealFrom={spans.find((sp) => sp.id === "Y")!.from + 60} />
       )}
-      {coachSpots(road).map((cs, i) => (
-        <CoachPost key={i} road={road} s={cs} side={i % 2 ? -1 : 1} travel={travel} talking={talkingCoach === i} />
-      ))}
+      <SkyCoach talking={talkingCoach !== null} />
       {stops.flatMap((stop, i) =>
         (stop.classmates ?? []).map((name, k) => (
           <Classmate

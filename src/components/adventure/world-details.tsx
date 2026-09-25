@@ -197,11 +197,44 @@ export function ColourWall({ road, s, colour }: { road: RoadLayout; s: number; c
   );
 }
 
-/** A trophy won at a checkpoint, standing at the roadside on a small
- *  lit plinth - what you pass on the way back up the road. */
-export function RoadsideTrophy({ road, s, side, image }: { road: RoadLayout; s: number; side: number; image: string }) {
-  const sprite = useRef<THREE.Sprite>(null);
+/** The trophy a checkpoint holds, standing beside its portal. Until it
+ *  is won it is a silhouette - black, lit from behind in the phase's
+ *  colour, so you can see there is a trophy here but not what it is -
+ *  and once won it stands in full colour. */
+let backTex: THREE.Texture | null = null;
+function backGlow() {
+  if (backTex || typeof document === "undefined") return backTex;
+  const c = document.createElement("canvas");
+  c.width = c.height = 128;
+  const g = c.getContext("2d")!;
+  const grad = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+  grad.addColorStop(0, "rgba(255,255,255,0.9)");
+  grad.addColorStop(0.45, "rgba(255,255,255,0.3)");
+  grad.addColorStop(1, "rgba(255,255,255,0)");
+  g.fillStyle = grad;
+  g.fillRect(0, 0, 128, 128);
+  backTex = new THREE.CanvasTexture(c);
+  return backTex;
+}
+
+export function RoadsideTrophy({
+  road,
+  s,
+  side,
+  image,
+  won,
+  colour,
+}: {
+  road: RoadLayout;
+  s: number;
+  side: number;
+  image: string;
+  won: boolean;
+  colour: THREE.Color;
+}) {
+  const group = useRef<THREE.Group>(null);
   const mat = useRef<THREE.SpriteMaterial>(null);
+  const back = useRef<THREE.SpriteMaterial>(null);
   const map = useMemo(() => {
     const t = new THREE.TextureLoader().load(image);
     t.colorSpace = THREE.SRGBColorSpace;
@@ -210,19 +243,35 @@ export function RoadsideTrophy({ road, s, side, image }: { road: RoadLayout; s: 
   const at = useMemo(() => {
     const p = pointAt(road, s);
     const dir = sideAt(road, s);
-    return p.add(dir.multiplyScalar(side * 7.5));
+    return p.add(dir.multiplyScalar(side * 5.6));
   }, [road, s, side]);
-  useFrame(({ camera }) => {
-    if (mat.current) mat.current.opacity = nearness(camera, at);
+  useFrame(({ camera, clock }) => {
+    const k = nearness(camera, at);
+    if (mat.current) mat.current.opacity = k;
+    if (back.current) back.current.opacity = k * (won ? 0.18 : 0.95 + Math.sin(clock.elapsedTime * 1.4 + s) * 0.2);
+    if (group.current) group.current.position.y = at.y + Math.sin(clock.elapsedTime * 1.1 + s) * 0.12;
   });
   return (
-    <group position={at}>
-      <sprite ref={sprite} position={[0, 2.2, 0]} scale={[3.2, 4.25, 1]}>
-        <spriteMaterial ref={mat} map={map} transparent depthWrite={false} toneMapped={false} />
+    <group ref={group} position={at}>
+      <sprite position={[0, 2.3, -0.2]} scale={[4.6, 5.4, 1]}>
+        <spriteMaterial
+          ref={back}
+          map={backGlow()}
+          color={colour}
+          transparent
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </sprite>
+      <sprite position={[0, 2.2, 0]} scale={[2.9, 3.85, 1]}>
+        {/* Black, not tinted: a sprite's colour multiplies its picture, so
+            black keeps only the shape. */}
+        <spriteMaterial ref={mat} map={map} color={won ? "#ffffff" : "#000000"} transparent depthWrite={false} toneMapped={false} />
       </sprite>
       <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[1.8, 32]} />
-        <meshBasicMaterial color="#ffd89a" transparent opacity={0.18} depthWrite={false} toneMapped={false} />
+        <circleGeometry args={[1.6, 32]} />
+        <meshBasicMaterial color={won ? "#ffd89a" : colour} transparent opacity={won ? 0.18 : 0.12} depthWrite={false} toneMapped={false} />
       </mesh>
     </group>
   );
