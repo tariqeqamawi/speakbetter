@@ -208,6 +208,9 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **25 September**
+- Any-order challenges in a section; paywall off until launch; Starter Coach wording — `08d782e`
+- Landing: gold guarantee, full-width testimonials, collage, count-ups with pictures, How it works photos,
+  Meet Coach blurb and bigger pill — `1b713c5`
 - New road live on /challenges (3D/2D, real progress); purple-planet sky with stars — `c61fe4c`
 - Tour: 19 stops to 10 (one dashboard stop, new challenges words), section-tour voice fix;
   landing phones show the new road in 3D and 2D — `e08516f`
