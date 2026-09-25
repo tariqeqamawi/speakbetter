@@ -208,6 +208,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **25 September**
+- Landing: scroll animations throughout, 3D preview switch, quick-guide wording, white-edge buttons,
+  Origin Story headings and cascade, realistic gold seal, tier titles — `da66049`
 - Origin story refinements (titles, message bubbles, all-black TEDx, lion aura, mission); price hints and
   a sticky phone join bar — `49848ef`
 - Real-looking creator stills in the collage; Ask Coach tile; saturated neon-border CTAs; How it works
