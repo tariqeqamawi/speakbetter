@@ -208,6 +208,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **25 September**
+- Coach's 17 road lines recorded and placed; one Coach voice at a time app-wide (voice-floor);
+  two nebula-eclipse skies — `2ac86b8`
 - Sky options: five painted space skies on /prototype/skies, switchable on the road — `20a491d`
 - Road: live portals only in your section (dormant beyond); fanfare/Coach only for real progress;
   finish gated until all done; opens at your challenge; steady sky Coach; 4 fanfares; deeper plunge — `5417edf`
