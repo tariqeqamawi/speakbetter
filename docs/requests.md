@@ -195,6 +195,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **24 September**
+- Coach says one of 21 pre-recorded lines as each trophy lands (captioned); five missing
+  record-button lines rendered — `8381e51`
 - The trophy room is the real case in the app: the reveal (wherever a trophy is won, applause,
   waits for Coach to finish), silhouettes, progress by material, rarity from backups (shown only
   at 10+ students), share card (1080x1350), Founding Cohort, "Replay the moment" — `12ebb3d`,
