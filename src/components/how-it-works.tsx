@@ -1,4 +1,6 @@
 import Image from "next/image";
+import { Reveal } from "@/components/reveal";
+import { delay } from "@/lib/reveal-delay";
 import { TrendingUpIcon, UploadIcon, VideoIcon } from "@/components/icons";
 import { PlayFillIcon } from "@/components/player-icons";
 import { CoachMark } from "@/components/coach-mark";
@@ -66,11 +68,14 @@ const STEPS = [
 
 export function HowItWorks() {
   return (
-    <ol className="grid w-full max-w-4xl gap-3 sm:grid-cols-2 lg:grid-cols-5">
+    // The middle step arrives first and the rest open out from it, to
+    // the left and right.
+    <Reveal as="ol" className="grid w-full max-w-4xl gap-3 sm:grid-cols-2 lg:grid-cols-5">
       {STEPS.map(({ n, title, line, Icon, color, image }) => (
         <li
           key={n}
-          className="flex flex-col gap-2 overflow-hidden rounded-2xl border border-navy-600 bg-navy-800 p-4 lg:items-center lg:text-center"
+          className="rv-pop flex flex-col gap-2 overflow-hidden rounded-2xl border border-navy-600 bg-navy-800 p-4 lg:items-center lg:text-center"
+          style={delay(Math.abs(n - 3) * 220)}
         >
           {/* The step, pictured. */}
           <span className="relative -mx-4 -mt-4 mb-1 block aspect-[4/3] self-stretch overflow-hidden">
@@ -90,6 +95,6 @@ export function HowItWorks() {
           <span className="text-xs leading-snug text-ink-muted">{line}</span>
         </li>
       ))}
-    </ol>
+    </Reveal>
   );
 }

@@ -3395,12 +3395,13 @@ html.bare .demo-banner {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
   color: #fff;
-  border: 2px solid color-mix(in oklab, var(--cta-c), white 55%);
+  /* A white glowing edge - the rim lit, no colour spilling out round it,
+     so the button stands off the page. */
+  border: 2px solid rgb(255 255 255 / 0.95);
   box-shadow:
-    0 0 6px var(--cta-c),
-    0 0 18px var(--cta-c),
-    0 0 36px color-mix(in oklab, var(--cta-c), transparent 45%),
-    inset 0 1px 0 rgb(255 255 255 / 0.35);
+    0 0 4px rgb(255 255 255 / 0.9),
+    0 0 12px rgb(255 255 255 / 0.45),
+    inset 0 0 8px rgb(255 255 255 / 0.35);
   text-shadow: 0 1px 3px rgb(0 0 0 / 0.55);
   animation: none;
 }
@@ -3410,4 +3411,55 @@ html.bare .demo-banner {
 }
 @media (prefers-reduced-motion: reduce) {
   .cta-neon-wrap { animation: none; }
+}
+
+/* Reveal on scroll (components/reveal.tsx). */
+.reveal .rv,
+.reveal .rv-left,
+.reveal .rv-right,
+.reveal .rv-pop,
+.reveal.rv {
+  opacity: 0;
+  transition:
+    opacity 0.55s ease,
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--d, 0ms);
+}
+.reveal .rv,
+.reveal.rv { transform: translateY(16px); }
+.reveal .rv-left { transform: translateX(-48px); }
+.reveal .rv-right { transform: translateX(48px); }
+.reveal .rv-pop { transform: translateY(8px) scale(0.9); transform-origin: left bottom; }
+.reveal[data-in] .rv,
+.reveal[data-in] .rv-left,
+.reveal[data-in] .rv-right,
+.reveal[data-in] .rv-pop,
+.reveal.rv[data-in] {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal .rv, .reveal .rv-left, .reveal .rv-right, .reveal .rv-pop, .reveal.rv {
+    opacity: 1; transform: none; transition: none;
+  }
+}
+
+/* A lone testimonial between sections, drifting across the page on a
+ * laptop: in from the left, across, fading out at the right, and round
+ * again. On a phone it simply sits. */
+@media (min-width: 640px) {
+  .proof-lane { position: relative; }
+  .proof-drift {
+    position: relative;
+    animation: proof-drift 26s linear infinite;
+  }
+  @keyframes proof-drift {
+    0% { left: 0; opacity: 0; }
+    8% { opacity: 1; }
+    86% { opacity: 1; }
+    100% { left: calc(100% - 28rem); opacity: 0; }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .proof-drift { animation: none; }
 }

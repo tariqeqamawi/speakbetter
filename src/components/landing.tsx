@@ -24,6 +24,8 @@ import { StickyJoin } from "@/components/sticky-join";
 import { HeroLion } from "@/components/hero-lion";
 import { TestimonialStream } from "@/components/testimonial-stream";
 import { ProofLine } from "@/components/proof-line";
+import { Reveal } from "@/components/reveal";
+import { delay } from "@/lib/reveal-delay";
 import { LionPitch } from "@/components/lion-pitch";
 import { LANDING_PITCH, LANDING_PITCH_AUDIO, HEADLINE_AUDIO } from "@/data/welcome-speech";
 import { SpeakLine } from "@/components/speak-line";
@@ -99,7 +101,9 @@ function LandingBody() {
               Two facts, in the order they are asked: when does it
               start, and what happens if I buy right now. */}
           <CohortDates />
-          <ul className="flex max-w-xl flex-col gap-3 text-left">
+          {/* The ticks arrive one after another once the visitor starts to
+              scroll. */}
+          <Reveal as="ul" afterScroll className="flex max-w-xl flex-col gap-3 text-left">
             {[
               <>Overcome fears, nerves and shyness in a fully gamified, interactive app.</>,
               <>
@@ -114,14 +118,14 @@ function LandingBody() {
                 <strong className="font-semibold text-ink">practice</strong>, from the comfort of your phone.
               </>,
             ].map((line, i) => (
-              <li key={i} className="flex items-start gap-3">
+              <li key={i} className="rv flex items-start gap-3" style={delay(i * 160)}>
                 <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-mindset/15 text-mindset">
                   <CheckIcon className="size-3.5" />
                 </span>
                 <span className="text-lg text-ink-muted text-balance">{line}</span>
               </li>
             ))}
-          </ul>
+          </Reveal>
         </div>
 
         {/* The premise and its punchline, each with its picture: the
@@ -210,16 +214,16 @@ function LandingBody() {
           The left card is deliberately drained of color - the palette
           belongs to the right card only, so the difference is felt
           before it's read. */}
-      <section className="flex flex-col gap-6">
+      <Reveal as="section" className="flex flex-col gap-6">
         {/* This comparison was carrying a screen-reader-only heading,
             which meant the single clearest claim on the page - that
             this is a different KIND of thing from what they have
             bought before - was invisible to everybody who can see. */}
-        <h2 className="mx-auto mb-2 max-w-3xl text-center text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+        <h2 className="rv mx-auto mb-2 max-w-3xl text-center text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
           How Speak Better is different to every other speaking course or app on the market
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-4 rounded-2xl border border-navy-600 bg-navy-900/60 p-6 sm:p-7">
+          <div className="rv flex flex-col gap-4 rounded-2xl border border-navy-600 bg-navy-900/60 p-6 sm:p-7" style={delay(300)}>
             <div className="relative -mx-2 -mt-2 aspect-[3/2] overflow-hidden rounded-xl">
               <Image
                 src="/compare/watch-passively.jpg"
@@ -254,7 +258,7 @@ function LandingBody() {
               </li>
             </ul>
           </div>
-          <div className="relative flex flex-col gap-4 overflow-hidden rounded-2xl border border-navy-500 bg-navy-800 p-6 sm:p-7">
+          <div className="rv relative flex flex-col gap-4 overflow-hidden rounded-2xl border border-navy-500 bg-navy-800 p-6 sm:p-7" style={delay(480)}>
             <div className="spectrum-rule absolute inset-x-0 top-0 h-1" />
             <div className="relative -mx-2 mt-1 aspect-[3/2] overflow-hidden rounded-xl">
               <Image
@@ -294,7 +298,7 @@ function LandingBody() {
             </ul>
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* How a take is actually made - people recording themselves on
           their own phones, the app's recording screen over them. The
@@ -456,7 +460,7 @@ function LandingBody() {
         </div>
       </section>
 
-      <JoinCta label="Sign Me Up" seal />
+      <JoinCta label="Sign Me Up" seal sealSize={176} />
 
       <ProofLine tag="results" />
 

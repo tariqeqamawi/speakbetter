@@ -79,11 +79,12 @@ export function LandingShowcase() {
               ways depending on where you were reading. A visitor who
               notices that does not think "two summaries", they think
               "which one is true". Repetition is the smaller cost. */}
+          <h3 className="text-xl font-semibold tracking-tight text-ink">How to use Speak Better - quick guide</h3>
           <ol className="flex flex-col gap-2">
             {[
-              ["Watch a challenge", "text-structure"],
+              ["Watch a challenge + included skills", "text-structure"],
               ["Record yourself speaking", "text-acting"],
-              ["Upload your take for Coach", "text-body-language"],
+              ["Upload your take for “Coach”", "text-body-language"],
               ["Receive detailed feedback", "text-mindset"],
               ["Improve quickly", "text-storytelling"],
             ].map(([step, color], i) => (

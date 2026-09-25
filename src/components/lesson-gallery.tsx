@@ -23,6 +23,28 @@ export function LessonGallery() {
   const [color, setColor] = useState<CategoryId>("storytelling");
   const [index, setIndex] = useState(0);
   const list = useRef<HTMLUListElement>(null);
+  // A snapshot of every colour: while on screen and untouched, it steps
+  // through the seven, one a second. The first touch - a tab, a lesson,
+  // anything inside - stops it where it is, to be browsed at their pace.
+  const host = useRef<HTMLDivElement>(null);
+  const [auto, setAuto] = useState(true);
+  const [seen, setSeen] = useState(false);
+  useEffect(() => {
+    const el = host.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setSeen(e.isIntersecting), { threshold: 0.4 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  useEffect(() => {
+    if (!auto || !seen) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const t = setInterval(() => {
+      setColor((c) => categories[(categories.findIndex((x) => x.id === c) + 1) % categories.length].id);
+      setIndex(0);
+    }, 1000);
+    return () => clearInterval(t);
+  }, [auto, seen]);
 
   const shown = useMemo(() => lessons.filter((l) => l.category === color), [color]);
   const cat = categoryById.get(color)!;
@@ -63,15 +85,16 @@ export function LessonGallery() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (e.key.startsWith("Arrow") && seen) setAuto(false);
       if (e.key === "ArrowRight" || e.key === "ArrowDown") go(1);
       if (e.key === "ArrowLeft" || e.key === "ArrowUp") go(-1);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [go]);
+  }, [go, seen]);
 
   return (
-    <div className="flex w-full flex-col gap-5">
+    <div ref={host} onPointerDown={() => setAuto(false)} className="flex w-full flex-col gap-5">
       {/* The colors, as a row of tabs - jump straight to a section. */}
       <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:justify-center sm:overflow-visible sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {categories.map((c) => {

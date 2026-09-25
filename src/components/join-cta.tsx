@@ -12,7 +12,17 @@ import { guarantee, tiers } from "@/data/pricing";
 // rather than a banner repeated. Every one goes to the same place: the
 // three tiers.
 
-export function JoinCta({ label, seal = false, price = false }: { label: string; seal?: boolean; price?: boolean }) {
+export function JoinCta({
+  label,
+  seal = false,
+  sealSize = 116,
+  price = false,
+}: {
+  label: string;
+  seal?: boolean;
+  sealSize?: number;
+  price?: boolean;
+}) {
   return (
     <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
       <span className="flex flex-col items-center gap-2">
@@ -30,7 +40,7 @@ export function JoinCta({ label, seal = false, price = false }: { label: string;
       </span>
       {/* The guarantee beside the ask, where the question it answers is
           being asked (guarantee-seal.tsx). */}
-      {seal && <GuaranteeSeal size={116} />}
+      {seal && <GuaranteeSeal size={sealSize} />}
     </div>
   );
 }

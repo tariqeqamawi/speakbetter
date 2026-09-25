@@ -3,7 +3,8 @@
 import { useMemo, useRef, useState } from "react";
 import { Adventure2D } from "@/components/adventure/adventure-2d";
 import { roadStops } from "@/components/adventure/live-adventure";
-import { worldPhases } from "@/components/adventure/world-phases";
+import { ROAD_SKY, worldPhases } from "@/components/adventure/world-phases";
+import { AdventureScreen } from "@/components/adventure/adventure-screen";
 import { presence } from "@/data/community-presence";
 import { demoState } from "@/lib/demo-state";
 import { storyPhases, type PhaseId } from "@/data/challenges";
@@ -22,6 +23,8 @@ import { storyPhases, type PhaseId } from "@/data/challenges";
 
 export function StoryPreview() {
   const [active, setActive] = useState<PhaseId>("S");
+  // The road as a student chooses it: the flat map, or the 3D world.
+  const [mode, setMode] = useState<"2d" | "3d">("2d");
   const frame = useRef<HTMLDivElement>(null);
   const crowd = useMemo(() => presence(), []);
   // A worked-in student's road - the same sample the demo pages use.
@@ -75,22 +78,42 @@ export function StoryPreview() {
       {/* The road itself, as a student sees it in 2D, live in a phone:
           scroll it, or tap a letter above and it travels there. */}
       <figure className="flex flex-col items-center gap-2">
+        <div role="radiogroup" aria-label="View" className="flex rounded-full border border-navy-600 bg-navy-950/80 p-1 text-xs font-bold">
+          {(["2d", "3d"] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              role="radio"
+              aria-checked={mode === m}
+              onClick={() => setMode(m)}
+              className={`rounded-full px-5 py-1.5 transition-colors ${mode === m ? "bg-ink text-navy-950" : "text-ink-muted hover:text-ink"}`}
+            >
+              {m.toUpperCase()}
+            </button>
+          ))}
+        </div>
         <div className="relative w-full max-w-[19rem] rounded-[2.2rem] border-4 border-navy-600 bg-navy-950 p-1.5 shadow-2xl shadow-navy-950">
           <span className="absolute left-1/2 top-3 z-50 h-1.5 w-14 -translate-x-1/2 rounded-full bg-navy-700" />
           <div
             ref={frame}
-            className="relative h-[34rem] overflow-y-auto overflow-x-hidden overscroll-contain rounded-[1.8rem] bg-navy-950 pb-6 pt-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className={`relative h-[34rem] ${mode === "3d" ? "overflow-hidden" : "overflow-y-auto"} overflow-x-hidden overscroll-contain rounded-[1.8rem] bg-navy-950 pb-6 pt-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`}
           >
             {/* Laid out at a phone's full width and scaled to fit the
                 frame, so it reads exactly as it does in the app. */}
-            <div style={{ width: 390, zoom: 0.72 }}>
-              <Adventure2D stops={stops} phases={worldPhases} scrollRoot={frame} />
-            </div>
+            {mode === "2d" ? (
+              <div style={{ width: 390, zoom: 0.72 }}>
+                <Adventure2D stops={stops} phases={worldPhases} scrollRoot={frame} />
+              </div>
+            ) : (
+              <div className="-mb-6 -mt-8">
+                <AdventureScreen stops={stops} phases={worldPhases} heightClass="h-[34rem]" skyImage={ROAD_SKY} />
+              </div>
+            )}
           </div>
         </div>
         <figcaption className="text-center text-xs text-ink-muted">
-          A student a few challenges in - passed, open and still to come.
-          <span className="block text-ink-faint">Scroll it, or tap a letter.</span>
+          A student a few challenges in - passed, open and still to come. Switch to 3D to travel it.
+          <span className="block text-ink-faint">Scroll or drag it, or tap a letter.</span>
         </figcaption>
       </figure>
     </div>

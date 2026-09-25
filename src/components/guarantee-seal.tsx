@@ -1,6 +1,7 @@
 import { guarantee } from "@/data/pricing";
 
-// The guarantee as a seal in solid gold: the lion embossed at its centre,
+// The guarantee as a seal in solid gold - a real minted medallion, not a
+// drawing: the lion embossed at its centre,
 // "14-day money-back guarantee" round the edge - gold, because a
 // guarantee should look like one.
 //
@@ -15,7 +16,7 @@ export function GuaranteeSeal({ size = 96, className = "" }: { size?: number; cl
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={size > 110 ? "/guarantee/seal-2x.webp" : "/guarantee/seal.webp"}
+      src={size > 110 ? "/guarantee/seal-metal-2x.webp" : "/guarantee/seal-metal.webp"}
       alt={guarantee.title}
       width={size}
       height={size}

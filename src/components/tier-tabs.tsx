@@ -36,7 +36,7 @@ export function TierTabs() {
                 on ? "bg-navy-800 text-ink" : "text-ink-muted hover:text-ink"
               }`}
             >
-              <span className={`text-sm font-semibold leading-tight ${on ? ACCENT[tier.accent] : ""}`}>{tier.name}</span>
+              <span className={`text-base font-bold leading-tight ${on ? ACCENT[tier.accent] : ""}`}>{tier.name}</span>
               <span className="text-[0.65rem] tabular-nums text-ink-faint">{tier.price}</span>
               {tier.featured && (
                 <span className={`absolute -top-2 rounded-full px-1.5 py-px text-[0.5rem] font-bold uppercase tracking-wider text-navy-950 ${ACCENT_BG[tier.accent]}`}>
@@ -67,7 +67,7 @@ export function TierTabs() {
               </span>
             )}
             <div className="flex flex-col gap-1">
-              <h3 className="text-xl font-semibold tracking-tight">{tier.name}</h3>
+              <h3 className={`text-3xl font-bold tracking-tight sm:text-4xl ${ACCENT[tier.accent]}`}>{tier.name}</h3>
               {tier.sub && <p className="text-xs text-ink-faint">({tier.sub})</p>}
               <p className="text-sm text-ink-muted">{tier.tagline}</p>
             </div>

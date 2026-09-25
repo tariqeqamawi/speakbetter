@@ -25,12 +25,16 @@ export function ProofLine({ tag, skip = 0 }: { tag: Proof; skip?: number }) {
     // White, like every other quotation on this page - a student's
     // words are the one thing here that is not the seller speaking,
     // and they should not be wearing the seller's colours.
-    <figure className="quote-card flex w-full max-w-2xl gap-3 rounded-2xl border p-4">
+    // On a laptop the quote drifts slowly across from the left, fades at
+    // the right, and comes round again (globals.css, .proof-drift).
+    <div className="proof-lane w-full max-w-5xl">
+    <figure className="proof-drift quote-card flex w-full max-w-2xl gap-3 rounded-2xl border p-4 sm:max-w-md">
       <Avatar name={who} className="size-9 shrink-0" />
       <div className="flex min-w-0 flex-col gap-1.5">
         <blockquote className="text-sm leading-relaxed">&ldquo;{quote.quote}&rdquo;</blockquote>
         <figcaption className="text-xs font-semibold">{who}</figcaption>
       </div>
     </figure>
+    </div>
   );
 }

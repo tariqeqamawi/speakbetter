@@ -1,4 +1,6 @@
 import Image from "next/image";
+import { Reveal } from "@/components/reveal";
+import { delay } from "@/lib/reveal-delay";
 
 // How Speak Better came to be, told as moments down the page - the
 // talk, the letters, the stage, the cohorts, the bottleneck, the coach.
@@ -52,19 +54,19 @@ const MOMENTS: Moment[] = [
         delivered his TEDx talk, his first-ever public speech. What happened next floored him. It racked up more
         than ten times the views of every other talk at the conference, and people started reaching out:
         {/* The messages themselves, as they arrived - each one on its own. */}
-        <span className="my-4 flex flex-col items-start gap-2.5">
+        <Reveal as="span" className="my-4 flex flex-col items-start gap-2.5" threshold={0.6}>
           {["I watched your talk and quit my job.", "I watched your talk and bought a plane ticket.", "I watched your talk and proposed."].map(
             (msg, i) => (
               <span
                 key={msg}
-                className="max-w-[20rem] rounded-2xl rounded-bl-md bg-white px-4 py-2.5 text-left text-[0.95rem] font-semibold leading-snug text-[#0e1629] shadow-lg shadow-navy-950/60"
-                style={{ marginLeft: `${i * 1.25}rem` }}
+                className="rv-pop max-w-[20rem] rounded-2xl rounded-bl-md bg-white px-4 py-2.5 text-left text-[0.95rem] font-semibold leading-snug text-[#0e1629] shadow-lg shadow-navy-950/60"
+                style={{ marginLeft: `${i * 1.25}rem`, ...delay(250 + i * 550) }}
               >
                 {msg}
               </span>
             ),
           )}
-        </span>
+        </Reveal>
         He had given it months before, and it was still creating value. That was when he
         understood the true power of speaking: it immortalizes you on video, a time capsule that reaches people
         wherever they are, whenever they need it most. He knew this was a craft he wanted to master.
@@ -104,7 +106,7 @@ const MOMENTS: Moment[] = [
   {
     image: "/origin/dream/cohort.webp",
     year: "Communicate and Captivate",
-    title: "This method really works",
+    title: "Uncovering the method that transforms talks",
     accent: "text-mindset",
     border: "border-mindset/40",
     body: (
@@ -121,7 +123,7 @@ const MOMENTS: Moment[] = [
   {
     image: "/origin/dream/coach-roar.webp",
     year: "Now",
-    title: "Coach the Lion",
+    title: "Let your true colors roar on screen and stage",
     accent: "text-structure",
     border: "border-structure/40",
     body: (
@@ -138,7 +140,7 @@ const MOMENTS: Moment[] = [
   {
     image: "/origin/dream/mission.webp",
     year: "The mission",
-    title: "The voice of their values",
+    title: "Become the messenger of your mission and the voice of your values",
     accent: "text-advanced",
     border: "border-advanced/40",
     body: (
@@ -159,7 +161,7 @@ export function OriginStory() {
     <section className="flex flex-col items-center gap-8">
       <div className="flex flex-col items-center gap-2 text-center">
         <span className="text-xs font-semibold uppercase tracking-[0.3em] text-ink-faint">Who&apos;s teaching this</span>
-        <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">The origin story of Speak Better</h2>
+        <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">The Origin Story of Speak Better</h2>
       </div>
       <ol className="flex w-full flex-col gap-10 sm:gap-14">
         {MOMENTS.map((m) => {
@@ -177,11 +179,13 @@ export function OriginStory() {
           }
           const flip = pictured++ % 2 === 1;
           return (
-            <li
+            <Reveal
+              as="li"
               key={m.title}
+              threshold={0.25}
               className={`flex flex-col items-center gap-5 sm:gap-10 ${flip ? "sm:flex-row-reverse" : "sm:flex-row"}`}
             >
-              <div className={`relative aspect-[16/9] w-full overflow-hidden rounded-2xl border border-navy-600 bg-navy-950 shadow-2xl shadow-navy-950/80 sm:w-[54%] ${m.accent}`}>
+              <div className={`${flip ? "rv-right" : "rv-left"} relative aspect-[16/9] w-full overflow-hidden rounded-2xl border border-navy-600 bg-navy-950 shadow-2xl shadow-navy-950/80 sm:w-[54%] ${m.accent}`}>
                 <Image
                   src={m.image}
                   alt=""
@@ -191,12 +195,12 @@ export function OriginStory() {
                 />
                 <span className="absolute inset-0 rounded-2xl shadow-[inset_0_0_0_1px_color-mix(in_oklab,currentColor_35%,transparent)]" />
               </div>
-              <div className={`flex w-full flex-col gap-2 sm:w-[46%] ${flip ? "sm:text-right sm:items-end" : ""}`}>
+              <div className={`rv flex w-full flex-col gap-2 sm:w-[46%] ${flip ? "sm:text-right sm:items-end" : ""}`} style={delay(200)}>
                 <span className={`text-[0.65rem] font-bold uppercase tracking-[0.3em] ${m.accent}`}>{m.year}</span>
                 <h3 className="text-2xl font-semibold tracking-tight text-ink">{m.title}</h3>
                 <div className="max-w-md text-sm leading-relaxed text-ink-muted">{m.body}</div>
               </div>
-            </li>
+            </Reveal>
           );
         })}
       </ol>

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Reveal } from "@/components/reveal";
 
 // The promise, said over the places it comes true.
 //
@@ -53,9 +54,9 @@ export function TheReality() {
         }}
       />
 
-      <div className="absolute inset-0 flex items-center justify-center px-6">
+      <Reveal className="absolute inset-0 flex items-center justify-center px-6" threshold={0.35}>
         <p
-          className="max-w-2xl text-center text-2xl font-semibold leading-snug text-ink text-balance sm:text-3xl"
+          className="rv max-w-2xl text-center text-2xl font-semibold leading-snug text-ink text-balance sm:text-3xl"
           style={{ textShadow: "0 2px 18px rgba(0,0,0,0.9)" }}
         >
           Imagine the cameras are rolling, the audience is waiting, the stage is set - and you have no fear, no
@@ -63,7 +64,7 @@ export function TheReality() {
           notice.{" "}
           <span className="text-figurative">This is the reality waiting for you on the other side of Speak Better.</span>
         </p>
-      </div>
+      </Reveal>
     </section>
   );
 }
