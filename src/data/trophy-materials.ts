@@ -10,7 +10,16 @@ import { ALL_TROPHIES, COHORT } from "../../scripts/trophy-prompts.mjs";
 // build script runs it; what it costs a client bundle is the prompt
 // text, a few kilobytes.
 
-export type Material = "obsidian" | "spectrum" | "gold" | "chrome" | "ceramic" | "painted" | "bronze";
+export type Material =
+  | "legendary"
+  | "obsidian"
+  | "spectrum"
+  | "gold"
+  | "enamel"
+  | "chrome"
+  | "ceramic"
+  | "painted"
+  | "bronze";
 
 export interface TrophyMeta {
   /** The skill colour it was rendered in - a --color-* name. */
@@ -22,13 +31,16 @@ export interface TrophyMeta {
   onceOnly: boolean;
 }
 
-/** Highest first - the order a case is read in. The founding cohort's
- *  bronze leads, because it is the one nobody can go back for. */
+/** Highest first - the order a case is read in. The one Legendary
+ *  trophy leads, then the founding cohort's bronze, because it is the
+ *  one nobody can go back for. */
 export const MATERIALS: { key: Material; label: string; note: string }[] = [
+  { key: "legendary", label: "Legendary", note: "One trophy. Everything in Speak Better, done." },
   { key: "bronze", label: "Bronze", note: "Once only - the founding cohort's, never offered again." },
   { key: "obsidian", label: "Obsidian", note: "The rare ones, and the whole road at the end of it." },
   { key: "spectrum", label: "Spectrum glass", note: "Finishing a phase of the road - all seven colours at once." },
   { key: "gold", label: "Gold", note: "A top score: 90 or more on a challenge." },
+  { key: "enamel", label: "Library", note: "Every lesson in one skill watched - one for each colour." },
   { key: "chrome", label: "Chrome", note: "Turning up again and again." },
   { key: "ceramic", label: "Ceramic", note: "How you speak, and how you feel doing it." },
   { key: "painted", label: "Painted", note: "The challenges, each the real thing in full colour." },
