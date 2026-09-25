@@ -46,7 +46,7 @@ export interface WorldStop {
   /** Its best score, once passed. */
   score?: number;
   /** Other students standing at this checkpoint right now. */
-  classmates?: string[];
+  classmates?: { name: string; avatar?: string }[];
 }
 
 export interface WorldPhase {
@@ -641,6 +641,49 @@ function Rig({
   return null;
 }
 
+/** Which checkpoint's portal is at this point on the screen (client
+ *  pixels), or null. */
+export type PickPortal = (clientX: number, clientY: number) => number | null;
+
+/** Answers PickPortal by projecting each portal onto the screen: its
+ *  centre, and its radius at that distance. */
+function Picker({ road, pickRef }: { road: RoadLayout; pickRef: React.RefObject<PickPortal | null> }) {
+  const { camera, gl } = useThree();
+  useEffect(() => {
+    const cam = camera as THREE.PerspectiveCamera;
+    const p = new THREE.Vector3();
+    const toP = new THREE.Vector3();
+    const forward = new THREE.Vector3();
+    pickRef.current = (cx, cy) => {
+      const rect = gl.domElement.getBoundingClientRect();
+      cam.getWorldDirection(forward);
+      let best: number | null = null;
+      let bestD = Infinity;
+      road.stops.forEach((s, i) => {
+        pointAt(road, s, p).y += 3.3;
+        toP.subVectors(p, cam.position);
+        const d = toP.length();
+        // In front, near enough to be seen, not so near it has faded
+        // for the traveller to pass through.
+        if (toP.dot(forward) <= 0 || d > 70 || d < 4) return;
+        const r = (2.5 / (d * Math.tan(THREE.MathUtils.degToRad(cam.fov / 2)))) * (rect.height / 2);
+        p.project(cam);
+        const x = rect.left + ((p.x + 1) / 2) * rect.width;
+        const y = rect.top + ((1 - p.y) / 2) * rect.height;
+        if (Math.hypot(cx - x, cy - y) < r * 1.15 && d < bestD) {
+          best = i;
+          bestD = d;
+        }
+      });
+      return best;
+    };
+    return () => {
+      pickRef.current = null;
+    };
+  }, [camera, gl, road, pickRef]);
+  return null;
+}
+
 export function AdventureWorld({
   stops,
   phases,
@@ -648,6 +691,7 @@ export function AdventureWorld({
   onMove,
   avatar = "/lion-head.png",
   talkingCoach = null,
+  pickRef,
 }: {
   stops: WorldStop[];
   phases: WorldPhase[];
@@ -657,8 +701,12 @@ export function AdventureWorld({
   onMove: (s: number) => void;
   /** The student's own picture, on the traveller. */
   avatar?: string;
-  /** Which roadside Coach is speaking right now, if any. */
+  /** Which of Coach's lines is being spoken right now, if any. */
   talkingCoach?: number | null;
+  /** Filled in with a way to ask which checkpoint's portal is under a
+   *  point on the screen - the page owns the pointer (it drags the road),
+   *  so taps are worked out there and asked here. */
+  pickRef?: React.RefObject<PickPortal | null>;
 }) {
   const road = useMemo(() => layoutRoad(stops.length, stops.map((s) => s.phase)), [stops]);
   const spans = useMemo(() => phaseSpans(road, stops, phases), [road, stops, phases]);
@@ -739,13 +787,14 @@ export function AdventureWorld({
       )}
       <SkyCoach talking={talkingCoach !== null} />
       {stops.flatMap((stop, i) =>
-        (stop.classmates ?? []).map((name, k) => (
+        (stop.classmates ?? []).map(({ name, avatar }, k) => (
           <Classmate
             key={`m-${stop.slug}-${k}`}
             road={road}
             s={road.stops[i] - 2 + k * 1.6}
             offset={(k % 2 ? 1 : -1) * (4 + k)}
             name={name}
+            avatar={avatar}
             color={phaseCol.get(stop.phase)?.getStyle() ?? "#fff"}
           />
         )),
@@ -765,6 +814,7 @@ export function AdventureWorld({
       ))}
       <FinishGate road={road} spans={spans} />
       <Rig road={road} travel={travel} onMove={onMove} />
+      {pickRef && <Picker road={road} pickRef={pickRef} />}
     </Canvas>
   );
 }

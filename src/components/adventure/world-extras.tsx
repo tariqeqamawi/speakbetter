@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { pointAt, seeded, sideAt, type RoadLayout } from "./road-geometry";
@@ -416,7 +416,24 @@ export function Scenery({ road, spans }: { road: RoadLayout; spans: { id: string
 
 /** Another student, standing at the checkpoint they are on: a small lit
  *  disc with their initials, bobbing at the roadside. */
-export function Classmate({ road, s, offset, name, color }: { road: RoadLayout; s: number; offset: number; name: string; color: string }) {
+/** Another student at a checkpoint: their profile picture in a ring of
+ *  the phase's colour once they have uploaded one, their initials until
+ *  then. */
+export function Classmate({
+  road,
+  s,
+  offset,
+  name,
+  avatar,
+  color,
+}: {
+  road: RoadLayout;
+  s: number;
+  offset: number;
+  name: string;
+  avatar?: string;
+  color: string;
+}) {
   const sprite = useRef<THREE.Sprite>(null);
   const map = useMemo(
     () =>
@@ -445,6 +462,33 @@ export function Classmate({ road, s, offset, name, color }: { road: RoadLayout; 
       }),
     [name, color],
   );
+  // The picture, once it has loaded, drawn over the initials in the same
+  // circle and ring.
+  useEffect(() => {
+    if (!avatar) return;
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const c = map.image as HTMLCanvasElement;
+      const g = c.getContext("2d")!;
+      g.clearRect(0, 0, 256, 256);
+      g.save();
+      g.beginPath();
+      g.arc(128, 128, 110, 0, Math.PI * 2);
+      g.clip();
+      // Cover the circle, cropped from the centre.
+      const k = 220 / Math.min(img.width, img.height);
+      g.drawImage(img, 128 - (img.width * k) / 2, 128 - (img.height * k) / 2, img.width * k, img.height * k);
+      g.restore();
+      g.beginPath();
+      g.arc(128, 128, 110, 0, Math.PI * 2);
+      g.lineWidth = 16;
+      g.strokeStyle = color;
+      g.stroke();
+      map.needsUpdate = true;
+    };
+    img.src = avatar;
+  }, [avatar, map, color]);
   const at = useMemo(() => pointAt(road, s).add(sideAt(road, s).multiplyScalar(offset)), [road, s, offset]);
   useFrame(({ clock }) => {
     if (sprite.current) sprite.current.position.y = 1.6 + Math.sin(clock.elapsedTime * 2 + offset) * 0.2;

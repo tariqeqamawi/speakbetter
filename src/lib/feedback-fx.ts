@@ -367,8 +367,8 @@ export function playCoachLine(src: string, delayMs = 0): () => void {
   return () => stop();
 }
 
-// The road's two sounds, both made here rather than downloaded - the
-// adventure plays them only when the student has turned its sound on.
+// The road's sounds - the adventure plays them only when the student
+// has turned its sound on.
 
 /** Air rushing past as the traveller goes through a checkpoint. */
 export function playRoadWhoosh() {
@@ -399,24 +399,31 @@ export function playRoadWhoosh() {
   src.stop(now + 0.72);
 }
 
-/** A bright bell-like chord as the traveller passes under a phase gate. */
+/** A brass fanfare as the traveller passes under a phase gate - trumpets
+ *  calling over French horns and a tuba, heralding the next stretch of
+ *  the road (public/sfx/fanfare.mp3, built by scripts/sfx/build-fanfare.py).
+ *  Shares the clip cache with Coach's lines, so it is decoded once. */
 export function playGateChime() {
   const ac = audio();
   if (!ac || !touched()) return;
   void ac.resume().catch(() => {});
-  const now = ac.currentTime;
-  [659.25, 987.77, 1318.51].forEach((f, i) => {
-    const osc = ac.createOscillator();
+  const src = "/sfx/fanfare.mp3";
+  let clip = clips.get(src);
+  if (!clip) {
+    clip = fetch(src)
+      .then((r) => (r.ok ? r.arrayBuffer() : null))
+      .then((b) => (b ? ac.decodeAudioData(b) : null))
+      .catch(() => null);
+    clips.set(src, clip);
+  }
+  void clip.then((buffer) => {
+    if (!buffer) return;
+    const node = ac.createBufferSource();
     const gain = ac.createGain();
-    osc.type = "triangle";
-    osc.frequency.value = f;
-    const at = now + i * 0.06;
-    gain.gain.setValueAtTime(0.0001, at);
-    gain.gain.exponentialRampToValueAtTime(0.09, at + 0.015);
-    gain.gain.exponentialRampToValueAtTime(0.0001, at + 1.4);
-    osc.connect(gain);
+    node.buffer = buffer;
+    gain.gain.value = 0.55;
+    node.connect(gain);
     gain.connect(ac.destination);
-    osc.start(at);
-    osc.stop(at + 1.5);
+    node.start();
   });
 }

@@ -36,7 +36,19 @@ const stops: WorldStop[] = challenges.map((c, i) => ({
   score: i < 7 ? [82, 91, 77, 88, 79, 94, 85][i] : undefined,
   // Stand-ins for the cohort: a few people at the checkpoints just
   // ahead, where most of a cohort is at any moment.
-  classmates: i === 7 ? ["Maya Chen", "Leo"] : i === 8 ? ["Amara", "Jonas Berg", "Priya"] : i === 10 ? ["Sam"] : undefined,
+  // Four with a profile picture, two without - initials until they add one.
+  classmates:
+    i === 7
+      ? [{ name: "Maya Chen", avatar: "/prototype/classmates/maya.jpg" }, { name: "Leo" }]
+      : i === 8
+        ? [
+            { name: "Amara", avatar: "/prototype/classmates/amara.jpg" },
+            { name: "Jonas Berg", avatar: "/prototype/classmates/jonas.jpg" },
+            { name: "Priya" },
+          ]
+        : i === 10
+          ? [{ name: "Sam", avatar: "/prototype/classmates/sam.jpg" }]
+          : undefined,
   comment: challengeChatter[c.slug]?.[0] && {
     name: challengeChatter[c.slug][0].name,
     body: challengeChatter[c.slug][0].body,

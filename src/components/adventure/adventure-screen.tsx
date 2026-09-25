@@ -9,7 +9,7 @@ import { ROAD_LINES, roadLineClip } from "@/data/greetings";
 import { playApplause, playCoachLine, playGateChime, playRoadWhoosh } from "@/lib/feedback-fx";
 import { Confetti } from "@/components/confetti";
 import { useStore } from "@/lib/store";
-import type { WorldPhase, WorldStop } from "./adventure-world";
+import type { PickPortal, WorldPhase, WorldStop } from "./adventure-world";
 
 // The adventure screen: the 3D road filling the frame, and the few
 // things laid over it - which phase you are in, which checkpoint you
@@ -53,16 +53,23 @@ export function AdventureScreen({
   const avatar = state.avatar && /^(data:image|\/|https?:)/.test(state.avatar) ? state.avatar : fallbackAvatar;
 
   const onMove = useCallback((next: number) => setS(next), []);
+  // Taps on the road, handled further down once everything they can do
+  // is defined; the portal under a tap is asked of the world.
+  const onTap = useRef<(x: number, y: number) => void>(() => {});
+  const pickRef = useRef<PickPortal | null>(null);
 
   // Drag down (or scroll down) to go forward, with momentum.
   useEffect(() => {
     const el = frame.current;
     if (!el) return;
     let lastY: number | null = null;
+    // A press that barely moves is a tap - on a portal, perhaps - not a drag.
+    let from: { x: number; y: number; t: number; far: number } | null = null;
     const down = (e: PointerEvent) => {
       // The letters and buttons over the road are buttons, not road.
-      if ((e.target as HTMLElement).closest("button")) return;
+      if ((e.target as HTMLElement).closest("button, a")) return;
       lastY = e.clientY;
+      from = { x: e.clientX, y: e.clientY, t: performance.now(), far: 0 };
       travel.push(0, 0);
       el.setPointerCapture(e.pointerId);
     };
@@ -70,10 +77,14 @@ export function AdventureScreen({
       if (lastY === null) return;
       const dy = e.clientY - lastY;
       lastY = e.clientY;
+      if (from) from.far = Math.max(from.far, Math.hypot(e.clientX - from.x, e.clientY - from.y));
       travel.push(dy * 0.045, 0.5);
     };
-    const up = () => {
+    const up = (e: PointerEvent) => {
       lastY = null;
+      const tap = from && from.far < 8 && performance.now() - from.t < 450;
+      from = null;
+      if (tap && e.type === "pointerup") onTap.current(e.clientX, e.clientY);
     };
     const wheel = (e: WheelEvent) => {
       e.preventDefault();
@@ -232,6 +243,31 @@ export function AdventureScreen({
     setTimeout(() => router.push(href), 2100);
   };
 
+  // A CHALLENGE NOT YET OPEN. Explore as far ahead as you like, but tap
+  // one you have not reached and you are told so, and taken back to the
+  // one you are on.
+  const [notice, setNotice] = useState<string | null>(null);
+  const noticeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const backToCurrent = () => {
+    setNotice("Complete previous challenges to unlock this one.");
+    clearTimeout(noticeTimer.current);
+    noticeTimer.current = setTimeout(() => {
+      travel.goTo(Math.max(0, road.stops[hereIndex] - AHEAD - 2));
+      noticeTimer.current = setTimeout(() => setNotice(null), 1600);
+    }, 1400);
+  };
+  useEffect(() => () => clearTimeout(noticeTimer.current), []);
+  useEffect(() => {
+    onTap.current = (x, y) => {
+      const i = pickRef.current?.(x, y);
+      if (i === null || i === undefined) return;
+      const st = stops[i];
+      if (st.state === "locked" || st.state === "ahead") backToCurrent();
+      else if (st.state === "here") dive(st.slug, road.stops[i]);
+      else router.push(`/challenges/${st.slug}`);
+    };
+  });
+
   // THE FINISH: once, when the traveller passes under the arch.
   const [finished, setFinished] = useState(false);
   const didFinish = useRef(false);
@@ -274,7 +310,7 @@ export function AdventureScreen({
       aria-label="The S.T.O.R.Y. road. Drag down or use the down arrow to travel forward."
       className="relative h-[calc(100dvh-4rem)] w-full touch-none select-none overflow-hidden bg-[#070c18] outline-none"
     >
-      <AdventureWorld stops={stops} phases={phases} travel={travel} onMove={onMove} avatar={avatar} talkingCoach={talking} />
+      <AdventureWorld stops={stops} phases={phases} travel={travel} onMove={onMove} avatar={avatar} talkingCoach={talking} pickRef={pickRef} />
 
       {bannerPhase && (
         <div key={banner!.key} className="phase-banner pointer-events-none absolute inset-x-0 top-[30%] flex justify-center px-4">
@@ -314,6 +350,14 @@ export function AdventureScreen({
           >
             <span className="text-figurative">Coach: </span>
             {caption}
+          </p>
+        </div>
+      )}
+
+      {notice && (
+        <div role="status" className="pointer-events-none absolute inset-x-0 top-[44%] z-20 flex justify-center px-6">
+          <p className="coach-note-in rounded-2xl border border-navy-500 bg-navy-950/90 px-5 py-3 text-center text-sm font-semibold text-ink shadow-2xl backdrop-blur">
+            🔒 {notice}
           </p>
         </div>
       )}
@@ -385,9 +429,13 @@ export function AdventureScreen({
           </button>
         )}
         {locked && (
-          <span className="mb-2 rounded-full border border-navy-600 bg-navy-900/85 px-4 py-2 text-sm text-ink-muted">
+          <button
+            type="button"
+            onClick={backToCurrent}
+            className="pointer-events-auto mb-2 rounded-full border border-navy-600 bg-navy-900/85 px-4 py-2 text-sm text-ink-muted"
+          >
             🔒 Unlock previous challenge first
-          </span>
+          </button>
         )}
         {/* A portal already been through: go again, without the dive -
             that is for the next one. */}

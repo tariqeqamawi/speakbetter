@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { WorldPhase, WorldStop } from "./adventure-world";
 
 // The same road, flat: for anybody who would rather scroll a page than
@@ -22,6 +22,19 @@ export function Adventure2D({ stops, phases }: { stops: WorldStop[]; phases: Wor
   useEffect(() => {
     here.current?.scrollIntoView({ block: "center" });
   }, []);
+  // Tap a challenge not yet open: told so, and taken back to the one
+  // you are on.
+  const [notice, setNotice] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(timer.current), []);
+  const backToCurrent = () => {
+    setNotice(true);
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => {
+      here.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+      timer.current = setTimeout(() => setNotice(false), 1800);
+    }, 1200);
+  };
 
   const colour = new Map(phases.map((p) => [p.id, p.color]));
 
@@ -106,7 +119,8 @@ export function Adventure2D({ stops, phases }: { stops: WorldStop[]; phases: Wor
               }}
             >
               <span
-                className={`grid size-14 shrink-0 place-items-center rounded-full border-[3px] text-xl font-extrabold ${on ? "animate-pulse" : ""}`}
+                onClick={locked ? backToCurrent : undefined}
+                className={`grid size-14 shrink-0 place-items-center rounded-full border-[3px] text-xl font-extrabold ${on ? "animate-pulse" : ""} ${locked ? "cursor-pointer" : ""}`}
                 style={{
                   borderColor: locked ? "#3a4260" : on ? "#ffffff" : c,
                   color: locked ? "#5a6282" : "#ffffff",
@@ -117,7 +131,10 @@ export function Adventure2D({ stops, phases }: { stops: WorldStop[]; phases: Wor
                 {i + 1}
               </span>
               <span className={`flex max-w-[11rem] flex-col gap-1 ${left ? "items-start text-left" : "items-end text-right"}`}>
-                <span className={`text-sm font-semibold leading-tight text-balance ${locked ? "text-ink-faint" : "text-ink"}`}>
+                <span
+                  onClick={locked ? backToCurrent : undefined}
+                  className={`text-sm font-semibold leading-tight text-balance ${locked ? "cursor-pointer text-ink-faint" : "text-ink"}`}
+                >
                   {stop.title}
                 </span>
                 {done && stop.score !== undefined && (
@@ -142,12 +159,23 @@ export function Adventure2D({ stops, phases }: { stops: WorldStop[]; phases: Wor
                     Replay challenge
                   </Link>
                 )}
-                {locked && <span className="text-xs text-ink-faint">🔒 Unlock previous challenge first</span>}
+                {locked && (
+                  <button type="button" onClick={backToCurrent} className="text-xs text-ink-faint hover:text-ink-muted">
+                    🔒 Unlock previous challenge first
+                  </button>
+                )}
               </span>
             </li>
           );
         })}
       </ol>
+      {notice && (
+        <div role="status" className="pointer-events-none fixed inset-x-0 top-1/2 z-50 flex justify-center px-6">
+          <p className="coach-note-in rounded-2xl border border-navy-500 bg-navy-950/95 px-5 py-3 text-center text-sm font-semibold text-ink shadow-2xl backdrop-blur">
+            🔒 Complete previous challenges to unlock this one.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
