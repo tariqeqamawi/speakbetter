@@ -5,7 +5,8 @@ import Image from "next/image";
 // "Imagine the cameras are rolling" asks the reader to picture themselves
 // succeeding - which is exactly what the nervous speaker this page is
 // written for cannot yet do. So the words sit over the pictures that do
-// it for them: everywhere speaking now happens. Into a laptop, to a phone
+// it for them: everywhere speaking now happens - as real creator content
+// looks, webcam and phone quality, not cinematic. Into a laptop, to a phone
 // on a tripod, vlogging down a street, on a stage, on a podcast - five
 // rooms, one of which is theirs tonight.
 //
