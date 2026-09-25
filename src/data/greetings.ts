@@ -115,3 +115,47 @@ export function pickRoar(): { text: string; src: string } {
   const i = Math.floor(Math.random() * ROARS.length);
   return { text: ROARS[i], src: roarClip(i) };
 }
+
+// What Coach says when a trophy lands on the stage. Tariq's lines,
+// spoken once each into /coach/trophy-NN.mp3 by build-greetings.mjs, so
+// a win never waits on a model or costs a call. The reveal picks one at
+// random, and never the same one twice in a row.
+export const TROPHY_LINES: string[] = [
+  "Well done.",
+  "This is what winning looks like.",
+  "You unlocked a trophy.",
+  "Congratulations.",
+  "Victory is yours.",
+  "That will look good in your collection.",
+  "Add this to your trophy case.",
+  "That's going to look great on the shelf.",
+  "Here come the bragging rights.",
+  "Put this on your mantle.",
+  "Polished and shining.",
+  "That one's a beauty.",
+  "Look how good that looks.",
+  "I want one of those.",
+  "This is now yours.",
+  "I'm proud of you.",
+  "You did it. Nicely done.",
+  "Successful AF.",
+  "Now that's what winning looks like.",
+  "Add this to your collection.",
+  "Your trophy case is growing.",
+];
+
+/** The clip for a trophy line, by its place in the list. */
+export function trophyLineClip(index: number): string {
+  return `/coach/trophy-${String(index + 1).padStart(2, "0")}.mp3`;
+}
+
+let lastTrophyLine = -1;
+
+/** One at random, never the one he said last - three trophies won at
+ *  once should not all be "Well done." */
+export function pickTrophyLine(): { text: string; src: string } {
+  let i = Math.floor(Math.random() * TROPHY_LINES.length);
+  if (i === lastTrophyLine) i = (i + 1) % TROPHY_LINES.length;
+  lastTrophyLine = i;
+  return { text: TROPHY_LINES[i], src: trophyLineClip(i) };
+}

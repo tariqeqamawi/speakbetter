@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { XIcon } from "@/components/icons";
 import { StageBackdrop } from "@/components/stage-backdrop";
 import { TrophyArt } from "@/components/trophy-art";
 import { DISC_Y, GRAND, OnceOnlyNote, type StageTrophy } from "@/components/trophy-stage";
 import { ShareTrophyButton } from "@/components/share-trophy-button";
-import { hapticCelebrate, playApplause, playCelebration } from "@/lib/feedback-fx";
+import { hapticCelebrate, playApplause, playCelebration, playCoachLine } from "@/lib/feedback-fx";
+import { pickTrophyLine } from "@/data/greetings";
 
 // The moment a trophy is won.
 //
@@ -48,6 +49,14 @@ export function TrophyReveal({
   const primary = useRef<HTMLButtonElement>(null);
   const dialog = useRef<HTMLDivElement>(null);
   const color = `var(--color-${trophy.color})`;
+  // What Coach says about this one - picked once per trophy, from the
+  // lines he recorded for it (data/greetings.ts). Never a model call:
+  // a win should not wait on anything, or cost anything.
+  // Picked once per trophy, so what is heard and what is shown are the
+  // same line.
+  // trophy.id is not read inside, but a new trophy must get a new line.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const line = useMemo(() => pickTrophyLine(), [trophy.id]);
 
   // In, and back out to where they were. The page underneath stops
   // scrolling while the stage is up.
@@ -67,7 +76,18 @@ export function TrophyReveal({
     primary.current?.focus();
     playCelebration();
     hapticCelebrate();
-    return playApplause();
+    const stopApplause = playApplause();
+    // Coach speaks as the trophy settles on the disc (the lowering
+    // ends 2.5s in - see .reveal-lower). Without motion there is no
+    // lowering to wait for, so he speaks straight away.
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const stopLine = playCoachLine(line.src, still ? 300 : 2500);
+    return () => {
+      stopApplause();
+      stopLine();
+    };
+    // line is chosen per trophy; re-running on it would say it twice
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trophy.id]);
 
   const onKeyDown = (e: React.KeyboardEvent) => {
@@ -163,6 +183,10 @@ export function TrophyReveal({
               {trophy.message}
             </p>
           )}
+          {/* What Coach said, for anybody who could not hear it. */}
+          <p className="text-sm font-semibold italic text-ink">
+            &ldquo;{line.text}&rdquo; <span className="not-italic font-normal text-ink-faint">- Coach</span>
+          </p>
           {trophy.onceOnly && <OnceOnlyNote />}
 
           <div className="mt-3 flex flex-wrap items-start justify-center gap-3">

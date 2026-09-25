@@ -320,3 +320,49 @@ export function playApplause(): () => void {
   });
   return () => stop();
 }
+
+// One of Coach's pre-recorded lines, played through the same context as
+// the applause - so it obeys the silent switch on a phone like the rest
+// of the app's sounds, and can be timed against the reveal to the
+// millisecond. Decoded clips are kept, so a second trophy that picks a
+// line already heard starts instantly.
+const clips = new Map<string, Promise<AudioBuffer | null>>();
+
+export function playCoachLine(src: string, delayMs = 0): () => void {
+  const none = () => {};
+  if (typeof window === "undefined") return none;
+  if (!touched()) return none;
+  const ac = audio();
+  if (!ac) return none;
+  void ac.resume().catch(() => {});
+
+  let clip = clips.get(src);
+  if (!clip) {
+    clip = fetch(src)
+      .then((r) => (r.ok ? r.arrayBuffer() : null))
+      .then((b) => (b ? ac.decodeAudioData(b) : null))
+      .catch(() => null);
+    clips.set(src, clip);
+  }
+
+  let stopped = false;
+  let stop = () => {
+    stopped = true;
+  };
+  const due = ac.currentTime + delayMs / 1000;
+  void clip.then((buffer) => {
+    if (!buffer || stopped) return;
+    const node = ac.createBufferSource();
+    node.buffer = buffer;
+    node.connect(ac.destination);
+    node.start(Math.max(ac.currentTime, due));
+    stop = () => {
+      try {
+        node.stop();
+      } catch {
+        // already finished
+      }
+    };
+  });
+  return () => stop();
+}
