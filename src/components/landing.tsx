@@ -336,8 +336,8 @@ function LandingBody() {
 
       {/* The journey */}
       <section className="flex flex-col items-center gap-4">
-        <h2 className="text-2xl font-semibold tracking-tight">
-          Your interactive challenges in the S.T.O.R.Y. framework
+        <h2 className="max-w-2xl text-center text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+          Introducing true interactive challenges and the Speak Better S.T.O.R.Y. framework
         </h2>
         <p className="max-w-lg text-center text-ink-muted">
           24 challenges across 5 levels, experienced as an adventure. Unlock trophies, see which challenges

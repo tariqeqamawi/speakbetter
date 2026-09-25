@@ -16,11 +16,30 @@ const ROW = 118;
 const HEAD = 64;
 const SWING = 0.26;
 
-export function Adventure2D({ stops, phases }: { stops: WorldStop[]; phases: WorldPhase[] }) {
+export function Adventure2D({
+  stops,
+  phases,
+  scrollRoot,
+}: {
+  stops: WorldStop[];
+  phases: WorldPhase[];
+  /** When the map sits inside a scrolling frame (the landing page's
+   *  phone), scroll that rather than the page. */
+  scrollRoot?: React.RefObject<HTMLElement | null>;
+}) {
   const here = useRef<HTMLLIElement>(null);
+  const centre = (el: HTMLElement | null, smooth = false) => {
+    if (!el) return;
+    const root = scrollRoot?.current;
+    if (!root) return el.scrollIntoView({ block: "center", behavior: smooth ? "smooth" : "auto" });
+    const top = el.getBoundingClientRect().top - root.getBoundingClientRect().top + root.scrollTop;
+    root.scrollTo({ top: top - root.clientHeight / 2 + el.clientHeight / 2, behavior: smooth ? "smooth" : "auto" });
+  };
   // Open on the one the student is on.
   useEffect(() => {
-    here.current?.scrollIntoView({ block: "center" });
+    centre(here.current);
+    // Once, on opening.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   // Tap a challenge not yet open: told so, and taken back to the one
   // you are on.
@@ -31,7 +50,7 @@ export function Adventure2D({ stops, phases }: { stops: WorldStop[]; phases: Wor
     setNotice(true);
     clearTimeout(timer.current);
     timer.current = setTimeout(() => {
-      here.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+      centre(here.current, true);
       timer.current = setTimeout(() => setNotice(false), 1800);
     }, 1200);
   };
@@ -86,7 +105,7 @@ export function Adventure2D({ stops, phases }: { stops: WorldStop[]; phases: Wor
           const c = colour.get(h.phase) ?? "#fff";
           const ph = phases.find((p) => p.id === h.phase);
           return (
-            <li key={`h-${h.phase}`} className="absolute inset-x-0 flex items-center gap-3" style={{ top: h.top + 8 }}>
+            <li key={`h-${h.phase}`} data-phase={h.phase} className="absolute inset-x-0 flex items-center gap-3" style={{ top: h.top + 8 }}>
               <span
                 className="grid size-11 place-items-center rounded-xl border-2 bg-navy-950 text-xl font-extrabold"
                 style={{ borderColor: c, color: c, boxShadow: `0 0 18px -4px ${c}` }}

@@ -3,10 +3,10 @@
 import { useMemo } from "react";
 import { challenges } from "@/data/challenges";
 import { challengeChatter } from "@/data/challenge-chatter";
-import { presence } from "@/data/community-presence";
+import { presence, type ChallengePresence } from "@/data/community-presence";
 import { challengeProgress } from "@/lib/challenge-progress";
 import { openPhaseCount } from "@/lib/progress";
-import { useStore } from "@/lib/store";
+import { useStore, type AppState } from "@/lib/store";
 import { AdventureView } from "./adventure-view";
 import { worldPhases } from "./world-phases";
 import type { WorldStop } from "./adventure-world";
@@ -20,38 +20,43 @@ import type { WorldStop } from "./adventure-world";
 // open section can be taken, in whatever order they like. The road opens
 // at the first one not yet passed.
 
+/** The road for a student's record: each challenge done, open (in a
+ *  section their rank has opened - any order) or locked, with its best
+ *  score, its trophy, the sample crowd and the chatter. */
+export function roadStops(state: AppState, ready: boolean, crowd: ChallengePresence[]): WorldStop[] {
+  const open = ready ? Math.max(1, openPhaseCount(state)) : 1;
+  const phaseIndex = new Map(worldPhases.map((p, i) => [p.id, i]));
+  const passedOf = (c: (typeof challenges)[number]) => ready && challengeProgress(c, state).passed;
+  const inOpen = (c: (typeof challenges)[number]) => (phaseIndex.get(c.phase) ?? 0) < open;
+  return challenges.map((c) => {
+    const st: WorldStop["state"] = passedOf(c) ? "done" : inOpen(c) ? "here" : "locked";
+    const best = state.attempts
+      .filter((a) => a.challengeSlug === c.slug && a.passed)
+      .reduce<number | undefined>((m, a) => Math.max(m ?? 0, a.score ?? 0), undefined);
+    const here = crowd.find((p) => p.slug === c.slug);
+    const chatter = challengeChatter[c.slug]?.[0];
+    return {
+      slug: c.slug,
+      title: c.title,
+      phase: c.phase,
+      state: st,
+      image: c.vimeoId ? `/thumbs/${c.vimeoId}.jpg` : "/lion-head.png",
+      trophy: `/trophy/challenge-${c.slug}.webp`,
+      trophyWon: state.badges.some((b) => b.id === `challenge-${c.slug}`),
+      score: best,
+      // Other students on it now - the same sample crowd the dashboard
+      // shows, until the cohort is read from the database.
+      classmates: here?.recent.slice(0, 3).map((s) => ({ name: s.name })),
+      comment: chatter && { name: chatter.name, body: chatter.body },
+    };
+  });
+}
+
 export function LiveAdventure() {
   const { state, ready } = useStore();
   const crowd = useMemo(() => presence(), []);
 
-  const stops = useMemo<WorldStop[]>(() => {
-    const open = ready ? Math.max(1, openPhaseCount(state)) : 1;
-    const phaseIndex = new Map(worldPhases.map((p, i) => [p.id, i]));
-    const passedOf = (c: (typeof challenges)[number]) => ready && challengeProgress(c, state).passed;
-    const inOpen = (c: (typeof challenges)[number]) => (phaseIndex.get(c.phase) ?? 0) < open;
-    return challenges.map((c) => {
-      const st: WorldStop["state"] = passedOf(c) ? "done" : inOpen(c) ? "here" : "locked";
-      const best = state.attempts
-        .filter((a) => a.challengeSlug === c.slug && a.passed)
-        .reduce<number | undefined>((m, a) => Math.max(m ?? 0, a.score ?? 0), undefined);
-      const here = crowd.find((p) => p.slug === c.slug);
-      const chatter = challengeChatter[c.slug]?.[0];
-      return {
-        slug: c.slug,
-        title: c.title,
-        phase: c.phase,
-        state: st,
-        image: c.vimeoId ? `/thumbs/${c.vimeoId}.jpg` : "/lion-head.png",
-        trophy: `/trophy/challenge-${c.slug}.webp`,
-        trophyWon: state.badges.some((b) => b.id === `challenge-${c.slug}`),
-        score: best,
-        // Other students on it now - the same sample crowd the dashboard
-        // shows, until the cohort is read from the database.
-        classmates: here?.recent.slice(0, 3).map((s) => ({ name: s.name })),
-        comment: chatter && { name: chatter.name, body: chatter.body },
-      };
-    });
-  }, [state, ready, crowd]);
+  const stops = useMemo(() => roadStops(state, ready, crowd), [state, ready, crowd]);
 
   return (
     <div data-tour="journey">
