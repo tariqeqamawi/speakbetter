@@ -20,14 +20,6 @@ function canvasTexture(w: number, h: number, draw: (g: CanvasRenderingContext2D)
   return t;
 }
 
-function useImage(src: string) {
-  return useMemo(() => {
-    const t = new THREE.TextureLoader().load(src);
-    t.colorSpace = THREE.SRGBColorSpace;
-    return t;
-  }, [src]);
-}
-
 let glowTex: THREE.Texture | null = null;
 function glow() {
   glowTex ??= canvasTexture(128, 128, (g) => {
@@ -41,25 +33,61 @@ function glow() {
   return glowTex;
 }
 
-/** Coach at the roadside: the lion on a lit plinth, turned to the road.
- *  As the traveller comes level he rises and glows - the page plays his
- *  line (adventure-screen.tsx) at the same moment. */
-export function CoachPost({ road, s, side, travel }: { road: RoadLayout; s: number; side: number; travel: Travel }) {
+/** Coach at the roadside: the talking lion on a lit plinth, turned to
+ *  the road. As the traveller comes level he rises and glows, and while
+ *  his line is being said his mouth moves - the same 28 frames the lion
+ *  talks with everywhere else in the app (public/lion-mouth.webp). */
+const MOUTH_FRAMES = 28;
+export function CoachPost({
+  road,
+  s,
+  side,
+  travel,
+  talking,
+}: {
+  road: RoadLayout;
+  s: number;
+  side: number;
+  travel: Travel;
+  talking: boolean;
+}) {
   const lion = useRef<THREE.Sprite>(null);
   const halo = useRef<THREE.SpriteMaterial>(null);
-  const map = useImage("/logo-mark.png");
+  const map = useMemo(() => {
+    const t = new THREE.TextureLoader().load("/lion-mouth.webp");
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.repeat.set(1, 1 / MOUTH_FRAMES);
+    t.offset.set(0, (MOUTH_FRAMES - 1) / MOUTH_FRAMES);
+    return t;
+  }, []);
+  const mouth = useRef({ frame: 0, target: 0, next: 0, open: false });
+  // The frame loop steps the mouth and slides the texture to its frame -
+  // per-frame state and a texture's offset, both meant to change here.
+  /* eslint-disable react-hooks/immutability */
   const at = useMemo(() => pointAt(road, s).add(sideAt(road, s).multiplyScalar(side * 6.5)), [road, s, side]);
-  useFrame(({ clock }) => {
+  useFrame(({ clock }, dt) => {
     const d = Math.abs(travel.s + AHEAD - s);
-    const on = 1 - THREE.MathUtils.smoothstep(d, 4, 22);
+    const on = talking ? 1 : 1 - THREE.MathUtils.smoothstep(d, 4, 22);
     const t = clock.elapsedTime;
     if (lion.current) {
-      const k = 1 + on * 0.25 + Math.sin(t * 6) * 0.03 * on;
-      lion.current.scale.set(4.2 * k, 3.5 * k, 1);
+      const k = 1 + on * 0.25;
+      lion.current.scale.set(4.4 * k, 3.43 * k, 1);
       lion.current.position.y = 3.2 + on * 1.2 + Math.sin(t * 1.5) * 0.15;
     }
     if (halo.current) halo.current.opacity = 0.25 + on * 0.6;
+    // Talking: open on a syllable, shut between them - about two opens a
+    // second with a little randomness, never the same shape twice.
+    const m = mouth.current;
+    if (talking && t > m.next) {
+      m.open = !m.open;
+      m.target = m.open ? 8 + Math.random() * 13 : Math.random() * 3;
+      m.next = t + (m.open ? 0.16 + Math.random() * 0.14 : 0.07 + Math.random() * 0.06);
+    } else if (!talking) m.target = 0;
+    m.frame += (m.target - m.frame) * Math.min(1, dt * 22);
+    const f = Math.round(THREE.MathUtils.clamp(m.frame, 0, MOUTH_FRAMES - 1));
+    map.offset.y = (MOUTH_FRAMES - 1 - f) / MOUTH_FRAMES;
   });
+  /* eslint-enable react-hooks/immutability */
   return (
     <group position={at}>
       <sprite position={[0, 3.2, -0.1]} scale={[8, 8, 1]}>

@@ -51,7 +51,8 @@ export interface WorldPhase {
 }
 
 const NAVY = new THREE.Color("#070c18");
-const GROUND = new THREE.Color("#141f3d");
+/** The land: dark glass, the navy of the app all but black. */
+const GLASS = new THREE.Color("#060a17");
 
 /** Where each phase's stretch of road starts and ends, by distance. */
 function phaseSpans(road: RoadLayout, stops: WorldStop[], phases: WorldPhase[]) {
@@ -94,6 +95,8 @@ function Terrain({ road, spans }: { road: RoadLayout; spans: Span[] }) {
     const rows = Math.ceil(road.length / ROW);
     const pos = new Float32Array((rows + 1) * (COLS + 1) * 3);
     const col = new Float32Array((rows + 1) * (COLS + 1) * 3);
+    // The neon of each vertex: the colour its edges are drawn in.
+    const neon = new Float32Array((rows + 1) * (COLS + 1) * 3);
     const p = new THREE.Vector3();
     const side = new THREE.Vector3();
     const phase = new THREE.Color();
@@ -120,10 +123,17 @@ function Terrain({ road, spans }: { road: RoadLayout; spans: Span[] }) {
         // a little of it.
         const near = 1 - THREE.MathUtils.smoothstep(Math.abs(d), 4, 90);
         const ridge = THREE.MathUtils.smoothstep(h, 0.55, 0.85) * away;
-        c.copy(GROUND).lerp(phase, 0.18 + near * 0.42 + ridge * 0.45);
+        // The faces are dark glass - navy all but black, with only a
+        // breath of the phase in them - and the light is in the edges:
+        // the phase's neon, brightest near the road and on the ridges.
+        c.copy(GLASS).lerp(phase, 0.04 + near * 0.05 + ridge * 0.06);
         col[i] = c.r;
         col[i + 1] = c.g;
         col[i + 2] = c.b;
+        const glowK = 0.55 + near * 0.7 + ridge * 0.5;
+        neon[i] = phase.r * glowK;
+        neon[i + 1] = phase.g * glowK;
+        neon[i + 2] = phase.b * glowK;
       }
     }
     const idx: number[] = [];
@@ -139,21 +149,24 @@ function Terrain({ road, spans }: { road: RoadLayout; spans: Span[] }) {
     geo.setIndex(idx);
     geo.computeVertexNormals();
 
-    // The grid: every fourth line each way, in the phase's colour, over
-    // the land - the app's neon, drawn onto the landscape.
+    // The wireframe: the edges of the land's polygons - along, across
+    // and one diagonal of every cell, on a grid two cells wide so the
+    // triangles read as facets rather than a haze - in the phase's neon.
     const lp: number[] = [];
     const lc: number[] = [];
     const push = (a: number, b: number) => {
       for (const v of [a, b]) {
-        lp.push(pos[v * 3], pos[v * 3 + 1] + 0.05, pos[v * 3 + 2]);
-        const bright = 0.9;
-        lc.push(col[v * 3] * 3 * bright, col[v * 3 + 1] * 3 * bright, col[v * 3 + 2] * 3 * bright);
+        lp.push(pos[v * 3], pos[v * 3 + 1] + 0.04, pos[v * 3 + 2]);
+        lc.push(neon[v * 3], neon[v * 3 + 1], neon[v * 3 + 2]);
       }
     };
-    for (let r = 0; r <= rows; r += 4)
-      for (let k = 0; k < COLS; k++) push(r * (COLS + 1) + k, r * (COLS + 1) + k + 1);
-    for (let k = 0; k <= COLS; k += 4)
-      for (let r = 0; r < rows; r++) push(r * (COLS + 1) + k, (r + 1) * (COLS + 1) + k);
+    const at = (r: number, k: number) => r * (COLS + 1) + k;
+    for (let r = 0; r + 2 <= rows; r += 2)
+      for (let k = 0; k + 2 <= COLS; k += 2) {
+        push(at(r, k), at(r, k + 2));
+        push(at(r, k), at(r + 2, k));
+        push(at(r, k + 2), at(r + 2, k));
+      }
     const lgeo = new THREE.BufferGeometry();
     lgeo.setAttribute("position", new THREE.Float32BufferAttribute(lp, 3));
     lgeo.setAttribute("color", new THREE.Float32BufferAttribute(lc, 3));
@@ -165,10 +178,10 @@ function Terrain({ road, spans }: { road: RoadLayout; spans: Span[] }) {
       <mesh geometry={mesh}>
         {/* Both sides: the strip is built along the road, and which way
             its faces point depends on which way the road is turning. */}
-        <meshStandardMaterial vertexColors flatShading roughness={0.95} metalness={0} side={THREE.DoubleSide} />
+        <meshStandardMaterial vertexColors flatShading roughness={0.28} metalness={0.75} side={THREE.DoubleSide} />
       </mesh>
       <lineSegments geometry={lines}>
-        <lineBasicMaterial vertexColors transparent opacity={0.5} toneMapped={false} />
+        <lineBasicMaterial vertexColors transparent opacity={0.85} toneMapped={false} />
       </lineSegments>
     </group>
   );
@@ -272,29 +285,86 @@ function glowTexture(): THREE.Texture {
   return t;
 }
 
-const loader = new THREE.TextureLoader();
-const textures = new Map<string, THREE.Texture>();
-function still(src: string): THREE.Texture {
-  let t = textures.get(src);
-  if (!t) {
-    t = loader.load(src);
-    t.colorSpace = THREE.SRGBColorSpace;
-    textures.set(src, t);
-  }
+function canvasTex(size: number, draw: (g: CanvasRenderingContext2D) => void): THREE.CanvasTexture {
+  const c = document.createElement("canvas");
+  c.width = c.height = size;
+  draw(c.getContext("2d")!);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
   return t;
 }
 
-/** A checkpoint: a ring standing over the road, the challenge's still
- *  inside it, facing the traveller - a portal you pass through. */
+/** The disc's face: dark glass with the challenge's number in its
+ *  phase's neon - white on the one you are on, dim on the locked. */
+function numberFace(n: number, hex: string, state: WorldStop["state"]) {
+  return canvasTex(512, (g) => {
+    const grad = g.createRadialGradient(256, 200, 20, 256, 256, 256);
+    grad.addColorStop(0, "#1a2544");
+    grad.addColorStop(1, "#050914");
+    g.fillStyle = grad;
+    g.beginPath();
+    g.arc(256, 256, 256, 0, Math.PI * 2);
+    g.fill();
+    const ink = state === "locked" ? "#3a4260" : state === "here" ? "#ffffff" : state === "ahead" ? "#8a93ad" : hex;
+    g.textAlign = "center";
+    g.textBaseline = "middle";
+    g.fillStyle = ink;
+    g.shadowColor = state === "locked" ? "transparent" : hex;
+    g.shadowBlur = 40;
+    g.font = "800 250px system-ui, sans-serif";
+    g.fillText(String(n), 256, 280);
+    g.shadowBlur = 0;
+    g.font = "700 38px system-ui, sans-serif";
+    g.fillStyle = state === "locked" ? "#3a4260" : "#aab3cc";
+    g.fillText(state === "locked" ? "LOCKED" : state === "done" ? "PASSED" : "CHALLENGE", 256, 108);
+  });
+}
+
+/** The challenge's name, written round a circle, repeated to close it,
+ *  for the ring that turns around the disc. */
+function titleRing(title: string, hex: string, dim: boolean) {
+  return canvasTex(1024, (g) => {
+    g.translate(512, 512);
+    g.font = "700 50px system-ui, sans-serif";
+    g.fillStyle = dim ? "#4a5270" : hex;
+    g.textAlign = "center";
+    g.textBaseline = "middle";
+    const R = 450;
+    const unit = `${title.toUpperCase()}   •   `;
+    const circ = 2 * Math.PI * R;
+    const reps = Math.max(1, Math.floor(circ / g.measureText(unit).width));
+    const text = unit.repeat(reps);
+    // Spread the characters evenly round the whole circle.
+    const widths = [...text].map((ch) => g.measureText(ch).width);
+    const total = widths.reduce((a, b) => a + b, 0);
+    let a = -Math.PI / 2;
+    [...text].forEach((ch, i) => {
+      const w = (widths[i] / total) * Math.PI * 2;
+      g.save();
+      g.rotate(a + w / 2);
+      g.translate(0, -R);
+      g.fillText(ch, 0, 0);
+      g.restore();
+      a += w;
+    });
+  });
+}
+
+/** A checkpoint: a ring standing over the road with the challenge's
+ *  number in it and its name turning round it, facing the traveller -
+ *  a portal you pass through. */
 function Checkpoint({
   road,
   s,
+  n,
   stop,
   colour,
   glow,
 }: {
   road: RoadLayout;
   s: number;
+  n: number;
   stop: WorldStop;
   colour: THREE.Color;
   glow: THREE.Texture;
@@ -303,6 +373,8 @@ function Checkpoint({
   const ring = useRef<THREE.MeshBasicMaterial>(null);
   const face = useRef<THREE.MeshBasicMaterial>(null);
   const halo = useRef<THREE.MeshBasicMaterial>(null);
+  const words = useRef<THREE.Mesh>(null);
+  const wordsMat = useRef<THREE.MeshBasicMaterial>(null);
   const { position, facing } = useMemo(() => {
     const p = pointAt(road, s).add(new THREE.Vector3(0, 3.3, 0));
     const ahead = pointAt(road, s - 1).add(new THREE.Vector3(0, 3.3, 0));
@@ -314,20 +386,27 @@ function Checkpoint({
   }, [facing]);
 
   const lit = stop.state === "done" || stop.state === "here";
+  const hex = `#${colour.getHexString()}`;
   const ringColour = stop.state === "locked" ? new THREE.Color("#3a4260") : stop.state === "here" ? new THREE.Color("#ffffff") : colour;
-  const map = useMemo(() => still(stop.image), [stop.image]);
+  const faceMap = useMemo(() => numberFace(n, hex, stop.state), [n, hex, stop.state]);
+  const ringMap = useMemo(() => titleRing(stop.title, hex, stop.state === "locked"), [stop.title, hex, stop.state]);
 
   const haloOpacity = stop.state === "locked" ? 0.08 : lit ? 0.55 : 0.28;
-  useFrame(({ clock, camera }) => {
+  useFrame(({ clock, camera }, dt) => {
     // The one you are on breathes.
     if (stop.state === "here" && ring.current) {
       const k = 0.75 + Math.sin(clock.elapsedTime * 2.4) * 0.25;
       ring.current.color.copy(colour).lerp(new THREE.Color("#ffffff"), k);
     }
-    // Close up, the picture thins to nothing and only the ring is left,
+    // The name turns slowly round the disc.
+    if (words.current) words.current.rotation.z -= dt * 0.25;
+    // Close up, the face thins to nothing and only the ring is left,
     // so you travel through the checkpoint instead of into a wall.
     const near = THREE.MathUtils.smoothstep(camera.position.distanceTo(position), 3, 11);
     if (face.current) face.current.opacity = near;
+    // The name goes sooner: at its size, passing overhead, it would
+    // sweep across the road in giant letters.
+    if (wordsMat.current) wordsMat.current.opacity = THREE.MathUtils.smoothstep(camera.position.distanceTo(position), 12, 22);
     if (halo.current) halo.current.opacity = haloOpacity * near;
   });
 
@@ -347,22 +426,19 @@ function Checkpoint({
           toneMapped={false}
         />
       </mesh>
-      {/* The still. Locked ones are shown dark - you can see there is
-          something there, not what. */}
+      {/* The number. */}
       <mesh>
         <circleGeometry args={[2.35, 48]} />
-        <meshBasicMaterial
-          ref={face}
-          transparent
-          map={map}
-          color={stop.state === "locked" ? "#1a2036" : stop.state === "ahead" ? "#9aa3bd" : "#ffffff"}
-          side={THREE.DoubleSide}
-          toneMapped={false}
-        />
+        <meshBasicMaterial ref={face} transparent map={faceMap} side={THREE.DoubleSide} toneMapped={false} />
       </mesh>
       <mesh>
         <torusGeometry args={[2.5, 0.13, 12, 64]} />
         <meshBasicMaterial ref={ring} color={ringColour} toneMapped={false} />
+      </mesh>
+      {/* The name, turning round the outside of the ring. */}
+      <mesh ref={words} position={[0, 0, 0.05]}>
+        <planeGeometry args={[7.4, 7.4]} />
+        <meshBasicMaterial ref={wordsMat} map={ringMap} transparent depthWrite={false} side={THREE.DoubleSide} toneMapped={false} />
       </mesh>
     </group>
   );
@@ -467,6 +543,7 @@ export function AdventureWorld({
   travel,
   onMove,
   avatar = "/lion-head.png",
+  talkingCoach = null,
 }: {
   stops: WorldStop[];
   phases: WorldPhase[];
@@ -476,6 +553,8 @@ export function AdventureWorld({
   onMove: (s: number) => void;
   /** The student's own picture, on the traveller. */
   avatar?: string;
+  /** Which roadside Coach is speaking right now, if any. */
+  talkingCoach?: number | null;
 }) {
   const road = useMemo(() => layoutRoad(stops.length), [stops.length]);
   const spans = useMemo(() => phaseSpans(road, stops, phases), [road, stops, phases]);
@@ -532,7 +611,7 @@ export function AdventureWorld({
       <Fireflies road={road} spans={spans} />
       <Scenery road={road} spans={spans} />
       {coachSpots(road).map((cs, i) => (
-        <CoachPost key={i} road={road} s={cs} side={i % 2 ? -1 : 1} travel={travel} />
+        <CoachPost key={i} road={road} s={cs} side={i % 2 ? -1 : 1} travel={travel} talking={talkingCoach === i} />
       ))}
       {stops.map((stop, i) =>
         stop.state === "done" && stop.score !== undefined ? (
@@ -558,6 +637,7 @@ export function AdventureWorld({
             key={stop.slug}
             road={road}
             s={road.stops[i]}
+            n={i + 1}
             stop={stop}
             colour={phaseCol.get(stop.phase) ?? new THREE.Color("#ffffff")}
             glow={glow}

@@ -44,5 +44,5 @@ const stops: WorldStop[] = challenges.map((c, i) => ({
 }));
 
 export default function Adventure3DPage() {
-  return <AdventureScreen stops={stops} phases={phases} />;
+  return <AdventureScreen stops={stops} phases={phases} fallbackAvatar="/prototype/tariq-avatar.jpg" />;
 }

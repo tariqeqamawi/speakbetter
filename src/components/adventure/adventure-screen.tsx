@@ -7,6 +7,7 @@ import { AHEAD, GATE_BEFORE, Travel, coachSpots, layoutRoad } from "./road-geome
 import { ROAD_LINES, roadLineClip } from "@/data/greetings";
 import { playApplause, playCoachLine, playGateChime, playRoadWhoosh } from "@/lib/feedback-fx";
 import { Confetti } from "@/components/confetti";
+import { useStore } from "@/lib/store";
 import type { WorldPhase, WorldStop } from "./adventure-world";
 
 // The adventure screen: the 3D road filling the frame, and the few
@@ -22,7 +23,15 @@ const AdventureWorld = dynamic(() => import("./adventure-world").then((m) => m.A
   loading: () => <div className="absolute inset-0 grid place-items-center text-sm text-ink-faint">Loading the road…</div>,
 });
 
-export function AdventureScreen({ stops, phases }: { stops: WorldStop[]; phases: WorldPhase[] }) {
+export function AdventureScreen({
+  stops,
+  phases,
+  fallbackAvatar = "/lion-head.png",
+}: {
+  stops: WorldStop[];
+  phases: WorldPhase[];
+  fallbackAvatar?: string;
+}) {
   const road = useMemo(() => layoutRoad(stops.length), [stops.length]);
   // Start a little before the checkpoint the student is on.
   const hereIndex = Math.max(0, stops.findIndex((s) => s.state === "here"));
@@ -31,6 +40,10 @@ export function AdventureScreen({ stops, phases }: { stops: WorldStop[]; phases:
   const [travel] = useState(() => new Travel(start));
   const [s, setS] = useState(start);
   const frame = useRef<HTMLDivElement>(null);
+  // The student's own photo on the traveller; until they have set one, a
+  // stand-in (on the preview, Tariq).
+  const { state } = useStore();
+  const avatar = state.avatar && /^(data:image|\/|https?:)/.test(state.avatar) ? state.avatar : fallbackAvatar;
 
   const onMove = useCallback((next: number) => setS(next), []);
 
@@ -118,14 +131,16 @@ export function AdventureScreen({ stops, phases }: { stops: WorldStop[]; phases:
   };
 
 
-  // SOUND - off until the student turns it on, and remembered.
-  const [sound, setSound] = useState(false);
+  // SOUND - on unless the student has turned it off, and remembered.
+  // Nothing plays until they have touched the road, so it never starts
+  // at somebody out of a silent page.
+  const [sound, setSound] = useState(true);
   useEffect(() => {
     try {
-      // Read after mounting, so the server's render (always off) and the
-      // first client render agree.
+      // Read after mounting, so the server's render and the first client
+      // render agree.
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setSound(localStorage.getItem("road-sound") === "on");
+      setSound(localStorage.getItem("road-sound") !== "off");
     } catch {
       // no storage: stays off
     }
@@ -160,19 +175,29 @@ export function AdventureScreen({ stops, phases }: { stops: WorldStop[]; phases:
   const spots = useMemo(() => coachSpots(road), [road]);
   const spoken = useRef(new Set<number>());
   const [caption, setCaption] = useState<string | null>(null);
+  const [talking, setTalking] = useState<number | null>(null);
   useEffect(() => {
-    const i = spots.findIndex((cs, k) => !spoken.current.has(k) && at > cs - 4 && at < cs + 14);
+    // As the traveller approaches, while he is still ahead of them and
+    // in view - not once they are level, when on a phone he has already
+    // slid out of the side of the frame.
+    const i = spots.findIndex((cs, k) => !spoken.current.has(k) && at > cs - 20 && at < cs + 2);
     if (i < 0) return;
     spoken.current.add(i);
     setCaption(ROAD_LINES[i]);
+    setTalking(i);
     if (sound) playCoachLine(roadLineClip(i));
   }, [at, spots, sound]);
   // The caption stays as long as the line takes to say, whatever the
   // traveller does meanwhile.
   useEffect(() => {
     if (!caption) return;
+    // His mouth moves for about as long as the line takes to say.
+    const quiet = setTimeout(() => setTalking(null), caption.length * 62);
     const t = setTimeout(() => setCaption(null), 1500 + caption.length * 65);
-    return () => clearTimeout(t);
+    return () => {
+      clearTimeout(t);
+      clearTimeout(quiet);
+    };
   }, [caption]);
 
   // THE CHECKPOINT UNDER THE TRAVELLER: what can be done here.
@@ -202,7 +227,7 @@ export function AdventureScreen({ stops, phases }: { stops: WorldStop[]; phases:
       aria-label="The S.T.O.R.Y. road. Drag down or use the down arrow to travel forward."
       className="relative h-[calc(100dvh-4rem)] w-full touch-none select-none overflow-hidden bg-[#070c18] outline-none"
     >
-      <AdventureWorld stops={stops} phases={phases} travel={travel} onMove={onMove} />
+      <AdventureWorld stops={stops} phases={phases} travel={travel} onMove={onMove} avatar={avatar} talkingCoach={talking} />
 
       {bannerPhase && (
         <div key={banner!.key} className="phase-banner pointer-events-none absolute inset-x-0 top-[30%] flex justify-center px-4">
