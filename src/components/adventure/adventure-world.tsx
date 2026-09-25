@@ -141,6 +141,9 @@ function landform(id: string, x: number, z: number, away: number): number {
   }
 }
 
+/** Each land's pattern of light (see pattern() in the shader). */
+const PATTERN: Record<string, number> = { S: 3, T: 4, O: 1, R: 2, Y: 5 };
+
 // THE LAND'S LIGHT. The grid is not drawn as lines - a 1-pixel line is a
 // stroke of colour however bright it is, and cannot glow. It is worked
 // out in the land's own surface, per pixel: the distance to the nearest
@@ -154,9 +157,9 @@ const TERRAIN_VERT = /* glsl */ `
   attribute float aS;
   attribute vec3 aNeon;
   attribute float aLift;
-  attribute vec2 aPattern;
+  attribute vec3 aPattern;
   varying float vLift;
-  varying vec2 vPattern;
+  varying vec3 vPattern;
   varying vec2 vGrid;
   varying float vS;
   varying vec3 vNeon;
@@ -182,35 +185,81 @@ const TERRAIN_FRAG = /* glsl */ `
   uniform vec3 uFog;
   uniform float uFogDensity;
   uniform vec3 uHorizon;
+  uniform float uTarget;
   varying float vLift;
-  varying vec2 vPattern;
+  varying vec3 vPattern;
   varying vec2 vGrid;
   varying float vS;
   varying vec3 vNeon;
   varying vec3 vWorld;
   varying float vDepth;
+
+  // Distance in screen pixels from a value to its nearest whole step.
+  float lineDist(float v) {
+    return abs(fract(v - 0.5) - 0.5) / max(fwidth(v), 1e-4);
+  }
+
+  // THE PATTERN OF LIGHT for one land, by number:
+  //   0 square grid          3 ripples     (S)
+  //   1 dots          (O)    4 sound wave  (T)
+  //   2 hexagons      (R)    5 radiating   (Y)
+  // Each returns the distance to its nearest lit feature in screen
+  // pixels, so the same LED glow works for all of them.
+  float pattern(int id, vec2 g) {
+    if (id == 1) {
+      // Twice as many points as the grid has crossings.
+      vec2 d2 = g * 2.0;
+      vec2 d = (fract(d2 + 0.5) - 0.5) / max(fwidth(d2), vec2(1e-4));
+      return max(length(d) - 1.8, 0.0);
+    }
+    if (id == 2) {
+      vec2 p = g * 0.9;
+      vec2 k = vec2(1.0, 1.7320508);
+      vec2 a = mod(p, k) - k * 0.5;
+      vec2 b = mod(p - k * 0.5, k) - k * 0.5;
+      vec2 h = abs(dot(a, a) < dot(b, b) ? a : b);
+      float e = 0.5 - max(dot(h, normalize(k)), h.x);
+      return e / max(fwidth(p.x), 1e-4);
+    }
+    if (id == 3) {
+      // Rings spreading slowly from centres scattered through the land:
+      // the nearest centre of the 3x3 cells round this one.
+      vec2 cell = floor(g / 9.0);
+      float r = 1e9;
+      for (int i = -1; i <= 1; i++)
+        for (int j = -1; j <= 1; j++) {
+          vec2 c = cell + vec2(float(i), float(j));
+          vec2 o = fract(sin(vec2(dot(c, vec2(127.1, 311.7)), dot(c, vec2(269.5, 183.3)))) * 43758.5453);
+          r = min(r, length(g - (c + 0.2 + o * 0.6) * 9.0));
+        }
+      return lineDist(r * 0.9 - uTime * 0.25);
+    }
+    if (id == 4) {
+      // Lines across the land, each a waveform, the ripple travelling.
+      float y = g.x + 0.35 * sin(g.y * 1.6 - uTime * 1.2) * sin(g.y * 0.37 + g.x * 0.2);
+      return lineDist(y);
+    }
+    if (id == 5) {
+      // Rays converging on the city far ahead, and rungs across them.
+      vec2 v = vec2((vGrid.y - 32.0) * 5.3, vS - uTarget);
+      float ang = atan(v.x, -v.y) * 70.0;
+      return min(lineDist(ang), lineDist(vS / 6.0));
+    }
+    vec2 f = abs(fract(g - 0.5) - 0.5) / max(fwidth(g), vec2(1e-4));
+    return min(f.x, f.y);
+  }
+
   void main() {
-    // THE PATTERN OF LIGHT, per land (vPattern: x = dots, y = lattice;
-    // neither = the square grid), blended across the boundaries.
-    // In every case px is the distance to the nearest lit feature, in
-    // screen pixels, so the same glow works for all three.
+    // (vPattern: this land's pattern, the next land's, how far into it -
+    // blended across each boundary.)
     vec2 g = vGrid / 2.0;
     vec2 w = max(fwidth(g), vec2(1e-4));
-    // The square grid: distance to the nearest line.
-    vec2 f = abs(fract(g - 0.5) - 0.5) / w;
-    float pxGrid = min(f.x, f.y);
-    // Dots: a point of light where the lines would cross - a field of
-    // stars laid on the dunes, each a little bigger than a line is wide.
-    vec2 dd = (fract(g + 0.5) - 0.5) / w;
-    float pxDots = max(length(dd) - 2.2, 0.0);
-    // An uneven lattice: the grid bent by slow waves so no two cells are
-    // the same, with a diagonal through each - a web, not a table.
-    vec2 bent = g + 0.28 * vec2(sin(g.y * 1.3 + g.x * 0.4), sin(g.x * 1.1 - g.y * 0.6));
-    vec2 wb = max(fwidth(bent), vec2(1e-4));
-    vec2 fb = abs(fract(bent - 0.5) - 0.5) / wb;
-    float diag = abs(fract(bent.x - bent.y * 0.7 + 0.5) - 0.5) / max(fwidth(bent.x - bent.y * 0.7), 1e-4);
-    float pxLattice = min(min(fb.x, fb.y), diag);
-    float px = mix(mix(pxGrid, pxDots, vPattern.x), pxLattice, vPattern.y);
+    int pa = int(vPattern.x + 0.5);
+    int pb = int(vPattern.y + 0.5);
+    float px = pa == pb ? pattern(pa, g) : mix(pattern(pa, g), pattern(pb, g), vPattern.z);
+    // How much of this is dots - they need a tighter, brighter glow.
+    float dotsK = (pa == 1 ? 1.0 - vPattern.z : 0.0) + (pb == 1 ? vPattern.z : 0.0);
+    if (pa == 1 && pb == 1) dotsK = 1.0;
     float core = 1.0 - smoothstep(0.0, 1.4, px);
     // Dots sit much closer together on screen than lines do, so their
     // glow is kept tight - spread as wide as a line's, the field of
@@ -220,8 +269,8 @@ const TERRAIN_FRAG = /* glsl */ `
     // and their glows merge into a solid sheet. Fade it out there, the
     // way a renderer filters a texture in the distance.
     float crowd = 1.0 - smoothstep(0.18, 0.55, max(w.x, w.y));
-    float halo = exp(-px * mix(0.5, 1.4, vPattern.x));
-    float haloWide = exp(-px * mix(0.22, 0.9, vPattern.x));
+    float halo = exp(-px * mix(0.5, 1.4, dotsK));
+    float haloWide = exp(-px * mix(0.22, 0.9, dotsK));
 
     // The wave: rolling out from the traveller along the road, again and
     // again, a soft band a few squares deep.
@@ -256,7 +305,7 @@ const TERRAIN_FRAG = /* glsl */ `
 
     // The light itself.
     // A dot is a point, not a line: it needs more light to read.
-    float rest = (0.02 * halo + 0.16 * core) * mix(1.0, 3.2, vPattern.x);
+    float rest = (0.02 * halo + 0.16 * core) * mix(1.0, 3.2, dotsK);
     float lit = (wave + wake) * (1.2 * core + 0.5 * halo + 0.25 * haloWide);
     col += vNeon * (rest + lit * 1.6) * crowd;
 
@@ -277,7 +326,7 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
     const grid = new Float32Array(n * 2);
     const along = new Float32Array(n);
     const lift = new Float32Array(n);
-    const pattern = new Float32Array(n * 2);
+    const pattern = new Float32Array(n * 3);
     // The neon of each vertex: the colour its edges glow in.
     const neon = new Float32Array(n * 3);
     const p = new THREE.Vector3();
@@ -304,9 +353,7 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
         along[v] = s;
         lift[v] = y - p.y;
         // O's dunes carry dots; R's peaks an uneven lattice.
-        const wOf = (id: string) => [id === "O" ? 1 : 0, id === "R" ? 1 : 0];
-        const [pa, pb] = [wOf(la), wOf(lb)];
-        pattern.set([pa[0] + (pb[0] - pa[0]) * lt, pa[1] + (pb[1] - pa[1]) * lt], v * 2);
+        pattern.set([PATTERN[la] ?? 0, PATTERN[lb] ?? 0, lt], v * 3);
         // Brightest near the road and along the ridges.
         const near = 1 - THREE.MathUtils.smoothstep(Math.abs(d), 4, 90);
         const ridge = THREE.MathUtils.smoothstep(h, 0.55, 0.85) * away;
@@ -327,7 +374,7 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
     g.setAttribute("aS", new THREE.BufferAttribute(along, 1));
     g.setAttribute("aNeon", new THREE.BufferAttribute(neon, 3));
     g.setAttribute("aLift", new THREE.BufferAttribute(lift, 1));
-    g.setAttribute("aPattern", new THREE.BufferAttribute(pattern, 2));
+    g.setAttribute("aPattern", new THREE.BufferAttribute(pattern, 3));
     g.setIndex(idx);
     return g;
   }, [road, spans]);
@@ -344,9 +391,11 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
           uFog: { value: new THREE.Color("#060b1c") },
           uFogDensity: { value: 0.0055 },
           uHorizon: { value: new THREE.Color("#3a3f8f") },
+          // Where Your Impact's rays converge: the city, far past the road.
+          uTarget: { value: road.length + 330 },
         },
       }),
-    [],
+    [road.length],
   );
 
   // Each wave starts from wherever the traveller is when it sets off.
