@@ -208,6 +208,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **25 September**
+- Road: a distinct land per phase, colour walls between them, bigger 'Now entering', slow
+  equalisers, phase-tinted air, a futuristic city with flying cars at the end — `4491051`
 - Road: challenges further apart; GI-style lighting, haze and valley mist; 3D/2D switch with a
   scrolling 2D map — `3d05a54`
 - Road: LED-glow grid drawn in the land's surface, a wave of light rolling through; the
