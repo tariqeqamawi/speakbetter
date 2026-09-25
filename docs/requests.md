@@ -98,10 +98,6 @@ Tariq topped up the account, so the cap is gone.
       and falls back to text-only until the image exists (`the-reality.tsx`, `STILL`)
 
 ### Asked for and not yet started
-- [ ] **The collectible trophy case, live in the app** (24 Sep): reveal when won, silhouettes for
-      trophies not yet won, progress by material, rarity from real data only, share card,
-      cohort-only trophy - and the spotlight room replacing the old medallion case. Being built
-      in a separate worktree.
 
 ### Decided, for the record
 - **The streak past day ten.** 5% a day to +50% at ten days (unchanged), then 2.5% a day
@@ -157,6 +153,10 @@ Tariq topped up the account, so the cap is gone.
       would avoid an hour of confusion.
 
 ### Known issues, not yet fixed
+- [ ] **Trophy case follow-ups:** rarity counts one student on two devices twice and cannot tell
+      cohorts apart (Supabase badges would fix both); journey-map pins still use medallions (the
+      slots are too small for a render); "See it in your trophy case" does not switch the phone
+      tab if the profile page is already open; old medallion components not yet removed.
 - [ ] **Left over from the speed pass:** the Coach pill's colour drift repaints its glow
       (most of what is left at idle - a known trade-off); coach-demo lesson thumbnails load
       960px files into 60px slots; the story phone frame captures the mouse wheel; on a
@@ -195,6 +195,10 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **24 September**
+- The trophy room is the real case in the app: the reveal (wherever a trophy is won, applause,
+  waits for Coach to finish), silhouettes, progress by material, rarity from backups (shown only
+  at 10+ students), share card (1080x1350), Founding Cohort, "Replay the moment" — `12ebb3d`,
+  `0dfaf63`, `5440f7a`, `0c997cc`
 - Library trophies: one per skill for watching every lesson in it (7, enamel); Unstoppable
   moved to chrome — `f9a087f`
 - Skill trophies need consistency across different challenges (Handy 4, I See You 6, Oscar 5,
