@@ -119,6 +119,8 @@ Tariq topped up the account, so the cap is gone.
   a streak leaderboard, and a title beside the name on the boards.
 
 ### Waiting on Tariq
+- [ ] **Coach's finish-line words** - drafted: "You made it to the end of the road. Take a bow -
+      you earned every step." Approve or replace.
 - [ ] **More obsidian trophies** - Iron Will built. Still proposed: Standing Ovation (95+), Then
       and Now (beat your baseline in all seven colours), The Golden Phase (gold on every challenge
       in a phase), Seven Summits (80+ in each colour).
@@ -206,6 +208,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **24 September**
+- 3D road: Coach x3 + finish, reacting checkpoints, finish celebration, fireflies, classmates,
+  road sound, scenery per phase — `5f59572`
 - 3D road (/prototype/adventure3d): traveller with neon trail, higher camera, phase gates +
   "Now entering" banner, S.T.O.R.Y. jump letters, roadside trophies and comments — `6eaa46e`
 - Coach says one of 21 pre-recorded lines as each trophy lands (captioned); five missing
