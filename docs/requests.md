@@ -208,6 +208,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **25 September**
+- Road: banking only in O and R; steeper, longer plunge; Y over rolling mountains; dark-glass
+  city with underlighting and backlight — `66f73f3`
 - Road moves with the story: T climbs, O S-curves with banking, R plunges, Y through a pass to
   the city (now a soft glow, revealed in Y); twinkling dots; smaller hexagons — `7c86473`
 - Road: lattice back on R, hexagons on Y — `2247495`
