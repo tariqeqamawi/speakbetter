@@ -3359,3 +3359,55 @@ html.bare .demo-banner {
   .spectrum-cycle { animation: none; color: var(--color-mindset); }
   .spectrum-hue { animation: none; }
 }
+
+/* THE CALLS TO ACTION, AS GLASS - after Apple's liquid glass. Replaces
+ * the neon sign above (its rules still load; these come later and win):
+ * no halo, no glowing edge - a clear, frosted pill that blurs whatever
+ * is behind it, a hairline of light round its rim and a sheen across its
+ * top, and a faint tint that drifts through the seven colours. */
+@property --cta-tint {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: rgb(245 61 224 / 0.3);
+}
+@keyframes cta-glass-tint {
+  0%, 100% { --cta-tint: rgb(255 200 30 / 0.5); }
+  14.3% { --cta-tint: rgb(255 140 20 / 0.5); }
+  28.6% { --cta-tint: rgb(255 80 60 / 0.5); }
+  42.9% { --cta-tint: rgb(235 70 225 / 0.5); }
+  57.1% { --cta-tint: rgb(40 225 150 / 0.42); }
+  71.4% { --cta-tint: rgb(40 205 245 / 0.45); }
+  85.7% { --cta-tint: rgb(240 60 115 / 0.5); }
+}
+.cta-neon-wrap,
+.cta-neon {
+  border-radius: 9999px;
+}
+.cta-neon-glow {
+  display: none;
+}
+.cta-neon {
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.24), rgb(255 255 255 / 0.05) 48%, rgb(255 255 255 / 0.1)),
+    var(--cta-tint);
+  -webkit-backdrop-filter: blur(18px) saturate(1.7);
+  backdrop-filter: blur(18px) saturate(1.7);
+  border: 1px solid rgb(255 255 255 / 0.3);
+  /* Lit from inside - the tint glows within the glass, never out
+     past its edge. */
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.55),
+    inset 0 -1px 0 rgb(255 255 255 / 0.12),
+    inset 0 0 22px var(--cta-tint),
+    0 10px 30px -14px rgb(0 0 0 / 0.7);
+  text-shadow: 0 1px 3px rgb(0 0 0 / 0.45);
+  animation: cta-glass-tint 56s linear infinite;
+}
+.cta-neon-wrap:hover .cta-neon {
+  transform: translateY(-1px);
+  filter: brightness(1.12);
+  border-color: rgb(255 255 255 / 0.45);
+}
+@media (prefers-reduced-motion: reduce) {
+  .cta-neon { animation: none; }
+}
