@@ -78,24 +78,11 @@ export function Traveller({
 }) {
   const disc = useRef<THREE.Group>(null);
   const ring = useRef<THREE.MeshBasicMaterial>(null);
-  const halo = useRef<THREE.SpriteMaterial>(null);
   const map = useMemo(() => {
     const t = new THREE.TextureLoader().load(image);
     t.colorSpace = THREE.SRGBColorSpace;
     return t;
   }, [image]);
-  const glow = useMemo(
-    () =>
-      canvasTexture(128, 128, (g) => {
-        const grad = g.createRadialGradient(64, 64, 0, 64, 64, 64);
-        grad.addColorStop(0, "rgba(255,255,255,1)");
-        grad.addColorStop(0.3, "rgba(255,255,255,0.4)");
-        grad.addColorStop(1, "rgba(255,255,255,0)");
-        g.fillStyle = grad;
-        g.fillRect(0, 0, 128, 128);
-      }),
-    [],
-  );
   const p = useMemo(() => new THREE.Vector3(), []);
 
   useFrame(({ clock, camera }) => {
@@ -117,8 +104,9 @@ export function Traveller({
     disc.current?.position.set(p.x, p.y + 1.3 + bob, p.z);
     disc.current?.lookAt(camera.position);
     const c = colourAt(s);
-    ring.current?.color.copy(c);
-    halo.current?.color.copy(c);
+    // A solid rim in the phase's colour, kept below the glow's threshold
+    // so nothing blooms over the photo.
+    ring.current?.color.copy(c).multiplyScalar(0.6);
     // Reveal the trail up to the traveller: the ribbons are built in
     // equal steps along the road, six indices a step.
     const upTo = Math.floor(s / TRAIL_STEP) * 6;
@@ -127,9 +115,8 @@ export function Traveller({
 
   return (
     <group ref={disc}>
-      <sprite scale={[3.4, 3.4, 1]}>
-        <spriteMaterial ref={halo} map={glow} transparent opacity={0.55} blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
-      </sprite>
+      {/* The student's own photo, exactly as they uploaded it: full
+          strength, no glow on or around it. */}
       <mesh position={[0, 0, 0.01]}>
         <circleGeometry args={[0.95, 48]} />
         <meshBasicMaterial map={map} toneMapped={false} />

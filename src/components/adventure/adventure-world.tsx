@@ -52,8 +52,6 @@ export interface WorldPhase {
   color: string;
 }
 
-/** The land: dark glass, the navy of the app all but black. */
-const GLASS = new THREE.Color("#060a17");
 
 /** Where each phase's stretch of road starts and ends, by distance. */
 function phaseSpans(road: RoadLayout, stops: WorldStop[], phases: WorldPhase[]) {
@@ -87,21 +85,94 @@ function colourAt(spans: Span[], s: number, out: THREE.Color): THREE.Color {
   return out.copy(spans[spans.length - 1].col);
 }
 
-/** The land either side of the road, and a faint neon grid over it. */
-function Terrain({ road, spans }: { road: RoadLayout; spans: Span[] }) {
-  const { mesh, lines } = useMemo(() => {
+// THE LAND'S LIGHT. The grid is not drawn as lines - a 1-pixel line is a
+// stroke of colour however bright it is, and cannot glow. It is worked
+// out in the land's own surface, per pixel: the distance to the nearest
+// edge of the grid, turned into a sharp core and a soft falloff round
+// it, the way light spreads from an LED tube. At rest the grid is only a
+// faint glow. Every few seconds a wave of light rolls out from the
+// traveller down the road and across the land, lighting every edge it
+// passes full bright, and lets them settle back behind it.
+const TERRAIN_VERT = /* glsl */ `
+  attribute vec2 aGrid;
+  attribute float aS;
+  attribute vec3 aNeon;
+  varying vec2 vGrid;
+  varying float vS;
+  varying vec3 vNeon;
+  varying vec3 vWorld;
+  varying float vDepth;
+  void main() {
+    vGrid = aGrid;
+    vS = aS;
+    vNeon = aNeon;
+    vec4 world = modelMatrix * vec4(position, 1.0);
+    vWorld = world.xyz;
+    vec4 mv = viewMatrix * world;
+    vDepth = -mv.z;
+    gl_Position = projectionMatrix * mv;
+  }
+`;
+
+const TERRAIN_FRAG = /* glsl */ `
+  uniform float uTime;
+  uniform float uFrom;
+  uniform vec3 uFog;
+  uniform float uFogDensity;
+  varying vec2 vGrid;
+  varying float vS;
+  varying vec3 vNeon;
+  varying vec3 vWorld;
+  varying float vDepth;
+  void main() {
+    // Distance to the nearest grid edge, in screen pixels.
+    vec2 g = vGrid / 2.0;
+    vec2 w = fwidth(g);
+    vec2 f = abs(fract(g - 0.5) - 0.5) / max(w, vec2(1e-4));
+    float px = min(f.x, f.y);
+    float core = 1.0 - smoothstep(0.0, 1.4, px);
+    float halo = exp(-px * 0.5);
+    float haloWide = exp(-px * 0.22);
+
+    // The wave: rolling out from the traveller along the road, again and
+    // again, a soft band a few squares deep.
+    float front = uFrom + mod(uTime, 4.0) * 55.0;
+    float d = vS - front;
+    float wave = exp(-d * d / 60.0) * (1.0 - smoothstep(180.0, 220.0, front - uFrom));
+    // A faint afterglow behind it, fading as it goes.
+    float wake = (d < 0.0 ? exp(d / 18.0) : 0.0) * 0.35 * (1.0 - smoothstep(180.0, 220.0, front - uFrom));
+
+    // The faces: dark glass, a facet catching the light here and there.
+    vec3 n = normalize(cross(dFdx(vWorld), dFdy(vWorld)));
+    float sheen = pow(max(dot(n, normalize(vec3(0.3, 0.9, 0.2))), 0.0), 6.0);
+    vec3 col = vec3(0.001, 0.002, 0.006) + vec3(0.006, 0.01, 0.024) * sheen;
+    col += vNeon * 0.012 * wave;
+
+    float rest = 0.02 * halo + 0.16 * core;
+    float lit = (wave + wake) * (1.2 * core + 0.5 * halo + 0.25 * haloWide);
+    col += vNeon * (rest + lit * 1.6);
+
+    float fog = 1.0 - exp(-uFogDensity * uFogDensity * vDepth * vDepth);
+    gl_FragColor = vec4(mix(col, uFog, fog), 1.0);
+  }
+`;
+
+/** The land either side of the road, with its grid of light. */
+function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; travel: Travel }) {
+  const geo = useMemo(() => {
     const ROW = 3; // world units between rows along the road
     const COLS = 64;
     const HALF = 170; // how far the land runs out either side
     const rows = Math.ceil(road.length / ROW);
-    const pos = new Float32Array((rows + 1) * (COLS + 1) * 3);
-    const col = new Float32Array((rows + 1) * (COLS + 1) * 3);
-    // The neon of each vertex: the colour its edges are drawn in.
-    const neon = new Float32Array((rows + 1) * (COLS + 1) * 3);
+    const n = (rows + 1) * (COLS + 1);
+    const pos = new Float32Array(n * 3);
+    const grid = new Float32Array(n * 2);
+    const along = new Float32Array(n);
+    // The neon of each vertex: the colour its edges glow in.
+    const neon = new Float32Array(n * 3);
     const p = new THREE.Vector3();
     const side = new THREE.Vector3();
     const phase = new THREE.Color();
-    const c = new THREE.Color();
     for (let r = 0; r <= rows; r++) {
       const s = Math.min(r * ROW, road.length);
       pointAt(road, s, p);
@@ -115,26 +186,15 @@ function Terrain({ road, spans }: { road: RoadLayout; spans: Span[] }) {
         const away = THREE.MathUtils.smoothstep(Math.abs(d), 5, 70);
         const h = hills(x, z);
         const y = p.y - 0.2 + away * (h * 34 - 4) + away * away * 6;
-        const i = (r * (COLS + 1) + k) * 3;
-        pos[i] = x;
-        pos[i + 1] = y;
-        pos[i + 2] = z;
-        // Near the road the land takes the phase's colour; out in the
-        // hills it falls back towards night, with the ridges catching
-        // a little of it.
+        const v = r * (COLS + 1) + k;
+        pos.set([x, y, z], v * 3);
+        grid.set([r, k], v * 2);
+        along[v] = s;
+        // Brightest near the road and along the ridges.
         const near = 1 - THREE.MathUtils.smoothstep(Math.abs(d), 4, 90);
         const ridge = THREE.MathUtils.smoothstep(h, 0.55, 0.85) * away;
-        // The faces are dark glass - navy all but black, with only a
-        // breath of the phase in them - and the light is in the edges:
-        // the phase's neon, brightest near the road and on the ridges.
-        c.copy(GLASS).lerp(phase, 0.04 + near * 0.05 + ridge * 0.06);
-        col[i] = c.r;
-        col[i + 1] = c.g;
-        col[i + 2] = c.b;
-        const glowK = 0.55 + near * 0.7 + ridge * 0.5;
-        neon[i] = phase.r * glowK;
-        neon[i + 1] = phase.g * glowK;
-        neon[i + 2] = phase.b * glowK;
+        const k2 = 0.6 + near * 0.5 + ridge * 0.4;
+        neon.set([phase.r * k2, phase.g * k2, phase.b * k2], v * 3);
       }
     }
     const idx: number[] = [];
@@ -144,49 +204,46 @@ function Terrain({ road, spans }: { road: RoadLayout; spans: Span[] }) {
         const b = a + COLS + 1;
         idx.push(a, b, a + 1, a + 1, b, b + 1);
       }
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-    geo.setAttribute("color", new THREE.BufferAttribute(col, 3));
-    geo.setIndex(idx);
-    geo.computeVertexNormals();
-
-    // The wireframe: the edges of the land's polygons - along, across
-    // and one diagonal of every cell, on a grid two cells wide so the
-    // triangles read as facets rather than a haze - in the phase's neon.
-    const lp: number[] = [];
-    const lc: number[] = [];
-    const push = (a: number, b: number) => {
-      for (const v of [a, b]) {
-        lp.push(pos[v * 3], pos[v * 3 + 1] + 0.04, pos[v * 3 + 2]);
-        lc.push(neon[v * 3], neon[v * 3 + 1], neon[v * 3 + 2]);
-      }
-    };
-    // Squares, not triangles: along and across only, so the land reads
-    // as a clean grid of light rather than a tangle of facets.
-    const at = (r: number, k: number) => r * (COLS + 1) + k;
-    for (let r = 0; r + 2 <= rows; r += 2)
-      for (let k = 0; k + 2 <= COLS; k += 2) {
-        push(at(r, k), at(r, k + 2));
-        push(at(r, k), at(r + 2, k));
-      }
-    const lgeo = new THREE.BufferGeometry();
-    lgeo.setAttribute("position", new THREE.Float32BufferAttribute(lp, 3));
-    lgeo.setAttribute("color", new THREE.Float32BufferAttribute(lc, 3));
-    return { mesh: geo, lines: lgeo };
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    g.setAttribute("aGrid", new THREE.BufferAttribute(grid, 2));
+    g.setAttribute("aS", new THREE.BufferAttribute(along, 1));
+    g.setAttribute("aNeon", new THREE.BufferAttribute(neon, 3));
+    g.setIndex(idx);
+    return g;
   }, [road, spans]);
 
-  return (
-    <group>
-      <mesh geometry={mesh}>
-        {/* Both sides: the strip is built along the road, and which way
-            its faces point depends on which way the road is turning. */}
-        <meshStandardMaterial vertexColors flatShading roughness={0.28} metalness={0.75} side={THREE.DoubleSide} />
-      </mesh>
-      <lineSegments geometry={lines}>
-        <lineBasicMaterial vertexColors transparent opacity={0.85} toneMapped={false} />
-      </lineSegments>
-    </group>
+  const material = useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        vertexShader: TERRAIN_VERT,
+        fragmentShader: TERRAIN_FRAG,
+        side: THREE.DoubleSide,
+        uniforms: {
+          uTime: { value: 0 },
+          uFrom: { value: 0 },
+          uFog: { value: new THREE.Color("#060b1c") },
+          uFogDensity: { value: 0.0055 },
+        },
+      }),
+    [],
   );
+
+  // Each wave starts from wherever the traveller is when it sets off.
+  const lastLoop = useRef(-1);
+  /* eslint-disable react-hooks/immutability */
+  useFrame(({ clock }) => {
+    const t = clock.elapsedTime;
+    material.uniforms.uTime.value = t;
+    const loop = Math.floor(t / 4);
+    if (loop !== lastLoop.current) {
+      lastLoop.current = loop;
+      material.uniforms.uFrom.value = travel.s + 6;
+    }
+  });
+  /* eslint-enable react-hooks/immutability */
+
+  return <mesh geometry={geo} material={material} />;
 }
 
 /** A ribbon laid along the road between two lateral offsets. */
@@ -412,6 +469,10 @@ export function AdventureWorld({
 
   return (
     <Canvas
+      // No filmic tone mapping: it greyed every bright colour, the
+      // student's photo included. The glow comes from the bloom, not the
+      // grade, so photos show as uploaded and the neon stays pure.
+      flat
       dpr={[1, 1.5]}
       gl={{ antialias: true, powerPreference: "high-performance" }}
       camera={{ fov: 62, near: 0.1, far: 900, position: [0, 3, 6] }}
@@ -423,7 +484,7 @@ export function AdventureWorld({
       <ambientLight intensity={0.5} />
       <directionalLight position={[40, 80, 30]} intensity={1.4} color="#c8d2ff" />
       <Stars />
-      <Terrain road={road} spans={spans} />
+      <Terrain road={road} spans={spans} travel={travel} />
       <Road road={road} spans={spans} trail={trail} />
       {spans.map((sp) => (
         <PhaseGate key={sp.id} road={road} s={Math.max(4, sp.from)} letter={sp.id} name={sp.name} colour={sp.color} />
