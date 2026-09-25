@@ -13,8 +13,10 @@ import * as THREE from "three";
 /** World units between one checkpoint and the next. Long enough that
  *  reaching the next one is a short journey, not a flick. */
 export const SPACING = 56;
-/** Road before the first checkpoint, and after the last before the gate. */
-export const LEAD_IN = 26;
+/** Road before the first checkpoint - open land to travel before the
+ *  first challenge, so you set off into the world rather than arriving
+ *  at a door - and after the last before the gate. */
+export const LEAD_IN = 90;
 export const LEAD_OUT = 60;
 /** How far ahead of the camera the traveller walks. Everything that
  *  says "where you are" reads the traveller, not the camera. */
@@ -96,7 +98,7 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLay
     // Y: over the mountains - up one and down it, up the next and down
     // it - before the plain.
     const peaks = 0.5 * Math.sin(((s - from("Y")) / 100) * Math.PI * 2);
-    return swell * rest * (1 - wO * 0.6) + 0.17 * wT - 0.55 * wR + peaks * wY;
+    return swell * rest * (1 - wO * 0.6) + 0.17 * wT - 0.9 * wR + peaks * wY;
   };
 
   const pts: THREE.Vector3[] = [];
@@ -213,10 +215,18 @@ export function seeded(seed: number) {
   };
 }
 
-/** Where Coach stands at the roadside, by distance: near the start, and
- *  twice further on. Shared by the world (which draws him) and the page
- *  (which plays his line as the traveller comes level). */
+/** Where Coach speaks, by distance: at the very start, and twice further
+ *  on. The page plays his line as the traveller reaches each. */
 export function coachSpots(road: RoadLayout): number[] {
   const n = road.stops.length;
-  return [road.stops[0] - 6, road.stops[Math.round(n * 0.4)] + 10, road.stops[Math.round(n * 0.75)] + 10];
+  return [40, road.stops[Math.round(n * 0.4)] + 10, road.stops[Math.round(n * 0.75)] + 10];
+}
+
+/** How far through S.T.O.R.Y. the student has really got: the index of
+ *  the section of the challenge they are on - or the last, once every
+ *  challenge is done. Sections after it are only previewed. */
+export function reachedPhase(stops: { state: string; phase: string }[], phases: { id: string }[]): number {
+  const here = stops.find((st) => st.state === "here");
+  if (!here) return stops.every((st) => st.state === "done") ? phases.length - 1 : 0;
+  return phases.findIndex((p) => p.id === here.phase);
 }

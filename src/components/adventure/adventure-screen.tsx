@@ -4,9 +4,10 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AHEAD, GATE_BEFORE, Travel, coachSpots, layoutRoad } from "./road-geometry";
+import { AHEAD, GATE_BEFORE, Travel, coachSpots, layoutRoad, reachedPhase } from "./road-geometry";
+import { SkyCoach } from "./sky-coach";
 import { ROAD_LINES, roadLineClip } from "@/data/greetings";
-import { playApplause, playCoachLine, playGateChime, playRoadWhoosh } from "@/lib/feedback-fx";
+import { activated, playApplause, playCoachLine, playGateChime, playRoadWhoosh } from "@/lib/feedback-fx";
 import { Confetti } from "@/components/confetti";
 import { useStore } from "@/lib/store";
 import type { PickPortal, WorldPhase, WorldStop } from "./adventure-world";
@@ -40,10 +41,13 @@ export function AdventureScreen({
   fallbackAvatar?: string;
 }) {
   const road = useMemo(() => layoutRoad(stops.length, stops.map((s) => s.phase)), [stops]);
-  // Start a little before the checkpoint the student is on.
+  // The checkpoint the student is on.
   const hereIndex = Math.max(0, stops.findIndex((s) => s.state === "here"));
-  // The traveller opens level with it, its Start button showing.
-  const start = Math.max(0, road.stops[hereIndex] - AHEAD - 2);
+  // The road opens at the challenge the student is on, its Start button
+  // showing - or, for someone new, at the very beginning, in the open land
+  // before the first. (Back at the beginning, a button flies them on to
+  // where they are.)
+  const start = hereIndex > 0 ? Math.max(0, road.stops[hereIndex] - AHEAD - 2) : 0;
   const [travel] = useState(() => new Travel(start));
   const [s, setS] = useState(start);
   const frame = useRef<HTMLDivElement>(null);
@@ -53,6 +57,10 @@ export function AdventureScreen({
   const avatar = state.avatar && /^(data:image|\/|https?:)/.test(state.avatar) ? state.avatar : fallbackAvatar;
 
   const onMove = useCallback((next: number) => setS(next), []);
+  // The finish line is crossed only with every challenge done: before
+  // then you can preview the whole road, but it stops short of the arch.
+  const allDone = stops.every((st) => st.state === "done");
+  const limit = allDone ? road.finish + 10 : road.finish - AHEAD - 12;
   // Taps on the road, handled further down once everything they can do
   // is defined; the portal under a tap is asked of the world.
   const onTap = useRef<(x: number, y: number) => void>(() => {});
@@ -182,12 +190,17 @@ export function AdventureScreen({
     lastStop.current = nearest;
     if (sound) playRoadWhoosh();
   }, [nearest, sound]);
+  // The fanfare only for a threshold crossed for real - going forward into
+  // a section the student has reached - never for one only previewed.
+  const reached = reachedPhase(stops, phases);
   const lastPhase = useRef(phase?.id);
   useEffect(() => {
     if (phase?.id === lastPhase.current) return;
+    const from = phases.findIndex((p) => p.id === lastPhase.current);
+    const to = phases.findIndex((p) => p.id === phase?.id);
     lastPhase.current = phase?.id;
-    if (sound) playGateChime();
-  }, [phase, sound]);
+    if (sound && to > from && to <= reached) playGateChime();
+  }, [phase, phases, reached, sound]);
 
   // COACH AT THE ROADSIDE. Each time the traveller comes level with him,
   // once per visit: his line, captioned, and spoken if sound is on.
@@ -195,24 +208,55 @@ export function AdventureScreen({
   const spoken = useRef(new Set<number>());
   const [caption, setCaption] = useState<string | null>(null);
   const [talking, setTalking] = useState<number | null>(null);
+  const [waiting, setWaiting] = useState<number | null>(null);
   useEffect(() => {
     // As the traveller comes to each of his places on the road - he
     // appears in the sky, so anywhere round it will do, including just
     // past it where a jump to the start of a phase lands.
-    const i = spots.findIndex((cs, k) => !spoken.current.has(k) && at > cs - 20 && at < cs + 12);
+    // Only on road the student has really travelled - up to the challenge
+    // they are on - not on stretches they are only previewing.
+    const real = allDone ? Infinity : road.stops[hereIndex] + 12;
+    const i = spots.findIndex((cs, k) => !spoken.current.has(k) && cs <= real && at > cs - 30 && at < cs + 14);
     if (i < 0) return;
     spoken.current.add(i);
     setCaption(ROAD_LINES[i]);
     setTalking(i);
-    if (sound) playCoachLine(roadLineClip(i));
-  }, [at, spots, sound]);
+    if (!sound) return;
+    // A browser lets a page make sound only once it has been clicked,
+    // tapped or typed on - scrolling does not count. Travelled here by
+    // scrolling alone, his line waits for the first click, and a chip
+    // asks for it.
+    if (activated()) playCoachLine(roadLineClip(i));
+    else setWaiting(i);
+  }, [at, spots, sound, allDone, road, hereIndex]);
+  useEffect(() => {
+    if (waiting === null) return;
+    const go = () => {
+      playCoachLine(roadLineClip(waiting));
+      setCaption(ROAD_LINES[waiting]);
+      setTalking(waiting);
+      setWaiting(null);
+    };
+    // Once per page: the click that lets sound play.
+    window.addEventListener("pointerup", go, { once: true });
+    window.addEventListener("keydown", go, { once: true });
+    return () => {
+      window.removeEventListener("pointerup", go);
+      window.removeEventListener("keydown", go);
+    };
+  }, [waiting]);
   // The caption stays as long as the line takes to say, whatever the
   // traveller does meanwhile.
   useEffect(() => {
     if (!caption) return;
     // His mouth moves for about as long as the line takes to say.
     const quiet = setTimeout(() => setTalking(null), caption.length * 62);
-    const t = setTimeout(() => setCaption(null), 1500 + caption.length * 65);
+    // Gone with the caption, the chip asking to hear it: no chip for a
+    // line already over.
+    const t = setTimeout(() => {
+      setCaption(null);
+      setWaiting(null);
+    }, 1500 + caption.length * 65);
     return () => {
       clearTimeout(t);
       clearTimeout(quiet);
@@ -268,6 +312,9 @@ export function AdventureScreen({
     };
   });
 
+  // Up against the finish before it is earned: say why the road ends here.
+  const atGate = !allDone && s > limit - 3;
+
   // THE FINISH: once, when the traveller passes under the arch.
   const [finished, setFinished] = useState(false);
   const didFinish = useRef(false);
@@ -310,7 +357,7 @@ export function AdventureScreen({
       aria-label="The S.T.O.R.Y. road. Drag down or use the down arrow to travel forward."
       className="relative h-[calc(100dvh-4rem)] w-full touch-none select-none overflow-hidden bg-[#070c18] outline-none"
     >
-      <AdventureWorld stops={stops} phases={phases} travel={travel} onMove={onMove} avatar={avatar} talkingCoach={talking} pickRef={pickRef} />
+      <AdventureWorld stops={stops} phases={phases} travel={travel} onMove={onMove} avatar={avatar} pickRef={pickRef} limit={limit} />
 
       {bannerPhase && (
         <div key={banner!.key} className="phase-banner pointer-events-none absolute inset-x-0 top-[30%] flex justify-center px-4">
@@ -340,10 +387,13 @@ export function AdventureScreen({
         {sound ? "🔊" : "🔈"}
       </button>
 
+      <SkyCoach talking={talking !== null} />
+
       {/* What Coach said, as he said it. */}
-      {/* A subtitle in the sky, under his floating head - no box. */}
+      {/* A subtitle in the sky, just under his head and above the land,
+          where it reads against the dark - no box. */}
       {caption && (
-        <div className="pointer-events-none absolute inset-x-0 top-[44%] z-10 flex justify-center px-8">
+        <div className="pointer-events-none absolute inset-x-0 top-[30%] z-10 flex justify-center px-8">
           <p
             className="coach-note-in max-w-sm text-center text-sm font-semibold leading-snug text-ink text-balance"
             style={{ textShadow: "0 1px 10px rgba(0,0,0,0.95), 0 0 2px rgba(0,0,0,0.9)" }}
@@ -359,6 +409,14 @@ export function AdventureScreen({
           <p className="coach-note-in rounded-2xl border border-navy-500 bg-navy-950/90 px-5 py-3 text-center text-sm font-semibold text-ink shadow-2xl backdrop-blur">
             🔒 {notice}
           </p>
+        </div>
+      )}
+
+      {waiting !== null && caption && (
+        <div className="pointer-events-none absolute inset-x-0 top-[46%] z-20 flex justify-center">
+          <span className="coach-note-in rounded-full border border-figurative/60 bg-navy-950/90 px-4 py-1.5 text-xs font-bold text-figurative shadow-lg backdrop-blur">
+            🔊 Click to hear Coach
+          </span>
         </div>
       )}
 
@@ -418,6 +476,16 @@ export function AdventureScreen({
       </div>
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-1 bg-gradient-to-t from-[#070c18]/95 to-transparent px-4 pb-6 pt-16 text-center">
+        {hereIndex > 0 && at < road.stops[0] - 4 && (
+          <button
+            type="button"
+            onClick={() => travel.goTo(Math.max(0, road.stops[hereIndex] - AHEAD - 2))}
+            className="pointer-events-auto mb-2 rounded-full px-6 py-2.5 text-sm font-bold text-navy-950 shadow-lg"
+            style={{ background: phase?.color, boxShadow: `0 0 24px ${phase?.color}` }}
+          >
+            Continue from challenge {hereIndex + 1} →
+          </button>
+        )}
         {canStart && !diving && (
           <button
             type="button"
@@ -447,6 +515,11 @@ export function AdventureScreen({
           >
             Replay challenge
           </Link>
+        )}
+        {atGate && (
+          <span className="mb-2 rounded-full border border-navy-600 bg-navy-900/85 px-4 py-2 text-sm text-ink-muted">
+            🔒 Complete every challenge to cross the finish line
+          </span>
         )}
         {atFinish ? (
           <span className="text-lg font-bold text-ink">The finish line</span>

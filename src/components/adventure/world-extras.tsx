@@ -33,91 +33,6 @@ function glow() {
   return glowTex;
 }
 
-/** Coach in the sky: not standing on the land but a head of light that
- *  appears above the road when he has something to say - swelling out of
- *  a glow, talking with the same 28 mouth frames the lion talks with
- *  everywhere else in the app (public/lion-mouth.webp) - and fading up
- *  and away once he has said it. He rides with the view rather than
- *  standing at a spot, so he stays in the sky however far the traveller
- *  moves while he talks. */
-const MOUTH_FRAMES = 28;
-/** Where he hangs, in the camera's own space: ahead, and high in the sky. */
-const SKY_AT = new THREE.Vector3(0, 4.5, -16);
-
-export function SkyCoach({ talking }: { talking: boolean }) {
-  const group = useRef<THREE.Group>(null);
-  const lion = useRef<THREE.SpriteMaterial>(null);
-  const halo = useRef<THREE.SpriteMaterial>(null);
-  const map = useMemo(() => {
-    const t = new THREE.TextureLoader().load("/lion-mouth.webp");
-    t.colorSpace = THREE.SRGBColorSpace;
-    t.repeat.set(1, 1 / MOUTH_FRAMES);
-    t.offset.set(0, (MOUTH_FRAMES - 1) / MOUTH_FRAMES);
-    return t;
-  }, []);
-  const mouth = useRef({ frame: 0, target: 0, next: 0, open: false });
-  // How present he is: 0 gone, 1 fully here. Rises quickly, lingers a
-  // moment after the last word, then fades.
-  const here = useRef(0);
-  const off = useMemo(() => new THREE.Vector3(), []);
-  // The frame loop moves him with the view, steps the mouth and slides
-  // the texture to its frame - per-frame state, meant to change here.
-  /* eslint-disable react-hooks/immutability */
-  useFrame(({ clock, camera }, dt) => {
-    const g = group.current;
-    if (!g) return;
-    const t = clock.elapsedTime;
-    const was = here.current;
-    here.current += ((talking ? 1 : 0) - was) * Math.min(1, dt * (talking ? 3.5 : 1.6));
-    const k = here.current;
-    g.visible = k > 0.005;
-    if (!g.visible) return;
-    // Arriving he swells from small with a little overshoot; leaving he
-    // drifts upward as he fades.
-    const grow = talking ? 0.55 + 0.45 * k + Math.sin(k * Math.PI) * 0.12 : 0.85 + 0.15 * k;
-    const rise = talking ? 0 : (1 - k) * 2.2;
-    off.set(SKY_AT.x, SKY_AT.y + rise + Math.sin(t * 1.3) * 0.18, SKY_AT.z).applyQuaternion(camera.quaternion);
-    g.position.copy(camera.position).add(off);
-    g.scale.setScalar(grow);
-    // Talking: open on a syllable, shut between them - about two opens a
-    // second with a little randomness, never the same shape twice.
-    const m = mouth.current;
-    if (talking && t > m.next) {
-      m.open = !m.open;
-      m.target = m.open ? 8 + Math.random() * 13 : Math.random() * 3;
-      m.next = t + (m.open ? 0.16 + Math.random() * 0.14 : 0.07 + Math.random() * 0.06);
-    } else if (!talking) m.target = 0;
-    m.frame += (m.target - m.frame) * Math.min(1, dt * 22);
-    const f = Math.round(THREE.MathUtils.clamp(m.frame, 0, MOUTH_FRAMES - 1));
-    map.offset.y = (MOUTH_FRAMES - 1 - f) / MOUTH_FRAMES;
-    if (lion.current) lion.current.opacity = k;
-    // The glow behind him breathes with his voice.
-    if (halo.current) halo.current.opacity = k * (0.12 + (m.frame / MOUTH_FRAMES) * 0.25);
-  });
-  /* eslint-enable react-hooks/immutability */
-  return (
-    <group ref={group} visible={false}>
-      <sprite scale={[6.2, 6.2, 1]} renderOrder={20}>
-        <spriteMaterial
-          ref={halo}
-          map={glow()}
-          color="#ff9a3c"
-          transparent
-          opacity={0}
-          blending={THREE.AdditiveBlending}
-          depthTest={false}
-          depthWrite={false}
-          toneMapped={false}
-          fog={false}
-        />
-      </sprite>
-      <sprite scale={[4.9, 3.82, 1]} renderOrder={21}>
-        <spriteMaterial ref={lion} map={map} transparent opacity={0} depthTest={false} depthWrite={false} toneMapped={false} fog={false} />
-      </sprite>
-    </group>
-  );
-}
-
 /** Fireflies: points of each phase's colour rising slowly from the land
  *  along its stretch of road, and starting again at the bottom. */
 export function Fireflies({ road, spans }: { road: RoadLayout; spans: { from: number; to: number; color: string }[] }) {
@@ -301,8 +216,10 @@ function Library({ road, from, to, color }: SceneProps) {
 }
 
 /** R - Reveal Deeper Truths: a theatre - spotlights on tall stands,
- *  their beams sweeping the land. */
-function Theatre({ road, from, to, color }: SceneProps) {
+ *  their beams sweeping the land. Warm white, as a stage's are - the red
+ *  is the land's; the light is the light. */
+const SPOTLIGHT = "#ffe2b8";
+function Theatre({ road, from, to }: SceneProps) {
   const spots = useMemo(() => placesFor(road, from, to, 12, 51, 10, 26), [road, from, to]);
   const heads = useRef<THREE.Group>(null);
   useFrame(({ clock }) => {
@@ -331,7 +248,7 @@ function Theatre({ road, from, to, color }: SceneProps) {
             <mesh position={[0, -6, 0]}>
               <coneGeometry args={[3, 12, 24, 1, true]} />
               <meshBasicMaterial
-                color={color}
+                color={SPOTLIGHT}
                 transparent
                 opacity={0.14}
                 blending={THREE.AdditiveBlending}

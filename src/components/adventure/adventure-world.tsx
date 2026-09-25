@@ -3,12 +3,12 @@
 import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import { Classmate, Fireflies, Scenery, SkyCoach } from "./world-extras";
+import { Classmate, Fireflies, Scenery } from "./world-extras";
 import { Portal } from "./portal";
 import { City } from "./city";
 import { Bloom, GateSparks, Sky } from "./fx";
 import { AHEAD, ColourWall, RoadsideComment, RoadsideTrophy, Traveller } from "./world-details";
-import { GATE_BEFORE, hills, layoutRoad, pointAt, seeded, sideAt, type RoadLayout, type Travel } from "./road-geometry";
+import { GATE_BEFORE, hills, layoutRoad, pointAt, reachedPhase, seeded, sideAt, type RoadLayout, type Travel } from "./road-geometry";
 
 // The S.T.O.R.Y. adventure as a world you travel through.
 //
@@ -591,9 +591,12 @@ function Rig({
   road,
   travel,
   onMove,
+  limit,
 }: {
   road: RoadLayout;
   travel: Travel;
+  /** As far as the traveller may go. */
+  limit: number;
   onMove: (s: number) => void;
 }) {
   const { camera } = useThree();
@@ -605,7 +608,7 @@ function Rig({
   const roll = useRef(0);
 
   useFrame((_, dt) => {
-    travel.step(Math.min(dt, 0.05) * 60, road.finish + 10);
+    travel.step(Math.min(dt, 0.05) * 60, limit);
     const s = travel.s;
     if (travel.portal) {
       // The dive: the camera sweeps down to the portal's height and in
@@ -690,8 +693,8 @@ export function AdventureWorld({
   travel,
   onMove,
   avatar = "/lion-head.png",
-  talkingCoach = null,
   pickRef,
+  limit,
 }: {
   stops: WorldStop[];
   phases: WorldPhase[];
@@ -701,16 +704,19 @@ export function AdventureWorld({
   onMove: (s: number) => void;
   /** The student's own picture, on the traveller. */
   avatar?: string;
-  /** Which of Coach's lines is being spoken right now, if any. */
-  talkingCoach?: number | null;
   /** Filled in with a way to ask which checkpoint's portal is under a
    *  point on the screen - the page owns the pointer (it drags the road),
    *  so taps are worked out there and asked here. */
   pickRef?: React.RefObject<PickPortal | null>;
+  /** As far along the road as the traveller may go - short of the finish
+   *  until every challenge is done. Past the finish when not given. */
+  limit?: number;
 }) {
   const road = useMemo(() => layoutRoad(stops.length, stops.map((s) => s.phase)), [stops]);
   const spans = useMemo(() => phaseSpans(road, stops, phases), [road, stops, phases]);
   const phaseCol = useMemo(() => new Map(phases.map((p) => [p.id, new THREE.Color(p.color)])), [phases]);
+  // The section the student is in; every one after it is dormant.
+  const reached = reachedPhase(stops, phases);
   const trail = useMemo(
     () => [
       ribbon(road, spans, -1.3, 1.3, 0.06, (ph, o) => o.copy(ph).multiplyScalar(0.9)),
@@ -742,8 +748,10 @@ export function AdventureWorld({
       <Stars />
       <Terrain road={road} spans={spans} travel={travel} />
       <Road road={road} spans={spans} trail={trail} />
-      {spans.map((sp) => (
-        <ColourWall key={sp.id} road={road} s={Math.max(4, sp.from)} colour={sp.color} />
+      {/* A wall at each threshold between phases - none at the start:
+          you begin already in the first. */}
+      {spans.slice(1).map((sp) => (
+        <ColourWall key={sp.id} road={road} s={sp.from} colour={sp.color} />
       ))}
       {/* Each checkpoint's trophy beside its portal: a silhouette until
           won, so you can see what passing it earns - on the side away
@@ -785,7 +793,6 @@ export function AdventureWorld({
       {spans.find((sp) => sp.id === "Y") && (
         <City road={road} travel={travel} revealFrom={spans.find((sp) => sp.id === "Y")!.from + 60} />
       )}
-      <SkyCoach talking={talkingCoach !== null} />
       {stops.flatMap((stop, i) =>
         (stop.classmates ?? []).map(({ name, avatar }, k) => (
           <Classmate
@@ -810,10 +817,11 @@ export function AdventureWorld({
           state={stop.state}
           colour={phaseCol.get(stop.phase) ?? new THREE.Color("#ffffff")}
           score={stop.score}
+          dormant={phases.findIndex((p) => p.id === stop.phase) > reached}
         />
       ))}
       <FinishGate road={road} spans={spans} />
-      <Rig road={road} travel={travel} onMove={onMove} />
+      <Rig road={road} travel={travel} onMove={onMove} limit={limit ?? road.finish + 10} />
       {pickRef && <Picker road={road} pickRef={pickRef} />}
     </Canvas>
   );

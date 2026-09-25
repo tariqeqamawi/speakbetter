@@ -30,6 +30,7 @@ const FRAG = /* glsl */ `
   uniform float uSpeed;
   uniform float uPower;
   uniform float uFade;
+  uniform float uCore;
   varying vec2 vUv;
   void main() {
     vec2 p = vUv * 2.0 - 1.0;
@@ -42,7 +43,7 @@ const FRAG = /* glsl */ `
     float rim = smoothstep(0.55, 1.0, r);
     float core = smoothstep(0.45, 0.0, r);
     vec3 col = uColor * (0.15 + bands * 0.9 + fine * 0.25) * (0.35 + rim * 0.9);
-    col += mix(uColor, vec3(1.0), 0.55) * core * 0.65;
+    col += mix(uColor, vec3(1.0), 0.55) * core * 0.65 * uCore;
     col *= uPower;
     float alpha = smoothstep(1.0, 0.94, r) * uFade;
     gl_FragColor = vec4(col, alpha);
@@ -83,15 +84,15 @@ function numberTex(n: number, state: PortalState) {
 
 /** The banner above the portal: the challenge's name, and its score once
  *  passed. */
-function bannerTex(title: string, hex: string, state: PortalState, score?: number) {
+function bannerTex(title: string, hex: string, state: PortalState, score?: number, dormant = false) {
   return canvasTex(1024, 200, (g) => {
-    const dim = state === "locked";
+    const dim = state === "locked" && !dormant;
     g.beginPath();
     g.roundRect(6, 6, 1012, 188, 40);
     g.fillStyle = "rgba(4,8,18,0.88)";
     g.fill();
     g.lineWidth = 6;
-    g.strokeStyle = dim ? "#3a4260" : hex;
+    g.strokeStyle = dim ? "#3a4260" : dormant ? `${hex}80` : hex;
     g.stroke();
     g.textBaseline = "middle";
     let x = 44;
@@ -104,7 +105,7 @@ function bannerTex(title: string, hex: string, state: PortalState, score?: numbe
       g.fillRect(x - 14, 52, 4, 96);
       x += 16;
     }
-    g.fillStyle = dim ? "#6a7390" : "#f4f6ff";
+    g.fillStyle = dim ? "#6a7390" : dormant ? "#aab2c8" : "#f4f6ff";
     g.font = "700 56px system-ui, sans-serif";
     let text = title;
     const room = 1000 - x - 30;
@@ -121,6 +122,7 @@ export function Portal({
   state,
   colour,
   score,
+  dormant = false,
 }: {
   road: RoadLayout;
   s: number;
@@ -129,6 +131,10 @@ export function Portal({
   state: PortalState;
   colour: THREE.Color;
   score?: number;
+  /** In a section the student has not reached yet: its ring in the
+   *  section's colour and its name, and nothing else - no vortex, no
+   *  number. Only the section they are in has live portals. */
+  dormant?: boolean;
 }) {
   const group = useRef<THREE.Group>(null);
   const ring = useRef<THREE.MeshBasicMaterial>(null);
@@ -143,8 +149,9 @@ export function Portal({
   }, [facing]);
 
   const hex = `#${colour.getHexString()}`;
-  const locked = state === "locked" || state === "ahead";
-  const grey = useMemo(() => new THREE.Color("#4a5270"), []);
+  // Not reached yet, but in the section they are in: live, just calmer
+  // than the one they are on. Beyond their section: dormant.
+  const ahead = state === "locked" || state === "ahead";
   const material = useMemo(
     () =>
       new THREE.ShaderMaterial({
@@ -155,16 +162,18 @@ export function Portal({
         side: THREE.DoubleSide,
         uniforms: {
           uTime: { value: 0 },
-          uColor: { value: locked ? grey.clone() : colour.clone() },
-          uSpeed: { value: state === "here" ? 3.2 : state === "done" ? 1.4 : 0.4 },
-          uPower: { value: state === "here" ? 1.05 : state === "done" ? 0.8 : 0.3 },
+          uColor: { value: dormant ? colour.clone().multiplyScalar(0.05) : colour.clone() },
+          uSpeed: { value: dormant ? 0 : state === "here" ? 3.2 : state === "done" ? 1.4 : 0.9 },
+          uPower: { value: dormant ? 0.5 : state === "here" ? 1.05 : state === "done" ? 0.8 : 0.55 },
           uFade: { value: 1 },
+          // A dormant portal has no light at its eye.
+          uCore: { value: dormant ? 0 : 1 },
         },
       }),
-    [colour, grey, locked, state],
+    [colour, dormant, state],
   );
-  const numMap = useMemo(() => numberTex(n, locked ? "locked" : state), [n, locked, state]);
-  const banner = useMemo(() => bannerTex(title, hex, locked ? "locked" : state, score), [title, hex, locked, state, score]);
+  const numMap = useMemo(() => numberTex(n, ahead ? "locked" : state), [n, ahead, state]);
+  const banner = useMemo(() => bannerTex(title, hex, state, score, dormant), [title, hex, state, score, dormant]);
 
   /* eslint-disable react-hooks/immutability */
   useFrame(({ clock, camera }) => {
@@ -173,7 +182,7 @@ export function Portal({
     // Thin out as you arrive, so you go through the portal, not into it.
     const near = THREE.MathUtils.smoothstep(d, 3, 10);
     material.uniforms.uFade.value = near;
-    if (numMat.current) numMat.current.opacity = near;
+    if (numMat.current) numMat.current.opacity = dormant ? 0 : near;
     if (bannerMat.current) bannerMat.current.opacity = THREE.MathUtils.smoothstep(d, 9, 16);
     if (ring.current && state === "here") {
       const k = 0.6 + Math.sin(clock.elapsedTime * 2.4) * 0.4;
@@ -193,7 +202,11 @@ export function Portal({
       </mesh>
       <mesh>
         <torusGeometry args={[2.5, 0.09, 12, 72]} />
-        <meshBasicMaterial ref={ring} color={locked ? grey : state === "here" ? "#ffffff" : colour} toneMapped={false} />
+        <meshBasicMaterial
+          ref={ring}
+          color={dormant ? colour.clone().multiplyScalar(0.55) : state === "here" ? "#ffffff" : colour}
+          toneMapped={false}
+        />
       </mesh>
       <mesh position={[0, 3.35, 0]}>
         <planeGeometry args={[5.6, 1.09]} />

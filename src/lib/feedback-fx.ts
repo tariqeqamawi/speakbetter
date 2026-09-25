@@ -278,6 +278,12 @@ function touched(): boolean {
   return !!ua?.hasBeenActive;
 }
 
+/** Whether the page may make sound yet - it has been clicked, tapped or
+ *  typed on (scrolling does not count). */
+export function activated(): boolean {
+  return typeof window !== "undefined" && touched();
+}
+
 /** Start the applause; the function returned fades it out early. */
 export function playApplause(): () => void {
   const none = () => {};
@@ -399,15 +405,20 @@ export function playRoadWhoosh() {
   src.stop(now + 0.72);
 }
 
-/** A brass fanfare as the traveller passes under a phase gate - trumpets
- *  calling over French horns and a tuba, heralding the next stretch of
- *  the road (public/sfx/fanfare.mp3, built by scripts/sfx/build-fanfare.py).
- *  Shares the clip cache with Coach's lines, so it is decoded once. */
+/** A brass fanfare as the traveller crosses into a new section - trumpets
+ *  calling over French horns and tubas, heralding the next stretch of the
+ *  road. One of four calls (public/sfx/fanfare-1..4.mp3, built by
+ *  scripts/sfx/build-fanfare.py), never the one heard last. Shares the
+ *  clip cache with Coach's lines, so each is decoded once. */
+let lastFanfare = 0;
 export function playGateChime() {
   const ac = audio();
   if (!ac || !touched()) return;
   void ac.resume().catch(() => {});
-  const src = "/sfx/fanfare.mp3";
+  let k = 1 + Math.floor(Math.random() * 4);
+  if (k === lastFanfare) k = (k % 4) + 1;
+  lastFanfare = k;
+  const src = `/sfx/fanfare-${k}.mp3`;
   let clip = clips.get(src);
   if (!clip) {
     clip = fetch(src)
