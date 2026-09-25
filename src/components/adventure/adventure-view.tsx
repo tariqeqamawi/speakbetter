@@ -17,10 +17,13 @@ export function AdventureView({
   stops,
   phases,
   fallbackAvatar,
+  skyImage,
 }: {
   stops: WorldStop[];
   phases: WorldPhase[];
   fallbackAvatar?: string;
+  /** A painted sky for the 3D road (see SkyDome). */
+  skyImage?: string;
 }) {
   const [mode, setMode] = useState<Mode>("3d");
   useEffect(() => {
@@ -74,6 +77,7 @@ export function AdventureView({
           stops={stops}
           phases={phases}
           fallbackAvatar={fallbackAvatar}
+          skyImage={skyImage}
         />
       ) : (
         <div className="pt-14">

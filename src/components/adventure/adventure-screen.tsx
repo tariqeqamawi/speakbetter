@@ -35,10 +35,12 @@ export function AdventureScreen({
   stops,
   phases,
   fallbackAvatar = "/lion-head.png",
+  skyImage,
 }: {
   stops: WorldStop[];
   phases: WorldPhase[];
   fallbackAvatar?: string;
+  skyImage?: string;
 }) {
   const road = useMemo(() => layoutRoad(stops.length, stops.map((s) => s.phase)), [stops]);
   // The checkpoint the student is on.
@@ -357,7 +359,7 @@ export function AdventureScreen({
       aria-label="The S.T.O.R.Y. road. Drag down or use the down arrow to travel forward."
       className="relative h-[calc(100dvh-4rem)] w-full touch-none select-none overflow-hidden bg-[#070c18] outline-none"
     >
-      <AdventureWorld stops={stops} phases={phases} travel={travel} onMove={onMove} avatar={avatar} pickRef={pickRef} limit={limit} />
+      <AdventureWorld stops={stops} phases={phases} travel={travel} onMove={onMove} avatar={avatar} pickRef={pickRef} limit={limit} skyImage={skyImage} />
 
       {bannerPhase && (
         <div key={banner!.key} className="phase-banner pointer-events-none absolute inset-x-0 top-[30%] flex justify-center px-4">

@@ -5,6 +5,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { Classmate, Fireflies, Scenery } from "./world-extras";
 import { Portal } from "./portal";
+import { SkyDome } from "./sky-dome";
 import { City } from "./city";
 import { Bloom, GateSparks, Sky } from "./fx";
 import { AHEAD, ColourWall, RoadsideComment, RoadsideTrophy, Traveller } from "./world-details";
@@ -695,6 +696,7 @@ export function AdventureWorld({
   avatar = "/lion-head.png",
   pickRef,
   limit,
+  skyImage,
 }: {
   stops: WorldStop[];
   phases: WorldPhase[];
@@ -711,6 +713,8 @@ export function AdventureWorld({
   /** As far along the road as the traveller may go - short of the finish
    *  until every challenge is done. Past the finish when not given. */
   limit?: number;
+  /** A painted sky of planets to travel under, in place of plain stars. */
+  skyImage?: string;
 }) {
   const road = useMemo(() => layoutRoad(stops.length, stops.map((s) => s.phase)), [stops]);
   const spans = useMemo(() => phaseSpans(road, stops, phases), [road, stops, phases]);
@@ -745,7 +749,7 @@ export function AdventureWorld({
       <hemisphereLight args={["#8090d0", "#0a0f20", 2.2]} />
       <ambientLight intensity={0.5} />
       <directionalLight position={[40, 80, 30]} intensity={1.4} color="#c8d2ff" />
-      <Stars />
+      {skyImage ? <SkyDome image={skyImage} /> : <Stars />}
       <Terrain road={road} spans={spans} travel={travel} />
       <Road road={road} spans={spans} trail={trail} />
       {/* A wall at each threshold between phases - none at the start:
