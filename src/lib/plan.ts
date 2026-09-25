@@ -16,12 +16,24 @@ import { includedReviews, LOW_AT } from "@/data/credits";
 // and the gate (components/require-access.tsx) sends them to the tiers.
 // States from before plans existed count as the full experience.
 
-/** The tier they paid for, or null for somebody who hasn't. A stored
- *  plan the app no longer sells ("trial") is null too. */
+/**
+ * THE PAYWALL - OFF until Tariq says the course is opening to its first
+ * students (and Stripe is in). While it is off the app is open to
+ * everyone: somebody who has not picked a tier - or still carries the
+ * old "trial" - gets the full experience, and a tier they do pick is
+ * honoured, so each tier's experience can be tried as it will be sold.
+ * Switch it on and nobody gets in without a paid tier.
+ */
+export const PAYWALL_ON = false;
+
+/** The tier they paid for, or null for somebody who hasn't (only while
+ *  the paywall is on). A stored plan the app no longer sells ("trial")
+ *  counts as none. */
 export function planOf(state: Pick<AppState, "plan" | "unlocked">): Plan | null {
-  if (!state.unlocked) return null;
+  const none: Plan | null = PAYWALL_ON ? null : "founders";
+  if (!state.unlocked) return none;
   if (state.plan === undefined) return "coached";
-  return isPlan(state.plan) ? state.plan : null;
+  return isPlan(state.plan) ? state.plan : none;
 }
 
 /** Coach's voice, and Coach on demand - the full experience. */

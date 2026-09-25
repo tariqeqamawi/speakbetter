@@ -9,8 +9,10 @@ import { planOf } from "@/lib/plan";
 // INTEGRATION SWAP POINT: with Supabase Auth this becomes server-side
 // middleware + RLS (stack §19); the redirect targets stay the same.
 //
-// Every screen behind it needs a paid plan. Somebody without one is
-// sent to the tiers on the landing page - there is no free way in.
+// Every screen behind it needs a paid plan once the paywall is on
+// (PAYWALL_ON in lib/plan.ts); somebody without one is sent to the tiers
+// on the landing page. While it is off, planOf gives everyone the full
+// experience, so this only makes sure they have chosen a level.
 
 export function RequireAccess({ children }: { children: ReactNode }) {
   const { state, ready } = useStore();

@@ -16,9 +16,9 @@ import type { WorldStop } from "./adventure-world";
 // are on, the trophies they have won, and their photo on the traveller.
 //
 // The rules of the road: sections open as the student's rank opens them
-// (the same gates as ever - openPhaseCount); within the open ones, the
-// first challenge not yet passed is the one they are on, and the rest
-// wait behind it.
+// (the same gates as ever - openPhaseCount), and every challenge in an
+// open section can be taken, in whatever order they like. The road opens
+// at the first one not yet passed.
 
 export function LiveAdventure() {
   const { state, ready } = useStore();
@@ -29,15 +29,8 @@ export function LiveAdventure() {
     const phaseIndex = new Map(worldPhases.map((p, i) => [p.id, i]));
     const passedOf = (c: (typeof challenges)[number]) => ready && challengeProgress(c, state).passed;
     const inOpen = (c: (typeof challenges)[number]) => (phaseIndex.get(c.phase) ?? 0) < open;
-    const current = challenges.find((c) => !passedOf(c) && inOpen(c))?.slug;
     return challenges.map((c) => {
-      const st: WorldStop["state"] = passedOf(c)
-        ? "done"
-        : c.slug === current
-          ? "here"
-          : inOpen(c)
-            ? "ahead"
-            : "locked";
+      const st: WorldStop["state"] = passedOf(c) ? "done" : inOpen(c) ? "here" : "locked";
       const best = state.attempts
         .filter((a) => a.challengeSlug === c.slug && a.passed)
         .reduce<number | undefined>((m, a) => Math.max(m ?? 0, a.score ?? 0), undefined);

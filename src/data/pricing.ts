@@ -159,9 +159,9 @@ export const UPGRADE_WINDOW_DAYS = 14;
  *  the button under it. Written once, here, because it is the sentence
  *  that carries the upgrade. */
 export const upgradeOffer = {
-  title: "Upgrade to access Coach 24/7 and become the speaker you always dreamed of",
-  body:
-    "Coach already watches every take you record and writes you the review. Complete is him out loud - the review spoken in his voice with the words on screen - and him on call: ask him anything about how you are developing, any time, and he answers from your own record.",
+  // What a Starter student sees when they tap Coach - Tariq's words.
+  title: "Written and visual feedback only",
+  body: "To have Coach talk to you and have Coach talk back to you, please upgrade.",
   cta: "Upgrade for $200",
   /** Said under the button: what the $200 buys, and for how long. */
   term: "For the rest of your six weeks.",

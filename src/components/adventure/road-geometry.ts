@@ -223,10 +223,16 @@ export function coachSpots(road: RoadLayout): number[] {
 }
 
 /** How far through S.T.O.R.Y. the student has really got: the index of
- *  the section of the challenge they are on - or the last, once every
- *  challenge is done. Sections after it are only previewed. */
+ *  the furthest section they have opened. Sections after it are only
+ *  previewed. */
 export function reachedPhase(stops: { state: string; phase: string }[], phases: { id: string }[]): number {
-  const here = stops.find((st) => st.state === "here");
-  if (!here) return stops.every((st) => st.state === "done") ? phases.length - 1 : 0;
-  return phases.findIndex((p) => p.id === here.phase);
+  // The furthest section with a challenge open or passed - challenges in
+  // an open section can be taken in any order, so it is not simply the
+  // section of the first one not yet passed.
+  let furthest = 0;
+  for (const st of stops) {
+    if (st.state !== "here" && st.state !== "done") continue;
+    furthest = Math.max(furthest, phases.findIndex((p) => p.id === st.phase));
+  }
+  return furthest;
 }

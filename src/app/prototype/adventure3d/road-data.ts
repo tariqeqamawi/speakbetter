@@ -12,7 +12,9 @@ export const stops: WorldStop[] = challenges.map((c, i) => ({
   slug: c.slug,
   title: c.title,
   phase: c.phase,
-  state: i < 7 ? "done" : i === 7 ? "here" : i < 10 ? "ahead" : "locked",
+  // In Train Your Instrument, with one of its challenges left; the
+  // sections after it locked.
+  state: i < 7 ? "done" : i === 7 ? "here" : "locked",
   image: c.vimeoId ? `/thumbs/${c.vimeoId}.jpg` : "/lion-head.png",
   trophy: `/trophy/challenge-${c.slug}.webp`,
   score: i < 7 ? [82, 91, 77, 88, 79, 94, 85][i] : undefined,

@@ -296,7 +296,10 @@ export function AdventureScreen({
 
   // Only on road the student has really travelled - up to the challenge
   // they are on - never on stretches they are only previewing.
-  const realTo = allDone ? Infinity : road.stops[hereIndex] + 12;
+  // (Any challenge in an open section can be taken, in any order, so
+  // "travelled" reaches the last open one, not just the first.)
+  const reachIndex = stops.reduce((m, st, i) => (st.state === "here" || st.state === "done" ? i : m), 0);
+  const realTo = allDone ? Infinity : road.stops[reachIndex] + 12;
 
   // CROSSING INTO A NEW SECTION for real - forward, into one the student
   // has reached: the fanfare, and Coach names where they have arrived.
@@ -398,7 +401,7 @@ export function AdventureScreen({
   const [notice, setNotice] = useState<string | null>(null);
   const noticeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const backToCurrent = () => {
-    setNotice("Complete previous challenges to unlock this one.");
+    setNotice("Complete your current section to unlock this one.");
     clearTimeout(noticeTimer.current);
     noticeTimer.current = setTimeout(() => {
       travel.goTo(Math.max(0, road.stops[hereIndex] - AHEAD - 2));
@@ -607,7 +610,7 @@ export function AdventureScreen({
             onClick={backToCurrent}
             className="pointer-events-auto mb-2 rounded-full border border-navy-600 bg-navy-900/85 px-4 py-2 text-sm text-ink-muted"
           >
-            🔒 Unlock previous challenge first
+            🔒 Complete your current section first
           </button>
         )}
         {/* A portal already been through: go again, without the dive -

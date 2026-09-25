@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useStore, type Level } from "@/lib/store";
 import { LevelIcon, levelMeta } from "@/components/level-icon";
 import { startTour } from "@/components/guided-tour";
+import { PAYWALL_ON } from "@/lib/plan";
 import { CoachSays } from "@/components/coach-says";
 import {
   INTENTION_AUDIO,
@@ -24,14 +25,18 @@ import {
 const order: Level[] = ["beginner", "intermediate", "advanced"];
 
 export default function WelcomePage() {
-  const { state, ready, setLevel, setIntention } = useStore();
+  const { state, ready, setLevel, setIntention, unlock } = useStore();
   const router = useRouter();
   const [step, setStep] = useState<"level" | "intention">("level");
   const [draft, setDraft] = useState("");
 
   useEffect(() => {
-    if (ready && !state.unlocked) router.replace("/#pricing");
-  }, [ready, state.unlocked, router]);
+    if (!ready || state.unlocked) return;
+    // While the paywall is off (lib/plan.ts) the app is open: in they
+    // come, with the full experience. On, they need a tier first.
+    if (PAYWALL_ON) router.replace("/#pricing");
+    else unlock("founders");
+  }, [ready, state.unlocked, router, unlock]);
 
   if (!ready || !state.unlocked) return null;
 
