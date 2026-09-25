@@ -142,7 +142,7 @@ function landform(id: string, x: number, z: number, away: number): number {
 }
 
 /** Each land's pattern of light (see pattern() in the shader). */
-const PATTERN: Record<string, number> = { S: 3, T: 4, O: 1, R: 2, Y: 5 };
+const PATTERN: Record<string, number> = { S: 3, T: 4, O: 1, R: 6, Y: 2 };
 
 // THE LAND'S LIGHT. The grid is not drawn as lines - a 1-pixel line is a
 // stroke of colour however bright it is, and cannot glow. It is worked
@@ -200,9 +200,10 @@ const TERRAIN_FRAG = /* glsl */ `
   }
 
   // THE PATTERN OF LIGHT for one land, by number:
-  //   0 square grid          3 ripples     (S)
-  //   1 dots          (O)    4 sound wave  (T)
-  //   2 hexagons      (R)    5 radiating   (Y)
+  //   0 square grid          3 ripples        (S)
+  //   1 dots          (O)    4 sound wave     (T)
+  //   2 hexagons      (Y)    5 radiating      (spare)
+  //   6 uneven lattice (R)
   // Each returns the distance to its nearest lit feature in screen
   // pixels, so the same LED glow works for all of them.
   float pattern(int id, vec2 g) {
@@ -244,6 +245,13 @@ const TERRAIN_FRAG = /* glsl */ `
       vec2 v = vec2((vGrid.y - 32.0) * 5.3, vS - uTarget);
       float ang = atan(v.x, -v.y) * 70.0;
       return min(lineDist(ang), lineDist(vS / 6.0));
+    }
+    if (id == 6) {
+      // The grid bent by slow waves so no two cells match, a diagonal
+      // through each - a web, not a table.
+      vec2 b = g + 0.28 * vec2(sin(g.y * 1.3 + g.x * 0.4), sin(g.x * 1.1 - g.y * 0.6));
+      vec2 fb = abs(fract(b - 0.5) - 0.5) / max(fwidth(b), vec2(1e-4));
+      return min(min(fb.x, fb.y), lineDist(b.x - b.y * 0.7));
     }
     vec2 f = abs(fract(g - 0.5) - 0.5) / max(fwidth(g), vec2(1e-4));
     return min(f.x, f.y);
