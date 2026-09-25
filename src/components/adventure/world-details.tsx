@@ -153,7 +153,7 @@ const WALL_FRAG = /* glsl */ `
     float streak = 0.5 + 0.5 * sin(vUv.x * 140.0 + sin(vUv.x * 13.0) * 4.0);
     float run = 0.5 + 0.5 * sin(vUv.y * 22.0 - uTime * 3.0 + vUv.x * 30.0);
     float edge = smoothstep(0.0, 0.08, vUv.x) * smoothstep(1.0, 0.92, vUv.x);
-    float a = (0.05 + 0.24 * rise + 0.12 * streak * run * rise) * edge * uFade;
+    float a = (0.03 + 0.15 * rise + 0.1 * streak * run * rise) * edge * uFade;
     gl_FragColor = vec4(uColor * (0.8 + 0.8 * rise), a);
   }
 `;
@@ -182,7 +182,10 @@ export function ColourWall({ road, s, colour }: { road: RoadLayout; s: number; c
     material.uniforms.uTime.value = clock.elapsedTime;
     // Thinner as you reach it, so passing through is a wash of colour,
     // not a blank screen.
-    material.uniforms.uFade.value = THREE.MathUtils.smoothstep(camera.position.distanceTo(position), 8, 48);
+    // Only near the threshold: invisible from a distance, rising as you
+    // come up to it, thinning as you pass through.
+    const d = camera.position.distanceTo(position);
+    material.uniforms.uFade.value = (1 - THREE.MathUtils.smoothstep(d, 18, 34)) * THREE.MathUtils.smoothstep(d, 3, 10);
   });
   /* eslint-enable react-hooks/immutability */
   return (

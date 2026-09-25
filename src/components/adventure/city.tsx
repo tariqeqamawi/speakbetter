@@ -5,21 +5,67 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { pointAt, seeded, sideAt, type RoadLayout } from "./road-geometry";
 
-// Your Impact's destination: a city of light on the horizon, where the
-// road ends. Dark glass towers with lit windows and a beacon on every
-// roof, flying cars weaving between them trailing light - the place a
-// voice reaches once it has learned to carry. It stands beyond the
-// finish arch, with outskirts rising either side of the last stretch,
-// so the whole of the final phase is spent travelling towards it.
+// Your Impact's destination: a far-future city of light on the horizon,
+// beyond the end of the land, never reached. Tall tapering spires, each
+// with elliptical halos floating round its upper reaches and a beacon
+// at its point, outlined in all seven of the app's colours, and flying
+// cars weaving between them trailing light - the place a voice reaches
+// once it has learned to carry.
+
+/** The seven, brighter than the swatches so they bloom. */
+const SPECTRUM = ["#ffd60a", "#ff9500", "#ff4a2b", "#f53de0", "#1fe890", "#22d9f5", "#d11149"];
 
 interface Tower {
   pos: THREE.Vector3;
-  w: number;
-  d: number;
+  /** Radius at the base. */
+  r: number;
   h: number;
+  color: THREE.Color;
+  /** Floating halos: height up the spire (0-1), width, tilt. */
+  rings: { at: number; w: number; tilt: number }[];
 }
 
-export function City({ road, color }: { road: RoadLayout; color: string }) {
+/** A cone's outline as line segments: its base ring and edges running
+ *  up to the point, drawn with fewer sides than a circle needs so it
+ *  reads as a faceted spire of light. */
+function spireLines(t: Tower, out: number[], col: number[]) {
+  const SIDES = 7;
+  const base = t.pos.y - 2;
+  const top = new THREE.Vector3(t.pos.x, base + t.h, t.pos.z);
+  const pts = Array.from({ length: SIDES }, (_, i) => {
+    const a = (i / SIDES) * Math.PI * 2;
+    return new THREE.Vector3(t.pos.x + Math.cos(a) * t.r, base, t.pos.z + Math.sin(a) * t.r);
+  });
+  const push = (a: THREE.Vector3, b: THREE.Vector3, k = 1) => {
+    out.push(a.x, a.y, a.z, b.x, b.y, b.z);
+    col.push(t.color.r * k, t.color.g * k, t.color.b * k, t.color.r * k, t.color.g * k, t.color.b * k);
+  };
+  pts.forEach((p, i) => {
+    push(p, pts[(i + 1) % SIDES], 0.7);
+    push(p, top);
+  });
+}
+
+/** An ellipse of light floating round a spire. */
+function ringLines(t: Tower, ring: Tower["rings"][number], out: number[], col: number[]) {
+  const N = 40;
+  const y = t.pos.y - 2 + t.h * ring.at;
+  const rx = t.r * (1 - ring.at) + ring.w;
+  const rz = rx * 0.55;
+  const c = t.color;
+  for (let i = 0; i < N; i++) {
+    const a0 = (i / N) * Math.PI * 2;
+    const a1 = ((i + 1) / N) * Math.PI * 2;
+    for (const a of [a0, a1]) {
+      const x = Math.cos(a) * rx;
+      const z = Math.sin(a) * rz;
+      out.push(t.pos.x + x, y + z * Math.sin(ring.tilt), t.pos.z + z * Math.cos(ring.tilt));
+      col.push(c.r * 1.3, c.g * 1.3, c.b * 1.3);
+    }
+  }
+}
+
+export function City({ road }: { road: RoadLayout }) {
   const towers = useMemo(() => {
     const rand = seeded(77);
     const out: Tower[] = [];
@@ -43,30 +89,45 @@ export function City({ road, color }: { road: RoadLayout; color: string }) {
         const pos = p.clone().addScaledVector(side, across).addScaledVector(tangent, along);
         const toCentre = pos.distanceTo(centre);
         const tall = 1 - THREE.MathUtils.smoothstep(toCentre, 20, 190);
-        out.push({ pos, w: 9 + rand() * 9, d: 9 + rand() * 9, h: 30 + tall * 150 + rand() * 40 });
+        const h = 40 + tall * 190 + rand() * 50;
+        const rings = Array.from({ length: 1 + Math.floor(rand() * 3) }, () => ({
+          at: 0.55 + rand() * 0.35,
+          w: 3 + rand() * 7,
+          tilt: (rand() - 0.5) * 0.35,
+        }));
+        out.push({
+          pos,
+          r: 5 + rand() * 6,
+          h,
+          color: new THREE.Color(SPECTRUM[Math.floor(rand() * SPECTRUM.length)]).multiplyScalar(1.5),
+          rings,
+        });
       }
     return out;
   }, [road]);
 
   const bodies = useRef<THREE.InstancedMesh>(null);
   const tops = useRef<THREE.InstancedMesh>(null);
-  // Every tower's outline as one set of lines: the edges of each box,
-  // lit in the phase's neon - the same light as the land.
-  const edges = useMemo(() => {
-    const box = new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1));
-    const unit = box.attributes.position.array as Float32Array;
-    const out = new Float32Array(unit.length * towers.length);
-    towers.forEach((t, i) => {
-      for (let k = 0; k < unit.length; k += 3) {
-        out[i * unit.length + k] = t.pos.x + unit[k] * t.w;
-        out[i * unit.length + k + 1] = t.pos.y - 2 + (unit[k + 1] + 0.5) * t.h;
-        out[i * unit.length + k + 2] = t.pos.z + unit[k + 2] * t.d;
-      }
+  // Every spire's outline, and every floating halo, as two sets of lines
+  // in the spires' own colours - the same light as the land.
+  const { edges, halos } = useMemo(() => {
+    const ep: number[] = [];
+    const ec: number[] = [];
+    const hp: number[] = [];
+    const hc: number[] = [];
+    towers.forEach((t) => {
+      spireLines(t, ep, ec);
+      t.rings.forEach((r) => ringLines(t, r, hp, hc));
     });
-    const g = new THREE.BufferGeometry();
-    g.setAttribute("position", new THREE.BufferAttribute(out, 3));
-    return g;
+    const e = new THREE.BufferGeometry();
+    e.setAttribute("position", new THREE.Float32BufferAttribute(ep, 3));
+    e.setAttribute("color", new THREE.Float32BufferAttribute(ec, 3));
+    const h = new THREE.BufferGeometry();
+    h.setAttribute("position", new THREE.Float32BufferAttribute(hp, 3));
+    h.setAttribute("color", new THREE.Float32BufferAttribute(hc, 3));
+    return { edges: e, halos: h };
   }, [towers]);
+  const halosGroup = useRef<THREE.Group>(null);
 
   // Place the towers once they exist.
   useEffect(() => {
@@ -77,17 +138,19 @@ export function City({ road, color }: { road: RoadLayout; color: string }) {
       const o = new THREE.Object3D();
       towers.forEach((t, i) => {
         o.position.set(t.pos.x, t.pos.y + t.h / 2 - 2, t.pos.z);
-        o.scale.set(t.w, t.h, t.d);
+        o.scale.set(t.r, t.h, t.r);
         o.rotation.set(0, 0, 0);
         o.updateMatrix();
         m.setMatrixAt(i, o.matrix);
-        o.position.set(t.pos.x, t.pos.y + t.h - 2 + 1.4, t.pos.z);
-        o.scale.set(0.9, 0.9, 0.9);
+        r.setColorAt(i, t.color);
+        o.position.set(t.pos.x, t.pos.y + t.h - 2 + 1.2, t.pos.z);
+        o.scale.set(1.3, 1.3, 1.3);
         o.updateMatrix();
         r.setMatrixAt(i, o.matrix);
       });
       m.instanceMatrix.needsUpdate = true;
       r.instanceMatrix.needsUpdate = true;
+      if (r.instanceColor) r.instanceColor.needsUpdate = true;
     }
   }, [towers]);
 
@@ -131,6 +194,8 @@ export function City({ road, color }: { road: RoadLayout; color: string }) {
   /* eslint-disable react-hooks/immutability */
   useFrame(({ clock }) => {
     const t = clock.elapsedTime;
+    // The halos float: the whole set rising and falling a little.
+    if (halosGroup.current) halosGroup.current.position.y = Math.sin(t * 0.5) * 2.5;
     const tp = (trails.attributes.position as THREE.BufferAttribute).array as Float32Array;
     const hp = (heads.attributes.position as THREE.BufferAttribute).array as Float32Array;
     cars.forEach((c, i) => {
@@ -162,16 +227,21 @@ export function City({ road, color }: { road: RoadLayout; color: string }) {
         <meshBasicMaterial color="#03050c" fog={false} />
       </mesh>
       <instancedMesh ref={bodies} args={[undefined, undefined, towers.length]} frustumCulled={false}>
-        <boxGeometry args={[1, 1, 1]} />
+        <coneGeometry args={[1, 1, 7]} />
         <meshBasicMaterial color="#03050c" fog={false} />
       </instancedMesh>
       <lineSegments geometry={edges} frustumCulled={false}>
-        <lineBasicMaterial color={new THREE.Color(color).multiplyScalar(1.6)} toneMapped={false} fog={false} />
+        <lineBasicMaterial vertexColors toneMapped={false} fog={false} />
       </lineSegments>
-      {/* A beacon on every roof, in the phase's colour. */}
+      <group ref={halosGroup}>
+        <lineSegments geometry={halos} frustumCulled={false}>
+          <lineBasicMaterial vertexColors toneMapped={false} fog={false} />
+        </lineSegments>
+      </group>
+      {/* A beacon at every point, in its spire's colour. */}
       <instancedMesh ref={tops} args={[undefined, undefined, towers.length]} frustumCulled={false}>
         <sphereGeometry args={[1, 10, 10]} />
-        <meshBasicMaterial color={new THREE.Color(color).multiplyScalar(2.2)} toneMapped={false} fog={false} />
+        <meshBasicMaterial toneMapped={false} fog={false} />
       </instancedMesh>
       <lineSegments geometry={trails} frustumCulled={false}>
         <lineBasicMaterial vertexColors transparent opacity={0.9} toneMapped={false} blending={THREE.AdditiveBlending} depthWrite={false} fog={false} />

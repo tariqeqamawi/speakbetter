@@ -20,7 +20,7 @@ export const LEAD_OUT = 60;
  *  says "where you are" reads the traveller, not the camera. */
 export const AHEAD = 17;
 /** How far before a phase's first checkpoint its gate stands. */
-export const GATE_BEFORE = 17;
+export const GATE_BEFORE = 32;
 
 /** Height of the road itself: long, low swells. */
 export function roadRise(z: number): number {

@@ -215,6 +215,11 @@ const TERRAIN_FRAG = /* glsl */ `
     // Dots sit much closer together on screen than lines do, so their
     // glow is kept tight - spread as wide as a line's, the field of
     // points merges into a haze.
+    // Where the grid is finer than the screen can draw - far off, or
+    // seen along flat ground at a low angle - its lines crowd together
+    // and their glows merge into a solid sheet. Fade it out there, the
+    // way a renderer filters a texture in the distance.
+    float crowd = 1.0 - smoothstep(0.18, 0.55, max(w.x, w.y));
     float halo = exp(-px * mix(0.5, 1.4, vPattern.x));
     float haloWide = exp(-px * mix(0.22, 0.9, vPattern.x));
 
@@ -247,13 +252,13 @@ const TERRAIN_FRAG = /* glsl */ `
     vec3 col = albedo * (0.35 * hemi + 0.9 * diff) * ao;
     col += vec3(0.05, 0.06, 0.12) * spec * ao;
     col += uHorizon * fres * 0.22 * ao;
-    col += vNeon * (0.035 * haloWide + 0.05 * (wave + wake)) * ao;
+    col += vNeon * (0.035 * haloWide * crowd + 0.05 * (wave + wake)) * ao;
 
     // The light itself.
     // A dot is a point, not a line: it needs more light to read.
     float rest = (0.02 * halo + 0.16 * core) * mix(1.0, 3.2, vPattern.x);
     float lit = (wave + wake) * (1.2 * core + 0.5 * halo + 0.25 * haloWide);
-    col += vNeon * (rest + lit * 1.6);
+    col += vNeon * (rest + lit * 1.6) * crowd;
 
     float fog = 1.0 - exp(-uFogDensity * uFogDensity * vDepth * vDepth);
     gl_FragColor = vec4(mix(col, uFog, fog), 1.0);
@@ -632,7 +637,7 @@ export function AdventureWorld({
       <Bloom />
       <Scenery road={road} spans={spans} />
       {spans.find((sp) => sp.id === "Y") && (
-        <City road={road} color={spans.find((sp) => sp.id === "Y")!.color} />
+        <City road={road} />
       )}
       {coachSpots(road).map((cs, i) => (
         <CoachPost key={i} road={road} s={cs} side={i % 2 ? -1 : 1} travel={travel} talking={talkingCoach === i} />

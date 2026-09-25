@@ -127,8 +127,9 @@ export function AdventureScreen({
   /** Where each phase begins, for the letters to jump to. */
   const phaseStart = (id: string) => {
     const i = stops.findIndex((st) => st.phase === id);
-    // The traveller just through its gate, its first checkpoint ahead.
-    return Math.max(0, road.stops[i] - GATE_BEFORE + 4 - AHEAD);
+    // Level with its first checkpoint - the camera already through the
+    // colour wall, which is for crossing on foot, not for landing in.
+    return Math.max(0, road.stops[i] - AHEAD - 1);
   };
 
 

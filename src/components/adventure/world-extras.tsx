@@ -158,7 +158,7 @@ export function Fireflies({ road, spans }: { road: RoadLayout; spans: { from: nu
   return (
     <points geometry={geo}>
       <pointsMaterial
-        size={0.55}
+        size={0.32}
         map={glow()}
         vertexColors
         transparent
