@@ -18,94 +18,116 @@ interface Moment {
   border: string;
 }
 
+// Tariq's own telling, 25 September 2026 - his words, lightly edited
+// for reading, in the order he gave them.
 const MOMENTS: Moment[] = [
   {
     image: "/origin/tedx.jpg",
-    year: "2011",
-    title: "One talk",
+    year: "Bali, 2011",
+    title: "A story told at a table",
     accent: "text-figurative",
     border: "border-figurative/40",
     body: (
       <>
-        Tariq&apos;s very first public speech was a TEDx talk. After diving deep into what made the most
-        memorable speeches so memorable, he built his out of stories, poetic turns of phrase, mic-drop
-        moments, and a moral worth keeping. It went on to gather more than ten times the views of every other
-        talk at the conference.
+        This all began late one night in Bali, at the Tugu Hotel, in 2011. Tariq sat opposite a woman, Susie
+        Johnston, who asked him to share the story of how he got to Bali. The talk he delivered, sitting there at
+        the table, was enough for her to take matters into her own hands. A few days later an email arrived from
+        Deborah Berardi: <em>&ldquo;Hi Tariq, you&apos;ve come highly recommended by Susie Johnston to be a speaker
+        for TEDx. We&apos;re bringing it to Bali. We&apos;d love to meet and hear your story.&rdquo;</em>
       </>
     ),
   },
   {
     image: "/origin/letters.jpg",
-    year: "The letters",
-    title: "Not something you listen to",
+    year: "His first speech",
+    title: "A time capsule",
     accent: "text-body-language",
     border: "border-body-language/40",
     body: (
       <>
-        Then people started writing. <em>I watched your talk and quit my job. I watched your talk and bought
-        a plane ticket. I watched your talk and proposed.</em> That was when Tariq understood what speaking
-        is: not something you listen to, but something you experience - a transformation - and he set out
-        to deepen the craft and teach others to do on stage what he had done.
+        A month later - after studying the talks of the greats, distilling their style and their techniques (Les
+        Brown, Martin Luther King, John F. Kennedy, Tony Robbins, Bob Proctor and many more) - Tariq wrote and
+        delivered his TEDx talk, his first-ever public speech. What happened next floored him. It racked up more
+        than ten times the views of every other talk at the conference, and people started reaching out:{" "}
+        <em>I watched your talk and quit my job. I watched your talk and bought a plane ticket. I watched your talk
+        and proposed.</em> He had given it months before, and it was still creating value. That was when he
+        understood the true power of speaking: it immortalizes you on video, a time capsule that reaches people
+        wherever they are, whenever they need it most. He knew this was a craft he wanted to master.
       </>
     ),
   },
   {
-    year: "The stage and the page",
-    title: "Standing ovations, and the poems to go with them",
+    year: "Stages around the world",
+    title: "Standing ovations",
     accent: "text-acting",
     border: "border-acting/40",
     body: (
       <>
-        Along the way Tariq won multiple poetry slams and national writing competitions, received standing
-        ovation after standing ovation on stage, and spoke to thousands - in person, and virtually over Zoom.
-        The same skills carry across: they apply whether you&apos;re speaking on a stage or to a screen.
+        Tariq went on to speak at sold-out transformational retreats around the world, and at festivals and
+        institutions including Bali Spirit Festival, Freedom Fest in Australia and in Budapest, the Stockholm School
+        of Economics in St. Petersburg, and Wild and Free in Sweden - routinely to standing ovations.
+      </>
+    ),
+  },
+  {
+    year: "A formula, and a method",
+    title: "Speeches for others",
+    accent: "text-storytelling",
+    border: "border-storytelling/40",
+    body: (
+      <>
+        He realized a standing ovation was a formula - and that shifting an audience, so they leave as someone
+        different from who walked in, was a methodology. So he began writing speeches for other high-level
+        entrepreneurs: Brian Kelly, founder of 9D Breathwork, whose talk went on to get him a TED talk; Billage W.
+        Cardos, an eight-figure entrepreneur, for his speech to 8,000 people at Enagic&apos;s 50th anniversary in
+        Okinawa, Japan; and Dr. Michelle Patrick, whose talk on holistic health in Miami earned a standing ovation.
       </>
     ),
   },
   {
     image: "/origin/cohort.jpg",
     year: "Communicate and Captivate",
-    title: "From shy to shining, take by take",
-    accent: "text-storytelling",
-    border: "border-storytelling/40",
-    body: (
-      <>
-        Feeling he had cracked the code for becoming instantly memorable as a speaker, Tariq set out to prove
-        the methodology, running live cohorts called <em>Communicate and Captivate</em>. Students recorded
-        takes of specific challenges and uploaded them to the group, and he watched every video, giving
-        detailed feedback on how to improve. It worked: people went from shy to shining, from awkward to
-        awesome - starting podcasts, getting booked to speak, being invited to deliver TED talks, and finally
-        finding the confidence to go live on their socials and share their message.
-      </>
-    ),
-  },
-  {
-    year: "The bottleneck",
-    title: "A handful of students at a time",
+    title: "This method really works",
     accent: "text-mindset",
     border: "border-mindset/40",
     body: (
       <>
-        The problem was that it relied on him watching every video, which meant he could only serve a handful
-        of students at a time. That desire to serve many became the driving motivation behind designing a
-        system that would duplicate his abilities as a speaking coach - one that could serve hundreds, if not
-        thousands, of students simultaneously. Over many years, he built the Speak Better methodology and
-        framework.
+        Next came live virtual containers called <em>Communicate and Captivate</em>: a handful of students at a time,
+        through interactive speaking challenges, uploading videos of themselves speaking into a Facebook group - and
+        Tariq watching every one and giving feedback from the methodology he had distilled. Without knowing it, he
+        was creating what would become Speak Better: a full, color-coded method across seven areas of speaking, with
+        the real-world practice and repertoire of skills he wished he had been taught. He watched his students go
+        from awkward and nervous on camera on day one to confident and eloquent by week four - starting podcasts,
+        going live on their socials without fear, being complimented by their peers, and booking speaking gigs of
+        their own. That&apos;s when he saw it: this method really works.
       </>
     ),
   },
   {
     image: "/origin/coach.jpg",
     year: "Now",
-    title: "A coach trained on the method",
+    title: "Coach the Lion",
     accent: "text-structure",
     border: "border-structure/40",
     body: (
       <>
-        Now, thanks to advances in technology and the ability to train an AI coach that actually watches your
-        videos and knows what it&apos;s looking for, Tariq can realize his dream: helping a million people
-        become the messengers of their mission and the voice of their values. Speak Better is born - the
-        fastest, most effective way to master public speaking, for the stage or for the screen.
+        Fast forward a few years, and through the advances in technology and AI, Tariq created his Speak Better
+        mascot - a lion with a mane of true colors who could roar on screen or stage. He put all of his methodology,
+        his skills and his coaching approach into Coach the Lion, and for the first time is guiding a live cohort to
+        experience it for themselves.
+      </>
+    ),
+  },
+  {
+    year: "The mission",
+    title: "The voice of their values",
+    accent: "text-advanced",
+    border: "border-advanced/40",
+    body: (
+      <>
+        Tariq&apos;s mission is to empower a generation to become the voice of their values and the messengers of
+        their mission. Now, through Speak Better, he can serve everyone who wants to become the speaker they were
+        always destined to be.
       </>
     ),
   },
