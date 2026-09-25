@@ -208,6 +208,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **25 September**
+- 3D road goes Tron: bloom, square grid, portals (vortex + number + name banner), Start with
+  a portal dive / Replay, gate sparks, subtitle captions, readable comment cards — `e4cd01d`
 - 3D road: dark glass land with neon wireframe; numbered discs with the name turning round
   them; student photo on the traveller (Tariq as stand-in); Coach's mouth moves as he
   speaks; sound on by default — `b42abae`
