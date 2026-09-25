@@ -26,7 +26,7 @@ const MOMENTS: Moment[] = [
   {
     image: "/origin/dream/bali.webp",
     year: "Bali, 2011",
-    title: "A story told at a table",
+    title: "Once upon a table in Bali",
     accent: "text-figurative",
     border: "border-figurative/40",
     body: (
@@ -42,7 +42,7 @@ const MOMENTS: Moment[] = [
   {
     image: "/origin/dream/first-speech.webp",
     year: "His first speech",
-    title: "A time capsule",
+    title: "Your value on video is immortal",
     accent: "text-body-language",
     border: "border-body-language/40",
     body: (
