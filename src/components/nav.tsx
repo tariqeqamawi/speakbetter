@@ -49,14 +49,15 @@ function isOn(pathname: string, href: string): boolean {
 }
 
 /** On the landing page, for a visitor: the way to the tiers, held in the
- *  header on every screen size so it is always one tap away. Students
+ *  header on a laptop. On a phone the bar at the foot of the screen does
+ *  this job (sticky-join.tsx), so the header stays clear. Students
  *  inside the app never see it. */
 function JoinNow() {
   const { state, ready } = useStore();
   const pathname = usePathname();
   if (!ready || state.unlocked || pathname !== "/") return null;
   return (
-    <a href="#pricing" className="cta-neon-wrap shrink-0 rounded-full">
+    <a href="#pricing" className="cta-neon-wrap hidden shrink-0 rounded-full sm:inline-flex">
       <span className="cta-neon block rounded-full px-4 py-1.5 text-sm sm:px-5">Join Now</span>
     </a>
   );
