@@ -208,6 +208,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **25 September**
+- Road: brass fanfare at phase gates; tapping a locked challenge says so and jumps back (3D and 2D);
+  classmates' profile pictures instead of initials once uploaded — `8bf9d7f`
 - Road (3D and 2D): level lion beside the view switch - hover shows the level, click to change — `464b0ec`
 - Road: Coach as a floating head in the sky (appears, talks, fades); trophies as silhouettes beside
   their portals until won — `52ad71e`
