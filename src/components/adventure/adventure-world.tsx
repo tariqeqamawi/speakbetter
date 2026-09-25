@@ -5,8 +5,9 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { Classmate, CoachPost, Fireflies, Scenery } from "./world-extras";
 import { Portal } from "./portal";
+import { City } from "./city";
 import { Bloom, GateSparks, Sky } from "./fx";
-import { AHEAD, PhaseGate, RoadsideComment, RoadsideTrophy, Traveller } from "./world-details";
+import { AHEAD, ColourWall, RoadsideComment, RoadsideTrophy, Traveller } from "./world-details";
 import { GATE_BEFORE, coachSpots, hills, layoutRoad, pointAt, seeded, sideAt, type RoadLayout, type Travel } from "./road-geometry";
 
 // The S.T.O.R.Y. adventure as a world you travel through.
@@ -83,6 +84,61 @@ function colourAt(spans: Span[], s: number, out: THREE.Color): THREE.Color {
     }
   }
   return out.copy(spans[spans.length - 1].col);
+}
+
+/** Which phases' land lies at a distance along the road: the one you
+ *  are in, and - across a boundary - the next, with how far into it. A
+ *  wider blend than the colour's, so one landform grows into the next
+ *  over a stretch of road instead of changing at a line. */
+function landAt(spans: Span[], s: number): [string, string, number] {
+  const BLEND = 44;
+  for (let i = 0; i < spans.length; i++) {
+    const a = spans[i];
+    const b = spans[i + 1];
+    if (!b) return [a.id, a.id, 0];
+    const mid = (a.to + b.from) / 2;
+    if (s < mid - BLEND / 2) return [a.id, a.id, 0];
+    if (s < mid + BLEND / 2) return [a.id, b.id, THREE.MathUtils.smoothstep(s, mid - BLEND / 2, mid + BLEND / 2)];
+  }
+  return [spans[spans.length - 1].id, spans[spans.length - 1].id, 0];
+}
+
+// EACH PHASE IS ITS OWN LAND. The same ground everywhere made the
+// phases one landscape in five colours; each has its own shape now,
+// chosen for what the phase is about, and they blend over a stretch of
+// road at every boundary:
+//   S  Start With Awareness  soft, low rolling meadows - calm and open
+//   T  Train Your Instrument terraces rising in steps, like a stage or
+//                            the levels of a mixing desk
+//   O  Own Your Stories      long flowing dunes, like pages or waves
+//   R  Reveal Deeper Truths  tall jagged peaks and deep valleys
+//   Y  Your Impact           a wide open plain, and on the horizon a
+//                            city of light you travel towards (city.tsx)
+// Every profile is flat under the road (away = 0) and rises from it.
+function landform(id: string, x: number, z: number, away: number): number {
+  const h = hills(x, z);
+  switch (id) {
+    case "S":
+      return away * (h * 16 - 2.5) + away * away * 3;
+    case "T": {
+      const raw = away * (h * 34 - 4) + away * away * 6;
+      const q = raw / 3.6;
+      return (Math.floor(q) + THREE.MathUtils.smoothstep(Math.abs(q % 1), 0.82, 1)) * 3.6;
+    }
+    case "O": {
+      const dune = Math.pow(0.5 + 0.5 * Math.sin(x * 0.06 + z * 0.045 + h * 3.2), 2);
+      return away * (dune * 18 + h * 8 - 3) + away * away * 4;
+    }
+    case "R": {
+      const ridge = 1 - Math.abs(2 * h - 1);
+      return away * (Math.pow(ridge, 1.6) * 58 - 6) + away * away * 12;
+    }
+    case "Y":
+      // Flat and open: nothing between you and the city on the horizon.
+      return away * (h * 5 - 1.5);
+    default:
+      return away * (h * 34 - 4) + away * away * 6;
+  }
 }
 
 // THE LAND'S LIGHT. The grid is not drawn as lines - a 1-pixel line is a
@@ -214,7 +270,9 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
         // Flat under the road, rising into hills away from it.
         const away = THREE.MathUtils.smoothstep(Math.abs(d), 5, 70);
         const h = hills(x, z);
-        const y = p.y - 0.2 + away * (h * 34 - 4) + away * away * 6;
+        const [la, lb, lt] = landAt(spans, s);
+        const rise = la === lb ? landform(la, x, z, away) : THREE.MathUtils.lerp(landform(la, x, z, away), landform(lb, x, z, away), lt);
+        const y = p.y - 0.2 + rise;
         const v = r * (COLS + 1) + k;
         pos.set([x, y, z], v * 3);
         grid.set([r, k], v * 2);
@@ -264,9 +322,16 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
   // Each wave starts from wherever the traveller is when it sets off.
   const lastLoop = useRef(-1);
   /* eslint-disable react-hooks/immutability */
-  useFrame(({ clock }) => {
+  const baseFog = useMemo(() => new THREE.Color("#0a1030"), []);
+  const tint = useMemo(() => new THREE.Color(), []);
+  useFrame(({ clock, scene }) => {
     const t = clock.elapsedTime;
     material.uniforms.uTime.value = t;
+    // The air takes on the land you are in: haze and horizon a breath of
+    // the phase's colour, shifting as you cross into the next.
+    colourAt(spans, travel.s + AHEAD, tint);
+    (material.uniforms.uFog.value as THREE.Color).copy(baseFog).lerp(tint, 0.14);
+    if (scene.fog) scene.fog.color.copy(material.uniforms.uFog.value);
     const loop = Math.floor(t / 4);
     if (loop !== lastLoop.current) {
       lastLoop.current = loop;
@@ -519,7 +584,7 @@ export function AdventureWorld({
       <Terrain road={road} spans={spans} travel={travel} />
       <Road road={road} spans={spans} trail={trail} />
       {spans.map((sp) => (
-        <PhaseGate key={sp.id} road={road} s={Math.max(4, sp.from)} letter={sp.id} name={sp.name} colour={sp.color} />
+        <ColourWall key={sp.id} road={road} s={Math.max(4, sp.from)} colour={sp.color} />
       ))}
       {stops.map((stop, i) =>
         stop.trophy && stop.state === "done" ? (
@@ -547,6 +612,9 @@ export function AdventureWorld({
       <Sky />
       <Bloom />
       <Scenery road={road} spans={spans} />
+      {spans.find((sp) => sp.id === "Y") && (
+        <City road={road} start={spans.find((sp) => sp.id === "Y")!.from} color={spans.find((sp) => sp.id === "Y")!.color} />
+      )}
       {coachSpots(road).map((cs, i) => (
         <CoachPost key={i} road={road} s={cs} side={i % 2 ? -1 : 1} travel={travel} talking={talkingCoach === i} />
       ))}

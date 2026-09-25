@@ -254,12 +254,12 @@ export function AdventureScreen({
             className="flex items-center gap-4 rounded-2xl border-2 bg-[#070c18]/90 px-6 py-3 shadow-2xl backdrop-blur"
             style={{ borderColor: bannerPhase.color, boxShadow: `0 0 40px -6px ${bannerPhase.color}` }}
           >
-            <span className="text-5xl font-extrabold" style={{ color: bannerPhase.color }}>
+            <span className="text-7xl font-extrabold leading-none sm:text-8xl" style={{ color: bannerPhase.color }}>
               {bannerPhase.id}
             </span>
             <span className="flex flex-col text-left">
               <span className="text-[0.6rem] font-bold uppercase tracking-[0.3em] text-ink-faint">Now entering</span>
-              <span className="text-xl font-bold tracking-tight text-ink">{bannerPhase.name}</span>
+              <span className="text-2xl font-bold leading-tight tracking-tight text-ink sm:text-4xl">{bannerPhase.name}</span>
             </span>
           </div>
         </div>

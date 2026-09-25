@@ -233,7 +233,9 @@ function Equaliser({ road, from, to, color }: SceneProps) {
     const t = clock.elapsedTime;
     spots.forEach((sp, i) => {
       for (let k = 0; k < COLS; k++) {
-        const h = 1 + Math.abs(Math.sin(t * (2 + k * 0.7) + i * 1.7 + k)) * 5 * sp.scale;
+        // Slow, like somebody tuning an equaliser by hand: each column
+        // drifts on its own long cycle, never jumping.
+        const h = 1.4 + (0.5 + 0.5 * Math.sin(t * (0.22 + k * 0.05) + i * 1.7 + k * 1.3)) * 3.2 * sp.scale;
         dummy.position.set(sp.pos.x + (k - 2) * 0.9, sp.pos.y + h / 2, sp.pos.z);
         dummy.rotation.set(0, sp.rot, 0);
         dummy.scale.set(0.6, h, 0.6);

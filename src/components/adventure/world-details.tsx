@@ -132,72 +132,63 @@ export function Traveller({
 /** Step of the trail ribbons, in world units. */
 export const TRAIL_STEP = 1.5;
 
-/** The gate into a phase: two lit pillars, a line of light across the
- *  road, and a banner overhead with the phase's letter and name. You
- *  cannot cross from one colour into the next without passing under
- *  one. */
-export function PhaseGate({
-  road,
-  s,
-  letter,
-  name,
-  colour,
-}: {
-  road: RoadLayout;
-  s: number;
-  letter: string;
-  name: string;
-  colour: string;
-}) {
+/** The way into a phase: a wall of its colour standing across the
+ *  road and the land either side - translucent, brightest at the ground
+ *  and fading upward, with light running up it - that you pass straight
+ *  through into the new colour. */
+const WALL_VERT = /* glsl */ `
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+const WALL_FRAG = /* glsl */ `
+  uniform vec3 uColor;
+  uniform float uTime;
+  uniform float uFade;
+  varying vec2 vUv;
+  void main() {
+    float rise = pow(1.0 - vUv.y, 1.6);
+    float streak = 0.5 + 0.5 * sin(vUv.x * 140.0 + sin(vUv.x * 13.0) * 4.0);
+    float run = 0.5 + 0.5 * sin(vUv.y * 22.0 - uTime * 3.0 + vUv.x * 30.0);
+    float edge = smoothstep(0.0, 0.08, vUv.x) * smoothstep(1.0, 0.92, vUv.x);
+    float a = (0.05 + 0.24 * rise + 0.12 * streak * run * rise) * edge * uFade;
+    gl_FragColor = vec4(uColor * (0.8 + 0.8 * rise), a);
+  }
+`;
+
+export function ColourWall({ road, s, colour }: { road: RoadLayout; s: number; colour: string }) {
   const group = useRef<THREE.Group>(null);
-  const bannerMat = useRef<THREE.MeshBasicMaterial>(null);
-  const banner = useMemo(
-    () =>
-      canvasTexture(1024, 180, (g) => {
-        roundRect(g, 4, 4, 1016, 172, 30);
-        g.fillStyle = "rgba(7,12,24,0.92)";
-        g.fill();
-        g.lineWidth = 6;
-        g.strokeStyle = colour;
-        g.stroke();
-        g.fillStyle = colour;
-        g.font = "800 120px system-ui, sans-serif";
-        g.textBaseline = "middle";
-        g.fillText(letter, 48, 96);
-        g.fillStyle = "#f4f6ff";
-        g.font = "700 56px system-ui, sans-serif";
-        let text = name.toUpperCase();
-        while (g.measureText(text).width > 800 && text.length > 4) text = text.slice(0, -2) + "…";
-        g.fillText(text, 170, 94);
-      }),
-    [letter, name, colour],
-  );
   const { position, facing } = useMemo(() => ({ position: pointAt(road, s), facing: pointAt(road, s - 1) }), [road, s]);
   useEffect(() => {
     group.current?.lookAt(facing.x, position.y, facing.z);
   }, [facing, position]);
-  const c = useMemo(() => new THREE.Color(colour), [colour]);
-  // Readable on the way in; gone before it passes overhead, where it
-  // would fill the screen with a few giant letters.
-  useFrame(({ camera }) => {
-    if (bannerMat.current) bannerMat.current.opacity = THREE.MathUtils.smoothstep(camera.position.distanceTo(position), 12, 24);
+  const material = useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        vertexShader: WALL_VERT,
+        fragmentShader: WALL_FRAG,
+        transparent: true,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending,
+        uniforms: { uColor: { value: new THREE.Color(colour) }, uTime: { value: 0 }, uFade: { value: 1 } },
+      }),
+    [colour],
+  );
+  /* eslint-disable react-hooks/immutability */
+  useFrame(({ clock, camera }) => {
+    material.uniforms.uTime.value = clock.elapsedTime;
+    // Thinner as you reach it, so passing through is a wash of colour,
+    // not a blank screen.
+    material.uniforms.uFade.value = THREE.MathUtils.smoothstep(camera.position.distanceTo(position), 8, 48);
   });
+  /* eslint-enable react-hooks/immutability */
   return (
     <group ref={group} position={position}>
-      {[-4.6, 4.6].map((x) => (
-        <mesh key={x} position={[x, 4, 0]}>
-          <boxGeometry args={[0.45, 8, 0.45]} />
-          <meshBasicMaterial color={c} toneMapped={false} />
-        </mesh>
-      ))}
-      <mesh position={[0, 8.3, 0]}>
-        <planeGeometry args={[11.5, 2.02]} />
-        <meshBasicMaterial ref={bannerMat} map={banner} transparent side={THREE.DoubleSide} toneMapped={false} />
-      </mesh>
-      {/* The threshold, laid across the road. */}
-      <mesh position={[0, 0.07, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[9.2, 0.5]} />
-        <meshBasicMaterial color={c} toneMapped={false} side={THREE.DoubleSide} />
+      <mesh position={[0, 11, 0]} material={material}>
+        <planeGeometry args={[120, 26]} />
       </mesh>
     </group>
   );
