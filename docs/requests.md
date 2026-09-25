@@ -208,6 +208,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **25 September**
+- Road: haze removed; dots on O's dunes, uneven lattice on R's peaks; the city as glowing
+  outlines, beyond the land's end, never reached — `4e653d0`
 - Road: a distinct land per phase, colour walls between them, bigger 'Now entering', slow
   equalisers, phase-tinted air, a futuristic city with flying cars at the end — `4491051`
 - Road: challenges further apart; GI-style lighting, haze and valley mist; 3D/2D switch with a
