@@ -697,6 +697,7 @@ export function AdventureWorld({
   pickRef,
   limit,
   skyImage,
+  active = true,
 }: {
   stops: WorldStop[];
   phases: WorldPhase[];
@@ -715,6 +716,9 @@ export function AdventureWorld({
   limit?: number;
   /** A painted sky of planets to travel under, in place of plain stars. */
   skyImage?: string;
+  /** Draw frames at all - false while the road is scrolled out of view,
+   *  so it costs nothing when nobody can see it. */
+  active?: boolean;
 }) {
   const road = useMemo(() => layoutRoad(stops.length, stops.map((s) => s.phase)), [stops]);
   const spans = useMemo(() => phaseSpans(road, stops, phases), [road, stops, phases]);
@@ -739,7 +743,8 @@ export function AdventureWorld({
       // student's photo included. The glow comes from the bloom, not the
       // grade, so photos show as uploaded and the neon stays pure.
       flat
-      dpr={[1, 1.5]}
+      dpr={[1, 1.25]}
+      frameloop={active ? "always" : "never"}
       gl={{ antialias: true, powerPreference: "high-performance" }}
       camera={{ fov: 62, near: 0.1, far: 1400, position: [0, 3, 6] }}
       onCreated={({ scene }) => {

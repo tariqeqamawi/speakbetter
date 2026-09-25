@@ -80,6 +80,16 @@ export function AdventureScreen({
   const [travel] = useState(() => new Travel(start));
   const [s, setS] = useState(start);
   const frame = useRef<HTMLDivElement>(null);
+  // Only draw while the road is on screen - a page with the road far
+  // below (or a tab in the background) shouldn't be running a 3D scene.
+  const [onScreen, setOnScreen] = useState(true);
+  useEffect(() => {
+    const el = frame.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setOnScreen(e.isIntersecting), { rootMargin: "100px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
   // The student's own photo on the traveller; until they have set one, a
   // stand-in (on the preview, Tariq).
   const { state } = useStore();
@@ -465,7 +475,7 @@ export function AdventureScreen({
       aria-label="The S.T.O.R.Y. road. Drag down or use the down arrow to travel forward."
       className={`relative w-full touch-none select-none ${heightClass} overflow-hidden bg-[#070c18] outline-none`}
     >
-      <AdventureWorld stops={stops} phases={phases} travel={travel} onMove={onMove} avatar={avatar} pickRef={pickRef} limit={limit} skyImage={skyImage} />
+      <AdventureWorld stops={stops} phases={phases} travel={travel} onMove={onMove} avatar={avatar} pickRef={pickRef} limit={limit} skyImage={skyImage} active={onScreen} />
 
       {bannerPhase && (
         <div key={banner!.key} className="phase-banner pointer-events-none absolute inset-x-0 top-[30%] flex justify-center px-4">
