@@ -208,6 +208,7 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **25 September**
+- Road: lattice back on R, hexagons on Y — `2247495`
 - Road: a pattern per land - S ripples, T sound wave, O denser dots, R hexagons, Y rays to
   the city — `56aee26`
 - Road: far-future spire city in all seven colours; colour walls only at the threshold; the
