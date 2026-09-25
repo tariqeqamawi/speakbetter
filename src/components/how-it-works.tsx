@@ -24,7 +24,7 @@ import { CoachMark } from "@/components/coach-mark";
 const STEPS = [
   {
     n: 1,
-    image: "/how/watch.webp",
+    image: "/how/watch-2.webp",
     title: "Watch the challenge",
     line: "A short brief, on camera, saying exactly what this one asks of you.",
     Icon: PlayFillIcon,
@@ -32,7 +32,7 @@ const STEPS = [
   },
   {
     n: 2,
-    image: "/how/record.webp",
+    image: "/how/record-2.webp",
     title: "Record yourself speaking",
     line: "In the app, with the brief and a countdown on screen. One to two minutes.",
     Icon: VideoIcon,
@@ -40,7 +40,7 @@ const STEPS = [
   },
   {
     n: 3,
-    image: "/how/upload.webp",
+    image: "/how/upload-2.webp",
     title: "Upload your take for Coach",
     line: "One tap. Nobody else ever sees the video - it stays yours.",
     Icon: UploadIcon,
@@ -48,7 +48,7 @@ const STEPS = [
   },
   {
     n: 4,
-    image: "/how/feedback.webp",
+    image: "/how/feedback-2.webp",
     title: "Receive detailed feedback",
     line: "Coach the lion watches it and talks you through what landed and what didn't.",
     Icon: null,
@@ -56,7 +56,7 @@ const STEPS = [
   },
   {
     n: 5,
-    image: "/how/improve.webp",
+    image: "/how/improve-2.webp",
     title: "Improve quickly",
     line: "Do it again, better, the same day - which is the part videos alone can never give you.",
     Icon: TrendingUpIcon,

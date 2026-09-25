@@ -14,11 +14,11 @@ import Image from "next/image";
 // middle so the words read clearly over them.
 
 const SCENES = [
-  { src: "/reality/laptop.webp", alt: "Speaking to a laptop camera at a desk", span: "col-span-1 sm:col-span-2" },
-  { src: "/reality/stage.webp", alt: "A speaker in a spotlight on a big stage", span: "col-span-2 sm:col-span-2" },
-  { src: "/reality/tripod.webp", alt: "Filming himself on a phone on a tripod", span: "col-span-1 sm:col-span-2" },
-  { src: "/reality/vlog.webp", alt: "Vlogging while walking down a city street at dusk", span: "col-span-1 sm:col-span-3" },
-  { src: "/reality/podcast.webp", alt: "Two people recording a podcast", span: "col-span-1 sm:col-span-3" },
+  { src: "/reality/gopro-2.webp", alt: "Talking to a GoPro while walking in a park", span: "col-span-1 sm:col-span-2" },
+  { src: "/reality/stage-2.webp", alt: "A speaker at an event, the crowd filming on their phones", span: "col-span-2 sm:col-span-2" },
+  { src: "/reality/tripod-2.webp", alt: "Filming himself on a phone on a tripod", span: "col-span-1 sm:col-span-2" },
+  { src: "/reality/vlog-2.webp", alt: "Vlogging down a city street, seen from behind", span: "col-span-1 sm:col-span-3" },
+  { src: "/reality/podcast-2.webp", alt: "Speaking into a podcast microphone", span: "col-span-1 sm:col-span-3" },
 ];
 
 export function TheReality() {
