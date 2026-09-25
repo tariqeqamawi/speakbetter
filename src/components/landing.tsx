@@ -21,6 +21,7 @@ import { HeroBeat } from "@/components/hero-beat";
 import { TheReality } from "@/components/the-reality";
 import { JoinCta } from "@/components/join-cta";
 import { StickyJoin } from "@/components/sticky-join";
+import { HeroLion } from "@/components/hero-lion";
 import { TestimonialStream } from "@/components/testimonial-stream";
 import { ProofLine } from "@/components/proof-line";
 import { LionPitch } from "@/components/lion-pitch";
@@ -28,7 +29,6 @@ import { LANDING_PITCH, LANDING_PITCH_AUDIO, HEADLINE_AUDIO } from "@/data/welco
 import { SpeakLine } from "@/components/speak-line";
 import { splitForPage } from "@/data/testimonials";
 import { WhatItIs } from "@/components/what-it-is";
-import { RoarMark } from "@/components/roar-mark";
 import { LionArtWhenNear, LionMouth } from "@/components/lion-mouth";
 import { FirstChallenge } from "@/components/first-challenge";
 import { CoachDemo } from "@/components/coach-demo";
@@ -68,7 +68,7 @@ function LandingBody() {
             clip, lion and mic only - the wave beneath is the live one),
             and holds still for anyone who asked for less motion. */}
         <div className="flex w-full max-w-md flex-col items-center">
-          <RoarMark className="h-44 w-auto sm:h-64 lg:h-72" />
+          <HeroLion className="h-44 w-auto sm:h-64 lg:h-72" />
           <Soundwave variant="hero" className="-mt-3 h-16 w-full sm:-mt-4 sm:h-24" />
         </div>
 
@@ -90,7 +90,7 @@ function LandingBody() {
           <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
             Discover your true colors, speak, and roar on screen or stage.
           </h1>
-          <SpeakLine audioSrc={HEADLINE_AUDIO} label="Listen to Coach" />
+          <SpeakLine audioSrc={HEADLINE_AUDIO} label="Listen to Coach" channel="hero" />
           <p className="text-xl font-medium text-figurative text-balance sm:text-2xl">
             Six weeks. Master public speaking in minutes a day, not months - and step into your true power on any
             platform.
