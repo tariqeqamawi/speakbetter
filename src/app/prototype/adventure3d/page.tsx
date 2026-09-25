@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { challenges, storyPhases } from "@/data/challenges";
+import { challengeChatter } from "@/data/challenge-chatter";
 import { AdventureScreen } from "@/components/adventure/adventure-screen";
 import type { WorldPhase, WorldStop } from "@/components/adventure/adventure-world";
 
@@ -31,6 +32,11 @@ const stops: WorldStop[] = challenges.map((c, i) => ({
   phase: c.phase,
   state: i < 7 ? "done" : i === 7 ? "here" : i < 10 ? "ahead" : "locked",
   image: c.vimeoId ? `/thumbs/${c.vimeoId}.jpg` : "/lion-head.png",
+  trophy: `/trophy/challenge-${c.slug}.webp`,
+  comment: challengeChatter[c.slug]?.[0] && {
+    name: challengeChatter[c.slug][0].name,
+    body: challengeChatter[c.slug][0].body,
+  },
 }));
 
 export default function Adventure3DPage() {

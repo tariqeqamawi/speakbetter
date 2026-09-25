@@ -3283,3 +3283,20 @@ html.bare .demo-banner {
     animation: none;
   }
 }
+
+/* A new phase of the road, announced: the banner comes at you out of
+ * the distance, holds, and flies past overhead - the way the gate it
+ * names does in the world behind it. */
+.phase-banner {
+  animation: phase-banner 2.6s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+@keyframes phase-banner {
+  0% { opacity: 0; transform: scale(0.45) translateY(30px); }
+  18% { opacity: 1; transform: scale(1) translateY(0); }
+  72% { opacity: 1; transform: scale(1.04) translateY(-4px); }
+  100% { opacity: 0; transform: scale(1.7) translateY(-140px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .phase-banner { animation: phase-banner-still 2.6s linear both; }
+  @keyframes phase-banner-still { 0%, 100% { opacity: 0; } 10%, 85% { opacity: 1; } }
+}

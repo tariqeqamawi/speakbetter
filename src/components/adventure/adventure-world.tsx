@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import { hills, layoutRoad, pointAt, seeded, sideAt, type RoadLayout, type Travel } from "./road-geometry";
+import { AHEAD, PhaseGate, RoadsideComment, RoadsideTrophy, Traveller } from "./world-details";
+import { GATE_BEFORE, hills, layoutRoad, pointAt, seeded, sideAt, type RoadLayout, type Travel } from "./road-geometry";
 
 // The S.T.O.R.Y. adventure as a world you travel through.
 //
@@ -31,6 +32,10 @@ export interface WorldStop {
   state: "done" | "here" | "ahead" | "locked";
   /** Still shown inside the checkpoint's ring. */
   image: string;
+  /** The trophy won here, shown at the roadside once passed. */
+  trophy?: string;
+  /** Something another student said about this challenge. */
+  comment?: { name: string; body: string };
 }
 
 export interface WorldPhase {
@@ -49,7 +54,7 @@ function phaseSpans(road: RoadLayout, stops: WorldStop[], phases: WorldPhase[]) 
     const idx = stops.map((s, i) => (s.phase === p.id ? i : -1)).filter((i) => i >= 0);
     const first = road.stops[idx[0]] ?? 0;
     const last = road.stops[idx[idx.length - 1]] ?? 0;
-    return { ...p, from: first - 17, to: last + 17, col: new THREE.Color(p.color) };
+    return { ...p, from: first - GATE_BEFORE, to: last + GATE_BEFORE, col: new THREE.Color(p.color) };
   });
 }
 
@@ -205,12 +210,13 @@ function ribbon(
 
 /** The road: dark surface, faint edges, and the lit line down the
  *  middle that the traveller follows. */
-function Road({ road, spans }: { road: RoadLayout; spans: Span[] }) {
+function Road({ road, spans, trail }: { road: RoadLayout; spans: Span[]; trail: THREE.BufferGeometry[] }) {
   const g = useMemo(
     () => ({
       surface: ribbon(road, spans, -3.2, 3.2, 0, (ph, o) => o.set("#101a33").lerp(ph, 0.12)),
       glow: ribbon(road, spans, -1.6, 1.6, 0.03, (ph, o) => o.copy(ph).multiplyScalar(0.7)),
-      line: ribbon(road, spans, -0.28, 0.28, 0.05, (ph, o) => o.copy(ph).multiplyScalar(1.8)),
+      // The road ahead, not yet travelled: a faint guide line.
+      line: ribbon(road, spans, -0.12, 0.12, 0.05, (ph, o) => o.copy(ph).multiplyScalar(0.45)),
       left: ribbon(road, spans, -3.2, -3.0, 0.04, (ph, o) => o.copy(ph).multiplyScalar(0.7)),
       right: ribbon(road, spans, 3.0, 3.2, 0.04, (ph, o) => o.copy(ph).multiplyScalar(0.7)),
     }),
@@ -225,6 +231,14 @@ function Road({ road, spans }: { road: RoadLayout; spans: Span[] }) {
         <meshBasicMaterial vertexColors transparent opacity={0.45} blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} side={THREE.DoubleSide} />
       </mesh>
       <mesh geometry={g.line}>
+        <meshBasicMaterial vertexColors toneMapped={false} side={THREE.DoubleSide} />
+      </mesh>
+      {/* The neon the traveller leaves behind - drawn only as far as
+          they have gone (world-details.tsx, Traveller). */}
+      <mesh geometry={trail[0]}>
+        <meshBasicMaterial vertexColors transparent opacity={0.6} blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} side={THREE.DoubleSide} />
+      </mesh>
+      <mesh geometry={trail[1]}>
         <meshBasicMaterial vertexColors toneMapped={false} side={THREE.DoubleSide} />
       </mesh>
       <mesh geometry={g.left}>
@@ -427,9 +441,11 @@ function Rig({
     travel.step(Math.min(dt, 0.05) * 60, road.finish + 10);
     const s = travel.s;
     pointAt(road, s, pos);
-    pointAt(road, s + 18, at);
-    eye.set(pos.x, pos.y + 2.4, pos.z);
-    look.set(at.x, at.y + 2.2, at.z);
+    // Up above the road and behind the traveller, looking down the road
+    // past them - high enough to see the land run off to the horizon.
+    pointAt(road, s + AHEAD + 22, at);
+    eye.set(pos.x, pos.y + 7.5, pos.z);
+    look.set(at.x, at.y + 1.2, at.z);
     camera.position.lerp(eye, 1 - Math.pow(0.001, dt));
     camera.lookAt(look);
     if (Math.abs(s - last.current) > 0.25) {
@@ -445,6 +461,7 @@ export function AdventureWorld({
   phases,
   travel,
   onMove,
+  avatar = "/lion-head.png",
 }: {
   stops: WorldStop[];
   phases: WorldPhase[];
@@ -452,11 +469,24 @@ export function AdventureWorld({
    *  so the controls around the canvas can move it. */
   travel: Travel;
   onMove: (s: number) => void;
+  /** The student's own picture, on the traveller. */
+  avatar?: string;
 }) {
   const road = useMemo(() => layoutRoad(stops.length), [stops.length]);
   const spans = useMemo(() => phaseSpans(road, stops, phases), [road, stops, phases]);
   const glow = useMemo(() => (typeof document === "undefined" ? null : glowTexture()), []);
   const phaseCol = useMemo(() => new Map(phases.map((p) => [p.id, new THREE.Color(p.color)])), [phases]);
+  const trail = useMemo(
+    () => [
+      ribbon(road, spans, -1.3, 1.3, 0.06, (ph, o) => o.copy(ph).multiplyScalar(0.9)),
+      ribbon(road, spans, -0.3, 0.3, 0.08, (ph, o) => o.copy(ph).lerp(new THREE.Color("#ffffff"), 0.35).multiplyScalar(1.6)),
+    ],
+    [road, spans],
+  );
+  const colourAlong = useMemo(() => {
+    const c = new THREE.Color();
+    return (s: number) => colourAt(spans, s, c);
+  }, [spans]);
 
   return (
     <Canvas
@@ -473,7 +503,28 @@ export function AdventureWorld({
       <directionalLight position={[40, 80, 30]} intensity={1.4} color="#c8d2ff" />
       <Stars />
       <Terrain road={road} spans={spans} />
-      <Road road={road} spans={spans} />
+      <Road road={road} spans={spans} trail={trail} />
+      {spans.map((sp) => (
+        <PhaseGate key={sp.id} road={road} s={Math.max(4, sp.from)} letter={sp.id} name={sp.name} colour={sp.color} />
+      ))}
+      {stops.map((stop, i) =>
+        stop.trophy && stop.state === "done" ? (
+          <RoadsideTrophy key={`t-${stop.slug}`} road={road} s={road.stops[i] + 6} side={i % 2 ? -1 : 1} image={stop.trophy} />
+        ) : null,
+      )}
+      {stops.map((stop, i) =>
+        stop.comment ? (
+          <RoadsideComment
+            key={`c-${stop.slug}`}
+            road={road}
+            s={road.stops[i] + 17}
+            side={i % 2 ? 1 : -1}
+            name={stop.comment.name}
+            body={stop.comment.body}
+          />
+        ) : null,
+      )}
+      <Traveller road={road} travel={travel} image={avatar} trail={trail} colourAt={colourAlong} />
       {glow &&
         stops.map((stop, i) => (
           <Checkpoint

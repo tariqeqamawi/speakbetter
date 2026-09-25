@@ -16,6 +16,11 @@ export const SPACING = 34;
 /** Road before the first checkpoint, and after the last before the gate. */
 export const LEAD_IN = 26;
 export const LEAD_OUT = 40;
+/** How far ahead of the camera the traveller walks. Everything that
+ *  says "where you are" reads the traveller, not the camera. */
+export const AHEAD = 17;
+/** How far before a phase's first checkpoint its gate stands. */
+export const GATE_BEFORE = 17;
 
 /** Height of the road itself: long, low swells. */
 export function roadRise(z: number): number {

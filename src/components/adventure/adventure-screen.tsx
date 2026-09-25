@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Travel, layoutRoad } from "./road-geometry";
+import { AHEAD, GATE_BEFORE, Travel, layoutRoad } from "./road-geometry";
 import type { WorldPhase, WorldStop } from "./adventure-world";
 
 // The adventure screen: the 3D road filling the frame, and the few
@@ -22,7 +22,7 @@ export function AdventureScreen({ stops, phases }: { stops: WorldStop[]; phases:
   const road = useMemo(() => layoutRoad(stops.length), [stops.length]);
   // Start a little before the checkpoint the student is on.
   const hereIndex = Math.max(0, stops.findIndex((s) => s.state === "here"));
-  const start = Math.max(0, road.stops[hereIndex] - 24);
+  const start = Math.max(0, road.stops[hereIndex] - AHEAD - 8);
   const [travel] = useState(() => new Travel(start));
   const [s, setS] = useState(start);
   const frame = useRef<HTMLDivElement>(null);
@@ -35,6 +35,8 @@ export function AdventureScreen({ stops, phases }: { stops: WorldStop[]; phases:
     if (!el) return;
     let lastY: number | null = null;
     const down = (e: PointerEvent) => {
+      // The letters and buttons over the road are buttons, not road.
+      if ((e.target as HTMLElement).closest("button")) return;
       lastY = e.clientY;
       travel.push(0, 0);
       el.setPointerCapture(e.pointerId);
@@ -74,11 +76,41 @@ export function AdventureScreen({ stops, phases }: { stops: WorldStop[]; phases:
     };
   }, [travel]);
 
-  // Which checkpoint is nearest, and which phase that puts you in.
-  const nearest = road.stops.reduce((best, at, i) => (Math.abs(at - s) < Math.abs(road.stops[best] - s) ? i : best), 0);
+  // Which checkpoint the traveller is nearest, and which phase that
+  // puts them in - the phase changes the moment they pass under its
+  // gate, not when a checkpoint happens to be closer.
+  const at = s + AHEAD;
+  const nearest = road.stops.reduce((best, x, i) => (Math.abs(x - at) < Math.abs(road.stops[best] - at) ? i : best), 0);
+  const phaseHere =
+    [...phases].reverse().find((p) => {
+      const i = stops.findIndex((st) => st.phase === p.id);
+      return i >= 0 && at >= road.stops[i] - GATE_BEFORE;
+    }) ?? phases[0];
   const stop = stops[nearest];
-  const phase = phases.find((p) => p.id === stop?.phase);
-  const atFinish = s > road.finish - 20;
+  const phase = phaseHere;
+  const atFinish = at > road.finish - 6;
+
+  // Crossing into a new phase: a banner sweeps across the screen with
+  // its letter and name, as the gate for it passes overhead - so the
+  // change of colour is something you are told, not something you have
+  // to notice.
+  const [banner, setBanner] = useState<{ key: number; id: string } | null>(null);
+  const shown = useRef(phase?.id);
+  useEffect(() => {
+    if (!phase || phase.id === shown.current) return;
+    shown.current = phase.id;
+    setBanner({ key: Date.now(), id: phase.id });
+    const t = setTimeout(() => setBanner(null), 2600);
+    return () => clearTimeout(t);
+  }, [phase]);
+  const bannerPhase = banner && phases.find((p) => p.id === banner.id);
+
+  /** Where each phase begins, for the letters to jump to. */
+  const phaseStart = (id: string) => {
+    const i = stops.findIndex((st) => st.phase === id);
+    // The traveller just through its gate, its first checkpoint ahead.
+    return Math.max(0, road.stops[i] - GATE_BEFORE + 4 - AHEAD);
+  };
 
   return (
     <div
@@ -89,6 +121,23 @@ export function AdventureScreen({ stops, phases }: { stops: WorldStop[]; phases:
       className="relative h-[calc(100dvh-4rem)] w-full touch-none select-none overflow-hidden bg-[#070c18] outline-none"
     >
       <AdventureWorld stops={stops} phases={phases} travel={travel} onMove={onMove} />
+
+      {bannerPhase && (
+        <div key={banner!.key} className="phase-banner pointer-events-none absolute inset-x-0 top-[30%] flex justify-center px-4">
+          <div
+            className="flex items-center gap-4 rounded-2xl border-2 bg-[#070c18]/90 px-6 py-3 shadow-2xl backdrop-blur"
+            style={{ borderColor: bannerPhase.color, boxShadow: `0 0 40px -6px ${bannerPhase.color}` }}
+          >
+            <span className="text-5xl font-extrabold" style={{ color: bannerPhase.color }}>
+              {bannerPhase.id}
+            </span>
+            <span className="flex flex-col text-left">
+              <span className="text-[0.6rem] font-bold uppercase tracking-[0.3em] text-ink-faint">Now entering</span>
+              <span className="text-xl font-bold tracking-tight text-ink">{bannerPhase.name}</span>
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Where you are. */}
       <div className="pointer-events-none absolute inset-x-0 top-0 flex flex-col items-center gap-1 bg-gradient-to-b from-[#070c18]/90 to-transparent px-4 pb-10 pt-4 text-center">
@@ -115,6 +164,31 @@ export function AdventureScreen({ stops, phases }: { stops: WorldStop[]; phases:
             </>
           )
         )}
+        {/* S.T.O.R.Y. - tap a letter to fly to that stretch of road. */}
+        <div className="pointer-events-auto mt-3 flex gap-2">
+          {phases.map((p) => {
+            const on = p.id === phase?.id;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => travel.goTo(phaseStart(p.id))}
+                aria-label={`Go to ${p.name}`}
+                aria-current={on ? "true" : undefined}
+                className="grid size-11 place-items-center rounded-full border-2 text-lg font-extrabold transition-transform"
+                style={{
+                  borderColor: p.color,
+                  color: on ? "#070c18" : p.color,
+                  background: on ? p.color : "rgba(7,12,24,0.7)",
+                  boxShadow: on ? `0 0 18px ${p.color}` : undefined,
+                  transform: on ? "scale(1.12)" : undefined,
+                }}
+              >
+                {p.id}
+              </button>
+            );
+          })}
+        </div>
         <span className="mt-2 text-[0.7rem] text-ink-faint">Drag down to travel forward</span>
       </div>
     </div>
