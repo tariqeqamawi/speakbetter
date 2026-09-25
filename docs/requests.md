@@ -208,6 +208,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **25 September**
+- Road: far-future spire city in all seven colours; colour walls only at the threshold; the
+  colour wash fixed; land-pattern bench at /prototype/land-patterns — `151686e`
 - Road: haze removed; dots on O's dunes, uneven lattice on R's peaks; the city as glowing
   outlines, beyond the land's end, never reached — `4e653d0`
 - Road: a distinct land per phase, colour walls between them, bigger 'Now entering', slow
