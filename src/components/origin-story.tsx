@@ -143,9 +143,11 @@ const MOMENTS: Moment[] = [
     border: "border-advanced/40",
     body: (
       <>
-        Tariq&apos;s mission is to empower a generation to become the voice of their values and the messengers of
-        their mission. Now, through Speak Better, he can serve everyone who wants to become the speaker they were
-        always destined to be.
+        Tariq&apos;s mission is to empower a generation of heart-centered leaders to become the voice of their
+        values and the messengers of their mission - confidently delivering their wisdom, stories and services to
+        the world. Now, with Speak Better, and for the first time, Tariq is no longer bound by the constraints of
+        time. He and Coach the Lion can serve everyone who chooses to become the speaker their soul always intended
+        them to be.
       </>
     ),
   },
