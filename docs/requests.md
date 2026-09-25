@@ -208,6 +208,7 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **25 September**
+- Road (3D and 2D): level lion beside the view switch - hover shows the level, click to change — `464b0ec`
 - Road: Coach as a floating head in the sky (appears, talks, fades); trophies as silhouettes beside
   their portals until won — `52ad71e`
 - Coach's finish-line words (Tariq's), recorded and captioned sentence by sentence — `5beb51d`
