@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AdventureScreen } from "./adventure-screen";
 import { Adventure2D } from "./adventure-2d";
+import { LevelPicker } from "@/components/level-picker";
 import type { WorldPhase, WorldStop } from "./adventure-world";
 
 // The adventure, as a world or as a page - the student's choice, kept on
@@ -43,29 +44,37 @@ export function AdventureView({
 
   return (
     <div className="relative">
-      {/* The switch, stuck to the top whichever view is showing. */}
+      {/* The switch and the level, stuck to the top whichever view is showing. */}
       <div className="sticky top-16 z-40 flex">
-        <div
-          role="radiogroup"
-          aria-label="View"
-          className="absolute left-3 top-3 flex rounded-full border border-navy-600 bg-navy-950/80 p-1 text-xs font-bold backdrop-blur"
-        >
-          {(["3d", "2d"] as const).map((m) => (
-            <button
-              key={m}
-              type="button"
-              role="radio"
-              aria-checked={mode === m}
-              onClick={() => choose(m)}
-              className={`rounded-full px-4 py-1.5 transition-colors ${mode === m ? "bg-ink text-navy-950" : "text-ink-muted hover:text-ink"}`}
-            >
-              {m === "3d" ? "3D" : "2D"}
-            </button>
-          ))}
+        <div className="absolute left-3 top-3 flex items-center gap-2">
+          <div
+            role="radiogroup"
+            aria-label="View"
+            className="flex rounded-full border border-navy-600 bg-navy-950/80 p-1 text-xs font-bold backdrop-blur"
+          >
+            {(["3d", "2d"] as const).map((m) => (
+              <button
+                key={m}
+                type="button"
+                role="radio"
+                aria-checked={mode === m}
+                onClick={() => choose(m)}
+                className={`rounded-full px-4 py-1.5 transition-colors ${mode === m ? "bg-ink text-navy-950" : "text-ink-muted hover:text-ink"}`}
+              >
+                {m === "3d" ? "3D" : "2D"}
+              </button>
+            ))}
+          </div>
+          {/* The level they are travelling it at, and where to change it. */}
+          <LevelPicker />
         </div>
       </div>
       {mode === "3d" ? (
-        <AdventureScreen stops={stops} phases={phases} fallbackAvatar={fallbackAvatar} />
+        <AdventureScreen
+          stops={stops}
+          phases={phases}
+          fallbackAvatar={fallbackAvatar}
+        />
       ) : (
         <div className="pt-14">
           <Adventure2D stops={stops} phases={phases} />

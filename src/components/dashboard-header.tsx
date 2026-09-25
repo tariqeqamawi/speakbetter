@@ -1,16 +1,15 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useStore, type Level } from "@/lib/store";
+import { useStore } from "@/lib/store";
 import { standing } from "@/lib/progress";
 import { LevelIcon, levelMeta } from "@/components/level-icon";
+import { LevelMenu } from "@/components/level-picker";
 import { AvatarCrop } from "@/components/avatar-crop";
 import { SectionTour } from "@/components/section-tour";
 import { ChevronDownIcon, ProfileIcon } from "@/components/icons";
 import { ProTip } from "@/components/pro-tip";
 import { ProgressFile } from "@/components/progress-file";
-
-const levelOrder: Level[] = ["beginner", "intermediate", "advanced"];
 
 // The heads-up display: who they are, what rank they've reached, and -
 // held above all of it - the reason they gave for starting. Everything
@@ -122,7 +121,7 @@ export function DashboardHeaderCompact({
 }
 
 export function DashboardHeader() {
-  const { state, setProfile, setIntention, setLevel } = useStore();
+  const { state, setProfile, setIntention } = useStore();
   const fileRef = useRef<HTMLInputElement>(null);
   const [editingName, setEditingName] = useState(false);
   const [editingWhy, setEditingWhy] = useState(false);
@@ -249,63 +248,7 @@ export function DashboardHeader() {
               <span className="text-xs text-ink-faint">{rank.rank.name}</span>
               <SectionTour section="dashboard" />
 
-              {levelOpen && (
-                <>
-                {/* On a phone this is a sheet in the middle of the
-                    screen rather than a dropdown: anchored to the
-                    button, its right-hand side ran off the screen and
-                    took half of every description with it - the
-                    descriptions being the entire reason the menu
-                    exists. On a laptop it stays a dropdown. */}
-                <span
-                  aria-hidden
-                  onClick={() => setLevelOpen(false)}
-                  className="fixed inset-0 z-20 bg-navy-950/70 sm:hidden"
-                />
-                <div
-                  role="listbox"
-                  className="fixed left-1/2 top-1/2 z-30 w-[calc(100vw-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-xl border border-navy-500 bg-navy-900 shadow-2xl shadow-navy-950/80 sm:absolute sm:left-0 sm:top-full sm:mt-2 sm:w-80 sm:max-w-[calc(100vw-2rem)] sm:translate-x-0 sm:translate-y-0"
-                >
-                  {levelOrder.map((option) => {
-                    const meta = levelMeta[option];
-                    const active = option === state.level;
-                    return (
-                      <button
-                        key={option}
-                        type="button"
-                        role="option"
-                        aria-selected={active}
-                        onClick={() => {
-                          setLevel(option);
-                          setLevelOpen(false);
-                        }}
-                        className={`flex w-full items-center gap-3 p-3 text-left transition-colors ${
-                          active ? "bg-navy-700" : "hover:bg-navy-800"
-                        }`}
-                      >
-                        <LevelIcon level={option} className="h-8 w-auto shrink-0" />
-                        <span className="flex flex-col">
-                          <span
-                            className={`text-xs font-semibold ${meta.accentClass}`}
-                          >
-                            {meta.label}
-                            {active && (
-                              <span className="ml-2 font-normal text-ink-faint">
-                                current
-                              </span>
-                            )}
-                          </span>
-                          <span className="text-[0.7rem] leading-snug text-ink-muted">
-                            {meta.detail}
-                          </span>
-                          <span className="mt-1 text-[0.65rem] leading-snug text-ink-faint">{meta.looksFor}</span>
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-                </>
-              )}
+              {levelOpen && <LevelMenu onClose={() => setLevelOpen(false)} />}
             </span>
           </div>
         </div>
