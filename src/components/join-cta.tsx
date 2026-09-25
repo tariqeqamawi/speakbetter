@@ -1,4 +1,5 @@
 import { GuaranteeSeal } from "@/components/guarantee-seal";
+import { guarantee, tiers } from "@/data/pricing";
 
 // The way to the tiers, offered more than once.
 //
@@ -11,13 +12,22 @@ import { GuaranteeSeal } from "@/components/guarantee-seal";
 // rather than a banner repeated. Every one goes to the same place: the
 // three tiers.
 
-export function JoinCta({ label, seal = false }: { label: string; seal?: boolean }) {
+export function JoinCta({ label, seal = false, price = false }: { label: string; seal?: boolean; price?: boolean }) {
   return (
     <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
-      <a href="#pricing" className="cta-neon-wrap rounded-xl">
-        <span className="cta-neon-glow rounded-xl" aria-hidden />
-        <span className="cta-neon block rounded-xl px-9 py-4 text-base">{label}</span>
-      </a>
+      <span className="flex flex-col items-center gap-2">
+        <a href="#pricing" className="cta-neon-wrap rounded-xl">
+          <span className="cta-neon-glow rounded-xl" aria-hidden />
+          <span className="cta-neon block rounded-xl px-9 py-4 text-base">{label}</span>
+        </a>
+        {/* What it costs, in a line - the question answered where it is
+            asked, without the whole table of tiers. */}
+        {price && (
+          <span className="text-xs font-medium text-ink-muted">
+            From {tiers[0].price} · {guarantee.title}
+          </span>
+        )}
+      </span>
       {/* The guarantee beside the ask, where the question it answers is
           being asked (guarantee-seal.tsx). */}
       {seal && <GuaranteeSeal size={116} />}

@@ -20,6 +20,7 @@ import { SELFIE_TAKES } from "@/data/selfie-takes";
 import { HeroBeat } from "@/components/hero-beat";
 import { TheReality } from "@/components/the-reality";
 import { JoinCta } from "@/components/join-cta";
+import { StickyJoin } from "@/components/sticky-join";
 import { TestimonialStream } from "@/components/testimonial-stream";
 import { ProofLine } from "@/components/proof-line";
 import { LionPitch } from "@/components/lion-pitch";
@@ -51,6 +52,8 @@ export function Landing() {
   return (
     <LionArtWhenNear>
       <LandingBody />
+      {/* On a phone, the way to the tiers held at the foot of the screen. */}
+      <StickyJoin />
     </LionArtWhenNear>
   );
 }
@@ -198,7 +201,7 @@ function LandingBody() {
         </details>
 
         <CoachDemo />
-        <JoinCta label="Start My Speaking Journey" />
+        <JoinCta label="Start My Speaking Journey" price />
       </section>
 
       <ProofLine tag="teacher" />
@@ -354,7 +357,7 @@ function LandingBody() {
           color by color, exactly as you&apos;ll find it inside.
         </p>
         <LessonGallery />
-        <JoinCta label="I'm Ready" />
+        <JoinCta label="I'm Ready" price />
       </section>
 
       <ProofLine tag="storytelling" />
