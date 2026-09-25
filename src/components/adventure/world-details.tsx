@@ -102,6 +102,18 @@ export function Traveller({
     const s = Math.min(travel.s + AHEAD, road.finish);
     pointAt(road, s, p);
     const bob = Math.sin(clock.elapsedTime * 2) * 0.12;
+    if (travel.portal && disc.current) {
+      // Through the portal: drawn into the eye of the vortex, turning
+      // and shrinking to nothing.
+      const k = THREE.MathUtils.smoothstep((performance.now() - travel.portal.since) / 1300, 0, 1);
+      const eye = pointAt(road, travel.portal.s).add(new THREE.Vector3(0, 3.3, 0));
+      disc.current.position.copy(p.setY(p.y + 1.3)).lerp(eye, k);
+      disc.current.lookAt(camera.position);
+      disc.current.rotateZ(k * 8);
+      disc.current.scale.setScalar(Math.max(0.001, 1 - k * k));
+      return;
+    }
+    disc.current?.scale.setScalar(1);
     disc.current?.position.set(p.x, p.y + 1.3 + bob, p.z);
     disc.current?.lookAt(camera.position);
     const c = colourAt(s);
@@ -115,8 +127,8 @@ export function Traveller({
 
   return (
     <group ref={disc}>
-      <sprite scale={[4, 4, 1]}>
-        <spriteMaterial ref={halo} map={glow} transparent blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
+      <sprite scale={[3.4, 3.4, 1]}>
+        <spriteMaterial ref={halo} map={glow} transparent opacity={0.55} blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
       </sprite>
       <mesh position={[0, 0, 0.01]}>
         <circleGeometry args={[0.95, 48]} />
@@ -254,9 +266,15 @@ export function RoadsideComment({
   const map = useMemo(
     () =>
       canvasTexture(640, 300, (g) => {
+        // Dark glass with a lit edge, like everything else on the road -
+        // a white card glows like a lamp once the scene is blooming.
         roundRect(g, 6, 6, 628, 250, 34);
-        g.fillStyle = "#f7f8fc";
+        g.fillStyle = "rgba(6,10,23,0.9)";
         g.fill();
+        g.lineWidth = 4;
+        g.strokeStyle = "rgba(160,180,230,0.7)";
+        g.stroke();
+        g.fillStyle = "rgba(6,10,23,0.9)";
         // The tail of the bubble, pointing at the road.
         g.beginPath();
         const tx = side < 0 ? 470 : 170;
@@ -264,11 +282,11 @@ export function RoadsideComment({
         g.lineTo(tx + (side < 0 ? 40 : -40), 296);
         g.lineTo(tx + 26, 254);
         g.fill();
-        g.fillStyle = "#101a33";
+        g.fillStyle = "#ff9a3c";
         g.font = "700 30px system-ui, sans-serif";
         g.fillText(name, 38, 62);
         g.font = "500 30px system-ui, sans-serif";
-        g.fillStyle = "#28324f";
+        g.fillStyle = "#c9d1e8";
         wrap(g, `“${body}”`, 560, 4).forEach((line, i) => g.fillText(line, 38, 112 + i * 40));
       }),
     [name, body, side],
@@ -276,7 +294,8 @@ export function RoadsideComment({
   const at = useMemo(() => {
     const p = pointAt(road, s);
     const dir = sideAt(road, s);
-    return p.add(dir.multiplyScalar(side * 8)).add(new THREE.Vector3(0, 4.2, 0));
+    // Close to the road, at eye height, so they can be read in passing.
+    return p.add(dir.multiplyScalar(side * 5.2)).add(new THREE.Vector3(0, 3.1, 0));
   }, [road, s, side]);
   useFrame(({ camera, clock }) => {
     if (!mat.current) return;

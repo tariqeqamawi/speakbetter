@@ -101,6 +101,9 @@ export class Travel {
   s: number;
   v = 0;
   target: number | null = null;
+  /** Going through a portal: which one, and since when (ms). While set,
+   *  the camera and the traveller dive into it and nothing else moves. */
+  portal: { s: number; since: number } | null = null;
   constructor(start: number) {
     this.s = start;
   }
@@ -114,8 +117,14 @@ export class Travel {
     this.target = s;
     this.v = 0;
   }
+  enterPortal(s: number) {
+    this.portal = { s, since: performance.now() };
+    this.v = 0;
+    this.target = null;
+  }
   /** One frame: glide, or coast with friction. */
   step(k: number, max: number) {
+    if (this.portal) return;
     if (this.target !== null) {
       this.s += (this.target - this.s) * (1 - Math.pow(0.9, k));
       if (Math.abs(this.target - this.s) < 0.05) this.target = null;

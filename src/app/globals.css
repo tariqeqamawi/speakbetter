@@ -3300,3 +3300,21 @@ html.bare .demo-banner {
   .phase-banner { animation: phase-banner-still 2.6s linear both; }
   @keyframes phase-banner-still { 0%, 100% { opacity: 0; } 10%, 85% { opacity: 1; } }
 }
+
+/* Through the portal: the words arrive as the camera reaches the mouth
+ * of the vortex, and the light swells to white as it goes through. */
+.portal-flash {
+  animation: portal-flash 2.1s ease-in both;
+}
+.portal-flash > span {
+  animation: portal-words 2.1s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+@keyframes portal-flash {
+  0%, 55% { background: transparent; }
+  100% { background: rgba(255, 255, 255, 0.92); }
+}
+@keyframes portal-words {
+  0%, 25% { opacity: 0; transform: scale(0.6); }
+  50% { opacity: 1; transform: scale(1); }
+  100% { opacity: 1; transform: scale(1.25); }
+}

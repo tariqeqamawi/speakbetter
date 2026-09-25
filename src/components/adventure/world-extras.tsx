@@ -190,6 +190,8 @@ function placesFor(road: RoadLayout, from: number, to: number, n: number, seed: 
 function Grove({ road, from, to, color }: SceneProps) {
   const spots = useMemo(() => placesFor(road, from, to, 26, 21), [road, from, to]);
   const c = new THREE.Color(color);
+  // Glass trees outlined in light, the way the land is.
+  const edges = useMemo(() => new THREE.EdgesGeometry(new THREE.ConeGeometry(1.3, 3, 7)), []);
   return (
     <group>
       {spots.map((sp, i) =>
@@ -206,8 +208,11 @@ function Grove({ road, from, to, color }: SceneProps) {
             </mesh>
             <mesh position={[0, 2.6, 0]}>
               <coneGeometry args={[1.3, 3, 7]} />
-              <meshStandardMaterial color={c.clone().multiplyScalar(0.45)} emissive={c} emissiveIntensity={0.15} flatShading />
+              <meshStandardMaterial color="#060a17" metalness={0.8} roughness={0.25} flatShading />
             </mesh>
+            <lineSegments position={[0, 2.6, 0]} geometry={edges}>
+              <lineBasicMaterial color={c} toneMapped={false} />
+            </lineSegments>
           </group>
         ),
       )}
@@ -273,7 +278,7 @@ function Library({ road, from, to, color }: SceneProps) {
             <group key={dir}>
               <mesh position={[dir * 0.62, 0, 0]}>
                 <boxGeometry args={[1.2, 0.05, 1.5]} />
-                <meshStandardMaterial color="#f4ecd6" emissive={color} emissiveIntensity={0.25} />
+                <meshBasicMaterial color={color} transparent opacity={0.55} toneMapped={false} />
               </mesh>
             </group>
           ))}
