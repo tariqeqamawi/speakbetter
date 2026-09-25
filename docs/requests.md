@@ -207,6 +207,11 @@ Tariq topped up the account, so the cap is gone.
 Newest first. Each links the commit that did it; every commit message says why, not just
 what.
 
+**25 September**
+- 3D road: dark glass land with neon wireframe; numbered discs with the name turning round
+  them; student photo on the traveller (Tariq as stand-in); Coach's mouth moves as he
+  speaks; sound on by default — `b42abae`
+
 **24 September**
 - 3D road: Coach x3 + finish, reacting checkpoints, finish celebration, fireflies, classmates,
   road sound, scenery per phase — `5f59572`
