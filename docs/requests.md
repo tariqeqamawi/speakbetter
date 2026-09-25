@@ -208,6 +208,7 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **25 September**
+- Origin story: seven dream-memory neon film images (style chosen on /prototype/origin-styles) — `5233901`
 - Landing: STORY section retitled with circles + new 2D road; glass CTAs; spectrum readout above bars;
   selfie-recording section (4 Higgsfield clips); origin story rewritten in Tariq's words — `a889342`
 - Any-order challenges in a section; paywall off until launch; Starter Coach wording — `08d782e`
