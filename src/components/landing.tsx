@@ -210,7 +210,7 @@ function LandingBody() {
             which meant the single clearest claim on the page - that
             this is a different KIND of thing from what they have
             bought before - was invisible to everybody who can see. */}
-        <h2 className="mb-2 max-w-3xl text-center text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+        <h2 className="mx-auto mb-2 max-w-3xl text-center text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
           How Speak Better is different to every other speaking course or app on the market
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -273,8 +273,7 @@ function LandingBody() {
               </li>
               <li className="flex items-start gap-3">
                 <CheckIcon className="mt-0.5 size-4 shrink-0 text-structure" />
-                24 real on-camera challenges - you can&apos;t pass without
-                speaking
+                24 real challenges, most of them on camera
               </li>
               <li className="flex items-start gap-3">
                 <CheckIcon className="mt-0.5 size-4 shrink-0 text-body-language" />

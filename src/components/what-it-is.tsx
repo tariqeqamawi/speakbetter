@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { CountUp } from "@/components/count-up";
 
 // What Speak Better actually is, and what is in the box.
 //
@@ -16,11 +17,12 @@ import Image from "next/image";
 // the size of a claim, in the colours they belong to.
 
 const COUNTS = [
-  { n: "81", label: "nano lessons", color: "text-storytelling" },
-  { n: "24", label: "interactive challenges", color: "text-structure" },
-  { n: "79", label: "cards in the digital deck", color: "text-figurative" },
-  { n: "1", label: "AI coach trained on the method", color: "text-advanced" },
-  { n: "7", label: "colors of speaking to light up", color: "text-mindset" },
+  { n: 81, label: "nano lessons", color: "text-storytelling", image: "/what/lessons.webp" },
+  { n: 24, label: "interactive challenges", color: "text-structure", image: "/what/challenges.webp" },
+  { n: 79, label: "cards in the digital deck", color: "text-figurative", image: "/what/cards.webp" },
+  { n: 1, label: "AI coach trained on the method", color: "text-advanced", image: "/what/coach.webp" },
+  // The spectrum's picture and its number move through all seven colours.
+  { n: 7, label: "colors of speaking to light up", color: "spectrum-cycle", image: "/what/spectrum.webp", cycle: true },
 ];
 
 export function WhatItIs() {
@@ -46,10 +48,21 @@ export function WhatItIs() {
         </p>
       </div>
 
-      <ul className="grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-3 lg:grid-cols-5">
+      {/* Each number with a picture of what it is, counting up from 1
+          the first time it is seen. */}
+      <ul className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-5">
         {COUNTS.map((c) => (
-          <li key={c.label} className="flex flex-col items-center gap-1 text-center">
-            <span className={`text-4xl font-black tabular-nums leading-none ${c.color}`}>{c.n}</span>
+          <li key={c.label} className="flex flex-col items-center gap-2 text-center">
+            <span className="relative aspect-square w-full max-w-36 overflow-hidden rounded-2xl border border-navy-600 bg-navy-950">
+              <Image
+                src={c.image}
+                alt=""
+                fill
+                sizes="144px"
+                className={`object-cover ${c.cycle ? "spectrum-hue" : ""}`}
+              />
+            </span>
+            <CountUp to={c.n} className={`text-4xl font-black leading-none ${c.color}`} />
             <span className="text-xs font-medium leading-tight text-ink-muted text-balance">{c.label}</span>
           </li>
         ))}

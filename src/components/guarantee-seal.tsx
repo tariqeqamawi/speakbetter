@@ -1,7 +1,8 @@
 import { guarantee } from "@/data/pricing";
 
-// The guarantee as a seal: the lion inside a ring of the seven colours,
-// "14-day money-back guarantee" round the edge.
+// The guarantee as a seal in solid gold: the lion embossed at its centre,
+// "14-day money-back guarantee" round the edge - gold, because a
+// guarantee should look like one.
 //
 // A guarantee said in a sentence is read as small print; the same
 // promise as an object reads as something the seller is standing behind.
@@ -14,13 +15,13 @@ export function GuaranteeSeal({ size = 96, className = "" }: { size?: number; cl
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={size > 140 ? "/guarantee/seal-2x.webp" : "/guarantee/seal.webp"}
+      src={size > 110 ? "/guarantee/seal-2x.webp" : "/guarantee/seal.webp"}
       alt={guarantee.title}
       width={size}
       height={size}
       loading="lazy"
       decoding="async"
-      className={`shrink-0 select-none drop-shadow-[0_6px_24px_rgba(0,0,0,0.5)] ${className}`}
+      className={`shrink-0 select-none drop-shadow-[0_6px_28px_rgba(255,190,60,0.28)] ${className}`}
       style={{ width: size, height: size }}
     />
   );

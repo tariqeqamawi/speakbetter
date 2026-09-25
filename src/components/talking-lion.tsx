@@ -474,6 +474,10 @@ export const TalkingLion = forwardRef<
         {/* The captions: the phrase being said, over the wave, so the
             words are heard and seen together. The box keeps its height
             so the lion doesn't shift as phrases come and go. */}
+        {/* Drawn large (the landing page), the words float over the foot
+            of the lion rather than holding rows open beneath him - so the
+            button sits right under him, not across a gap. */}
+        <div className={large ? "pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center" : "contents"}>
         {captions && (
           <div className="pointer-events-none -mt-2 flex min-h-11 shrink-0 items-center justify-center px-1" aria-live="off">
             {caption && (
@@ -544,6 +548,7 @@ export const TalkingLion = forwardRef<
             )}
           </div>
         )}
+        </div>
 
       </div>
 
@@ -561,7 +566,12 @@ export const TalkingLion = forwardRef<
           control and the picture of what it does, and it reads as a
           thing to press because it is shaped like one. */}
       {controls && (
-      <CoachPill onClick={speaking ? stop : speak} disabled={!supported}>
+      <CoachPill
+        onClick={speaking ? stop : speak}
+        disabled={!supported}
+        // Larger when the lion is the feature - on a laptop especially.
+        className={large ? "sm:min-h-[4.25rem] sm:px-16 sm:text-xl" : ""}
+      >
         {speaking ? "Stop" : blocked ? "Tap to hear Coach’s review" : "Coach’s review"}
       </CoachPill>
       )}

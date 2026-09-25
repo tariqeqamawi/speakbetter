@@ -20,7 +20,7 @@ export function JoinCta({ label, seal = false }: { label: string; seal?: boolean
       </a>
       {/* The guarantee beside the ask, where the question it answers is
           being asked (guarantee-seal.tsx). */}
-      {seal && <GuaranteeSeal size={88} />}
+      {seal && <GuaranteeSeal size={116} />}
     </div>
   );
 }

@@ -19,7 +19,7 @@ export function Pricing() {
           question every price raises, so it sits where that question is
           asked rather than in the small print. */}
       <div className="mx-auto flex max-w-xl items-center gap-4 rounded-2xl border border-mindset/40 bg-navy-800 px-5 py-4 shadow-[0_0_40px_-18px_var(--color-mindset)]">
-        <GuaranteeSeal size={104} />
+        <GuaranteeSeal size={136} />
         <div className="flex flex-col gap-0.5">
           <span className="text-sm font-bold text-ink">{guarantee.title}</span>
           <span className="text-sm text-ink-muted">{guarantee.line}</span>

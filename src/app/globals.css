@@ -3318,3 +3318,44 @@ html.bare .demo-banner {
   50% { opacity: 1; transform: scale(1); }
   100% { opacity: 1; transform: scale(1.25); }
 }
+
+/* The Reality's photographs, drifting: a slow push in and back, each
+ * out of step with the others, so the collage breathes rather than
+ * sits. Still for anyone who asks for less motion. */
+@keyframes reality-drift {
+  0%, 100% { transform: scale(1.04) translate3d(0, 0, 0); }
+  50% { transform: scale(1.12) translate3d(-1.5%, -1%, 0); }
+}
+.reality-drift {
+  animation: reality-drift 22s ease-in-out infinite;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reality-drift { animation: none; }
+}
+
+/* The seven colours of speaking, in turn: the spectrum's number moves
+ * through them, and its picture shifts hue with it. */
+@keyframes spectrum-cycle {
+  0%, 100% { color: var(--color-storytelling); }
+  14% { color: var(--color-structure); }
+  28% { color: var(--color-acting); }
+  42% { color: var(--color-figurative); }
+  57% { color: var(--color-mindset); }
+  71% { color: var(--color-body-language); }
+  85% { color: var(--color-advanced); }
+}
+.spectrum-cycle {
+  animation: spectrum-cycle 7s linear infinite;
+}
+@keyframes spectrum-hue {
+  from { filter: hue-rotate(0deg) saturate(1.1); }
+  to { filter: hue-rotate(360deg) saturate(1.1); }
+}
+.spectrum-hue {
+  animation: spectrum-hue 7s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .spectrum-cycle { animation: none; color: var(--color-mindset); }
+  .spectrum-hue { animation: none; }
+}

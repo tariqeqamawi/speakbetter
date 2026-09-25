@@ -255,6 +255,12 @@ export function CoachDemo() {
         <div className="flex flex-col items-center gap-1 text-center">
           <h3 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">Meet Coach</h3>
           <p className="text-sm text-ink-muted text-balance">The lion who watches all of your videos.</p>
+          <p className="mt-2 max-w-lg text-sm leading-relaxed text-ink-muted text-balance">
+            Thanks to the advances in technology, Coach actually watches your videos, is fully context-aware, and can
+            see details such as eye contact and hand gestures. He is trained on the full Speak Better methodology,
+            knows when you are using different skills, and can suggest what to do next time to improve your
+            delivery.
+          </p>
         </div>
         <TalkingLion
           text={SPOKEN}

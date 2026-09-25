@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { TrendingUpIcon, UploadIcon, VideoIcon } from "@/components/icons";
 import { PlayFillIcon } from "@/components/player-icons";
 import { CoachMark } from "@/components/coach-mark";
@@ -23,6 +24,7 @@ import { CoachMark } from "@/components/coach-mark";
 const STEPS = [
   {
     n: 1,
+    image: "/how/watch.webp",
     title: "Watch the challenge",
     line: "A short brief, on camera, saying exactly what this one asks of you.",
     Icon: PlayFillIcon,
@@ -30,6 +32,7 @@ const STEPS = [
   },
   {
     n: 2,
+    image: "/how/record.webp",
     title: "Record yourself speaking",
     line: "In the app, with the brief and a countdown on screen. One to two minutes.",
     Icon: VideoIcon,
@@ -37,6 +40,7 @@ const STEPS = [
   },
   {
     n: 3,
+    image: "/how/upload.webp",
     title: "Upload your take for Coach",
     line: "One tap. Nobody else ever sees the video - it stays yours.",
     Icon: UploadIcon,
@@ -44,6 +48,7 @@ const STEPS = [
   },
   {
     n: 4,
+    image: "/how/feedback.webp",
     title: "Receive detailed feedback",
     line: "Coach the lion watches it and talks you through what landed and what didn't.",
     Icon: null,
@@ -51,6 +56,7 @@ const STEPS = [
   },
   {
     n: 5,
+    image: "/how/improve.webp",
     title: "Improve quickly",
     line: "Do it again, better, the same day - which is the part videos alone can never give you.",
     Icon: TrendingUpIcon,
@@ -61,11 +67,15 @@ const STEPS = [
 export function HowItWorks() {
   return (
     <ol className="grid w-full max-w-4xl gap-3 sm:grid-cols-2 lg:grid-cols-5">
-      {STEPS.map(({ n, title, line, Icon, color }) => (
+      {STEPS.map(({ n, title, line, Icon, color, image }) => (
         <li
           key={n}
-          className="flex flex-col gap-2 rounded-2xl border border-navy-600 bg-navy-800 p-4 lg:items-center lg:text-center"
+          className="flex flex-col gap-2 overflow-hidden rounded-2xl border border-navy-600 bg-navy-800 p-4 lg:items-center lg:text-center"
         >
+          {/* The step, pictured. */}
+          <span className="relative -mx-4 -mt-4 mb-1 block aspect-[4/3] self-stretch overflow-hidden">
+            <Image src={image} alt="" fill sizes="(min-width: 1024px) 20vw, (min-width: 640px) 50vw, 100vw" className="object-cover" />
+          </span>
           <span className="flex items-center gap-2.5 lg:flex-col lg:gap-1.5">
             <span className={`flex size-9 items-center justify-center ${color}`}>
               {Icon ? <Icon className="size-6" /> : <CoachMark className="size-9" />}

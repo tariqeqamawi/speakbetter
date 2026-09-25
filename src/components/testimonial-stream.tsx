@@ -64,8 +64,18 @@ export function TestimonialStream({
   // them (sleep-offscreen.tsx says why that matters).
   return (
     <SleepOffscreen
-      className="quote-field relative w-full overflow-hidden"
-      style={{ height: "var(--field)", ["--field" as string]: "min(34rem, 80vh)" }}
+      // Edge to edge of the screen, out of the page's column, and faded
+      // top and bottom by a mask rather than bands of navy: the quotes
+      // dissolve into whatever glow is behind them, with no box around
+      // them - bands of a flat colour over a lit background read as a
+      // letterbox.
+      className="quote-field relative mx-[calc(50%-50vw)] w-screen max-w-none overflow-hidden"
+      style={{
+        height: "var(--field)",
+        ["--field" as string]: "min(34rem, 80vh)",
+        maskImage: "linear-gradient(180deg, transparent, #000 5rem, #000 calc(100% - 5rem), transparent)",
+        WebkitMaskImage: "linear-gradient(180deg, transparent, #000 5rem, #000 calc(100% - 5rem), transparent)",
+      }}
     >
       <style>{`@keyframes ${name} {
   0% { transform: translate3d(0, 0, 0); opacity: 0; }
@@ -96,18 +106,6 @@ export function TestimonialStream({
         );
       })}
 
-      {/* Faded top and bottom, so the quotes arrive and leave rather
-          than being cut off by an edge. */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-20"
-        style={{ background: "linear-gradient(180deg, var(--color-navy-950), transparent)" }}
-      />
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-20"
-        style={{ background: "linear-gradient(0deg, var(--color-navy-950), transparent)" }}
-      />
     </SleepOffscreen>
   );
 }
