@@ -21,6 +21,17 @@ Last updated: 24 September 2026.
 
 ### The road — the big one, and now specified
 
+**Decided 24 Sep: real 3D (three.js), built in four stages at a new preview page, the live
+map untouched until the swap.**
+- [ ] Stage 1 - the world: continuous terrain in the five phase colours, fog and light, the lit
+      road, a camera that travels as you drag (down = forward), checkpoints with their
+      thumbnails, the finish gate. Phone-first.
+- [ ] Stage 2 - life: phase banners flying at you, flags at boundaries, the S.T.O.R.Y. jump bar,
+      Coach beside the road three times with his three lines, the avatar as the traveller.
+- [ ] Stage 3 - play: the selection model, trophies and what-went-well carried over, surprises,
+      the finish celebration.
+- [ ] Stage 4 - swap it live, re-record the tour film, re-check the tour stop's wording.
+
 **Tariq's spec, 24 September, in his words and to be built next:**
 
 - **One continuous terrain**, not five scenes. It changes colour as you pass from one set
