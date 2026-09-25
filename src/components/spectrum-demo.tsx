@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { categories, type CategoryId } from "@/data/categories";
+import { SpectrumWave } from "@/components/spectrum-wave";
 
 // The color-spectrum score is the product's one genuinely novel idea,
 // and until now the landing page only described it. This plays it: a
@@ -102,6 +103,11 @@ export function SpectrumDemo() {
           {showing.score}
         </span>
       </div>
+
+      {/* The full readout - the one wave across all seven colours, as
+          the app draws it - over the bars that give the numbers. On a
+          fixed scale, so "after" visibly grows out of "before". */}
+      <SpectrumWave values={showing.spectrum} max={100} className="-mb-1 h-28 w-full sm:h-36" />
 
       <div className="flex flex-col gap-2">
         {categories.map((cat) => {

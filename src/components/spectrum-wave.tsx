@@ -43,6 +43,7 @@ export function SpectrumWave({
   className = "h-48 w-full sm:h-56",
   animate = true,
   highlight,
+  max,
 }: {
   values: Record<CategoryId, number>;
   /** A second trace behind the first, drawn as a faint dashed outline -
@@ -54,10 +55,14 @@ export function SpectrumWave({
   /** Colors to make glow - the ones a challenge needs. Their column of
    *  the trace burns brighter and pools light under the peak. */
   highlight?: CategoryId[];
+  /** A fixed top of the scale instead of the loudest channel - so two
+   *  spectra shown in turn (before and after) share one scale and the
+   *  growth shows. */
+  max?: number;
 }) {
   // Unique per instance, so two waves on one page don't share defs.
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
-  const top = Math.max(
+  const top = max ?? Math.max(
     ...categories.map((c) => values[c.id] ?? 0),
     ...(ghost ? categories.map((c) => ghost[c.id] ?? 0) : []),
     1,
