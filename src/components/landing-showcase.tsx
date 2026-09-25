@@ -35,17 +35,23 @@ export function LandingShowcase() {
           middle is not more proof, it is a longer page. */}
       <WhatsInside />
 
-      {/* A preview of the app - three short films of the real pages */}
+      {/* A preview of the app - short films of the real pages */}
       <section className="flex flex-col items-center gap-4">
         <h2 className="text-2xl font-semibold tracking-tight">See the app in action</h2>
         <p className="max-w-lg text-center text-ink-muted">
-          Your interactive challenges in the S.T.O.R.Y. framework; color-coded skills that you can dial into
+          Your interactive challenges in the S.T.O.R.Y. framework - travelled as a 3D adventure, or taken as a
+          map in 2D; color-coded skills that you can dial into
           and watch; and your gamified dashboard - trophies, streak, speaking spectrum, leaderboards and the
           community, all in one place.
         </p>
         <div className="-mx-4 flex w-[calc(100%+2rem)] gap-6 overflow-x-auto px-4 pb-2 sm:mx-0 sm:w-full sm:justify-center sm:overflow-visible sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <Phone label="The adventure">
-            <PhoneFilm src="/film/tour-journey.mp4" poster="/film/tour-journey.jpg" label="The journey, scrolled" />
+          {/* The challenges both ways a student can take them: travelling
+              the S.T.O.R.Y. road in 3D, or scrolling it as a map. */}
+          <Phone label="The challenges, in 3D">
+            <PhoneFilm src="/film/tour-road3d.mp4" poster="/film/tour-road3d.jpg" label="Travelling the S.T.O.R.Y. road in 3D" />
+          </Phone>
+          <Phone label="Or as a map, in 2D">
+            <PhoneFilm src="/film/tour-road2d.mp4" poster="/film/tour-road2d.jpg" label="The same road as a map, scrolled" />
           </Phone>
           <Phone label="Skills, into a color">
             <PhoneFilm src="/film/tour-skills.mp4" poster="/film/tour-skills.jpg" label="The skills dial, then a color's lessons" />

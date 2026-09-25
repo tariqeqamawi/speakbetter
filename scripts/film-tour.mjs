@@ -40,7 +40,44 @@ async function ease(p, from, to, ms) {
   }
 }
 
+/** Seconds cut from the start of a film - the page loading, which is a
+ *  black rectangle and then a world assembling itself. */
+const TRIM = { road3d: 3.5, road2d: 3 };
+
+/** Travel the 3D road forward with the scroll wheel, for `ms`. */
+async function travelRoad(p, ms) {
+  await p.mouse.move(195, 520);
+  const steps = Math.round(ms / 45);
+  for (let i = 0; i < steps; i++) {
+    await p.mouse.wheel(0, 90);
+    await p.waitForTimeout(45);
+  }
+}
+
 const FILMS = {
+  // The S.T.O.R.Y. road in 3D: level with the challenge you are on, then
+  // travelling on - past classmates and comments, through the colour
+  // wall into the next section, its portals dormant ahead.
+  async road3d(p) {
+    await p.goto(`${BASE}/prototype/adventure3d`, { waitUntil: "load" });
+    await p.waitForTimeout(5000);
+    await travelRoad(p, 6500);
+    await p.waitForTimeout(1500);
+  },
+
+  // The same road as a map, for anyone who would rather scroll a page.
+  async road2d(p) {
+    await p.goto(`${BASE}/prototype/adventure3d`, { waitUntil: "load" });
+    await p.waitForTimeout(2500);
+    await p.getByRole("radio", { name: "2D" }).click();
+    await p.waitForTimeout(1500);
+    const y = await p.evaluate(() => window.scrollY);
+    await ease(p, y, y + 1800, 5000);
+    await p.waitForTimeout(1000);
+    await ease(p, y + 1800, y + 600, 2200);
+    await p.waitForTimeout(800);
+  },
+
   // The road, scrolled from the first stop down and back.
   async journey(p) {
     await p.goto(`${BASE}/demo/challenges?bare=1`, { waitUntil: "load" });
@@ -238,7 +275,9 @@ async function film(name) {
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
 
-  const browser = await chromium.launch();
+  // The real graphics chip rather than the software renderer, which
+  // draws the 3D road at a quarter of the frame rate.
+  const browser = await chromium.launch({ args: ["--use-angle=d3d11", "--enable-gpu", "--ignore-gpu-blocklist"] });
   const ctx = await browser.newContext({
     viewport: SIZE,
     deviceScaleFactor: 2,
@@ -262,6 +301,12 @@ async function film(name) {
       // real pages, not the gate and not an empty dashboard.
       const raw = window.localStorage.getItem("speak-better-state-v1");
       const st = raw ? JSON.parse(raw) : {};
+      // Films start in 3D; the 2D one switches itself.
+      window.localStorage.setItem("adventure-view", "3d");
+      // Silent films: the road's sound off, so no "click to hear Coach"
+      // chip - he still appears and his words still show.
+      window.localStorage.setItem("road-sound", "off");
+      window.localStorage.setItem("coach-welcome-back", new Date().toDateString());
       window.localStorage.setItem(
         "speak-better-state-v1",
         JSON.stringify({ ...st, unlocked: true, plan: "coached", level: "beginner", displayName: "Tariq" }),
@@ -279,7 +324,8 @@ async function film(name) {
   const mp4 = path.join(OUT, `tour-${name}.mp4`);
   const jpg = path.join(OUT, `tour-${name}.jpg`);
 
-  execFileSync("ffmpeg", ["-y", "-i", src, "-vf", "scale=390:844", "-c:v", "libx264", "-crf", "30", "-preset", "slow", "-pix_fmt", "yuv420p", "-movflags", "+faststart", "-an", mp4], { stdio: "ignore" });
+  const trim = String(TRIM[name] ?? 0);
+  execFileSync("ffmpeg", ["-y", "-ss", trim, "-i", src, "-vf", "scale=390:844", "-c:v", "libx264", "-crf", "30", "-preset", "slow", "-pix_fmt", "yuv420p", "-movflags", "+faststart", "-an", mp4], { stdio: "ignore" });
   // The poster comes from a third of the way in, not from frame one:
   // the first frame of a page that is still painting is a black
   // rectangle, which is exactly what a poster is there to avoid.

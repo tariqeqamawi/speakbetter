@@ -24,7 +24,9 @@ const TMP = ".tour-voice-tmp";
 function stops() {
   const src = readFileSync("src/data/tour-script.ts", "utf8");
   const found = [];
-  const re = /\bid:\s*"([a-z0-9-]+)"[\s\S]*?\bbody:\s*\n?\s*"((?:[^"\\]|\\.)*)"(?:,\s*\n?\s*bodyWide:\s*\n?\s*"((?:[^"\\]|\\.)*)")?/g;
+  // Between a stop's id and its body there is never another id - which
+  // keeps a section tour's own id from claiming its first stop's words.
+  const re = /\bid:\s*"([a-z0-9-]+)"(?:(?!\bid:\s*")[\s\S])*?\bbody:\s*\n?\s*"((?:[^"\\]|\\.)*)"(?:,\s*\n?\s*bodyWide:\s*\n?\s*"((?:[^"\\]|\\.)*)")?/g;
   const clean = (t) => t.replace(/\\"/g, '"').replace(/\\n/g, " ");
   let m;
   while ((m = re.exec(src))) {

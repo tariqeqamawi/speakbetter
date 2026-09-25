@@ -229,7 +229,16 @@ export function AdventureScreen({
       busy.current = true;
       setCaption(line);
       setTalking(true);
-      if (!sound) return;
+      // The saved choice as well as the state: on the very first render
+      // the state has not read it yet, and a student who turned sound off
+      // would be asked to click to hear him.
+      let off = false;
+      try {
+        off = localStorage.getItem("road-sound") === "off";
+      } catch {
+        // no storage: go by the state
+      }
+      if (!sound || off) return;
       // A browser lets a page make sound only once it has been clicked,
       // tapped or typed on - scrolling does not count. Travelled here by
       // scrolling alone, his line waits for the first click, and a chip

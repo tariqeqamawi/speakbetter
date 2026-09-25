@@ -47,17 +47,7 @@ export interface TourStop {
   intro?: boolean;
 }
 
-// The adventure's film. IT IS OF THE OLD MAP - the tilted plane, not
-// the projected road at /prototype/adventure. The moment that road
-// replaces the live map this clip is showing a screen that no longer
-// exists, which is worse than no film: a tour whose pictures disagree
-// with the app teaches somebody the wrong thing and then makes them
-// distrust the rest of it.
-//
-// Re-record with `node scripts/film-tour.mjs journey` once the swap
-// lands. The recipe already travels a share of the scene rather than a
-// fixed distance, so it will follow the longer road.
-const JOURNEY = { src: "/film/tour-journey.mp4", poster: "/film/tour-journey.jpg" };
+const ROAD = { src: "/film/tour-road3d.mp4", poster: "/film/tour-road3d.jpg" };
 const SKILLS = { src: "/film/tour-skills.mp4", poster: "/film/tour-skills.jpg" };
 const DASHBOARD = { src: "/film/tour-dashboard.mp4", poster: "/film/tour-dashboard.jpg" };
 const DECK = { src: "/film/tour-deck.mp4", poster: "/film/tour-deck.jpg" };
@@ -100,41 +90,23 @@ export const mainTour: TourStop[] = [
     bodyWide: "Today sits at the top of the rail on the left. It tells you where you're at, what the next thing to do is, and shows you your spectrum and your streak. You can also see what the community is up to, and how to get involved.",
     film: TODAY,
   },
+  // Ten stops, no more: one for the challenges, one for inside a
+  // challenge, one for the dashboard - each part of the app said once,
+  // rather than a stop for every panel on it.
   {
-    id: "challenges-v2",
-    target: "[data-tour='challenges']",
-    route: "/challenges",
-    title: "The challenges",
-    body: "This is one of the most important parts of Speak Better, and why this works unlike any other course out there. Twenty-four interactive challenges across five levels, where you upload videos of yourself speaking straight into the app, and I review them and give you feedback. With Speak Better you're not watching. You're practicing.",
-  },
-  {
-    id: "adventure",
+    id: "challenges-v3",
     target: "[data-tour='journey']",
     route: "/challenges",
-    title: "The story adventure",
-    body: "S, T, O, R, Y. Five quests, each one unlocking new skills and abilities, and each challenge tests you differently. You can see where you are on your journey, which trophies you've unlocked, and who else is working through the challenges alongside you.",
-    film: JOURNEY,
+    title: "The challenges",
+    body: "Here you'll find the Speak Better challenges: twenty-four interactive challenges where you watch a video, then upload a video of yourself completing the challenge. I look at your challenge and give you feedback. You can view this as an interactive 3D game, where you're moving across the terrain, or simply press 2D if you'd like a more conventional, course-like experience.",
+    film: ROAD,
   },
   {
-    id: "record-v2",
+    id: "inside-challenge",
     target: "[data-tour='record']",
     route: "/challenges/speaking-baseline",
-    title: "Uploading a take",
-    body: "Once you've read the brief and know what the challenge is asking for, you press record and speak straight to your camera - or upload a take you filmed earlier. Either way it comes straight to me, and I watch it.",
-    film: CHALLENGE,
-  },
-  {
-    id: "watching",
-    route: "/challenges/speaking-baseline",
-    title: "I actually watch",
-    body: "And I mean I watch it. I look at what you're wearing, your tone of voice, your body language, your confidence on camera, your storytelling, your use of figurative language and sensory detail, your acting and drama, your structure, and any advanced skills you slip in.",
-    film: REVIEW,
-  },
-  {
-    id: "review-v2",
-    route: "/challenges/speaking-baseline",
-    title: "What comes back",
-    body: "Then you get a full visual review card - and on the higher tiers, spoken feedback from me directly.",
+    title: "Inside a challenge",
+    body: "Once you know what a challenge is asking for, press record and speak straight to your camera, or upload a take you filmed earlier. I watch it properly: your voice, your body language, your confidence on camera, your storytelling, and more. Then you get a full visual review card, and on the higher tiers, spoken feedback from me directly.",
     film: REVIEW,
   },
   {
@@ -151,19 +123,11 @@ export const mainTour: TourStop[] = [
     body: "Six live sessions across the six weeks, and all of them are hot-seat coaching - students on camera, being worked with there and then by Tariq. Watching somebody else be coached is most of the value, so come along even when you don't want the chair. Every session is recorded and kept here for you.",
   },
   {
-    id: "skills-v2",
+    id: "skills-v3",
     target: "[data-tour='skills']",
     route: "/skills",
     title: "The skills",
-    body: "Eighty-one skill and lesson videos, one to two minutes each, sorted into the seven colors of speaking. Think of them as bite-sized canapés, rather than sitting through long boring videos.",
-    film: SKILLS,
-  },
-  {
-    id: "dial-v2",
-    target: "[data-tour='dial']",
-    route: "/skills",
-    title: "The dial",
-    body: "Drag your thumb around the ring, then let go to choose that color. You'll drop into its skill videos, complete with summaries, a digital card, a full transcript, and a carousel of everything else in that category.",
+    body: "Eighty-one skill and lesson videos, one to two minutes each, sorted into the seven colors of speaking - bite-sized canapés, rather than long boring videos. Drag your thumb around the dial and let go to choose a color, and you'll drop into its videos, complete with summaries, a digital card and a full transcript.",
     film: SKILLS,
   },
   {
@@ -175,48 +139,12 @@ export const mainTour: TourStop[] = [
     film: DECK,
   },
   {
-    id: "profile-strip",
+    id: "dashboard-v3",
     target: "[data-tour='dashboard']",
     route: "/profile",
     title: "Your dashboard",
-    body: "Your profile strip. Upload a picture of yourself, see your XP and what it takes to unlock your next level, pick up a pro tip, and remember why you started.",
+    body: "This is your dashboard. Here's where you'll find your trophies, a snapshot of your challenges, the skill videos you've watched, your profile, and your streak and other details at a glance.",
     film: DASHBOARD,
-  },
-  {
-    id: "dash-challenges",
-    route: "/profile",
-    title: "Challenges at a glance",
-    body: "Below that, a quick snapshot of everything. Challenges first: where you are in the journey, and what's next.",
-    film: DASHBOARD,
-  },
-  {
-    id: "dash-skills",
-    route: "/profile",
-    title: "Skills at a glance",
-    body: "Skills: how far through the library you are, color by color.",
-    film: DASHBOARD,
-  },
-  {
-    id: "dash-spectrum",
-    route: "/profile",
-    title: "Your spectrum",
-    body: "Your spectrum: which colors you're lighting up in your talks, where you were when you started, where you are now, and how much you've grown.",
-    film: DASHBOARD,
-  },
-  {
-    id: "dash-streak",
-    route: "/profile",
-    title: "Your streak",
-    body: "Your streak: how many days in a row you've been speaking better. Streaks pay a bonus, so every challenge you complete is worth more XP while it's running. Miss a day and it'll cost you XP to keep it alive.",
-    film: DASHBOARD,
-  },
-  {
-    id: "dash-trophies",
-    target: "[data-tour='trophies']",
-    route: "/profile",
-    title: "The trophy case",
-    body: "And your trophy case. Forty-seven trophies to collect, and you can see every one of them - which you've been awarded, and which are still out there. Collect them all for maximum street cred and bragging rights.",
-    film: TROPHIES,
   },
   {
     id: "close",
@@ -243,32 +171,10 @@ export const sectionTours: Record<SectionId, SectionTour> = {
     label: "Show me the challenges",
     stops: [
       {
-        id: "sec-challenges-road",
+        id: "sec-challenges-v3",
         target: "[data-tour='journey']",
-        title: "The road",
-        body: "Welcome to your STORY challenge journey. Each letter corresponds to a set of challenges. Complete those challenges to move on to the next level. Click the circle checkpoint to open the challenge page and begin your challenge.",
-        film: JOURNEY,
-      },
-      {
-        id: "sec-challenges-levels",
-        target: "[data-tour='journey']",
-        title: "Levels, and looking closer",
-        body: "The letters are your levels: S, T, O, R, Y. Tap the magnifier to zoom in on where you are, and again to come back out.",
-        film: JOURNEY,
-      },
-      {
-        id: "sec-challenges-open-one",
-        target: "[data-tour='journey']",
-        title: "Inside a challenge",
-        body: "Inside, you get the brief, a video of me explaining the challenge, and exactly what passing it takes.",
-        film: CHALLENGE,
-      },
-      {
-        id: "sec-challenges-warm",
-        route: "/challenges/speaking-baseline",
-        title: "Warm up first",
-        body: "Under every brief are the lessons that challenge leans on. Watch those first and the take goes better. That is the whole method.",
-        film: CHALLENGE,
+        title: "The challenges",
+        body: "Here you'll find the Speak Better challenges: twenty-four interactive challenges where you watch a video, then upload a video of yourself completing the challenge. I look at your challenge and give you feedback. You can view this as an interactive 3D game, where you're moving across the terrain, or simply press 2D if you'd like a more conventional, course-like experience.",
       },
       {
         id: "sec-challenges-record",
@@ -290,7 +196,6 @@ export const sectionTours: Record<SectionId, SectionTour> = {
         route: "/challenges",
         title: "Then and now",
         body: "Ten challenges in, your very first take is set beside your latest one. That is the comparison this whole course is built to give you.",
-        film: JOURNEY,
       },
     ],
   },
