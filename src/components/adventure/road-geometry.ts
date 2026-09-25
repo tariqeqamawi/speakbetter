@@ -33,6 +33,9 @@ export interface RoadLayout {
   /** How sharply the road is turning at a distance, radians per unit -
    *  what the camera banks into, and what keeps the land from folding. */
   bendAt: (s: number) => number;
+  /** How much the camera may bank at a distance: only where the story
+   *  wants the motion - the curves of O and the plunge of R. */
+  bankAt: (s: number) => number;
 }
 
 // THE ROAD IS DRIVEN, NOT DRAWN. It is built the way a car travels:
@@ -72,7 +75,7 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLay
   const weight = (id: string, s: number) => {
     const r = ranges.find((x) => x.id === id);
     if (!r) return 0;
-    const EASE = 26;
+    const EASE = id === "R" ? 40 : 26;
     return THREE.MathUtils.smoothstep(s, r.from - EASE, r.from + EASE) * (1 - THREE.MathUtils.smoothstep(s, r.to - EASE, r.to + EASE));
   };
   const from = (id: string) => ranges.find((x) => x.id === id)?.from ?? 0;
@@ -90,7 +93,10 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLay
     const wR = weight("R", s);
     const wY = weight("Y", s);
     const rest = Math.max(0, 1 - wT - wR - wY);
-    return swell * rest * (1 - wO * 0.6) + 0.17 * wT - 0.34 * wR + 0.004 * wY;
+    // Y: over the mountains - up one and down it, up the next and down
+    // it - before the plain.
+    const peaks = 0.5 * Math.sin(((s - from("Y")) / 100) * Math.PI * 2);
+    return swell * rest * (1 - wO * 0.6) + 0.17 * wT - 0.55 * wR + peaks * wY;
   };
 
   const pts: THREE.Vector3[] = [];
@@ -112,7 +118,8 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLay
   curve.arcLengthDivisions = 3000;
   const length = curve.getLength();
   const bendAt = (s: number) => (heading(s + 4) - heading(s - 4)) / 8;
-  return { curve, length, stops, finish, bendAt };
+  const bankAt = (s: number) => Math.min(1, weight("O", s) + weight("R", s));
+  return { curve, length, stops, finish, bendAt, bankAt };
 }
 
 const tmpT = new THREE.Vector3();

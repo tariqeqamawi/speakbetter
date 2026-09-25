@@ -625,7 +625,9 @@ function Rig({
     camera.position.lerp(eye, 1 - Math.pow(0.001, dt));
     camera.lookAt(look);
     // Bank into the bends, the way a car or a plane leans into a curve.
-    const target = THREE.MathUtils.clamp(-road.bendAt(s + AHEAD) * 24, -0.3, 0.3);
+    // In the calm opening phases the camera stays level; it leans into
+    // the curves only where the story does - O's sweeps and R's plunge.
+    const target = THREE.MathUtils.clamp(-road.bendAt(s + AHEAD) * 24, -0.3, 0.3) * road.bankAt(s + AHEAD);
     roll.current += (target - roll.current) * Math.min(1, dt * 2.5);
     camera.rotateZ(roll.current);
     if (Math.abs(s - last.current) > 0.25) {

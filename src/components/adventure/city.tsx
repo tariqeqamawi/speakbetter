@@ -60,11 +60,15 @@ const SPIRE_FRAG = /* glsl */ `
   varying vec3 vView;
   varying float vSeed;
   void main() {
-    float body = 0.14 + 0.5 * pow(1.0 - vY, 2.0);
-    float rim = pow(1.0 - abs(dot(normalize(vN), vView)), 2.5) * 0.55;
-    float band = mod(uTime * 0.12 + vSeed * 3.0, 1.4) - 0.2;
-    float climb = exp(-pow((vY - band) / 0.07, 2.0)) * 0.9;
-    vec3 col = vColor * (body + rim + climb);
+    // Dark glass: near black, a cool sheen on the edges turned from you.
+    // Colour is used sparingly - only as underlighting, a glow at the
+    // foot of each spire in its colour, the way light pools under a car
+    // or round the base of dark furniture - and a thin rim of it.
+    float fres = pow(1.0 - abs(dot(normalize(vN), vView)), 3.0);
+    vec3 glass = vec3(0.012, 0.016, 0.03) + vec3(0.05, 0.06, 0.09) * fres;
+    float under = exp(-vY * 14.0) * 1.3;
+    float rim = fres * 0.22 * (1.0 - vY * 0.7);
+    vec3 col = glass + vColor * (under + rim);
     gl_FragColor = vec4(col * uReveal, 1.0);
   }
 `;
@@ -75,7 +79,6 @@ function ringLines(t: Tower, ring: Tower["rings"][number], out: number[], col: n
   const y = t.pos.y - 2 + t.h * ring.at;
   const rx = t.r * (1 - ring.at) + ring.w;
   const rz = rx * 0.55;
-  const c = t.color;
   for (let i = 0; i < N; i++) {
     const a0 = (i / N) * Math.PI * 2;
     const a1 = ((i + 1) / N) * Math.PI * 2;
@@ -83,7 +86,8 @@ function ringLines(t: Tower, ring: Tower["rings"][number], out: number[], col: n
       const x = Math.cos(a) * rx;
       const z = Math.sin(a) * rz;
       out.push(t.pos.x + x, y + z * Math.sin(ring.tilt), t.pos.z + z * Math.cos(ring.tilt));
-      col.push(c.r * 1.3, c.g * 1.3, c.b * 1.3);
+      // Pale light, not colour - the colour belongs at the foot.
+      col.push(0.55, 0.6, 0.75);
     }
   }
 }
@@ -157,6 +161,33 @@ export function City({ road, travel, revealFrom }: { road: RoadLayout; travel: T
   }, [towers]);
   const halosGroup = useRef<THREE.Group>(null);
 
+  // Light behind the city: soft pools of the seven colours low on its
+  // skyline, so the spires stand dark against them.
+  const backlights = useMemo(() => {
+    const rand = seeded(13);
+    const side = sideAt(road, road.length);
+    const ahead = new THREE.Vector3(side.z, 0, -side.x);
+    const base = pointAt(road, road.length).addScaledVector(ahead, 420);
+    return Array.from({ length: 9 }, (_, i) => ({
+      pos: base.clone().addScaledVector(side, (i - 4) * 70 + (rand() - 0.5) * 30).add(new THREE.Vector3(0, 30 + rand() * 40, 0)),
+      size: 160 + rand() * 120,
+      color: new THREE.Color(SPECTRUM[i % SPECTRUM.length]),
+    }));
+  }, [road]);
+  const glowTex = useMemo(() => {
+    if (typeof document === "undefined") return null;
+    const c = document.createElement("canvas");
+    c.width = c.height = 128;
+    const g = c.getContext("2d")!;
+    const grad = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+    grad.addColorStop(0, "rgba(255,255,255,0.55)");
+    grad.addColorStop(0.5, "rgba(255,255,255,0.15)");
+    grad.addColorStop(1, "rgba(255,255,255,0)");
+    g.fillStyle = grad;
+    g.fillRect(0, 0, 128, 128);
+    return new THREE.CanvasTexture(c);
+  }, []);
+
   // Place the towers once they exist. (Writing into three's objects is
   // what this effect is for.)
   /* eslint-disable react-hooks/immutability */
@@ -175,7 +206,7 @@ export function City({ road, travel, revealFrom }: { road: RoadLayout; travel: T
         m.setColorAt(i, t.color);
         r.setColorAt(i, t.color);
         o.position.set(t.pos.x, t.pos.y + t.h - 2 + 1.2, t.pos.z);
-        o.scale.set(1.3, 1.3, 1.3);
+        o.scale.set(0.7, 0.7, 0.7);
         o.updateMatrix();
         r.setMatrixAt(i, o.matrix);
       });
@@ -289,6 +320,24 @@ export function City({ road, travel, revealFrom }: { road: RoadLayout; travel: T
           />
         </lineSegments>
       </group>
+      {glowTex &&
+        backlights.map((b, i) => (
+          <sprite key={i} position={b.pos} scale={[b.size, b.size * 0.55, 1]} renderOrder={-1}>
+            <spriteMaterial
+              ref={(m) => {
+                fades.current[4 + i] = m;
+                if (m) m.userData.base = 0.55;
+              }}
+              map={glowTex}
+              color={b.color}
+              transparent
+              depthWrite={false}
+              blending={THREE.AdditiveBlending}
+              toneMapped={false}
+              fog={false}
+            />
+          </sprite>
+        ))}
       {/* A beacon at every point, in its spire's colour. */}
       <instancedMesh ref={tops} args={[undefined, undefined, towers.length]} frustumCulled={false}>
         <sphereGeometry args={[1, 10, 10]} />
