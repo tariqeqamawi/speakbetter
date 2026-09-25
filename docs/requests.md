@@ -208,6 +208,7 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **25 September**
+- New road live on /challenges (3D/2D, real progress); purple-planet sky with stars — `c61fe4c`
 - Tour: 19 stops to 10 (one dashboard stop, new challenges words), section-tour voice fix;
   landing phones show the new road in 3D and 2D — `e08516f`
 - Coach's 17 road lines recorded and placed; one Coach voice at a time app-wide (voice-floor);
