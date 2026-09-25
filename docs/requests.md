@@ -208,6 +208,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **25 September**
+- Landing: STORY section retitled with circles + new 2D road; glass CTAs; spectrum readout above bars;
+  selfie-recording section (4 Higgsfield clips); origin story rewritten in Tariq's words — `a889342`
 - Any-order challenges in a section; paywall off until launch; Starter Coach wording — `08d782e`
 - Landing: gold guarantee, full-width testimonials, collage, count-ups with pictures, How it works photos,
   Meet Coach blurb and bigger pill — `1b713c5`
