@@ -19,10 +19,12 @@ interface Moment {
 }
 
 // Tariq's own telling, 25 September 2026 - his words, lightly edited
-// for reading, in the order he gave them.
+// for reading, in the order he gave them. Each moment pictured as a
+// half-remembered photograph: underdeveloped film, faces dissolved, neon
+// halation and aberration on every edge (public/origin/dream, Higgsfield).
 const MOMENTS: Moment[] = [
   {
-    image: "/origin/tedx.jpg",
+    image: "/origin/dream/bali.webp",
     year: "Bali, 2011",
     title: "A story told at a table",
     accent: "text-figurative",
@@ -38,7 +40,7 @@ const MOMENTS: Moment[] = [
     ),
   },
   {
-    image: "/origin/letters.jpg",
+    image: "/origin/dream/first-speech.webp",
     year: "His first speech",
     title: "A time capsule",
     accent: "text-body-language",
@@ -57,6 +59,7 @@ const MOMENTS: Moment[] = [
     ),
   },
   {
+    image: "/origin/dream/stages.webp",
     year: "Stages around the world",
     title: "Standing ovations",
     accent: "text-acting",
@@ -70,6 +73,7 @@ const MOMENTS: Moment[] = [
     ),
   },
   {
+    image: "/origin/dream/for-others.webp",
     year: "A formula, and a method",
     title: "Speeches for others",
     accent: "text-storytelling",
@@ -85,7 +89,7 @@ const MOMENTS: Moment[] = [
     ),
   },
   {
-    image: "/origin/cohort.jpg",
+    image: "/origin/dream/cohort.webp",
     year: "Communicate and Captivate",
     title: "This method really works",
     accent: "text-mindset",
@@ -104,7 +108,7 @@ const MOMENTS: Moment[] = [
     ),
   },
   {
-    image: "/origin/coach.jpg",
+    image: "/origin/dream/coach.webp",
     year: "Now",
     title: "Coach the Lion",
     accent: "text-structure",
@@ -119,6 +123,7 @@ const MOMENTS: Moment[] = [
     ),
   },
   {
+    image: "/origin/dream/mission.webp",
     year: "The mission",
     title: "The voice of their values",
     accent: "text-advanced",
