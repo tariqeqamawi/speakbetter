@@ -78,8 +78,8 @@ const MOMENTS: Moment[] = [
       <>
         He realized a standing ovation was a formula - and that shifting an audience, so they leave as someone
         different from who walked in, was a methodology. So he began writing speeches for other high-level
-        entrepreneurs: Brian Kelly, founder of 9D Breathwork, whose talk went on to get him a TED talk; Billage W.
-        Cardos, an eight-figure entrepreneur, for his speech to 8,000 people at Enagic&apos;s 50th anniversary in
+        entrepreneurs: Brian Kelly, founder of 9D Breathwork, whose talk went on to get him a TED talk; Balazs W.
+        Kardos, an eight-figure entrepreneur, for his speech to 8,000 people at Enagic&apos;s 50th anniversary in
         Okinawa, Japan; and Dr. Michelle Patrick, whose talk on holistic health in Miami earned a standing ovation.
       </>
     ),
