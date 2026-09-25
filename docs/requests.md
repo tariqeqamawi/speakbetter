@@ -208,6 +208,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **25 September**
+- Road: Coach as a floating head in the sky (appears, talks, fades); trophies as silhouettes beside
+  their portals until won — `52ad71e`
 - Coach's finish-line words (Tariq's), recorded and captioned sentence by sentence — `5beb51d`
 - Road: banking only in O and R; steeper, longer plunge; Y over rolling mountains; dark-glass
   city with underlighting and backlight — `66f73f3`, `5dbbc6a`
