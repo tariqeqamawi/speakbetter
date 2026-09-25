@@ -208,6 +208,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **25 September**
+- Road: LED-glow grid drawn in the land's surface, a wave of light rolling through; the
+  student's photo at full strength with no glow — `eb1fc8b`
 - 3D road goes Tron: bloom, square grid, portals (vortex + number + name banner), Start with
   a portal dive / Replay, gate sparks, subtitle captions, readable comment cards — `e4cd01d`
 - 3D road: dark glass land with neon wireframe; numbered discs with the name turning round
