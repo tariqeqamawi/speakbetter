@@ -154,13 +154,16 @@ const TERRAIN_VERT = /* glsl */ `
   attribute float aS;
   attribute vec3 aNeon;
   attribute float aLift;
+  attribute vec2 aPattern;
   varying float vLift;
+  varying vec2 vPattern;
   varying vec2 vGrid;
   varying float vS;
   varying vec3 vNeon;
   varying vec3 vWorld;
   varying float vDepth;
   void main() {
+    vPattern = aPattern;
     vGrid = aGrid;
     vS = aS;
     vNeon = aNeon;
@@ -180,20 +183,40 @@ const TERRAIN_FRAG = /* glsl */ `
   uniform float uFogDensity;
   uniform vec3 uHorizon;
   varying float vLift;
+  varying vec2 vPattern;
   varying vec2 vGrid;
   varying float vS;
   varying vec3 vNeon;
   varying vec3 vWorld;
   varying float vDepth;
   void main() {
-    // Distance to the nearest grid edge, in screen pixels.
+    // THE PATTERN OF LIGHT, per land (vPattern: x = dots, y = lattice;
+    // neither = the square grid), blended across the boundaries.
+    // In every case px is the distance to the nearest lit feature, in
+    // screen pixels, so the same glow works for all three.
     vec2 g = vGrid / 2.0;
-    vec2 w = fwidth(g);
-    vec2 f = abs(fract(g - 0.5) - 0.5) / max(w, vec2(1e-4));
-    float px = min(f.x, f.y);
+    vec2 w = max(fwidth(g), vec2(1e-4));
+    // The square grid: distance to the nearest line.
+    vec2 f = abs(fract(g - 0.5) - 0.5) / w;
+    float pxGrid = min(f.x, f.y);
+    // Dots: a point of light where the lines would cross - a field of
+    // stars laid on the dunes, each a little bigger than a line is wide.
+    vec2 dd = (fract(g + 0.5) - 0.5) / w;
+    float pxDots = max(length(dd) - 2.2, 0.0);
+    // An uneven lattice: the grid bent by slow waves so no two cells are
+    // the same, with a diagonal through each - a web, not a table.
+    vec2 bent = g + 0.28 * vec2(sin(g.y * 1.3 + g.x * 0.4), sin(g.x * 1.1 - g.y * 0.6));
+    vec2 wb = max(fwidth(bent), vec2(1e-4));
+    vec2 fb = abs(fract(bent - 0.5) - 0.5) / wb;
+    float diag = abs(fract(bent.x - bent.y * 0.7 + 0.5) - 0.5) / max(fwidth(bent.x - bent.y * 0.7), 1e-4);
+    float pxLattice = min(min(fb.x, fb.y), diag);
+    float px = mix(mix(pxGrid, pxDots, vPattern.x), pxLattice, vPattern.y);
     float core = 1.0 - smoothstep(0.0, 1.4, px);
-    float halo = exp(-px * 0.5);
-    float haloWide = exp(-px * 0.22);
+    // Dots sit much closer together on screen than lines do, so their
+    // glow is kept tight - spread as wide as a line's, the field of
+    // points merges into a haze.
+    float halo = exp(-px * mix(0.5, 1.4, vPattern.x));
+    float haloWide = exp(-px * mix(0.22, 0.9, vPattern.x));
 
     // The wave: rolling out from the traveller along the road, again and
     // again, a soft band a few squares deep.
@@ -227,16 +250,12 @@ const TERRAIN_FRAG = /* glsl */ `
     col += vNeon * (0.035 * haloWide + 0.05 * (wave + wake)) * ao;
 
     // The light itself.
-    float rest = 0.02 * halo + 0.16 * core;
+    // A dot is a point, not a line: it needs more light to read.
+    float rest = (0.02 * halo + 0.16 * core) * mix(1.0, 3.2, vPattern.x);
     float lit = (wave + wake) * (1.2 * core + 0.5 * halo + 0.25 * haloWide);
     col += vNeon * (rest + lit * 1.6);
 
-    // Air: haze deepening with distance, and mist lying in the low
-    // ground far off, tinted by the phase's light.
     float fog = 1.0 - exp(-uFogDensity * uFogDensity * vDepth * vDepth);
-    float mist = exp(-max(vLift + 1.0, 0.0) * 0.16) * smoothstep(30.0, 170.0, vDepth) * 0.6;
-    vec3 haze = mix(uFog, vNeon * 0.22, 0.3);
-    col = mix(col, haze, mist);
     gl_FragColor = vec4(mix(col, uFog, fog), 1.0);
   }
 `;
@@ -253,6 +272,7 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
     const grid = new Float32Array(n * 2);
     const along = new Float32Array(n);
     const lift = new Float32Array(n);
+    const pattern = new Float32Array(n * 2);
     // The neon of each vertex: the colour its edges glow in.
     const neon = new Float32Array(n * 3);
     const p = new THREE.Vector3();
@@ -278,6 +298,10 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
         grid.set([r, k], v * 2);
         along[v] = s;
         lift[v] = y - p.y;
+        // O's dunes carry dots; R's peaks an uneven lattice.
+        const wOf = (id: string) => [id === "O" ? 1 : 0, id === "R" ? 1 : 0];
+        const [pa, pb] = [wOf(la), wOf(lb)];
+        pattern.set([pa[0] + (pb[0] - pa[0]) * lt, pa[1] + (pb[1] - pa[1]) * lt], v * 2);
         // Brightest near the road and along the ridges.
         const near = 1 - THREE.MathUtils.smoothstep(Math.abs(d), 4, 90);
         const ridge = THREE.MathUtils.smoothstep(h, 0.55, 0.85) * away;
@@ -298,6 +322,7 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
     g.setAttribute("aS", new THREE.BufferAttribute(along, 1));
     g.setAttribute("aNeon", new THREE.BufferAttribute(neon, 3));
     g.setAttribute("aLift", new THREE.BufferAttribute(lift, 1));
+    g.setAttribute("aPattern", new THREE.BufferAttribute(pattern, 2));
     g.setIndex(idx);
     return g;
   }, [road, spans]);
@@ -311,8 +336,8 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
         uniforms: {
           uTime: { value: 0 },
           uFrom: { value: 0 },
-          uFog: { value: new THREE.Color("#0a1030") },
-          uFogDensity: { value: 0.0046 },
+          uFog: { value: new THREE.Color("#060b1c") },
+          uFogDensity: { value: 0.0055 },
           uHorizon: { value: new THREE.Color("#3a3f8f") },
         },
       }),
@@ -322,16 +347,10 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
   // Each wave starts from wherever the traveller is when it sets off.
   const lastLoop = useRef(-1);
   /* eslint-disable react-hooks/immutability */
-  const baseFog = useMemo(() => new THREE.Color("#0a1030"), []);
-  const tint = useMemo(() => new THREE.Color(), []);
-  useFrame(({ clock, scene }) => {
+  useFrame(({ clock }) => {
     const t = clock.elapsedTime;
     material.uniforms.uTime.value = t;
-    // The air takes on the land you are in: haze and horizon a breath of
-    // the phase's colour, shifting as you cross into the next.
-    colourAt(spans, travel.s + AHEAD, tint);
-    (material.uniforms.uFog.value as THREE.Color).copy(baseFog).lerp(tint, 0.14);
-    if (scene.fog) scene.fog.color.copy(material.uniforms.uFog.value);
+
     const loop = Math.floor(t / 4);
     if (loop !== lastLoop.current) {
       lastLoop.current = loop;
@@ -572,9 +591,9 @@ export function AdventureWorld({
       flat
       dpr={[1, 1.5]}
       gl={{ antialias: true, powerPreference: "high-performance" }}
-      camera={{ fov: 62, near: 0.1, far: 900, position: [0, 3, 6] }}
+      camera={{ fov: 62, near: 0.1, far: 1400, position: [0, 3, 6] }}
       onCreated={({ scene }) => {
-        scene.fog = new THREE.FogExp2("#0a1030", 0.0046);
+        scene.fog = new THREE.FogExp2("#060b1c", 0.0055);
       }}
     >
       <hemisphereLight args={["#8090d0", "#0a0f20", 2.2]} />
@@ -613,7 +632,7 @@ export function AdventureWorld({
       <Bloom />
       <Scenery road={road} spans={spans} />
       {spans.find((sp) => sp.id === "Y") && (
-        <City road={road} start={spans.find((sp) => sp.id === "Y")!.from} color={spans.find((sp) => sp.id === "Y")!.color} />
+        <City road={road} color={spans.find((sp) => sp.id === "Y")!.color} />
       )}
       {coachSpots(road).map((cs, i) => (
         <CoachPost key={i} road={road} s={cs} side={i % 2 ? -1 : 1} travel={travel} talking={talkingCoach === i} />
