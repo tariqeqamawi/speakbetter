@@ -253,3 +253,70 @@ export function hapticPass() {
   if (typeof navigator === "undefined") return;
   navigator.vibrate?.([24, 50, 24, 50, 60]);
 }
+
+// ── Applause, under a trophy reveal ─────────────────────────────────────
+//
+// The one recorded sound in the set, because a room clapping is not
+// something an oscillator can fake. It goes through the same Web Audio
+// context as the chimes rather than an <audio> element, and that is
+// deliberate: on an iPhone, Web Audio follows the silent switch and a
+// media element does not - so a phone on silent in a meeting stays
+// silent, which is what "muted" means to the person holding it.
+//
+// It never plays out of a page nobody has touched (the browser would
+// refuse anyway, and a page that claps at you on arrival is a bad
+// page), never for somebody who has asked for less motion, and a file
+// that is missing or will not decode is simply no applause.
+
+const APPLAUSE = "/sfx/applause.mp3";
+let applause: Promise<AudioBuffer | null> | null = null;
+
+function touched(): boolean {
+  const ua = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation;
+  // Every browser the app supports has userActivation; one that does
+  // not gets no applause rather than a guess.
+  return !!ua?.hasBeenActive;
+}
+
+/** Start the applause; the function returned fades it out early. */
+export function playApplause(): () => void {
+  const none = () => {};
+  if (typeof window === "undefined") return none;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return none;
+  if (!touched()) return none;
+  const ac = audio();
+  if (!ac) return none;
+  void ac.resume().catch(() => {});
+
+  applause ??= fetch(APPLAUSE)
+    .then((r) => (r.ok ? r.arrayBuffer() : null))
+    .then((b) => (b ? ac.decodeAudioData(b) : null))
+    .catch(() => null);
+
+  let stopped = false;
+  let stop = () => {
+    stopped = true;
+  };
+  void applause.then((buffer) => {
+    if (!buffer || stopped) return;
+    const src = ac.createBufferSource();
+    const gain = ac.createGain();
+    src.buffer = buffer;
+    // Under the moment, not over it.
+    gain.gain.value = 0.35;
+    src.connect(gain);
+    gain.connect(ac.destination);
+    src.start();
+    stop = () => {
+      const now = ac.currentTime;
+      gain.gain.setValueAtTime(gain.gain.value, now);
+      gain.gain.linearRampToValueAtTime(0, now + 0.4);
+      try {
+        src.stop(now + 0.45);
+      } catch {
+        // already finished
+      }
+    };
+  });
+  return () => stop();
+}

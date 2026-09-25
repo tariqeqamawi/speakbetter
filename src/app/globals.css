@@ -3202,3 +3202,84 @@ html.bare .demo-banner {
     scroll-behavior: smooth;
   }
 }
+
+/* The trophy reveal (trophy-reveal.tsx), in the order it happens: the
+ * stage comes up, the house lights go down around the beam, the trophy
+ * is lowered into the light and settles, its colour spreads on the
+ * disc, and then the words. About three seconds from nothing to the
+ * name - long enough to be a moment, short enough that nobody waits
+ * for it. With reduced motion none of it moves: everything is simply
+ * there. */
+.reveal-backdrop {
+  animation: reveal-fade 400ms ease-out both;
+}
+.reveal-dim {
+  animation: reveal-fade 1100ms ease-in-out 200ms both;
+}
+.reveal-lower {
+  animation: reveal-lower 1700ms cubic-bezier(0.22, 0.8, 0.3, 1) 800ms both;
+}
+.reveal-glow {
+  animation: reveal-fade 900ms ease-out 2200ms both;
+}
+.reveal-words {
+  animation: reveal-words 600ms ease-out 2400ms both;
+}
+
+@keyframes reveal-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Lowered from above the frame on a slowing rope, the last few pixels
+ * taking the longest, and a hair of settle as the plinth takes its
+ * weight. */
+@keyframes reveal-lower {
+  0% {
+    opacity: 0;
+    translate: 0 -115%;
+  }
+  15% {
+    opacity: 1;
+  }
+  88% {
+    translate: 0 0.6%;
+  }
+  100% {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes reveal-words {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* A tap on the stage skips straight to the end. */
+.reveal-now .reveal-dim,
+.reveal-now .reveal-lower,
+.reveal-now .reveal-glow,
+.reveal-now .reveal-words {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-backdrop,
+  .reveal-dim,
+  .reveal-lower,
+  .reveal-glow,
+  .reveal-words {
+    animation: none;
+  }
+}

@@ -1,66 +1,76 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useStore } from "@/lib/store";
 import { streakBonusPercent } from "@/lib/progress";
-import { currentStreak } from "@/data/badges";
+import { currentStreak, trophyArt } from "@/data/badges";
 import { BadgeIcon, FlameIcon, ZapIcon } from "@/components/icons";
-import { BadgeMedal } from "@/components/badge-medal";
-import { hapticCelebrate, playCelebration } from "@/lib/feedback-fx";
 import { isBare } from "@/components/bare-mode";
+import { TrophyReveal } from "@/components/trophy-reveal";
+import type { StageTrophy } from "@/components/trophy-stage";
+import { caseTrophy } from "@/lib/trophy-case";
+import { useRevealsHeld } from "@/lib/reveal-hold";
 
 // The gamification layer made visible (master plan §11): milestones are
-// felt, not just read. One celebration shows at a time; each dismisses
-// itself, or on tap. Applies identically at every level - never gated.
-
+// felt, not just read. One celebration shows at a time, and stays until
+// it is moved on. Applies identically at every level - never gated.
+//
+// A trophy won is revealed on the stage from the trophy room
+// (trophy-reveal.tsx), wherever the student happens to be when they win
+// it - usually the review of the take that won it. Mounted once, in the
+// root layout, and fed by the store's queue, so it does not matter which
+// screen did the winning. Several at once come one after another.
 export function CelebrationHost() {
-  const { celebrations, dismissCelebration } = useStore();
+  const { state, celebrations, dismissCelebration } = useStore();
+  // Something is still speaking - Coach's review, the XP splash - and
+  // the reveal waits its turn rather than covering it.
+  const held = useRevealsHeld();
   // Not in a bare preview - nothing there is anyone's to celebrate.
-  const current = isBare() ? undefined : celebrations[0];
+  const head = isBare() ? undefined : celebrations[0];
 
-  // Sound and haptics land with the badge, not after it.
+  // A beat before the curtain goes up. The trophy is won in the same
+  // moment the screen that won it changes - the review arriving - and
+  // that screen needs a moment to say it is busy before the reveal
+  // decides it is free. Once it is up, it stays up through the whole
+  // run of trophies, so several come one after another rather than
+  // the stage closing and reopening between them.
+  const [open, setOpen] = useState(false);
   useEffect(() => {
-    if (!current) return;
-    playCelebration();
-    hapticCelebrate();
-  }, [current]);
+    if (!head || held || open) return;
+    const t = window.setTimeout(() => setOpen(true), 700);
+    return () => window.clearTimeout(t);
+  }, [head, held, open]);
 
-  useEffect(() => {
-    if (!current) return;
-    const t = setTimeout(() => dismissCelebration(current.id), 6500);
-    return () => clearTimeout(t);
-  }, [current, dismissCelebration]);
-
+  const current = open ? head : undefined;
   if (!current) return null;
 
+  const dismiss = (ids: string[]) => {
+    if (ids.length >= celebrations.length) setOpen(false);
+    ids.forEach((id) => dismissCelebration(id));
+  };
+
+  const trophy: StageTrophy = caseTrophy(current.id, current.earnedAt) ?? {
+    // A badge with no render (none today) still gets its moment, on
+    // the placeholder plinth.
+    id: current.id,
+    name: current.title,
+    how: "",
+    message: current.message,
+    won: true,
+    earnedAt: current.earnedAt,
+    color: "storytelling",
+    ...trophyArt(current.id),
+  };
+
   return (
-    <div
-      role="status"
-      aria-live="polite"
-      className="fixed inset-x-0 bottom-20 z-50 flex justify-center px-4 sm:bottom-8"
-    >
-      <button
-        type="button"
-        onClick={() => dismissCelebration(current.id)}
-        className="celebration-pop flex max-w-sm items-start gap-3 rounded-2xl border border-navy-600 bg-navy-800 p-4 text-left shadow-2xl shadow-navy-950/80"
-      >
-        {/* The medal the student just won, at the moment they win it -
-            the same artwork that lands in their trophy case. */}
-        <span className="celebration-bounce" aria-hidden>
-          <BadgeMedal
-            id={current.id}
-            icon={current.icon}
-            earned
-            className="size-14"
-          />
-        </span>
-        <span className="flex flex-col gap-0.5">
-          <span className="spectrum-rule h-0.5 w-12 rounded-full" />
-          <span className="pt-1 text-sm font-bold text-ink">{current.title}</span>
-          <span className="text-sm text-ink-muted">{current.message}</span>
-        </span>
-      </button>
-    </div>
+    <TrophyReveal
+      key={current.id}
+      trophy={trophy}
+      remaining={celebrations.length - 1}
+      studentName={state.displayName}
+      onContinue={() => dismiss([current.id])}
+      onSkipAll={() => dismiss(celebrations.map((c) => c.id))}
+    />
   );
 }
 

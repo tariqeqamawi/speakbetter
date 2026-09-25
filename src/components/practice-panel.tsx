@@ -45,6 +45,7 @@ import { speakUrl } from "@/lib/coach/voice";
 import { ReadyCard } from "@/components/ready-card";
 import { currentStreak } from "@/data/badges";
 import { pickHold } from "@/data/greetings";
+import { useHoldReveals } from "@/lib/reveal-hold";
 
 // The practice loop (master plan §06, steps 3–7; build plan Phase 4).
 //
@@ -638,6 +639,19 @@ export function Feedback({
     return () => clearTimeout(t);
   }, [verdictShown, splash]);
 
+  // A trophy this take won waits for the review to finish landing - the
+  // bars, the score, the verdict and the XP it paid - rather than
+  // covering it (lib/reveal-hold.ts). A spoken review Coach is still
+  // saying holds it too, from ReviewVoice. One that is ready but not
+  // yet asked for does not: the student may never tap it.
+  useHoldReveals(
+    !preview &&
+      !revisit &&
+      (!settled ||
+        (!attempt.spoken && !verdictShown) ||
+        (verdictShown && (splash === "pending" || splash === "shown"))),
+  );
+
   const noteLine = (n: FeedbackNote) => {
     const refs = canRevealAll
       ? (n.lessonIds ?? [])
@@ -1022,6 +1036,11 @@ function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => v
   // it actually is.
   const [hold] = useState(() => pickHold());
   const [holding, setHolding] = useState(true);
+  // While he is talking, a trophy the take won waits for him to finish.
+  // The holding line is a few seconds; if the browser refused to start
+  // it, its "ended" never comes, so that hold lets go on its own.
+  useHoldReveals(holding && state !== "failed", 15_000);
+  useHoldReveals(state === "playing");
 
   useEffect(() => {
     let alive = true;
