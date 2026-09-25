@@ -1,4 +1,6 @@
 import { PhoneFilm } from "@/components/phone-film";
+import { SelfieTake } from "@/components/selfie-take";
+import { SELFIE_TAKES } from "@/data/selfie-takes";
 import { WhatsInside } from "@/components/whats-inside";
 import { ListenIcon, TrophyIcon } from "@/components/icons";
 
@@ -64,8 +66,10 @@ export function LandingShowcase() {
 
       {/* Record, send, hear back */}
       <section className="flex flex-col items-center gap-8 rounded-2xl border border-navy-600 bg-navy-800 p-6 sm:flex-row sm:justify-center sm:gap-14 sm:p-10">
-        <Phone label="Thirty seconds of the real thing">
-          <PhoneFilm src="/film/record-to-review.mp4" poster="/film/record-to-review.jpg" label="A take sent and reviewed" />
+        {/* A take being recorded - a student on their own phone, lit by
+            a ring light, the brief on screen. */}
+        <Phone label="Recording a take">
+          <SelfieTake take={SELFIE_TAKES[0]} className="rounded-none" />
         </Phone>
         <div className="flex max-w-md flex-col gap-4">
           {/* The same five as the How it works section higher up.

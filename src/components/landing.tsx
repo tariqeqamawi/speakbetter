@@ -15,6 +15,8 @@ import { Pricing } from "@/components/pricing";
 import { LandingShowcase } from "@/components/landing-showcase";
 import { OriginStory } from "@/components/origin-story";
 import { SpectrumDemo } from "@/components/spectrum-demo";
+import { SelfieTake } from "@/components/selfie-take";
+import { SELFIE_TAKES } from "@/data/selfie-takes";
 import { HeroBeat } from "@/components/hero-beat";
 import { TheReality } from "@/components/the-reality";
 import { JoinCta } from "@/components/join-cta";
@@ -288,6 +290,29 @@ function LandingBody() {
               </li>
             </ul>
           </div>
+        </div>
+      </section>
+
+      {/* How a take is actually made - people recording themselves on
+          their own phones, the app's recording screen over them. The
+          difference just claimed, shown. */}
+      <section className="flex flex-col items-center gap-6">
+        <div className="flex max-w-2xl flex-col items-center gap-2 text-center">
+          <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+            This is how you actually record yourself
+          </h2>
+          <p className="text-ink-muted text-balance">
+            No studio, no crew. Prop up your phone, press record, and speak for a minute or two - the brief on screen
+            while you do. Then Coach watches it. That is why Speak Better works differently from every other course
+            and app: the others have you watch. This one has you speak.
+          </p>
+        </div>
+        <div className="-mx-4 flex w-[calc(100%+2rem)] gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:w-full sm:max-w-4xl sm:grid-cols-4 sm:overflow-visible sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {SELFIE_TAKES.map((t) => (
+            <div key={t.src} className="w-44 shrink-0 rounded-[2.2rem] border-4 border-navy-600 bg-navy-950 p-1.5 shadow-2xl shadow-navy-950 sm:w-auto">
+              <SelfieTake take={t} />
+            </div>
+          ))}
         </div>
       </section>
 
