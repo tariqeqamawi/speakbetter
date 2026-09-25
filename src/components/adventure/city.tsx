@@ -45,7 +45,12 @@ const SPIRE_VERT = /* glsl */ `
     #endif
     vY = position.y + 0.5;
     vec4 w = modelMatrix * instanceMatrix * vec4(position, 1.0);
-    vN = normalize(mat3(modelMatrix * instanceMatrix) * normal);
+    // Each spire is stretched tall and thin, so its normals are divided by
+    // the stretch (not multiplied) - otherwise they all tip upright, every
+    // face reads as an edge, and the whole spire glows instead of its rim.
+    mat3 im = mat3(instanceMatrix);
+    vec3 s2 = vec3(dot(im[0], im[0]), dot(im[1], im[1]), dot(im[2], im[2]));
+    vN = normalize(mat3(modelMatrix) * im * (normal / s2));
     vView = normalize(cameraPosition - w.xyz);
     vSeed = fract(instanceMatrix[3].x * 0.013 + instanceMatrix[3].z * 0.007);
     gl_Position = projectionMatrix * viewMatrix * w;
@@ -167,9 +172,9 @@ export function City({ road, travel, revealFrom }: { road: RoadLayout; travel: T
     const rand = seeded(13);
     const side = sideAt(road, road.length);
     const ahead = new THREE.Vector3(side.z, 0, -side.x);
-    const base = pointAt(road, road.length).addScaledVector(ahead, 420);
+    const base = pointAt(road, road.length).addScaledVector(ahead, 600);
     return Array.from({ length: 9 }, (_, i) => ({
-      pos: base.clone().addScaledVector(side, (i - 4) * 70 + (rand() - 0.5) * 30).add(new THREE.Vector3(0, 30 + rand() * 40, 0)),
+      pos: base.clone().addScaledVector(side, (i - 4) * 80 + (rand() - 0.5) * 30).add(new THREE.Vector3(0, 30 + rand() * 40, 0)),
       size: 160 + rand() * 120,
       color: new THREE.Color(SPECTRUM[i % SPECTRUM.length]),
     }));
