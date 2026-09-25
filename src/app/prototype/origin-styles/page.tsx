@@ -8,6 +8,8 @@ export const metadata: Metadata = { title: "Origin story styles", robots: { inde
 // chosen by comparing like with like.
 
 const STYLES = [
+  { key: "dream-a", name: "Dream memory A - blotchy, faces dissolved", note: "#1 pushed further: mottled chemical stains, smeared focus, neon aberration on every edge - shirts, hair, hands, stone." },
+  { key: "dream-b", name: "Dream memory B - faded, scratched, ghosted", note: "Expired emulsion, dust and scratches, a soft double exposure; the neon fringing and halation run through the whole frame." },
   { key: "film-crossprocess", name: "Underdeveloped film - cross-processed neon", note: "Real photo, dark and grainy, magenta/cyan/gold halation bleeding from the lanterns, light leak on the edge." },
   { key: "film-halation", name: "Underdeveloped film - red halation", note: "Real photo, underexposed expired 35mm, warm red-orange halation round every light, crushed shadows." },
   { key: "film-aberration", name: "Underdeveloped film - chromatic split", note: "Real photo, RGB channels offset at the edges, multicolour glow on highlights, heavy grain." },
