@@ -14,10 +14,12 @@ export const SKIES = [
   { key: "eclipse", name: "Eclipse", image: "/prototype/skies/eclipse.webp", note: "A giant dark planet eclipsing its star - a burning ring of light - with two crescent moons and aurora ribbons." },
   { key: "galaxy", name: "Galaxy edge-on", image: "/prototype/skies/galaxy.webp", note: "A spiral galaxy stretched across the sky, golden at its core, with a banded orange giant and a crescent moon." },
   { key: "shattered", name: "Shattered moon", image: "/prototype/skies/shattered.webp", note: "A moon broken apart, its pieces strung in a glittering arc, over a huge dim purple planet." },
+  { key: "blend-a", name: "Nebula eclipse A", image: "/prototype/skies/blend-a.webp", note: "The Nebula River's colours with the eclipse - plus the ice planet, a red planet and two moons." },
+  { key: "blend-b", name: "Nebula eclipse B", image: "/prototype/skies/blend-b.webp", note: "The same mix, a second take: a brighter corona and the nebula sweeping lower." },
 ] as const;
 
 export function SkyCompare({ stops, phases }: { stops: WorldStop[]; phases: WorldPhase[] }) {
-  const [at, setAt] = useState(1);
+  const [at, setAt] = useState(6);
   const sky = SKIES[at];
   return (
     <div>

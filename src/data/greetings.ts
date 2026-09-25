@@ -173,3 +173,34 @@ export const ROAD_LINES: string[] = [
 export function roadLineClip(index: number): string {
   return `/coach/road-${String(index + 1).padStart(2, "0")}.mp3`;
 }
+
+// Coach along the road - Tariq's picks, recorded once each into
+// /coach/talk-NN.mp3 by build-greetings.mjs. Where each is said is set
+// in adventure-screen.tsx (TALK), by its place in this list, so add new
+// lines at the end.
+export const ROAD_TALK: string[] = [
+  // Arriving in each section, as the fanfare plays.
+  "Train Your Instrument. Your voice is the instrument. Let's tune it.",
+  "Own Your Stories. Everybody has them. Few people tell them well. You're about to.",
+  "Reveal Deeper Truths. Hold on to something. This is where it gets real.",
+  "Your Impact. Look up. That's where your voice is going.",
+  // Along the way.
+  "Every challenge you pass, you leave a little of your old self behind.",
+  "Nobody was born a great speaker. They were built. Like you, right now.",
+  "Confidence isn't a feeling. It's a habit. Keep practising it.",
+  "Look how far you've come. Now look how far you can go.",
+  "The nerves never fully leave. You just learn to make them dance.",
+  "Somebody out there needs to hear what only you can say.",
+  "One more challenge. That's all. Then one more after that.",
+  "You're not practising to be perfect. You're practising to be heard.",
+  // When it fits the moment.
+  "You came back. That's the part most people skip.",
+  "You're not the only one on this road. Say hello.",
+  "Deep breath. The best speakers go down before they come up.",
+  "That's the bottom. From here, everything rises.",
+  "There it is. Every voice that ever mattered ended up somewhere like that.",
+];
+
+export function talkClip(index: number): string {
+  return `/coach/talk-${String(index + 1).padStart(2, "0")}.mp3`;
+}

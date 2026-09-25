@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { CoachPill } from "@/components/coach-pill";
+import { requestFloor } from "@/lib/voice-floor";
 
 // A line of the page, said aloud on request.
 //
@@ -17,6 +18,7 @@ import { CoachPill } from "@/components/coach-pill";
 
 export function SpeakLine({ audioSrc, label = "Listen to Coach" }: { audioSrc: string; label?: string }) {
   const el = useRef<HTMLAudioElement | null>(null);
+  const releaseFloor = useRef<() => void>(() => {});
   const [ready, setReady] = useState(false);
   const [playing, setPlaying] = useState(false);
 
@@ -30,6 +32,7 @@ export function SpeakLine({ audioSrc, label = "Listen to Coach" }: { audioSrc: s
     return () => {
       alive = false;
       el.current?.pause();
+      releaseFloor.current();
     };
   }, [audioSrc]);
 
@@ -40,16 +43,27 @@ export function SpeakLine({ audioSrc, label = "Listen to Coach" }: { audioSrc: s
       onClick={() => {
         if (!el.current) {
           el.current = new Audio(audioSrc);
-          el.current.addEventListener("ended", () => setPlaying(false));
+          el.current.addEventListener("ended", () => {
+            releaseFloor.current();
+            setPlaying(false);
+          });
         }
         if (playing) {
           el.current.pause();
           el.current.currentTime = 0;
+          releaseFloor.current();
           setPlaying(false);
           return;
         }
         setPlaying(true);
-        void el.current.play().catch(() => setPlaying(false));
+        // His turn (lib/voice-floor): after anyone else speaking.
+        const audioEl = el.current;
+        releaseFloor.current = requestFloor(() => {
+          void audioEl.play().catch(() => {
+            releaseFloor.current();
+            setPlaying(false);
+          });
+        });
       }}
     >
       {playing ? "Stop" : label}

@@ -4,9 +4,9 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AHEAD, GATE_BEFORE, Travel, coachSpots, layoutRoad, reachedPhase } from "./road-geometry";
+import { AHEAD, GATE_BEFORE, Travel, coachSpots, layoutRoad, phaseRanges, reachedPhase } from "./road-geometry";
 import { SkyCoach } from "./sky-coach";
-import { ROAD_LINES, roadLineClip } from "@/data/greetings";
+import { ROAD_LINES, ROAD_TALK, roadLineClip, talkClip } from "@/data/greetings";
 import { activated, playApplause, playCoachLine, playGateChime, playRoadWhoosh } from "@/lib/feedback-fx";
 import { Confetti } from "@/components/confetti";
 import { useStore } from "@/lib/store";
@@ -30,6 +30,29 @@ const AdventureWorld = dynamic(() => import("./adventure-world").then((m) => m.A
 const FINISH_DELAY = 900;
 const FINISH_SENTENCES = ROAD_LINES[3].match(/[^.!?]+[.!?]+/g)!.map((t) => t.trim());
 const FINISH_MS_PER_CHAR = 28800 / ROAD_LINES[3].length;
+
+// Where each of Coach's road lines (ROAD_TALK, by place in the list) is
+// said: arriving in T, O, R and Y; the encouragements, each halfway
+// between a challenge and the next (by the challenge's index); and the
+// lines for particular moments.
+const TALK = {
+  arrive: [0, 1, 2, 3],
+  along: [
+    [1, 4],
+    [4, 5],
+    [6, 6],
+    [9, 7],
+    [12, 8],
+    [14, 9],
+    [21, 10],
+    [22, 11],
+  ] as [number, number][],
+  back: 12,
+  classmates: 13,
+  beforePlunge: 14,
+  bottom: 15,
+  city: 16,
+};
 
 export function AdventureScreen({
   stops,
@@ -192,8 +215,78 @@ export function AdventureScreen({
     lastStop.current = nearest;
     if (sound) playRoadWhoosh();
   }, [nearest, sound]);
-  // The fanfare only for a threshold crossed for real - going forward into
-  // a section the student has reached - never for one only previewed.
+  // COACH, in the sky. Everything he says goes through one queue, so a
+  // line never talks over another: it is captioned, spoken if sound is
+  // on, and the next waits until it is done.
+  type Line = { text: string; src: string };
+  const [caption, setCaption] = useState<Line | null>(null);
+  const [talking, setTalking] = useState(false);
+  const [waiting, setWaiting] = useState(false);
+  const queue = useRef<Line[]>([]);
+  const busy = useRef(false);
+  const startLine = useCallback(
+    (line: Line) => {
+      busy.current = true;
+      setCaption(line);
+      setTalking(true);
+      if (!sound) return;
+      // A browser lets a page make sound only once it has been clicked,
+      // tapped or typed on - scrolling does not count. Travelled here by
+      // scrolling alone, his line waits for the first click, and a chip
+      // asks for it.
+      if (activated()) playCoachLine(line.src);
+      else setWaiting(true);
+    },
+    [sound],
+  );
+  const say = useCallback(
+    (line: Line) => {
+      if (busy.current) queue.current.push(line);
+      else startLine(line);
+    },
+    [startLine],
+  );
+  useEffect(() => {
+    if (!waiting || !caption) return;
+    const go = () => {
+      playCoachLine(caption.src);
+      setWaiting(false);
+      // From the top, now that it can be heard.
+      setCaption({ ...caption });
+      setTalking(true);
+    };
+    window.addEventListener("pointerup", go, { once: true });
+    window.addEventListener("keydown", go, { once: true });
+    return () => {
+      window.removeEventListener("pointerup", go);
+      window.removeEventListener("keydown", go);
+    };
+  }, [waiting, caption]);
+  // The caption stays as long as the line takes to say, whatever the
+  // traveller does meanwhile; then the next in the queue, after a breath.
+  useEffect(() => {
+    if (!caption) return;
+    const len = caption.text.length;
+    const quiet = setTimeout(() => setTalking(false), len * 62);
+    const t = setTimeout(() => {
+      setCaption(null);
+      setWaiting(false);
+      busy.current = false;
+      const next = queue.current.shift();
+      if (next) setTimeout(() => !busy.current && startLine(next), 700);
+    }, 1500 + len * 65);
+    return () => {
+      clearTimeout(t);
+      clearTimeout(quiet);
+    };
+  }, [caption, startLine]);
+
+  // Only on road the student has really travelled - up to the challenge
+  // they are on - never on stretches they are only previewing.
+  const realTo = allDone ? Infinity : road.stops[hereIndex] + 12;
+
+  // CROSSING INTO A NEW SECTION for real - forward, into one the student
+  // has reached: the fanfare, and Coach names where they have arrived.
   const reached = reachedPhase(stops, phases);
   const lastPhase = useRef(phase?.id);
   useEffect(() => {
@@ -201,69 +294,66 @@ export function AdventureScreen({
     const from = phases.findIndex((p) => p.id === lastPhase.current);
     const to = phases.findIndex((p) => p.id === phase?.id);
     lastPhase.current = phase?.id;
-    if (sound && to > from && to <= reached) playGateChime();
-  }, [phase, phases, reached, sound]);
+    if (!(to > from && to <= reached)) return;
+    if (sound) playGateChime();
+    const k = TALK.arrive[to - 1];
+    if (k !== undefined) say({ text: ROAD_TALK[k], src: talkClip(k) });
+  }, [phase, phases, reached, sound, say]);
 
-  // COACH AT THE ROADSIDE. Each time the traveller comes level with him,
-  // once per visit: his line, captioned, and spoken if sound is on.
-  const spots = useMemo(() => coachSpots(road), [road]);
+  // HIS PLACES ON THE ROAD, each said once per visit as the traveller
+  // comes to it: the welcome and his first three lines, the encouragements
+  // spread between challenges, and the lines for the plunge and the city.
+  const spots = useMemo(() => {
+    const ranges = phaseRanges(road.stops, stops.map((st) => st.phase), road.finish);
+    const span = (id: string) => ranges.find((r) => r.id === id);
+    const between = (i: number) => (road.stops[i] + road.stops[Math.min(i + 1, road.stops.length - 1)]) / 2;
+    const out: { s: number; line: Line }[] = coachSpots(road)
+      .slice(0, 3)
+      .map((cs, i) => ({ s: cs, line: { text: ROAD_LINES[i], src: roadLineClip(i) } }));
+    const talk = (s: number | undefined, k: number) => {
+      if (s !== undefined && Number.isFinite(s)) out.push({ s, line: { text: ROAD_TALK[k], src: talkClip(k) } });
+    };
+    TALK.along.forEach(([after, k]) => after < road.stops.length && talk(between(after), k));
+    const r = span("R");
+    const y = span("Y");
+    talk(r && r.from - 22, TALK.beforePlunge);
+    talk(r && r.to - 30, TALK.bottom);
+    talk(y && y.from + 110, TALK.city);
+    return out.sort((a, b) => a.s - b.s);
+  }, [road, stops]);
   const spoken = useRef(new Set<number>());
-  const [caption, setCaption] = useState<string | null>(null);
-  const [talking, setTalking] = useState<number | null>(null);
-  const [waiting, setWaiting] = useState<number | null>(null);
   useEffect(() => {
-    // As the traveller comes to each of his places on the road - he
-    // appears in the sky, so anywhere round it will do, including just
-    // past it where a jump to the start of a phase lands.
-    // Only on road the student has really travelled - up to the challenge
-    // they are on - not on stretches they are only previewing.
-    const real = allDone ? Infinity : road.stops[hereIndex] + 12;
-    const i = spots.findIndex((cs, k) => !spoken.current.has(k) && cs <= real && at > cs - 30 && at < cs + 14);
+    // Anywhere round his place will do - he is in the sky - including just
+    // past it, where a jump to the start of a section lands.
+    const i = spots.findIndex((sp, k) => !spoken.current.has(k) && sp.s <= realTo && at > sp.s - 30 && at < sp.s + 14);
     if (i < 0) return;
     spoken.current.add(i);
-    setCaption(ROAD_LINES[i]);
-    setTalking(i);
-    if (!sound) return;
-    // A browser lets a page make sound only once it has been clicked,
-    // tapped or typed on - scrolling does not count. Travelled here by
-    // scrolling alone, his line waits for the first click, and a chip
-    // asks for it.
-    if (activated()) playCoachLine(roadLineClip(i));
-    else setWaiting(i);
-  }, [at, spots, sound, allDone, road, hereIndex]);
+    say(spots[i].line);
+  }, [at, spots, realTo, say]);
+
+  // Back for another session: once a day, as the road opens.
   useEffect(() => {
-    if (waiting === null) return;
-    const go = () => {
-      playCoachLine(roadLineClip(waiting));
-      setCaption(ROAD_LINES[waiting]);
-      setTalking(waiting);
-      setWaiting(null);
-    };
-    // Once per page: the click that lets sound play.
-    window.addEventListener("pointerup", go, { once: true });
-    window.addEventListener("keydown", go, { once: true });
-    return () => {
-      window.removeEventListener("pointerup", go);
-      window.removeEventListener("keydown", go);
-    };
-  }, [waiting]);
-  // The caption stays as long as the line takes to say, whatever the
-  // traveller does meanwhile.
+    if (hereIndex === 0) return;
+    try {
+      const today = new Date().toDateString();
+      if (localStorage.getItem("coach-welcome-back") === today) return;
+      localStorage.setItem("coach-welcome-back", today);
+    } catch {
+      // no storage: say it
+    }
+    const k = TALK.back;
+    say({ text: ROAD_TALK[k], src: talkClip(k) });
+  }, [hereIndex, say]);
+
+  // Other students at a checkpoint on real road: once a visit.
+  const greetedMates = useRef(false);
   useEffect(() => {
-    if (!caption) return;
-    // His mouth moves for about as long as the line takes to say.
-    const quiet = setTimeout(() => setTalking(null), caption.length * 62);
-    // Gone with the caption, the chip asking to hear it: no chip for a
-    // line already over.
-    const t = setTimeout(() => {
-      setCaption(null);
-      setWaiting(null);
-    }, 1500 + caption.length * 65);
-    return () => {
-      clearTimeout(t);
-      clearTimeout(quiet);
-    };
-  }, [caption]);
+    if (greetedMates.current || !stop?.classmates?.length) return;
+    if (Math.abs(road.stops[nearest] - at) > 12 || road.stops[nearest] > realTo) return;
+    greetedMates.current = true;
+    const k = TALK.classmates;
+    say({ text: ROAD_TALK[k], src: talkClip(k) });
+  }, [stop, nearest, at, road, realTo, say]);
 
   // THE CHECKPOINT UNDER THE TRAVELLER: what can be done here.
   const level = stop && Math.abs(road.stops[nearest] - at) < 7;
@@ -389,7 +479,7 @@ export function AdventureScreen({
         {sound ? "🔊" : "🔈"}
       </button>
 
-      <SkyCoach talking={talking !== null} />
+      <SkyCoach talking={talking} />
 
       {/* What Coach said, as he said it. */}
       {/* A subtitle in the sky, just under his head and above the land,
@@ -401,7 +491,7 @@ export function AdventureScreen({
             style={{ textShadow: "0 1px 10px rgba(0,0,0,0.95), 0 0 2px rgba(0,0,0,0.9)" }}
           >
             <span className="text-figurative">Coach: </span>
-            {caption}
+            {caption.text}
           </p>
         </div>
       )}
@@ -414,7 +504,7 @@ export function AdventureScreen({
         </div>
       )}
 
-      {waiting !== null && caption && (
+      {waiting && caption && (
         <div className="pointer-events-none absolute inset-x-0 top-[46%] z-20 flex justify-center">
           <span className="coach-note-in rounded-full border border-figurative/60 bg-navy-950/90 px-4 py-1.5 text-xs font-bold text-figurative shadow-lg backdrop-blur">
             🔊 Click to hear Coach

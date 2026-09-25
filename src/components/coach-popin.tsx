@@ -9,6 +9,7 @@ import { buildContext } from "@/lib/encouragement";
 import { hapticTap } from "@/lib/feedback-fx";
 import { chime, setCoachCalling } from "@/lib/coach-call";
 import { speakUrl } from "@/lib/coach/voice";
+import { requestFloor } from "@/lib/voice-floor";
 
 // The coach, dropping in unprompted to say something true about how the
 // student is doing. Deliberately rationed - at most once a day, only
@@ -60,6 +61,7 @@ export function CoachPopIn() {
   const rafRef = useRef<number | null>(null);
   const envRef = useRef(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const releaseFloor = useRef<() => void>(() => {});
 
   const dismiss = useCallback(() => {
     setLeaving(true);
@@ -128,6 +130,7 @@ export function CoachPopIn() {
     tick();
   };
   const settle = () => {
+    releaseFloor.current();
     setSpeaking(false);
     setJaw(0);
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -149,6 +152,11 @@ export function CoachPopIn() {
 
     // The coach's own voice first (see lib/coach/voice.ts) ...
     const url = await speakUrl(message);
+    if (audioRef.current !== el) return; // stopped while fetching
+    // His turn (lib/voice-floor): after anyone else speaking has finished.
+    await new Promise<void>((go) => {
+      releaseFloor.current = requestFloor(go);
+    });
     if (url && audioRef.current === el) {
       el.pause();
       el.src = url;
@@ -186,6 +194,7 @@ export function CoachPopIn() {
   }, [message]);
 
   const stop = () => {
+    releaseFloor.current();
     audioRef.current?.pause();
     audioRef.current = null;
     window.speechSynthesis?.cancel();

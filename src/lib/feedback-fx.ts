@@ -1,3 +1,4 @@
+import { requestFloor } from "@/lib/voice-floor";
 // A speaking course that stays silent when you achieve something is
 // missing a beat. The chime is synthesised with the Web Audio API rather
 // than shipped as a file - no asset, no download, and it can be tuned in
@@ -351,26 +352,34 @@ export function playCoachLine(src: string, delayMs = 0): () => void {
     clips.set(src, clip);
   }
 
+  // After the delay he asks for the floor (lib/voice-floor), so he never
+  // talks over himself elsewhere - and gives it back when the clip ends.
   let stopped = false;
-  let stop = () => {
+  let node: AudioBufferSourceNode | null = null;
+  let done = () => {};
+  const loaded = clip;
+  const timer = setTimeout(() => {
+    done = requestFloor(() => {
+      void loaded.then((buffer) => {
+        if (!buffer || stopped) return done();
+        node = ac.createBufferSource();
+        node.buffer = buffer;
+        node.connect(ac.destination);
+        node.onended = () => done();
+        node.start();
+      });
+    });
+  }, delayMs);
+  return () => {
     stopped = true;
+    clearTimeout(timer);
+    try {
+      node?.stop();
+    } catch {
+      // already finished
+    }
+    done();
   };
-  const due = ac.currentTime + delayMs / 1000;
-  void clip.then((buffer) => {
-    if (!buffer || stopped) return;
-    const node = ac.createBufferSource();
-    node.buffer = buffer;
-    node.connect(ac.destination);
-    node.start(Math.max(ac.currentTime, due));
-    stop = () => {
-      try {
-        node.stop();
-      } catch {
-        // already finished
-      }
-    };
-  });
-  return () => stop();
 }
 
 // The road's sounds - the adventure plays them only when the student

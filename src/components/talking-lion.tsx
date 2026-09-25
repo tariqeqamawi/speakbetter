@@ -1,6 +1,7 @@
 "use client";
 
 import { LionMouth } from "@/components/lion-mouth";
+import { requestFloor } from "@/lib/voice-floor";
 import { CoachPill } from "@/components/coach-pill";
 import {
   forwardRef,
@@ -159,6 +160,8 @@ export const TalkingLion = forwardRef<
   const rafRef = useRef<number | null>(null);
   const envelopeRef = useRef(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  // His turn to speak (lib/voice-floor): given back when he stops.
+  const releaseFloor = useRef<() => void>(() => {});
   const analyserRef = useRef<AnalyserNode | null>(null);
   const ctxRef = useRef<AudioContext | null>(null);
   const smoothedRef = useRef(0);
@@ -327,6 +330,7 @@ export const TalkingLion = forwardRef<
         const el = audioRef.current;
         if (el) el.pause();
         if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
+        releaseFloor.current();
       },
       prime: () => {
         const ctx = graph();
@@ -351,16 +355,23 @@ export const TalkingLion = forwardRef<
   const speak = useCallback(async () => {
     if (speaking) return;
 
+    // Wait for anyone else speaking to finish first.
+    releaseFloor.current();
+    await new Promise<void>((go) => {
+      releaseFloor.current = requestFloor(go);
+    });
+
     if (audioSrc) {
       const el = audioRef.current;
       const ctx = graph();
-      if (!el || !ctx) return;
+      if (!el || !ctx) return releaseFloor.current();
       await ctx.resume().catch(() => {});
       if (el.src !== audioSrc) el.src = audioSrc;
       el.muted = false;
       el.currentTime = 0;
       setFinished(false); // a replay clears the summary until it's earned
       el.onended = () => {
+        releaseFloor.current();
         setSpeaking(false);
         stopLoop();
         setFinished(true);
@@ -371,6 +382,7 @@ export const TalkingLion = forwardRef<
       } catch {
         // The browser wants a tap for this one. Say so; the button is
         // the tap.
+        releaseFloor.current();
         setBlocked(true);
         onBlocked?.();
         return;
@@ -381,7 +393,7 @@ export const TalkingLion = forwardRef<
       return;
     }
 
-    if (!text || !("speechSynthesis" in window)) return;
+    if (!text || !("speechSynthesis" in window)) return releaseFloor.current();
     window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(text);
     utter.rate = 0.98;
@@ -390,10 +402,12 @@ export const TalkingLion = forwardRef<
       envelopeRef.current = 1; // pump the envelope at each word
     };
     utter.onend = () => {
+      releaseFloor.current();
       setSpeaking(false);
       stopLoop();
     };
     utter.onerror = () => {
+      releaseFloor.current();
       setSpeaking(false);
       stopLoop();
     };
@@ -417,7 +431,11 @@ export const TalkingLion = forwardRef<
     return () => cancelAnimationFrame(id);
   }, [autoPlay, audioSrc]);
 
+  // Gone from the page mid-sentence: the floor goes with him.
+  useEffect(() => () => releaseFloor.current(), []);
+
   const stop = useCallback(() => {
+    releaseFloor.current();
     if (audioSrc) audioRef.current?.pause();
     else if ("speechSynthesis" in window) window.speechSynthesis.cancel();
     setSpeaking(false);
