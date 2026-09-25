@@ -84,7 +84,7 @@ const MOMENTS: Moment[] = [
         different from who walked in, was a methodology. So he began writing speeches for other high-level
         entrepreneurs: Brian Kelly, founder of 9D Breathwork, whose talk went on to get him a TED talk; Balazs W.
         Kardos, an eight-figure entrepreneur, for his speech to 8,000 people at Enagic&apos;s 50th anniversary in
-        Okinawa, Japan; and Dr. Michelle Patrick, whose talk on holistic health in Miami earned a standing ovation.
+        Okinawa, Japan; and <em>Dr. Michelle Patrick</em>, whose talk earned her a standing ovation.
       </>
     ),
   },
