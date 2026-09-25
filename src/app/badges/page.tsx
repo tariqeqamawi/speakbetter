@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
-import { badgeDefs } from "@/data/badges";
-import { BadgeMedal } from "@/components/badge-medal";
+import { badgeDefs, trophyArt } from "@/data/badges";
+import { TrophyArt } from "@/components/trophy-art";
 
 // Every badge in the course, shown won. The dashboard's trophy case
-// deliberately hides what you haven't earned behind gray; this page is
-// the opposite - the full set, so the whole collection can be seen at
-// once (and reviewed while it's being designed). Reads from the same
-// badge list, so it can never drift out of date.
+// shows what you haven't earned as a silhouette; this page is the
+// opposite - the full set, so the whole collection can be seen at once
+// (and reviewed while it's being designed). Reads from the same badge
+// list, so it can never drift out of date. The rendered trophies, the
+// same ones the case holds, rather than the drawn medallions they
+// replaced.
 
 export const metadata: Metadata = {
   title: "Badges",
@@ -35,11 +37,11 @@ export default function BadgeGalleryPage() {
             key={badge.id}
             className="flex items-center gap-4 rounded-2xl border border-navy-600 bg-navy-800 p-4"
           >
-            <BadgeMedal
-              id={badge.id}
-              icon={badge.icon}
-              earned
-              className="size-16"
+            <TrophyArt
+              src={trophyArt(badge.id).image}
+              won
+              lazy
+              className="h-24 shrink-0"
             />
             <span className="flex flex-col gap-1">
               <span className="text-sm font-semibold text-ink">
