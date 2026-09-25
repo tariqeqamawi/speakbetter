@@ -12,10 +12,10 @@ import * as THREE from "three";
 
 /** World units between one checkpoint and the next. Long enough that
  *  reaching the next one is a short journey, not a flick. */
-export const SPACING = 34;
+export const SPACING = 56;
 /** Road before the first checkpoint, and after the last before the gate. */
 export const LEAD_IN = 26;
-export const LEAD_OUT = 40;
+export const LEAD_OUT = 60;
 /** How far ahead of the camera the traveller walks. Everything that
  *  says "where you are" reads the traveller, not the camera. */
 export const AHEAD = 17;

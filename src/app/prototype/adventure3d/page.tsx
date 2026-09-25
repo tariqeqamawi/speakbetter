@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { challenges, storyPhases } from "@/data/challenges";
 import { challengeChatter } from "@/data/challenge-chatter";
-import { AdventureScreen } from "@/components/adventure/adventure-screen";
+import { AdventureView } from "@/components/adventure/adventure-view";
 import type { WorldPhase, WorldStop } from "@/components/adventure/adventure-world";
 
 export const metadata: Metadata = { title: "The adventure, in 3D" };
@@ -44,5 +44,5 @@ const stops: WorldStop[] = challenges.map((c, i) => ({
 }));
 
 export default function Adventure3DPage() {
-  return <AdventureScreen stops={stops} phases={phases} fallbackAvatar="/prototype/tariq-avatar.jpg" />;
+  return <AdventureView stops={stops} phases={phases} fallbackAvatar="/prototype/tariq-avatar.jpg" />;
 }

@@ -280,7 +280,7 @@ export function AdventureScreen({
       {/* A subtitle in the sky under the phase name - no box, nothing
           laid over the road. */}
       {caption && (
-        <div className="pointer-events-none absolute inset-x-0 top-[5.5rem] z-10 flex justify-center px-8">
+        <div className="pointer-events-none absolute inset-x-0 top-[8rem] z-10 sm:top-[5.5rem] flex justify-center px-8">
           <p
             className="coach-note-in max-w-sm text-center text-sm font-semibold leading-snug text-ink text-balance"
             style={{ textShadow: "0 1px 10px rgba(0,0,0,0.95), 0 0 2px rgba(0,0,0,0.9)" }}
@@ -323,7 +323,7 @@ export function AdventureScreen({
       )}
 
       {/* Where you are. */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 flex flex-col items-center gap-1 bg-gradient-to-b from-[#070c18]/90 to-transparent px-4 pb-10 pt-4 text-center">
+      <div className="pointer-events-none absolute inset-x-0 top-0 flex flex-col items-center gap-1 bg-gradient-to-b from-[#070c18]/90 to-transparent px-4 pb-10 pt-14 text-center sm:pt-4">
         {phase && (
           <>
             <span className="text-[0.65rem] font-bold uppercase tracking-[0.3em]" style={{ color: phase.color }}>

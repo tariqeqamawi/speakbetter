@@ -97,6 +97,8 @@ const TERRAIN_VERT = /* glsl */ `
   attribute vec2 aGrid;
   attribute float aS;
   attribute vec3 aNeon;
+  attribute float aLift;
+  varying float vLift;
   varying vec2 vGrid;
   varying float vS;
   varying vec3 vNeon;
@@ -106,6 +108,7 @@ const TERRAIN_VERT = /* glsl */ `
     vGrid = aGrid;
     vS = aS;
     vNeon = aNeon;
+    vLift = aLift;
     vec4 world = modelMatrix * vec4(position, 1.0);
     vWorld = world.xyz;
     vec4 mv = viewMatrix * world;
@@ -119,6 +122,8 @@ const TERRAIN_FRAG = /* glsl */ `
   uniform float uFrom;
   uniform vec3 uFog;
   uniform float uFogDensity;
+  uniform vec3 uHorizon;
+  varying float vLift;
   varying vec2 vGrid;
   varying float vS;
   varying vec3 vNeon;
@@ -142,17 +147,40 @@ const TERRAIN_FRAG = /* glsl */ `
     // A faint afterglow behind it, fading as it goes.
     float wake = (d < 0.0 ? exp(d / 18.0) : 0.0) * 0.35 * (1.0 - smoothstep(180.0, 220.0, front - uFrom));
 
-    // The faces: dark glass, a facet catching the light here and there.
+    // THE SURFACE, lit the way a renderer with global illumination
+    // would light it - approximated, because a phone cannot trace rays:
+    //   occlusion  valleys sit in soft shadow, ridges stand in the light
+    //   key light  a cool moon from high behind the hills
+    //   bounce     the grid's own neon spilling onto the glass round it,
+    //              and far more of it where the wave is passing
+    //   fresnel    slopes seen at a glancing angle mirror the horizon glow
+    //   specular   a tight highlight on each facet - glass, not paint
     vec3 n = normalize(cross(dFdx(vWorld), dFdy(vWorld)));
-    float sheen = pow(max(dot(n, normalize(vec3(0.3, 0.9, 0.2))), 0.0), 6.0);
-    vec3 col = vec3(0.001, 0.002, 0.006) + vec3(0.006, 0.01, 0.024) * sheen;
-    col += vNeon * 0.012 * wave;
+    if (n.y < 0.0) n = -n;
+    vec3 V = normalize(cameraPosition - vWorld);
+    vec3 L = normalize(vec3(-0.25, 0.75, -0.6));
+    float ao = mix(0.3, 1.0, smoothstep(-3.0, 16.0, vLift));
+    float hemi = 0.5 + 0.5 * n.y;
+    float diff = max(dot(n, L), 0.0);
+    float fres = pow(1.0 - max(dot(n, V), 0.0), 4.0);
+    float spec = pow(max(dot(n, normalize(L + V)), 0.0), 70.0);
+    vec3 albedo = vec3(0.010, 0.014, 0.030);
+    vec3 col = albedo * (0.35 * hemi + 0.9 * diff) * ao;
+    col += vec3(0.05, 0.06, 0.12) * spec * ao;
+    col += uHorizon * fres * 0.22 * ao;
+    col += vNeon * (0.035 * haloWide + 0.05 * (wave + wake)) * ao;
 
+    // The light itself.
     float rest = 0.02 * halo + 0.16 * core;
     float lit = (wave + wake) * (1.2 * core + 0.5 * halo + 0.25 * haloWide);
     col += vNeon * (rest + lit * 1.6);
 
+    // Air: haze deepening with distance, and mist lying in the low
+    // ground far off, tinted by the phase's light.
     float fog = 1.0 - exp(-uFogDensity * uFogDensity * vDepth * vDepth);
+    float mist = exp(-max(vLift + 1.0, 0.0) * 0.16) * smoothstep(30.0, 170.0, vDepth) * 0.6;
+    vec3 haze = mix(uFog, vNeon * 0.22, 0.3);
+    col = mix(col, haze, mist);
     gl_FragColor = vec4(mix(col, uFog, fog), 1.0);
   }
 `;
@@ -168,6 +196,7 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
     const pos = new Float32Array(n * 3);
     const grid = new Float32Array(n * 2);
     const along = new Float32Array(n);
+    const lift = new Float32Array(n);
     // The neon of each vertex: the colour its edges glow in.
     const neon = new Float32Array(n * 3);
     const p = new THREE.Vector3();
@@ -190,6 +219,7 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
         pos.set([x, y, z], v * 3);
         grid.set([r, k], v * 2);
         along[v] = s;
+        lift[v] = y - p.y;
         // Brightest near the road and along the ridges.
         const near = 1 - THREE.MathUtils.smoothstep(Math.abs(d), 4, 90);
         const ridge = THREE.MathUtils.smoothstep(h, 0.55, 0.85) * away;
@@ -209,6 +239,7 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
     g.setAttribute("aGrid", new THREE.BufferAttribute(grid, 2));
     g.setAttribute("aS", new THREE.BufferAttribute(along, 1));
     g.setAttribute("aNeon", new THREE.BufferAttribute(neon, 3));
+    g.setAttribute("aLift", new THREE.BufferAttribute(lift, 1));
     g.setIndex(idx);
     return g;
   }, [road, spans]);
@@ -222,8 +253,9 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
         uniforms: {
           uTime: { value: 0 },
           uFrom: { value: 0 },
-          uFog: { value: new THREE.Color("#060b1c") },
-          uFogDensity: { value: 0.0055 },
+          uFog: { value: new THREE.Color("#0a1030") },
+          uFogDensity: { value: 0.0046 },
+          uHorizon: { value: new THREE.Color("#3a3f8f") },
         },
       }),
     [],
@@ -477,7 +509,7 @@ export function AdventureWorld({
       gl={{ antialias: true, powerPreference: "high-performance" }}
       camera={{ fov: 62, near: 0.1, far: 900, position: [0, 3, 6] }}
       onCreated={({ scene }) => {
-        scene.fog = new THREE.FogExp2("#060b1c", 0.0055);
+        scene.fog = new THREE.FogExp2("#0a1030", 0.0046);
       }}
     >
       <hemisphereLight args={["#8090d0", "#0a0f20", 2.2]} />
