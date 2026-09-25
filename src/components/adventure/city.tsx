@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { pointAt, seeded, sideAt, type RoadLayout } from "./road-geometry";
+import { AHEAD, pointAt, seeded, sideAt, type RoadLayout, type Travel } from "./road-geometry";
 
 // Your Impact's destination: a far-future city of light on the horizon,
 // beyond the end of the land, never reached. Tall tapering spires, each
@@ -25,26 +25,49 @@ interface Tower {
   rings: { at: number; w: number; tilt: number }[];
 }
 
-/** A cone's outline as line segments: its base ring and edges running
- *  up to the point, drawn with fewer sides than a circle needs so it
- *  reads as a faceted spire of light. */
-function spireLines(t: Tower, out: number[], col: number[]) {
-  const SIDES = 7;
-  const base = t.pos.y - 2;
-  const top = new THREE.Vector3(t.pos.x, base + t.h, t.pos.z);
-  const pts = Array.from({ length: SIDES }, (_, i) => {
-    const a = (i / SIDES) * Math.PI * 2;
-    return new THREE.Vector3(t.pos.x + Math.cos(a) * t.r, base, t.pos.z + Math.sin(a) * t.r);
-  });
-  const push = (a: THREE.Vector3, b: THREE.Vector3, k = 1) => {
-    out.push(a.x, a.y, a.z, b.x, b.y, b.z);
-    col.push(t.color.r * k, t.color.g * k, t.color.b * k, t.color.r * k, t.color.g * k, t.color.b * k);
-  };
-  pts.forEach((p, i) => {
-    push(p, pts[(i + 1) % SIDES], 0.7);
-    push(p, top);
-  });
-}
+// THE TOWERS GLOW, THEY ARE NOT DRAWN. Lit outlines made the city look
+// built out of lines. Each spire is dark glass with a soft light inside
+// it in its own colour - brightest at the foot, fading as it rises - and
+// a band of light climbing it slowly, the same cascading light that
+// rolls through the land.
+const SPIRE_VERT = /* glsl */ `
+  varying vec3 vColor;
+  varying float vY;
+  varying vec3 vN;
+  varying vec3 vView;
+  varying float vSeed;
+  void main() {
+    // three declares instanceColor itself, once the colours are set.
+    #ifdef USE_INSTANCING_COLOR
+      vColor = instanceColor;
+    #else
+      vColor = vec3(1.0);
+    #endif
+    vY = position.y + 0.5;
+    vec4 w = modelMatrix * instanceMatrix * vec4(position, 1.0);
+    vN = normalize(mat3(modelMatrix * instanceMatrix) * normal);
+    vView = normalize(cameraPosition - w.xyz);
+    vSeed = fract(instanceMatrix[3].x * 0.013 + instanceMatrix[3].z * 0.007);
+    gl_Position = projectionMatrix * viewMatrix * w;
+  }
+`;
+const SPIRE_FRAG = /* glsl */ `
+  uniform float uTime;
+  uniform float uReveal;
+  varying vec3 vColor;
+  varying float vY;
+  varying vec3 vN;
+  varying vec3 vView;
+  varying float vSeed;
+  void main() {
+    float body = 0.14 + 0.5 * pow(1.0 - vY, 2.0);
+    float rim = pow(1.0 - abs(dot(normalize(vN), vView)), 2.5) * 0.55;
+    float band = mod(uTime * 0.12 + vSeed * 3.0, 1.4) - 0.2;
+    float climb = exp(-pow((vY - band) / 0.07, 2.0)) * 0.9;
+    vec3 col = vColor * (body + rim + climb);
+    gl_FragColor = vec4(col * uReveal, 1.0);
+  }
+`;
 
 /** An ellipse of light floating round a spire. */
 function ringLines(t: Tower, ring: Tower["rings"][number], out: number[], col: number[]) {
@@ -65,7 +88,9 @@ function ringLines(t: Tower, ring: Tower["rings"][number], out: number[], col: n
   }
 }
 
-export function City({ road }: { road: RoadLayout }) {
+export function City({ road, travel, revealFrom }: { road: RoadLayout; travel: Travel; revealFrom: number }) {
+  const root = useRef<THREE.Group>(null);
+  const fades = useRef<(THREE.Material & { opacity: number } | null)[]>([]);
   const towers = useMemo(() => {
     const rand = seeded(77);
     const out: Tower[] = [];
@@ -110,26 +135,31 @@ export function City({ road }: { road: RoadLayout }) {
   const tops = useRef<THREE.InstancedMesh>(null);
   // Every spire's outline, and every floating halo, as two sets of lines
   // in the spires' own colours - the same light as the land.
-  const { edges, halos } = useMemo(() => {
-    const ep: number[] = [];
-    const ec: number[] = [];
+  const spireMat = useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        vertexShader: SPIRE_VERT,
+        fragmentShader: SPIRE_FRAG,
+        uniforms: { uTime: { value: 0 }, uReveal: { value: 0 } },
+      }),
+    [],
+  );
+  const { halos } = useMemo(() => {
     const hp: number[] = [];
     const hc: number[] = [];
     towers.forEach((t) => {
-      spireLines(t, ep, ec);
       t.rings.forEach((r) => ringLines(t, r, hp, hc));
     });
-    const e = new THREE.BufferGeometry();
-    e.setAttribute("position", new THREE.Float32BufferAttribute(ep, 3));
-    e.setAttribute("color", new THREE.Float32BufferAttribute(ec, 3));
     const h = new THREE.BufferGeometry();
     h.setAttribute("position", new THREE.Float32BufferAttribute(hp, 3));
     h.setAttribute("color", new THREE.Float32BufferAttribute(hc, 3));
-    return { edges: e, halos: h };
+    return { halos: h };
   }, [towers]);
   const halosGroup = useRef<THREE.Group>(null);
 
-  // Place the towers once they exist.
+  // Place the towers once they exist. (Writing into three's objects is
+  // what this effect is for.)
+  /* eslint-disable react-hooks/immutability */
   useEffect(() => {
     {
       const m = bodies.current;
@@ -142,6 +172,7 @@ export function City({ road }: { road: RoadLayout }) {
         o.rotation.set(0, 0, 0);
         o.updateMatrix();
         m.setMatrixAt(i, o.matrix);
+        m.setColorAt(i, t.color);
         r.setColorAt(i, t.color);
         o.position.set(t.pos.x, t.pos.y + t.h - 2 + 1.2, t.pos.z);
         o.scale.set(1.3, 1.3, 1.3);
@@ -151,8 +182,12 @@ export function City({ road }: { road: RoadLayout }) {
       m.instanceMatrix.needsUpdate = true;
       r.instanceMatrix.needsUpdate = true;
       if (r.instanceColor) r.instanceColor.needsUpdate = true;
+      if (m.instanceColor) m.instanceColor.needsUpdate = true;
+      // Recompiled now that it has colours to read.
+      spireMat.needsUpdate = true;
     }
-  }, [towers]);
+  }, [towers, spireMat]);
+  /* eslint-enable react-hooks/immutability */
 
   // Flying cars: lights on long loops between the towers, each with a
   // streak of light behind it.
@@ -196,6 +231,13 @@ export function City({ road }: { road: RoadLayout }) {
     const t = clock.elapsedTime;
     // The halos float: the whole set rising and falling a little.
     if (halosGroup.current) halosGroup.current.position.y = Math.sin(t * 0.5) * 2.5;
+    // Hidden until the traveller is through the pass into Your Impact,
+    // then revealed over the next stretch of road.
+    const k = THREE.MathUtils.smoothstep(travel.s + AHEAD, revealFrom, revealFrom + 90);
+    spireMat.uniforms.uTime.value = t;
+    spireMat.uniforms.uReveal.value = k;
+    if (root.current) root.current.visible = k > 0.001;
+    for (const m of fades.current) if (m) m.opacity = k * (m.userData.base ?? 1);
     const tp = (trails.attributes.position as THREE.BufferAttribute).array as Float32Array;
     const hp = (heads.attributes.position as THREE.BufferAttribute).array as Float32Array;
     cars.forEach((c, i) => {
@@ -221,33 +263,71 @@ export function City({ road }: { road: RoadLayout }) {
   }, [road]);
 
   return (
-    <group>
+    <group ref={root}>
       <mesh position={[plaza.x, plaza.y - 2.2, plaza.z]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[260, 64]} />
         <meshBasicMaterial color="#03050c" fog={false} />
       </mesh>
       <instancedMesh ref={bodies} args={[undefined, undefined, towers.length]} frustumCulled={false}>
-        <coneGeometry args={[1, 1, 7]} />
-        <meshBasicMaterial color="#03050c" fog={false} />
+        <coneGeometry args={[1, 1, 24]} />
+        <primitive object={spireMat} attach="material" />
       </instancedMesh>
-      <lineSegments geometry={edges} frustumCulled={false}>
-        <lineBasicMaterial vertexColors toneMapped={false} fog={false} />
-      </lineSegments>
+      {/* The halos, soft: faint rings of light, not drawn outlines. */}
       <group ref={halosGroup}>
         <lineSegments geometry={halos} frustumCulled={false}>
-          <lineBasicMaterial vertexColors toneMapped={false} fog={false} />
+          <lineBasicMaterial
+            ref={(m) => {
+              fades.current[0] = m;
+              if (m) m.userData.base = 0.45;
+            }}
+            vertexColors
+            transparent
+            blending={THREE.AdditiveBlending}
+            depthWrite={false}
+            toneMapped={false}
+            fog={false}
+          />
         </lineSegments>
       </group>
       {/* A beacon at every point, in its spire's colour. */}
       <instancedMesh ref={tops} args={[undefined, undefined, towers.length]} frustumCulled={false}>
         <sphereGeometry args={[1, 10, 10]} />
-        <meshBasicMaterial toneMapped={false} fog={false} />
+        <meshBasicMaterial
+          ref={(m) => {
+            fades.current[1] = m;
+          }}
+          transparent
+          toneMapped={false}
+          fog={false}
+        />
       </instancedMesh>
       <lineSegments geometry={trails} frustumCulled={false}>
-        <lineBasicMaterial vertexColors transparent opacity={0.9} toneMapped={false} blending={THREE.AdditiveBlending} depthWrite={false} fog={false} />
+        <lineBasicMaterial
+          ref={(m) => {
+            fades.current[2] = m;
+            if (m) m.userData.base = 0.9;
+          }}
+          vertexColors
+          transparent
+          toneMapped={false}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+          fog={false}
+        />
       </lineSegments>
       <points geometry={heads} frustumCulled={false}>
-        <pointsMaterial size={2.2} vertexColors toneMapped={false} transparent depthWrite={false} blending={THREE.AdditiveBlending} fog={false} />
+        <pointsMaterial
+          ref={(m) => {
+            fades.current[3] = m;
+          }}
+          size={2.2}
+          vertexColors
+          toneMapped={false}
+          transparent
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+          fog={false}
+        />
       </points>
     </group>
   );

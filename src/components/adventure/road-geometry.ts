@@ -22,17 +22,6 @@ export const AHEAD = 17;
 /** How far before a phase's first checkpoint its gate stands. */
 export const GATE_BEFORE = 32;
 
-/** Height of the road itself: long, low swells. */
-export function roadRise(z: number): number {
-  return Math.sin(z / 95) * 3.2 + Math.sin(z / 37) * 0.9;
-}
-
-/** The road's wander left and right. Gentle in world space - a few
- *  units reads as a real bend once it is in perspective. */
-export function roadWander(z: number): number {
-  return Math.sin(z / 70) * 16 + Math.sin(z / 27) * 4;
-}
-
 export interface RoadLayout {
   curve: THREE.CatmullRomCurve3;
   /** Total length of the road, in world units. */
@@ -41,20 +30,89 @@ export interface RoadLayout {
   stops: number[];
   /** Distance of the finish gate. */
   finish: number;
+  /** How sharply the road is turning at a distance, radians per unit -
+   *  what the camera banks into, and what keeps the land from folding. */
+  bendAt: (s: number) => number;
 }
 
-export function layoutRoad(checkpoints: number): RoadLayout {
-  const reach = LEAD_IN + (checkpoints - 1) * SPACING + LEAD_OUT + 60;
-  const pts: THREE.Vector3[] = [];
-  // Sampled densely enough that arc length along the curve and distance
-  // along -z stay close - so SPACING means what it says.
-  for (let z = 0; z <= reach; z += 6) pts.push(new THREE.Vector3(roadWander(z), roadRise(z), -z));
-  const curve = new THREE.CatmullRomCurve3(pts, false, "centripetal");
-  curve.arcLengthDivisions = 2000;
-  const length = curve.getLength();
+// THE ROAD IS DRIVEN, NOT DRAWN. It is built the way a car travels:
+// from a heading and a slope at every step, so each phase can shape the
+// journey through it:
+//   S  gentle swells and easy bends - setting out
+//   T  a long climb, up through the terraces
+//   O  big sweeping S-curves, banking into each one
+//   R  the road falls away - a steep plunge into the depths
+//   Y  level again, out through a pass between the last mountains
+//      onto the plain, where the city is waiting
+// Built step by step, its length is exactly the distance travelled, so
+// a checkpoint SPACING along the road is SPACING along it.
+
+/** Where each phase runs along the road, from which checkpoints are in
+ *  it: boundaries halfway between the last of one and first of the next. */
+export function phaseRanges(stops: number[], phaseOf: string[], finish: number) {
+  const ids = [...new Set(phaseOf)];
+  return ids.map((id, k) => {
+    const first = phaseOf.indexOf(id);
+    const last = phaseOf.lastIndexOf(id);
+    const prevLast = k > 0 ? phaseOf.lastIndexOf(ids[k - 1]) : -1;
+    const nextFirst = k < ids.length - 1 ? phaseOf.indexOf(ids[k + 1]) : -1;
+    const from = prevLast < 0 ? 0 : (stops[prevLast] + stops[first]) / 2;
+    const to = nextFirst < 0 ? finish + 400 : (stops[last] + stops[nextFirst]) / 2;
+    return { id, from, to };
+  });
+}
+
+export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLayout {
   const stops = Array.from({ length: checkpoints }, (_, i) => LEAD_IN + i * SPACING);
   const finish = LEAD_IN + (checkpoints - 1) * SPACING + LEAD_OUT;
-  return { curve, length, stops, finish };
+  const reach = finish + 80;
+  const ranges = phaseRanges(stops, phaseOf, finish);
+  /** How much of phase `id` is under distance s: 1 inside it, easing
+   *  in and out over a stretch either side of its boundaries. */
+  const weight = (id: string, s: number) => {
+    const r = ranges.find((x) => x.id === id);
+    if (!r) return 0;
+    const EASE = 26;
+    return THREE.MathUtils.smoothstep(s, r.from - EASE, r.from + EASE) * (1 - THREE.MathUtils.smoothstep(s, r.to - EASE, r.to + EASE));
+  };
+  const from = (id: string) => ranges.find((x) => x.id === id)?.from ?? 0;
+
+  const heading = (s: number) => {
+    const gentle = 0.23 * Math.sin(s / 70) + 0.15 * Math.sin(s / 27);
+    const wO = weight("O", s);
+    const sweep = 0.62 * Math.sin((s - from("O")) / 58);
+    return gentle * (1 - wO) + sweep * wO;
+  };
+  const slope = (s: number) => {
+    const swell = (3.2 / 95) * Math.cos(s / 95) + (0.9 / 37) * Math.cos(s / 37);
+    const wT = weight("T", s);
+    const wO = weight("O", s);
+    const wR = weight("R", s);
+    const wY = weight("Y", s);
+    const rest = Math.max(0, 1 - wT - wR - wY);
+    return swell * rest * (1 - wO * 0.6) + 0.17 * wT - 0.34 * wR + 0.004 * wY;
+  };
+
+  const pts: THREE.Vector3[] = [];
+  const DS = 3;
+  let x = 0;
+  let y = 0;
+  let z = 0;
+  for (let s = 0; s <= reach; s += DS) {
+    pts.push(new THREE.Vector3(x, y, z));
+    const h = heading(s);
+    const m = slope(s);
+    // A 3D step of DS, so the length along the road is the distance.
+    const flat = DS / Math.sqrt(1 + m * m);
+    x += Math.sin(h) * flat;
+    z -= Math.cos(h) * flat;
+    y += m * flat;
+  }
+  const curve = new THREE.CatmullRomCurve3(pts, false, "centripetal");
+  curve.arcLengthDivisions = 3000;
+  const length = curve.getLength();
+  const bendAt = (s: number) => (heading(s + 4) - heading(s - 4)) / 8;
+  return { curve, length, stops, finish, bendAt };
 }
 
 const tmpT = new THREE.Vector3();

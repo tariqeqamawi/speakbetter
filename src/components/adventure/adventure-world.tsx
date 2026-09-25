@@ -115,7 +115,7 @@ function landAt(spans: Span[], s: number): [string, string, number] {
 //   Y  Your Impact           a wide open plain, and on the horizon a
 //                            city of light you travel towards (city.tsx)
 // Every profile is flat under the road (away = 0) and rises from it.
-function landform(id: string, x: number, z: number, away: number): number {
+function landform(id: string, x: number, z: number, away: number, u = 0.5): number {
   const h = hills(x, z);
   switch (id) {
     case "S":
@@ -133,9 +133,13 @@ function landform(id: string, x: number, z: number, away: number): number {
       const ridge = 1 - Math.abs(2 * h - 1);
       return away * (Math.pow(ridge, 1.6) * 58 - 6) + away * away * 12;
     }
-    case "Y":
-      // Flat and open: nothing between you and the city on the horizon.
-      return away * (h * 5 - 1.5);
+    case "Y": {
+      // A pass first - the last mountains standing either side of the
+      // road, hiding what is beyond - then the plain opening out.
+      const pass = 1 - THREE.MathUtils.smoothstep(u, 0.12, 0.42);
+      const ridge = 1 - Math.abs(2 * h - 1);
+      return away * (h * 5 - 1.5) + pass * away * (Math.pow(ridge, 1.3) * 70 + 18);
+    }
     default:
       return away * (h * 34 - 4) + away * away * 6;
   }
@@ -206,15 +210,23 @@ const TERRAIN_FRAG = /* glsl */ `
   //   6 uneven lattice (R)
   // Each returns the distance to its nearest lit feature in screen
   // pixels, so the same LED glow works for all of them.
+  float gTwinkle = 1.0;
   float pattern(int id, vec2 g) {
     if (id == 1) {
-      // Twice as many points as the grid has crossings.
+      // Twice as many points as the grid has crossings - and alive: each
+      // twinkles at its own pace, and now and then one flares bright, a
+      // field of stars rather than a pattern of holes.
       vec2 d2 = g * 2.0;
+      vec2 cell = floor(d2 + 0.5);
+      float h = fract(sin(dot(cell, vec2(12.9898, 78.233))) * 43758.5453);
+      float tw = 0.5 + 0.5 * sin(uTime * (0.8 + h * 2.2) + h * 40.0);
+      float flare = pow(max(sin(uTime * 0.35 + h * 60.0), 0.0), 40.0) * 3.0;
+      gTwinkle = 0.25 + 1.1 * tw * tw + flare;
       vec2 d = (fract(d2 + 0.5) - 0.5) / max(fwidth(d2), vec2(1e-4));
-      return max(length(d) - 1.8, 0.0);
+      return max(length(d) - 1.8 - flare * 0.8, 0.0);
     }
     if (id == 2) {
-      vec2 p = g * 0.9;
+      vec2 p = g * 1.7;
       vec2 k = vec2(1.0, 1.7320508);
       vec2 a = mod(p, k) - k * 0.5;
       vec2 b = mod(p - k * 0.5, k) - k * 0.5;
@@ -313,7 +325,7 @@ const TERRAIN_FRAG = /* glsl */ `
 
     // The light itself.
     // A dot is a point, not a line: it needs more light to read.
-    float rest = (0.02 * halo + 0.16 * core) * mix(1.0, 3.2, dotsK);
+    float rest = (0.02 * halo + 0.16 * core) * mix(1.0, 3.2 * gTwinkle, dotsK);
     float lit = (wave + wake) * (1.2 * core + 0.5 * halo + 0.25 * haloWide);
     col += vNeon * (rest + lit * 1.6) * crowd;
 
@@ -345,15 +357,23 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
       pointAt(road, s, p);
       sideAt(road, s, side);
       colourAt(spans, s, phase);
+      // On the inside of a bend the land cannot reach further than the
+      // bend's radius, or it folds back over itself.
+      const bend = road.bendAt(s);
+      const inside = bend === 0 ? 1e9 : 0.85 / Math.abs(bend);
+      const span = spans.find((sp) => s >= sp.from && s < sp.to);
+      const u = span ? (s - span.from) / Math.max(1, span.to - span.from) : 0.5;
       for (let k = 0; k <= COLS; k++) {
-        const d = (k / COLS - 0.5) * 2 * HALF;
+        let d = (k / COLS - 0.5) * 2 * HALF;
+        // (A positive bend turns right, and the side vector points right.)
+        if (Math.sign(d) === Math.sign(bend) && Math.abs(d) > inside) d = Math.sign(d) * (inside + (Math.abs(d) - inside) * 0.08);
         const x = p.x + side.x * d;
         const z = p.z + side.z * d;
         // Flat under the road, rising into hills away from it.
         const away = THREE.MathUtils.smoothstep(Math.abs(d), 5, 70);
         const h = hills(x, z);
         const [la, lb, lt] = landAt(spans, s);
-        const rise = la === lb ? landform(la, x, z, away) : THREE.MathUtils.lerp(landform(la, x, z, away), landform(lb, x, z, away), lt);
+        const rise = la === lb ? landform(la, x, z, away, u) : THREE.MathUtils.lerp(landform(la, x, z, away, u), landform(lb, x, z, away, u), lt);
         const y = p.y - 0.2 + rise;
         const v = r * (COLS + 1) + k;
         pos.set([x, y, z], v * 3);
@@ -579,6 +599,7 @@ function Rig({
   const pos = useMemo(() => new THREE.Vector3(), []);
   const at = useMemo(() => new THREE.Vector3(), []);
   const last = useRef(-1);
+  const roll = useRef(0);
 
   useFrame((_, dt) => {
     travel.step(Math.min(dt, 0.05) * 60, road.finish + 10);
@@ -603,6 +624,10 @@ function Rig({
     look.set(at.x, at.y + 1.2, at.z);
     camera.position.lerp(eye, 1 - Math.pow(0.001, dt));
     camera.lookAt(look);
+    // Bank into the bends, the way a car or a plane leans into a curve.
+    const target = THREE.MathUtils.clamp(-road.bendAt(s + AHEAD) * 24, -0.3, 0.3);
+    roll.current += (target - roll.current) * Math.min(1, dt * 2.5);
+    camera.rotateZ(roll.current);
     if (Math.abs(s - last.current) > 0.25) {
       last.current = s;
       onMove(s);
@@ -630,7 +655,7 @@ export function AdventureWorld({
   /** Which roadside Coach is speaking right now, if any. */
   talkingCoach?: number | null;
 }) {
-  const road = useMemo(() => layoutRoad(stops.length), [stops.length]);
+  const road = useMemo(() => layoutRoad(stops.length, stops.map((s) => s.phase)), [stops]);
   const spans = useMemo(() => phaseSpans(road, stops, phases), [road, stops, phases]);
   const phaseCol = useMemo(() => new Map(phases.map((p) => [p.id, new THREE.Color(p.color)])), [phases]);
   const trail = useMemo(
@@ -694,7 +719,7 @@ export function AdventureWorld({
       <Bloom />
       <Scenery road={road} spans={spans} />
       {spans.find((sp) => sp.id === "Y") && (
-        <City road={road} />
+        <City road={road} travel={travel} revealFrom={spans.find((sp) => sp.id === "Y")!.from + 60} />
       )}
       {coachSpots(road).map((cs, i) => (
         <CoachPost key={i} road={road} s={cs} side={i % 2 ? -1 : 1} travel={travel} talking={talkingCoach === i} />

@@ -33,7 +33,7 @@ export function AdventureScreen({
   phases: WorldPhase[];
   fallbackAvatar?: string;
 }) {
-  const road = useMemo(() => layoutRoad(stops.length), [stops.length]);
+  const road = useMemo(() => layoutRoad(stops.length, stops.map((s) => s.phase)), [stops]);
   // Start a little before the checkpoint the student is on.
   const hereIndex = Math.max(0, stops.findIndex((s) => s.state === "here"));
   // The traveller opens level with it, its Start button showing.
