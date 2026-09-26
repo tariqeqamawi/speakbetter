@@ -123,11 +123,11 @@ export const mainTour: TourStop[] = [
     body: "Six live sessions across the six weeks, and all of them are hot-seat coaching - students on camera, being worked with there and then by Tariq. Watching somebody else be coached is most of the value, so come along even when you don't want the chair. Every session is recorded and kept here for you.",
   },
   {
-    id: "skills-v3",
+    id: "skills-v5",
     target: "[data-tour='skills']",
     route: "/skills",
     title: "The skills",
-    body: "Eighty-one skill and lesson videos, one to two minutes each, sorted into the seven colors of speaking - bite-sized canapés, rather than long boring videos. Drag your thumb around the dial and let go to choose a color, and you'll drop into its videos, complete with summaries, a digital card and a full transcript.",
+    body: "Eighty-three skill and lesson videos, one to two minutes each, sorted into the seven colors of speaking - bite-sized canapés, rather than long boring videos. Drag your thumb around the dial and let go to choose a color, and you'll drop into its videos, complete with summaries, a digital card and a full transcript.",
     film: SKILLS,
   },
   {
@@ -212,10 +212,10 @@ export const sectionTours: Record<SectionId, SectionTour> = {
         film: SKILLS,
       },
       {
-        id: "sec-skills-color",
+        id: "sec-skills-color-v3",
         target: "[data-tour='dial']",
         title: "Inside a color",
-        body: "Every lesson in that color runs down one side, in order, with the one you are on shown large beside it. Eighty-one in total, across the seven.",
+        body: "Every lesson in that color runs down one side, in order, with the one you are on shown large beside it. Eighty-three in total, across the seven.",
         film: SKILLS,
       },
       {

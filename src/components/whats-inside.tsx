@@ -58,7 +58,7 @@ const FEATURES = [
   },
   {
     Icon: SkillsIcon,
-    name: "81 skill lessons",
+    name: "83 skill lessons",
     line: "One to two minutes each, color-coded, dial into any of them.",
     color: "text-mindset",
   },

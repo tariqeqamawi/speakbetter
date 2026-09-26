@@ -378,7 +378,7 @@ function LandingBody() {
       {/* The library, in full */}
       <section className="flex flex-col items-center gap-4">
         <h2 className="text-2xl font-semibold tracking-tight">
-          Preview all 81 skill videos
+          Preview all 83 skill videos
         </h2>
         <p className="max-w-lg text-center text-ink-muted">
           Nothing hidden behind the checkout - here is the whole library,

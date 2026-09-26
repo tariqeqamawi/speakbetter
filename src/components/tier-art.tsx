@@ -54,7 +54,7 @@ export function TierArt({ has }: { has: string[] }) {
   const h = (id: string) => has.includes(id);
   return (
     <div className="grid grid-cols-3 gap-2">
-      <Tile on={h("lessons")} label="81 lessons">
+      <Tile on={h("lessons")} label="83 lessons">
         <span className="flex gap-1 px-1">
           {STILLS.map((id) => (
             <span key={id} className="relative h-9 w-6 overflow-hidden rounded-[3px] ring-1 ring-navy-600">

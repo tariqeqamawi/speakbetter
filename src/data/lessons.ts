@@ -86,12 +86,14 @@ export const lessons: Lesson[] = [
   { vimeoId: "1081199902", title: "Building A Thank Account", category: "mindset" },
   { vimeoId: "1082732774", title: "Being Professional vs Being Serious", category: "mindset" },
   { vimeoId: "1081162172", title: "Make It About Your Audience", category: "mindset" },
+  { vimeoId: "1094883641", title: "Don't Give Your Power Away", category: "mindset" },
 
   // ── Body language & physical expression (blue) ──────────────────────
   { vimeoId: "1081708997", title: "Introduction To Body & Physical Expression", category: "body-language" },
   { vimeoId: "1080653314", title: "Hand Gestures: Express Visually What You Say Verbally", category: "body-language" },
   { vimeoId: "1081161934", title: "Hand Gestures Pro Tip", category: "body-language" },
   { vimeoId: "1081137961", title: "Opening Your Posture", category: "body-language" },
+  { vimeoId: "1094883352", title: "Posture Warm Up", category: "body-language" },
   { vimeoId: "1081162384", title: "How To Move On Stage", category: "body-language" },
   { vimeoId: "1080435328", title: "Your Speaking Tools: Body, Voice, Words", category: "body-language" },
 

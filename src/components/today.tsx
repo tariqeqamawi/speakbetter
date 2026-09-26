@@ -1,5 +1,6 @@
 "use client";
 
+import { LazyVimeoPlayer } from "@/components/lazy-vimeo-player";
 import Link from "next/link";
 import { useStore } from "@/lib/store";
 import { currentStreak, practicedToday } from "@/data/badges";
@@ -45,6 +46,16 @@ export function Today() {
           then never lose. The question it answers - "is anybody else
           actually doing this?" - belongs at the top of the day. */}
       <TodayCommunityBar />
+
+      {/* From shy to shining: Tariq on what minutes a day of practice
+          does - the reason the day is worth showing up for. Plays in place
+          on a tap. */}
+      <section className="flex flex-col gap-3">
+        <h2 className="text-2xl font-semibold tracking-tight">From shy to shining</h2>
+        <div className="overflow-hidden rounded-2xl border border-navy-600">
+          <LazyVimeoPlayer vimeoId="1082010320" title="From shy to shining" poster="/thumbs/1082010320.jpg" />
+        </div>
+      </section>
 
       <header className="relative overflow-hidden rounded-3xl border border-navy-600 bg-navy-800 p-5 sm:p-6">
         {/* The day's own light: the spectrum, low and wide behind the

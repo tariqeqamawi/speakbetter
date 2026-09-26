@@ -22,7 +22,7 @@ const CREDITS: Record<string, number> = Object.fromEntries(
 const WHAT: Record<Purchase, { name: string; blurb: string; cents: number }> = {
   foundations: {
     name: "Speak Better - Starter",
-    blurb: "Six weeks of access: all 81 lessons, the deck, the 24-challenge journey, and Coach's written review on every take.",
+    blurb: "Six weeks of access: all 83 lessons, the deck, the 24-challenge journey, and Coach's written review on every take.",
     cents: priceCents.foundations,
   },
   coached: {
