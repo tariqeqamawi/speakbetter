@@ -20,6 +20,7 @@ import { SELFIE_TAKES } from "@/data/selfie-takes";
 import { HeroBeat } from "@/components/hero-beat";
 import { TheReality } from "@/components/the-reality";
 import { JoinCta } from "@/components/join-cta";
+import { foundingCohort } from "@/data/pricing";
 import { StickyJoin } from "@/components/sticky-join";
 import { HeroLion } from "@/components/hero-lion";
 import { TestimonialStream } from "@/components/testimonial-stream";
@@ -471,6 +472,15 @@ function LandingBody() {
         <div className="flex flex-col items-center gap-2 text-center">
           <div className="spectrum-rule h-1 w-16 rounded-full" />
           <TestimonialStream items={lateProof} columns={3} />
+          {/* The founding cohort: few places, and priced below what comes
+              after it. */}
+          <div className="flex max-w-xl flex-col items-center gap-2 rounded-2xl border border-figurative/50 bg-figurative/10 px-5 py-4">
+            <span className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-figurative">
+              <span className="size-2 animate-pulse rounded-full bg-figurative" />
+              {foundingCohort.headline}
+            </span>
+            <p className="text-sm text-ink-muted text-balance">{foundingCohort.line}</p>
+          </div>
           <h2 className="text-2xl font-semibold tracking-tight text-balance">
             Three tiers, based on the amount of support you want
           </h2>

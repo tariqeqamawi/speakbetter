@@ -72,7 +72,14 @@ export function TierTabs() {
               <p className="text-sm text-ink-muted">{tier.tagline}</p>
             </div>
             <div className="flex flex-col">
-              <span className="text-4xl font-bold tracking-tight text-ink">{tier.price}</span>
+              <span className="flex items-baseline gap-2.5">
+                {tier.future && (
+                  <span className="text-xl font-semibold text-ink-faint line-through decoration-2" aria-label={`Future price ${tier.future}`}>
+                    {tier.future}
+                  </span>
+                )}
+                <span className="text-4xl font-bold tracking-tight text-ink">{tier.price}</span>
+              </span>
               <span className="text-xs text-ink-faint">{tier.term}</span>
             </div>
             <TierArt has={tier.has} />

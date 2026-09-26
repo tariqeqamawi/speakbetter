@@ -34,7 +34,7 @@ export function JoinCta({
             asked, without the whole table of tiers. */}
         {price && (
           <span className="text-xs font-medium text-ink-muted">
-            From {tiers[0].price} · {guarantee.title}
+            From {tiers[0].price} · only 20 spots · {guarantee.title}
           </span>
         )}
       </span>

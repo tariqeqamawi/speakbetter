@@ -52,6 +52,9 @@ export interface Tier {
   /** What it's for, in a line. */
   tagline: string;
   price: string;
+  /** The price for later cohorts, shown struck through beside this
+   *  founding-cohort price. */
+  future?: string;
   /** Beneath the price: the term, or the yearly alternative. */
   term: string;
   /** The default choice at checkout - drawn larger. */
@@ -101,6 +104,7 @@ export const tiers: Tier[] = [
     name: "Starter",
     tagline: "The full six weeks - the interactive challenges, the skills, and visual feedback on every take.",
     price: "$299",
+    future: "$997",
     term: "one payment - 6 weeks' access",
     has: foundations,
     accent: "mindset",
@@ -112,6 +116,7 @@ export const tiers: Tier[] = [
     name: "Complete",
     tagline: "The full digital experience - everything in Starter, plus the interactive Coach and his spoken feedback.",
     price: "$499",
+    future: "$1,498",
     term: "one payment - 6 weeks' access",
     featured: true,
     has: coached,
@@ -125,6 +130,7 @@ export const tiers: Tier[] = [
     sub: "The founders set - and the teacher reviewing your takes himself",
     tagline: "The full experience - the AI coach, the weekly live sessions, and personal one-to-one feedback from Tariq himself.",
     price: "$997",
+    future: "$2,222",
     term: "one payment - 6 weeks, and the deck and book are yours to keep",
     has: founders,
     accent: "storytelling",
@@ -185,3 +191,10 @@ export const monthly: Record<Plan, string> = {
   coached: "$29.99",
   founders: "$29.99",
 };
+
+/** The founding cohort: how many places, and why it is priced as it is. */
+export const foundingCohort = {
+  spots: 20,
+  headline: "Only 20 spots available",
+  line: "A special offer for a core group of founding students to experience Speak Better, share their feedback and leave a testimonial. The app is in pre-launch - future cohorts are likely to cost more.",
+} as const;
