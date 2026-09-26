@@ -15,7 +15,7 @@ export const CONSENT_LINE =
 
 /** The agreement itself, as the student ticks it. */
 export const CONSENT_AGREE =
-  "I agree to my speech being used anonymously, as text, to help improve Speak Better. I understand this is part of taking the course.";
+  "Speak Better is an evolving system that we are passionate about improving by using Speak Better and Coach. In using Speak Better and Coach you agree to transcripts of your speech being used anonymously as text to help improve the service. This is also how you are able to track your improvement over time.";
 
 export type ReviewRating = "spot-on" | "partly" | "off";
 
