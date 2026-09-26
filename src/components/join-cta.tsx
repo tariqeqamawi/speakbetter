@@ -17,16 +17,20 @@ export function JoinCta({
   seal = false,
   sealSize = 116,
   price = false,
+  href = "#pricing",
 }: {
   label: string;
   seal?: boolean;
   sealSize?: number;
   price?: boolean;
+  /** Where the door goes - the tiers on this page, unless it's a page
+   *  without them (the about page sends people to the landing page's). */
+  href?: string;
 }) {
   return (
     <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
       <span className="flex flex-col items-center gap-2">
-        <a href="#pricing" className="cta-neon-wrap rounded-xl">
+        <a href={href} className="cta-neon-wrap rounded-xl">
           <span className="cta-neon-glow rounded-xl" aria-hidden />
           <span className="cta-neon block rounded-xl px-9 py-4 text-base">{label}</span>
         </a>

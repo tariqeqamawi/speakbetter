@@ -52,15 +52,40 @@ function isOn(pathname: string, href: string): boolean {
  *  header on a laptop. On a phone the bar at the foot of the screen does
  *  this job (sticky-join.tsx), so the header stays clear. Students
  *  inside the app never see it. */
+/** Pages a visitor reads before joining: the sales page and the story
+ *  behind it. "/" counts only for a visitor - a student gets Today. */
+function onSalesPage(pathname: string, unlocked: boolean): boolean {
+  return pathname === "/landing" || pathname === "/about" || (pathname === "/" && !unlocked);
+}
+
+/** The origin story lives on its own page, a tap from the sales page. */
+function AboutLink() {
+  const { state, ready } = useStore();
+  const pathname = usePathname();
+  if (!ready || !onSalesPage(pathname, state.unlocked)) return null;
+  return (
+    <Link
+      href="/about"
+      aria-current={pathname === "/about" ? "page" : undefined}
+      className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold transition-colors hover:text-ink ${
+        pathname === "/about" ? "text-ink" : "text-ink-muted"
+      }`}
+    >
+      About
+    </Link>
+  );
+}
+
 function JoinNow() {
   const { state, ready } = useStore();
   const pathname = usePathname();
-  if (!ready || state.unlocked || pathname !== "/") return null;
+  if (!ready || !onSalesPage(pathname, state.unlocked)) return null;
+  const href = pathname === "/about" ? "/landing#pricing" : "#pricing";
   return (
     // Wrapped, because the button's own class sets its display and would
     // override "hidden" on it.
     <span className="hidden shrink-0 sm:block">
-      <a href="#pricing" className="cta-neon-wrap rounded-full">
+      <a href={href} className="cta-neon-wrap rounded-full">
         <span className="cta-neon block rounded-full px-5 py-1.5 text-sm">Join Now</span>
       </a>
     </span>
@@ -106,6 +131,7 @@ export function TopBar() {
           <div className="ml-auto flex items-center gap-2">
             <JumpButton />
             <CompactLinks />
+            <AboutLink />
             <JoinNow />
           </div>
         </div>

@@ -15,7 +15,6 @@ import {
 } from "@/components/player-icons";
 import { Pricing } from "@/components/pricing";
 import { LandingShowcase } from "@/components/landing-showcase";
-import { OriginStory } from "@/components/origin-story";
 import { SpectrumDemo } from "@/components/spectrum-demo";
 import { SelfieTake } from "@/components/selfie-take";
 import { SELFIE_TAKES } from "@/data/selfie-takes";
@@ -427,9 +426,6 @@ function LandingBody() {
 
       {/* The first challenge, shown rather than run. */}
       <FirstChallenge />
-
-      {/* How Speak Better came to be - four moments, zigzagging */}
-      <OriginStory />
 
       {/* Two mentors in your pocket - the coach on one phone, the
           teacher zoomed to portrait on the other */}
