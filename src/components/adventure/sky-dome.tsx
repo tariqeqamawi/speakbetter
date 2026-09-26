@@ -48,13 +48,14 @@ const FRAG = /* glsl */ `
     uv.x = m < 1.0 ? m : 2.0 - m;
     vec3 sky = texture2D(uMap, uv).rgb;
 
-    // Stars: one per few cells of a grid on the direction, placed at
+    // Stars (a sparse sky - the picture behind is the point): one per
+    // many cells of a grid on the direction, placed at
     // random inside its cell, drawn a pixel or two wide at any distance.
     vec3 p = normalize(vDir) * 420.0;
     vec3 cell = floor(p);
     float h = hash(cell);
     float star = 0.0;
-    if (h > 0.93) {
+    if (h > 0.977) {
       vec3 at = cell + vec3(hash(cell + 1.3), hash(cell + 2.7), hash(cell + 4.1));
       float px = length(p - at) / max(length(fwidth(p)), 1e-4);
       float size = mix(0.6, 1.6, fract(h * 37.0));

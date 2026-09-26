@@ -126,33 +126,16 @@ export default function WelcomePage() {
               {draft.length}/280
             </span>
           </label>
-          <div className="flex flex-col gap-3">
-            <button
-              type="button"
-              onClick={() => finish(true)}
-              disabled={draft.trim().length === 0}
-              className="coach-pill flex min-h-12 items-center justify-center rounded-full text-sm font-bold text-navy-950 disabled:opacity-40"
-            >
-              <span className="text-navy-950">Show me around - one minute</span>
-            </button>
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => finish(false)}
-                disabled={draft.trim().length === 0}
-                className="rounded-lg bg-ink px-5 py-2.5 text-sm font-semibold text-navy-900 transition-opacity hover:opacity-90 disabled:opacity-40"
-              >
-                Straight in, thanks
-              </button>
-              <button
-                type="button"
-                onClick={() => router.push("/")}
-                className="text-xs text-ink-faint transition-colors hover:text-ink-muted"
-              >
-                Skip for now
-              </button>
-            </div>
-          </div>
+          {/* One button: send the reason, and straight into the tour -
+              which can be skipped, or skipped through, from inside it. */}
+          <button
+            type="button"
+            onClick={() => finish(true)}
+            disabled={draft.trim().length === 0}
+            className="coach-pill flex min-h-12 items-center justify-center rounded-full text-sm font-bold text-navy-950 disabled:opacity-40"
+          >
+            <span className="text-navy-950">Send it</span>
+          </button>
         </div>
       )}
     </div>

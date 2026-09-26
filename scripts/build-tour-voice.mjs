@@ -34,6 +34,11 @@ function stops() {
     // A stop that says it differently on a laptop needs both clips.
     if (m[3]) found.push({ id: `${m[1]}-wide`, body: clean(m[3]) });
   }
+  // A laptop wording (bodyWide) anywhere in the stop - not only straight
+  // after body: a comment between the two used to hide it, and that stop
+  // then played silent on every laptop.
+  const wideRe = /\bid:\s*"([a-z0-9-]+)"(?:(?!\bid:\s*")[\s\S])*?\bbodyWide:\s*\n?\s*"((?:[^"\\]|\\.)*)"/g;
+  while ((m = wideRe.exec(src))) found.push({ id: `${m[1]}-wide`, body: clean(m[2]) });
   // Ids are unique, and a stop whose body was captured from the NEXT
   // stop would show up as a duplicate id - so this also catches drift.
   const seen = new Set();

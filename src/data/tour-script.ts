@@ -73,11 +73,11 @@ export const mainTour: TourStop[] = [
   // previous script over the new card, which is worse than silence.
   // A renamed stop simply has no clip until the voice is rebuilt.
   {
-    id: "open-v2",
+    id: "open-v3",
     intro: true,
     route: "/",
     title: "Let me show you around",
-    body: "I'd love to give you the guided tour. Let me show you around the place. There's lots to see and do. You'll pick it up in no time, and you'll soon know this place like the back of your hand.",
+    body: "There's lots to see and do. You'll pick it up in no time, and you'll know this place like the back of your hand.",
   },
   {
     id: "today-v2",
@@ -103,15 +103,18 @@ export const mainTour: TourStop[] = [
   },
   {
     id: "inside-challenge",
-    target: "[data-tour='record']",
-    route: "/challenges/speaking-baseline",
+    // No highlight and no challenge page under it: told, with the film,
+    // over a dimmed screen. Pointing at the Record button put the tour on
+    // a live challenge page - its video a click away, the button off the
+    // bottom of a laptop's screen.
+    route: "/challenges",
     title: "Inside a challenge",
     body: "Once you know what a challenge is asking for, press record and speak straight to your camera, or upload a take you filmed earlier. I watch it properly: your voice, your body language, your confidence on camera, your storytelling, and more. Then you get a full visual review card, and on the higher tiers, spoken feedback from me directly.",
     film: REVIEW,
   },
   {
     id: "challenge-chat",
-    route: "/challenges/speaking-baseline",
+    route: "/challenges",
     title: "You're not doing this alone",
     body: "Every challenge has a thread on it. You can leave a comment and read what other students said when they recorded the same one - what they found hard, what finally worked. Remember, you're not alone in this. We're doing it together.",
   },

@@ -134,6 +134,9 @@ export const TalkingLion = forwardRef<
   const holdUntilRef = useRef(0); // the mouth holds until this time...
   const closeUntilRef = useRef(0); // ...then closes until this one
   const [speaking, setSpeaking] = useState(false);
+  // Paused mid-line by a tap on the lion - a tap again carries on from
+  // there, rather than starting him over.
+  const [paused, setPaused] = useState(false);
   // The browser refused to start the clip - a tap on the button will.
   const [blocked, setBlocked] = useState(false);
   const [cueIndex, setCueIndex] = useState(-1); // which cue is being spoken
@@ -370,6 +373,7 @@ export const TalkingLion = forwardRef<
       el.muted = false;
       el.currentTime = 0;
       setFinished(false); // a replay clears the summary until it's earned
+      setPaused(false);
       el.onended = () => {
         releaseFloor.current();
         setSpeaking(false);
@@ -453,6 +457,36 @@ export const TalkingLion = forwardRef<
     sayRef.current?.(captionIndex >= 0 ? phrases[captionIndex] : undefined, wordIndex);
   }, [captionIndex, wordIndex, phrases]);
 
+  // Tap the lion: talking, he stops where he is; stopped mid-line, he
+  // carries on. So a message already heard need not be sat through.
+  const togglePause = () => {
+    if (speaking) {
+      if (audioSrc) audioRef.current?.pause();
+      else if ("speechSynthesis" in window) window.speechSynthesis.pause();
+      releaseFloor.current();
+      stopLoop();
+      setSpeaking(false);
+      setPaused(true);
+      return;
+    }
+    if (!paused) return;
+    setPaused(false);
+    releaseFloor.current = requestFloor(() => {
+      if (audioSrc) {
+        const el = audioRef.current;
+        if (!el) return;
+        void el.play().then(() => {
+          setSpeaking(true);
+          runAmplitudeLoop();
+        });
+      } else if ("speechSynthesis" in window) {
+        window.speechSynthesis.resume();
+        setSpeaking(true);
+        runEnvelopeLoop();
+      }
+    });
+  };
+
   const activeCue = cueIndex >= 0 ? cues?.[cueIndex] : undefined;
   const summaryCues = (cues ?? []).filter((c) => c.summary !== false);
   const caption = captionIndex >= 0 ? phrases[captionIndex] : undefined;
@@ -460,7 +494,20 @@ export const TalkingLion = forwardRef<
   return (
     <div className={`flex w-full flex-col items-center ${bare ? "gap-0" : "gap-4"} ${className}`}>
       <div className={`relative w-full shrink-0 ${bare ? "" : large ? "max-w-lg" : "max-w-xs"}`}>
-        <LionMouth level={mouth} className="relative w-full shrink-0" />
+        <button
+          type="button"
+          onClick={togglePause}
+          disabled={!speaking && !paused}
+          aria-label={speaking ? "Pause Coach" : paused ? "Resume Coach" : "Coach"}
+          className="relative block w-full shrink-0 cursor-pointer disabled:cursor-default"
+        >
+          <LionMouth level={mouth} className="relative w-full shrink-0" />
+          {paused && (
+            <span className="absolute inset-x-0 bottom-2 mx-auto w-fit rounded-full bg-navy-950/85 px-3 py-1 text-xs font-semibold text-ink-muted">
+              Paused - tap to carry on
+            </span>
+          )}
+        </button>
         {/* The wave used to sit here, under the lion, AND inside the
             button below it - the same idea drawn twice, one above the
             other, on the one screen where the point was that there is
