@@ -42,7 +42,7 @@ async function ease(p, from, to, ms) {
 
 /** Seconds cut from the start of a film - the page loading, which is a
  *  black rectangle and then a world assembling itself. */
-const TRIM = { road3d: 3.5, road2d: 3 };
+const TRIM = { road3d: 3, road2d: 3 };
 
 /** Travel the 3D road forward with the scroll wheel, for `ms`. */
 async function travelRoad(p, ms) {
@@ -59,11 +59,14 @@ const FILMS = {
   // travelling on - past classmates and comments, through the colour
   // wall into the next section, its portals dormant ahead.
   async road3d(p) {
-    await p.goto(`${BASE}/prototype/adventure3d`, { waitUntil: "load" });
-    await p.waitForTimeout(5000);
-    await travelRoad(p, 6500);
-    await p.waitForTimeout(1500);
+    // The road playing itself (prototype/road-film): down past the
+    // challenges done to the open one, its portal glowing with Start
+    // challenge - tapped - the dive - and the challenge beginning.
+    await p.goto(`${BASE}/prototype/road-film`, { waitUntil: "load" });
+    await p.waitForURL("**/challenges/**", { timeout: 40000 }).catch(() => {});
+    await p.waitForTimeout(3000);
   },
+
 
   // The same road as a map, for anyone who would rather scroll a page.
   async road2d(p) {
@@ -130,17 +133,20 @@ const FILMS = {
       await p.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 18 });
       await p.waitForTimeout(1000);
     }
-    const box = await p.getByLabel("Storytelling techniques - open lessons").boundingBox();
+    const box = await p.getByLabel("Storytelling - open lessons").boundingBox();
     if (box) {
       await p.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
       await p.waitForURL("**/skills/storytelling**", { timeout: 15000 }).catch(() => {});
     }
-    await p.waitForTimeout(1600);
-    const h = await p.evaluate(() => document.body.scrollHeight);
-    await ease(p, 0, Math.min(1400, h - 900), 4500);
-    await p.waitForTimeout(1000);
-    await ease(p, Math.min(1400, h - 900), 0, 1400);
-    await p.waitForTimeout(600);
+    await p.waitForTimeout(1400);
+    // The lesson plays right there on the colour's page: play it, let it
+    // run, then zoom to portrait so the teacher fills the phone. (Vimeo
+    // only plays on the site's own domain - film against production:
+    // FILM_BASE=https://speakbetterlive.vercel.app.)
+    await p.getByRole("button", { name: "Play", exact: true }).first().click({ timeout: 8000 }).catch(() => {});
+    await p.waitForTimeout(3500);
+    await p.getByRole("button", { name: "Zoom to portrait" }).first().click({ timeout: 8000 }).catch(() => {});
+    await p.waitForTimeout(4500);
   },
 
   // The dashboard, tab by tab.
@@ -277,7 +283,12 @@ async function film(name) {
 
   // The real graphics chip rather than the software renderer, which
   // draws the 3D road at a quarter of the frame rate.
-  const browser = await chromium.launch({ args: ["--use-angle=d3d11", "--enable-gpu", "--ignore-gpu-blocklist"] });
+  // Real Chrome: Playwright's own Chromium has no H.264, so the lesson
+  // videos would never play in a film.
+  const browser = await chromium.launch({
+    channel: "chrome",
+    args: ["--use-angle=d3d11", "--enable-gpu", "--ignore-gpu-blocklist", "--autoplay-policy=no-user-gesture-required"],
+  });
   const ctx = await browser.newContext({
     viewport: SIZE,
     deviceScaleFactor: 2,
