@@ -1,6 +1,7 @@
 import { guarantee } from "@/data/pricing";
 import { LegalLinks } from "@/components/legal-page";
-import { CONSENT_AGREE } from "@/data/consent";
+import { CONSENT_REASSURE, CONSENT_SHORT } from "@/data/consent";
+import { ConsentMeaning } from "@/components/consent-gate";
 import { TierTabs } from "@/components/tier-tabs";
 import { GuaranteeSeal } from "@/components/guarantee-seal";
 import { PricingFaq } from "@/components/pricing-faq";
@@ -31,9 +32,11 @@ export function Pricing() {
       {/* Said before anyone pays: agreeing is a condition of the course,
           in the same words the student ticks when they start. */}
       <div className="mx-auto flex max-w-xl flex-col gap-1.5 text-center text-xs text-ink-muted">
-        <p>{CONSENT_AGREE}</p>
+        <p>
+          {CONSENT_SHORT} {CONSENT_REASSURE} <ConsentMeaning />
+        </p>
         <p className="text-ink-faint">
-          By joining you agree to the <LegalLinks />.
+          Read the <LegalLinks />.
         </p>
       </div>
 

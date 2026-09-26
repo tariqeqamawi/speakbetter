@@ -7,7 +7,7 @@ import { LevelIcon, levelMeta } from "@/components/level-icon";
 import { startTour } from "@/components/guided-tour";
 import { PAYWALL_ON } from "@/lib/plan";
 import { CoachSays } from "@/components/coach-says";
-import { ConsentCheck } from "@/components/consent-gate";
+import { ConsentAsk } from "@/components/consent-gate";
 import {
   INTENTION_AUDIO,
   INTENTION_SPEECH,
@@ -131,7 +131,7 @@ export default function WelcomePage() {
           </label>
           {/* The condition of the course, asked plainly before anything
               else happens - see consent-gate.tsx. */}
-          <ConsentCheck checked={agreed} onChange={setAgreed} />
+          <ConsentAsk agreed={agreed} onAgree={() => setAgreed(true)} />
           {/* One button: send the reason, and straight into the tour -
               which can be skipped, or skipped through, from inside it. */}
           <button
