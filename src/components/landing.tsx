@@ -94,11 +94,16 @@ function LandingBody() {
               about the sound of somebody's voice. It does not
               autoplay: the words are on screen and the voice is
               offered beside them. */}
-          <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
-            Discover your true colors, speak, and roar on screen or stage.
-          </h1>
-          {/* Centred under the headline, on a laptop too. */}
-          <div className="flex w-full justify-center">
+          {/* The headline and Coach's button as one block, as wide as the
+              headline's longest line - so the button sits centred under the
+              words themselves, not under the empty right of a wide box. On a
+              laptop the three lines are set, so the block can hug them. */}
+          <div className="flex flex-col items-center gap-3 lg:w-fit">
+            <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-5xl lg:text-[2.7rem] xl:text-5xl">
+              <span className="lg:block lg:whitespace-nowrap">Discover your true </span>
+              <span className="lg:block lg:whitespace-nowrap">colors, speak, and roar </span>
+              <span className="lg:block lg:whitespace-nowrap">on screen or stage.</span>
+            </h1>
             <SpeakLine audioSrc={HEADLINE_AUDIO} label="Listen to Coach" channel="hero" />
           </div>
           <p className="text-xl font-medium text-figurative text-balance sm:text-2xl">
@@ -119,6 +124,7 @@ function LandingBody() {
               poster="/thumbs/1082011047.jpg"
             />
           </div>
+          <p className="mt-2 text-center text-sm font-medium text-ink-muted">From awkward to awesome in minutes a day.</p>
         </div>
         </div>
 
