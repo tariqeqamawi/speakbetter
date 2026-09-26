@@ -208,6 +208,7 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **26 September**
+- /terms and /privacy fitted to the product; consent wording under the prices; landing footer — `97eb0c3`
 - Consent required to take the course (welcome tick-box, one-time gate, line under pricing); /admin
   cohort progress: first vs latest, score and seven colors by week, copy for investors — `9c9e783`
 - Coach training, step one: 👌/🤏/👎 on every review with "what did he miss", consent line, 🔥/👇 on
