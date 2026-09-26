@@ -208,6 +208,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **25 September**
+- 3D preview demo loop; mentor phones slide out; founding cohort (20 spots) and struck-through
+  future prices — `b9f8ce2`
 - Landing: scroll animations throughout, 3D preview switch, quick-guide wording, white-edge buttons,
   Origin Story headings and cascade, realistic gold seal, tier titles — `da66049`
 - Origin story refinements (titles, message bubbles, all-black TEDx, lion aura, mission); price hints and
