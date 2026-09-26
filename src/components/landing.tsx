@@ -95,8 +95,11 @@ function LandingBody() {
           </h1>
           <SpeakLine audioSrc={HEADLINE_AUDIO} label="Listen to Coach" channel="hero" />
           <p className="text-xl font-medium text-figurative text-balance sm:text-2xl">
-            Six weeks. Master public speaking in minutes a day, not months - and step into your true power on any
-            platform.
+            Master public speaking in minutes a day, not months, and step into your true power on any platform.
+          </p>
+          <p className="text-lg text-ink text-balance sm:text-xl">
+            Join a small private cohort for 6 weeks - the full Speak Better experience, at a special founding price, in
+            return for your feedback on the app and a testimonial.
           </p>
           {/* The dates, high enough that nobody has to hunt for them.
               Two facts, in the order they are asked: when does it

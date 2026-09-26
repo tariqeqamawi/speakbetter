@@ -196,5 +196,5 @@ export const monthly: Record<Plan, string> = {
 export const foundingCohort = {
   spots: 20,
   headline: "Only 20 spots available",
-  line: "A special offer for a core group of founding students to experience Speak Better, share their feedback and leave a testimonial. The app is in pre-launch - future cohorts are likely to cost more.",
+  line: "Why the special price? In return, founding members give feedback on the app as they use it and leave a testimonial at the end. You still get the full Speak Better experience - nothing held back. The app is in pre-launch, and future cohorts are likely to cost more.",
 } as const;

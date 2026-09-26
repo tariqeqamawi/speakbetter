@@ -61,6 +61,7 @@ export function AdventureScreen({
   skyImage,
   heightClass = "h-[calc(100dvh-4rem)]",
   demo = false,
+  demoOnce = false,
 }: {
   stops: WorldStop[];
   phases: WorldPhase[];
@@ -73,6 +74,9 @@ export function AdventureScreen({
    *  road past the challenges done, up to the next one, tap it, dive in -
    *  and round again. No sound, no Coach, no controls. */
   demo?: boolean;
+  /** With demo: play it once and, after the dive, open the challenge
+   *  (for recording the tour film). */
+  demoOnce?: boolean;
 }) {
   const road = useMemo(() => layoutRoad(stops.length, stops.map((s) => s.phase)), [stops]);
   // The checkpoint the student is on.
@@ -443,6 +447,10 @@ export function AdventureScreen({
         travel.enterPortal(target);
         setDiving(true);
       });
+      if (demoOnce) {
+        later(2300, () => router.push(`/challenges/${stops[firstOpen].slug}`));
+        return;
+      }
       later(3500, () => setFade(true));
       later(4000, () => {
         travel.jump(from);
@@ -460,7 +468,7 @@ export function AdventureScreen({
       cancelAnimationFrame(raf);
       timers.forEach(clearTimeout);
     };
-  }, [demo, onScreen, stops, road, travel]);
+  }, [demo, demoOnce, onScreen, stops, road, travel, router]);
 
   // A CHALLENGE NOT YET OPEN. Explore as far ahead as you like, but tap
   // one you have not reached and you are told so, and taken back to the
