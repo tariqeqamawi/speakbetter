@@ -73,11 +73,11 @@ export const mainTour: TourStop[] = [
   // previous script over the new card, which is worse than silence.
   // A renamed stop simply has no clip until the voice is rebuilt.
   {
-    id: "open-v3",
+    id: "open-v4",
     intro: true,
     route: "/",
     title: "Let me show you around",
-    body: "There's lots to see and do. You'll pick it up in no time, and you'll know this place like the back of your hand.",
+    body: "I'd love to give you the guided tour. Let me show you around the place. There's lots to see and do.",
   },
   {
     id: "today-v2",
