@@ -12,7 +12,9 @@ import { TierArt } from "@/components/tier-art";
 // names in a row, one card beneath, tap from one to the next. The same
 // markup serves both; only what's shown changes with the width.
 
-const ACCENT = { mindset: "text-mindset", structure: "text-structure", storytelling: "text-storytelling" } as const;
+// VIP Ultimate (storytelling accent) wears gold - the gradient of the
+// guarantee seal - rather than flat yellow.
+const ACCENT = { mindset: "text-mindset", structure: "text-structure", storytelling: "text-gold" } as const;
 const ACCENT_BG = { mindset: "bg-mindset", structure: "bg-structure", storytelling: "bg-storytelling" } as const;
 
 export function TierTabs() {
