@@ -107,13 +107,12 @@ function LandingBody() {
           </p>
         </div>
         <div className="w-full">
-          {/* Tariq, straight away: why speaking still matters when AI can
-              write your words - you can't rely on it in person. Plays in
-              place on a tap; nothing loads until then. */}
+          {/* Tariq, straight away: from awkward to awesome in minutes a
+              day. Plays in place on a tap; nothing loads until then. */}
           <div className="w-full overflow-hidden rounded-2xl border border-navy-600 shadow-2xl shadow-navy-950/80">
             <LazyVimeoPlayer
-              vimeoId="1082011047"
-              title="Speak Better - You Can't Rely On AI In Person"
+              vimeoId="1082011912"
+              title="Speak Better - From Awkward To Awesome In Minutes A Day"
               poster="/thumbs/1082011047.jpg"
             />
           </div>
