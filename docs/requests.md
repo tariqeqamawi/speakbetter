@@ -208,6 +208,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **25 September**
+- Hero: two columns with Tariq's AI video; Posture Warm Up + Don't Give Your Power Away lessons (83);
+  From shy to shining at the top of Today — `853e05d`
 - App-in-action films re-recorded: skills (lesson plays + portrait), 3D road into a challenge, dashboard
   snapshots (spectrum, trophies, community, challenges, streak) — `73bc2ce`
 - 3D preview demo loop; mentor phones slide out; founding cohort (20 spots) and struck-through
