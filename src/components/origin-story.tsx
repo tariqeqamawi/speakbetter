@@ -26,7 +26,7 @@ interface Moment {
 // halation and aberration on every edge (public/origin/dream, Higgsfield).
 const MOMENTS: Moment[] = [
   {
-    image: "/origin/dream/bali.webp",
+    image: "/origin/real/bali.webp",
     year: "Bali, 2011",
     title: "Once upon a table in Bali",
     accent: "text-figurative",
@@ -42,7 +42,7 @@ const MOMENTS: Moment[] = [
     ),
   },
   {
-    image: "/origin/dream/first-speech-black.webp",
+    image: "/origin/real/first-speech.webp",
     year: "His first speech",
     title: "Your value on video is immortal",
     accent: "text-body-language",
@@ -74,7 +74,7 @@ const MOMENTS: Moment[] = [
     ),
   },
   {
-    image: "/origin/dream/stages.webp",
+    image: "/origin/real/stages.webp",
     year: "Stages around the world",
     title: "Standing ovations",
     accent: "text-acting",
@@ -88,7 +88,7 @@ const MOMENTS: Moment[] = [
     ),
   },
   {
-    image: "/origin/dream/for-others.webp",
+    image: "/origin/real/for-others.webp",
     year: "A formula, and a method",
     title: "Speeches for others",
     accent: "text-storytelling",
@@ -104,7 +104,7 @@ const MOMENTS: Moment[] = [
     ),
   },
   {
-    image: "/origin/dream/cohort.webp",
+    image: "/origin/real/cohort.webp",
     year: "Communicate and Captivate",
     title: "Uncovering the method that transforms talks",
     accent: "text-mindset",
@@ -121,7 +121,7 @@ const MOMENTS: Moment[] = [
     ),
   },
   {
-    image: "/origin/dream/coach-roar.webp",
+    image: "/origin/real/coach-roar.webp",
     year: "Now",
     title: "Let your true colors roar on screen and stage",
     accent: "text-structure",
@@ -138,7 +138,7 @@ const MOMENTS: Moment[] = [
     ),
   },
   {
-    image: "/origin/dream/mission.webp",
+    image: "/origin/real/mission.webp",
     year: "The mission",
     title: "Become the messenger of your mission and the voice of your values",
     accent: "text-advanced",
