@@ -1,5 +1,6 @@
 "use client";
 
+import { onDemoHost } from "@/lib/demo-host";
 import {
   createContext,
   useCallback,
@@ -548,7 +549,14 @@ function StoreCore({
       state,
       ready,
       celebrations,
-      unlock: (plan = "coached") => applyWithBadges((p) => ({ ...p, unlocked: true, plan })),
+      // On the private demo address a new student arrives already worked
+      // in - the level and the reason are still theirs to give on welcome.
+      unlock: (plan = "coached") =>
+        applyWithBadges((p) =>
+          onDemoHost() && p.attempts.length === 0
+            ? { ...demoState, level: null, intention: "", plan, unlocked: true }
+            : { ...p, unlocked: true, plan },
+        ),
       setLevel: (level) => applyWithBadges((p) => ({ ...p, level })),
       setIntention: (intention) =>
         applyWithBadges((p) => ({ ...p, intention: intention.trim() })),
