@@ -26,6 +26,12 @@ export function Pricing() {
         </div>
       </div>
 
+      {/* Said before anyone pays: agreeing is a condition of the course. */}
+      <p className="mx-auto max-w-xl text-center text-xs text-ink-muted">
+        Speak Better learns from its students. No video is ever stored - your speech is kept as text, under a student
+        number, never your name - and agreeing to that is part of joining.
+      </p>
+
       <p className="text-center text-xs text-ink-faint">
         Checkout stub - Stripe payment arrives with service integration. Prices in USD.
       </p>

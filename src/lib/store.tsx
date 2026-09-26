@@ -166,6 +166,11 @@ export interface AppState {
   avatar: string;
   /** Before-and-afters shared to the community, newest last. */
   sharedReels: SharedReel[];
+  /** When they agreed to their speech being used, anonymously and as
+   *  text, to improve Speak Better (lib/insights.ts CONSENT_LINE). A
+   *  condition of the course: nothing past welcome opens without it
+   *  (components/consent-gate.tsx). */
+  consentAt?: string;
 }
 
 const STARTING_FREEZES = 2;
@@ -238,6 +243,8 @@ interface StoreApi {
   /** Coach answered a question - counts toward his trophy. */
   noteCoachAnswer: () => void;
   recordAttempt: (attempt: Attempt) => void;
+  /** They agreed to the consent line - required to use the course. */
+  giveConsent: () => void;
   /** The student's verdict on one of Coach's reviews. */
   rateAttempt: (id: string, rating: "spot-on" | "partly" | "off", note?: string) => void;
   /** Post a before-and-after to the community (§12). */
@@ -596,6 +603,7 @@ function StoreCore({
         }),
       recordAttempt: (attempt) =>
         applyWithBadges((p) => ({ ...p, attempts: [...p.attempts, attempt] })),
+      giveConsent: () => persist({ ...stateRef.current, consentAt: new Date().toISOString() }),
       rateAttempt: (id, rating, note) =>
         persist({
           ...stateRef.current,

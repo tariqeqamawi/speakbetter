@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { challenges } from "@/data/challenges";
+import { categories } from "@/data/categories";
 import { sampleCohort, type Rating, type SampleCohort } from "@/data/admin-sample";
 import { queued, REVIEW_RATINGS } from "@/lib/insights";
 
@@ -25,6 +26,7 @@ const FEATURE_NAME: Record<string, string> = {
 
 const SECTIONS = [
   ["overview", "Overview"],
+  ["progress", "Cohort progress"],
   ["usage", "Usage"],
   ["dropoff", "Drop-off"],
   ["quality", "Coach quality"],
@@ -66,6 +68,7 @@ export function InsightsDashboard() {
       </header>
 
       <Overview data={data} />
+      <Progress data={data} />
       <Usage data={data} />
       <DropOff data={data} />
       <Quality data={data} />
@@ -116,6 +119,177 @@ function Overview({ data }: { data: SampleCohort }) {
         <Stat value={data.questions.length} label="questions asked Coach" />
         <Stat value={minutes} label="minutes per student" />
       </div>
+    </Panel>
+  );
+}
+
+// ── Cohort progress ───────────────────────────────────────────────────
+// The efficacy story: does speaking actually get better? Told two ways
+// that don't flatter - the same students measured against themselves
+// (first take against latest, so students who left early can't lift the
+// average by leaving), and the cohort week by week, in score and in each
+// of the seven colors.
+function Progress({ data }: { data: SampleCohort }) {
+  const [copied, setCopied] = useState(false);
+  const p = useMemo(() => {
+    const start = new Date(data.days[0]).getTime();
+    const weekOf = (at: string) => Math.min(3, Math.floor((new Date(at).getTime() - start) / (7 * 86400000)));
+    const weeks = [0, 1, 2, 3].map((w) => data.takes.filter((t) => weekOf(t.at) === w));
+    const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
+    const weekScore = weeks.map((ts) => avg(ts.map((t) => t.score)));
+    const weekColor = weeks.map((ts) =>
+      Object.fromEntries(categories.map((c) => [c.id, avg(ts.map((t) => t.spectrum[c.id]))])),
+    );
+
+    // Each student against themselves: first take and latest, for
+    // everyone who recorded at least three.
+    const paired = data.students
+      .map((s) => data.takes.filter((t) => t.studentNo === s.number))
+      .filter((ts) => ts.length >= 3)
+      .map((ts) => ({ first: ts[0], last: ts.at(-1)! }));
+    const gains = paired.map(({ first, last }) => last.score - first.score);
+    const colorGain = categories
+      .map((c) => ({
+        c,
+        first: avg(paired.map(({ first }) => first.spectrum[c.id])),
+        last: avg(paired.map(({ last }) => last.spectrum[c.id])),
+      }))
+      .sort((a, b) => b.last - b.first - (a.last - a.first));
+    const lit = (sp: Record<string, number>) => Object.values(sp).filter((v) => v >= 60).length;
+    return {
+      weekScore,
+      weekColor,
+      weekN: weeks.map((ts) => new Set(ts.map((t) => t.studentNo)).size),
+      n: paired.length,
+      firstAvg: avg(paired.map((x) => x.first.score)),
+      lastAvg: avg(paired.map((x) => x.last.score)),
+      improved: gains.filter((g) => g > 0).length,
+      colorGain,
+      litFirst: avg(paired.map((x) => lit(x.first.spectrum))),
+      litLast: avg(paired.map((x) => lit(x.last.spectrum))),
+    };
+  }, [data]);
+
+  const gain = p.lastAvg - p.firstAvg;
+  const fastest = p.colorGain[0];
+  const summary = [
+    `Speak Better - cohort progress over 4 weeks (${p.n} students with 3+ recorded takes)`,
+    `Average score: ${Math.round(p.firstAvg)} on their first take -> ${Math.round(p.lastAvg)} on their latest (+${Math.round(gain)} points, +${pct(gain, p.firstAvg)}%)`,
+    `${pct(p.improved, p.n)}% of students improved`,
+    `Colors lit (60+): ${p.litFirst.toFixed(1)} -> ${p.litLast.toFixed(1)} of 7`,
+    `Fastest-growing skill: ${fastest.c.name} (+${Math.round(fastest.last - fastest.first)})`,
+    ...p.weekScore.map((v, i) => `Week ${i + 1}: average ${Math.round(v)} (${p.weekN[i]} students active)`),
+  ].join("\n");
+
+  return (
+    <Panel
+      id="progress"
+      title="Is their speaking getting better?"
+      blurb="Every student measured against their own first take, then the whole cohort week by week - in score and in each of the seven colors."
+    >
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Stat
+          value={`${Math.round(p.firstAvg)} → ${Math.round(p.lastAvg)}`}
+          label="average score, first take → latest"
+          accent="text-mindset"
+        />
+        <Stat value={`+${pct(gain, p.firstAvg)}%`} label={`improvement (+${Math.round(gain)} points)`} accent="text-mindset" />
+        <Stat value={`${pct(p.improved, p.n)}%`} label={`of ${p.n} students improved`} accent="text-storytelling" />
+        <Stat
+          value={`${p.litFirst.toFixed(1)} → ${p.litLast.toFixed(1)}`}
+          label="colors lit (60+) of 7"
+          accent="text-body-language"
+        />
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+        {/* Score, week by week. */}
+        <div className="flex flex-col gap-3">
+          <h3 className="text-sm font-semibold">Average score by week</h3>
+          <div className="flex h-56 items-end gap-4 border-b border-navy-600 px-2">
+            {p.weekScore.map((v, i) => (
+              <div key={i} className="flex h-full flex-1 flex-col items-center justify-end gap-1.5">
+                <b className="text-lg tabular-nums">{Math.round(v)}</b>
+                <div
+                  className="w-full max-w-16 rounded-t-lg bg-gradient-to-t from-mindset/40 to-mindset"
+                  style={{ height: `${v}%` }}
+                />
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-4 px-2 text-center text-xs text-ink-faint">
+            {p.weekN.map((n, i) => (
+              <span key={i} className="flex-1">
+                Week {i + 1}
+                <br />
+                {n} active
+              </span>
+            ))}
+          </div>
+          <p className="text-xs text-ink-faint">
+            Later weeks count only the students still practising. The figures above compare each student with
+            themselves, so they can&apos;t be lifted by who left.
+          </p>
+        </div>
+
+        {/* The seven colors, week by week: four bars a color, faint to full. */}
+        <div className="flex flex-col gap-3">
+          <h3 className="text-sm font-semibold">The color spectrum by week</h3>
+          <div className="flex h-56 items-end gap-3 border-b border-navy-600 px-1">
+            {categories.map((c) => (
+              <div key={c.id} className="flex h-full flex-1 items-end justify-center gap-[2px]">
+                {p.weekColor.map((wc, w) => (
+                  <div
+                    key={w}
+                    title={`${c.name}, week ${w + 1}: ${Math.round(wc[c.id])}`}
+                    className="w-full max-w-3 rounded-t-sm"
+                    style={{ height: `${wc[c.id]}%`, background: `var(--color-${c.id})`, opacity: 0.3 + w * 0.233 }}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-3 px-1 text-center text-[0.65rem] leading-tight">
+            {categories.map((c) => (
+              <span key={c.id} className="flex-1" style={{ color: `var(--color-${c.id})` }}>
+                {c.name}
+              </span>
+            ))}
+          </div>
+          <p className="text-xs text-ink-faint">Four bars a color, week 1 (faint) to week 4 (full).</p>
+        </div>
+      </div>
+
+      {/* Each color's growth the way a student's own review shows the
+          spectrum: first take dark, latest the full colored bar. */}
+      <div className="flex flex-col gap-2">
+        <h3 className="text-sm font-semibold">Growth in each color - same students, first take → latest</h3>
+        {p.colorGain.map(({ c, first, last }) => (
+          <div key={c.id} className="grid grid-cols-[8rem_1fr_5.5rem] items-center gap-3 text-xs">
+            <span style={{ color: `var(--color-${c.id})` }}>{c.name}</span>
+            <div className="relative h-3 rounded-full bg-navy-900">
+              <div
+                className="absolute inset-y-0 left-0 rounded-full"
+                style={{ width: `${last}%`, background: `var(--color-${c.id})` }}
+              />
+              <div className="absolute inset-y-0 left-0 rounded-full bg-navy-950/60" style={{ width: `${first}%` }} />
+            </div>
+            <span className="text-right tabular-nums text-ink-muted">
+              {Math.round(first)} → {Math.round(last)}{" "}
+              <b className="text-mindset">+{Math.round(last - first)}</b>
+            </span>
+          </div>
+        ))}
+        <p className="text-xs text-ink-faint">Dark part: their first take. Full bar: their latest.</p>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => navigator.clipboard?.writeText(summary).then(() => setCopied(true))}
+        className="self-start rounded-lg border border-navy-600 px-4 py-2 text-sm font-semibold hover:border-ink-faint"
+      >
+        {copied ? "Copied - paste it into a deck or an email" : "Copy these numbers for investors"}
+      </button>
     </Panel>
   );
 }

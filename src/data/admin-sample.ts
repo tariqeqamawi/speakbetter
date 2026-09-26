@@ -1,7 +1,8 @@
 import { challenges } from "@/data/challenges";
+import { categories, type CategoryId } from "@/data/categories";
 
 // A made-up cohort for the admin dashboard to stand on until the real
-// one arrives (supabase/training.sql). Forty students over three weeks,
+// one arrives (supabase/training.sql). Forty students over four weeks,
 // in the same shape the tables will hand back - so when the database is
 // switched on, the dashboard swaps this for a query and nothing else
 // changes. Seeded, so it reads the same on every load.
@@ -20,6 +21,8 @@ export interface SampleTake {
   level: string;
   score: number;
   passed: boolean;
+  /** Coach's read of the seven colors, 0-100 each. */
+  spectrum: Record<CategoryId, number>;
   transcript: string;
   coachFocus: string;
   rating?: Rating;
@@ -150,11 +153,32 @@ const AREAS: [string, number][] = [
 
 const DAY = 86400000;
 
+// How fast each color grows with practice, relative to the others: the
+// story colors move quickest, Advanced slowest - as they should.
+const GROWTH: Record<CategoryId, number> = {
+  storytelling: 1.5,
+  figurative: 1.2,
+  acting: 1.1,
+  structure: 1.3,
+  mindset: 1.6,
+  "body-language": 1.0,
+  advanced: 0.6,
+};
+const START: Record<CategoryId, number> = {
+  storytelling: -2,
+  figurative: -14,
+  acting: -10,
+  structure: -6,
+  mindset: -4,
+  "body-language": -8,
+  advanced: -30,
+};
+
 export function sampleCohort(now = Date.UTC(2026, 9, 24)): SampleCohort {
   const r = rng(40);
   const pick = <T,>(xs: T[]) => xs[Math.floor(r() * xs.length)];
-  const start = now - 20 * DAY;
-  const days = Array.from({ length: 21 }, (_, i) => new Date(start + i * DAY).toISOString().slice(0, 10));
+  const start = now - 27 * DAY;
+  const days = Array.from({ length: 28 }, (_, i) => new Date(start + i * DAY).toISOString().slice(0, 10));
   const road = challenges.map((c) => c.slug);
 
   const students: SampleStudent[] = [];
@@ -173,6 +197,8 @@ export function sampleCohort(now = Date.UTC(2026, 9, 24)): SampleCohort {
     let day = joinedDay;
     let skill = 45 + r() * 20 + (level === "advanced" ? 12 : level === "intermediate" ? 6 : 0);
     let lastActive = joinedDay;
+    let taken = 0;
+    const base = Object.fromEntries(categories.map((c) => [c.id, START[c.id] + (r() - 0.5) * 16])) as Record<CategoryId, number>;
     for (let i = 0; i < road.length && day < days.length; i++) {
       const slug = road[i];
       const hard = slug === "no-filler-words";
@@ -198,12 +224,19 @@ export function sampleCohort(now = Date.UTC(2026, 9, 24)): SampleCohort {
           level,
           score,
           passed: score >= 60,
+          spectrum: Object.fromEntries(
+            categories.map((c) => [
+              c.id,
+              Math.round(Math.max(5, Math.min(99, skill + base[c.id] + GROWTH[c.id] * taken * 1.4 + (r() - 0.5) * 10))),
+            ]),
+          ) as Record<CategoryId, number>,
           transcript: pick(TRANSCRIPTS),
           coachFocus: pick(FOCUS),
           rating,
           ratingNote: rating && rating !== "spot-on" && r() < 0.6 ? pick(MISSES) : undefined,
         });
         lastActive = day;
+        taken++;
         day += r() < 0.7 ? 1 : 2;
       }
       const stay = hard ? 0.72 * drive + 0.1 : 0.9 * drive + 0.1;

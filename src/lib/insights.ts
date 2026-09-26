@@ -13,6 +13,10 @@
 export const CONSENT_LINE =
   "None of your videos are ever stored. Your speech is turned into text and kept under a student number - never your name, and any names you mention are removed - so we can follow how you grow and help Coach become an even better coach.";
 
+/** The agreement itself, as the student ticks it. */
+export const CONSENT_AGREE =
+  "I agree to my speech being used anonymously, as text, to help improve Speak Better. I understand this is part of taking the course.";
+
 export type ReviewRating = "spot-on" | "partly" | "off";
 
 export const REVIEW_RATINGS: { id: ReviewRating; emoji: string; label: string }[] = [

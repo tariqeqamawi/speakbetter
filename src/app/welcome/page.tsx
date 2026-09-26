@@ -7,6 +7,7 @@ import { LevelIcon, levelMeta } from "@/components/level-icon";
 import { startTour } from "@/components/guided-tour";
 import { PAYWALL_ON } from "@/lib/plan";
 import { CoachSays } from "@/components/coach-says";
+import { ConsentCheck } from "@/components/consent-gate";
 import {
   INTENTION_AUDIO,
   INTENTION_SPEECH,
@@ -25,7 +26,8 @@ import {
 const order: Level[] = ["beginner", "intermediate", "advanced"];
 
 export default function WelcomePage() {
-  const { state, ready, setLevel, setIntention, unlock } = useStore();
+  const { state, ready, setLevel, setIntention, unlock, giveConsent } = useStore();
+  const [agreed, setAgreed] = useState(false);
   const router = useRouter();
   const [step, setStep] = useState<"level" | "intention">("level");
   const [draft, setDraft] = useState("");
@@ -45,6 +47,7 @@ export default function WelcomePage() {
   // starts on Today, so that's where they're sent.
   const finish = (withTour: boolean) => {
     setIntention(draft);
+    giveConsent();
     router.push("/");
     if (withTour) window.setTimeout(startTour, 600);
   };
@@ -126,12 +129,15 @@ export default function WelcomePage() {
               {draft.length}/280
             </span>
           </label>
+          {/* The condition of the course, asked plainly before anything
+              else happens - see consent-gate.tsx. */}
+          <ConsentCheck checked={agreed} onChange={setAgreed} />
           {/* One button: send the reason, and straight into the tour -
               which can be skipped, or skipped through, from inside it. */}
           <button
             type="button"
             onClick={() => finish(true)}
-            disabled={draft.trim().length === 0}
+            disabled={draft.trim().length === 0 || !agreed}
             className="coach-pill flex min-h-12 items-center justify-center rounded-full text-sm font-bold text-navy-950 disabled:opacity-40"
           >
             <span className="text-navy-950">Send it</span>
