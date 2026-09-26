@@ -94,11 +94,10 @@ function LandingBody() {
               about the sound of somebody's voice. It does not
               autoplay: the words are on screen and the voice is
               offered beside them. */}
-          {/* The headline and Coach's button as one block, as wide as the
-              headline's longest line - so the button sits centred under the
-              words themselves, not under the empty right of a wide box. On a
-              laptop the three lines are set, so the block can hug them. */}
-          <div className="flex flex-col items-center gap-3 lg:w-fit">
+          {/* The headline and Coach's button as one block. On a phone the
+              button is centred under it; on a laptop, where the column reads
+              from the left, it lines up with the left edge of the words. */}
+          <div className="flex flex-col items-center gap-3 lg:w-fit lg:items-start">
             <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-5xl lg:text-[2.7rem] xl:text-5xl">
               <span className="lg:block lg:whitespace-nowrap">Discover your true </span>
               <span className="lg:block lg:whitespace-nowrap">colors, speak, and roar </span>
