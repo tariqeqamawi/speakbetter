@@ -208,6 +208,7 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **26 September**
+- Consent as one line + Yes, I agree + What does that mean? (Tariq's explanation and decline) — `c1786a8`
 - /terms and /privacy fitted to the product; consent wording under the prices; landing footer — `97eb0c3`
 - Consent required to take the course (welcome tick-box, one-time gate, line under pricing); /admin
   cohort progress: first vs latest, score and seven colors by week, copy for investors — `9c9e783`
