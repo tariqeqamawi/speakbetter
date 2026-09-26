@@ -551,12 +551,17 @@ function StoreCore({
       celebrations,
       // On the private demo address a new student arrives already worked
       // in - the level and the reason are still theirs to give on welcome.
-      unlock: (plan = "coached") =>
-        applyWithBadges((p) =>
-          onDemoHost() && p.attempts.length === 0
-            ? { ...demoState, level: null, intention: "", plan, unlocked: true }
-            : { ...p, unlocked: true, plan },
-        ),
+      // Its trophies arrive already won - every one the record has earned,
+      // worked out now and kept quietly - so nothing is announced as new.
+      unlock: (plan = "coached") => {
+        if (onDemoHost() && stateRef.current.attempts.length === 0) {
+          const seed: AppState = { ...demoState, level: null, intention: "", plan, unlocked: true };
+          const earned = evaluateBadges({ ...seed, xp: standing(seed).xp });
+          persist({ ...seed, badges: [...seed.badges, ...earned] });
+          return;
+        }
+        applyWithBadges((p) => ({ ...p, unlocked: true, plan }));
+      },
       setLevel: (level) => applyWithBadges((p) => ({ ...p, level })),
       setIntention: (intention) =>
         applyWithBadges((p) => ({ ...p, intention: intention.trim() })),
