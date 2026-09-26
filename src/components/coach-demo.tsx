@@ -255,6 +255,13 @@ export function CoachDemo() {
         <div className="flex flex-col items-center gap-1 text-center">
           <h3 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">Meet Coach</h3>
           <p className="text-sm text-ink-muted text-balance">The lion who watches all of your videos.</p>
+          {/* The positioning, said plainly: not "the first AI speaking coach"
+              - there are others - but the only one trained on a complete
+              method, that ties what it sees to the lesson that fixes it. */}
+          <p className="mt-3 max-w-xl text-lg font-semibold leading-snug text-ink text-balance sm:text-xl">
+            The only AI coach trained on a complete speaking method - it tells you which skills you used, which you
+            missed, and exactly which lesson to watch next.
+          </p>
           <p className="mt-2 max-w-lg text-sm leading-relaxed text-ink-muted text-balance">
             Thanks to the advances in technology, Coach actually watches your videos, is fully context-aware, and can
             see details such as eye contact and hand gestures. He is trained on the full Speak Better methodology,
