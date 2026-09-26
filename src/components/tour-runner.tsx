@@ -138,6 +138,18 @@ export function TourRunner({
   );
   const live = said.clip === clip ? said : { phrase: undefined, word: -1 };
 
+  // A stop that changes the page as it goes: the tour presses the button
+  // itself at the moment Coach gets to it (the page stays untouchable).
+  useEffect(() => {
+    if (!stop?.act) return;
+    if (stop.route && pathname !== stop.route) return;
+    const { after, press } = stop.act;
+    const t = window.setTimeout(() => {
+      document.querySelector<HTMLElement>(press)?.click();
+    }, after);
+    return () => clearTimeout(t);
+  }, [stop, pathname]);
+
   // A showcase stop: from the top of the page, a slow glide down to the
   // part it is about, over roughly the time Coach takes to say it.
   useEffect(() => {

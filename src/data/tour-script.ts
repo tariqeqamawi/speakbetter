@@ -49,6 +49,10 @@ export interface TourStop {
    *  slowly down to this element while Coach speaks - so the student sees
    *  what the screen looks like without being able to wander off in it. */
   showcase?: string;
+  /** Something the tour does on the page part-way through the stop, so
+   *  the screen changes as Coach describes it: after `after` ms, press the
+   *  element matching `press`. */
+  act?: { after: number; press: string };
 }
 
 const ROAD = { src: "/film/tour-road3d.mp4", poster: "/film/tour-road3d.jpg" };
@@ -138,11 +142,14 @@ export const mainTour: TourStop[] = [
     film: SKILLS,
   },
   {
-    id: "deck-v2",
-    target: "[data-tour='deck']",
+    id: "deck-v3",
+    // Shown, then changed as he speaks: the deck by colour, and - as he
+    // reaches the spread - the tour deals one, so the fan appears.
     route: "/skills/cards",
+    showcase: "[data-tour='deck']",
+    act: { after: 12500, press: "[data-tour='spread']" },
     title: "The card deck",
-    body: "Every lesson, summarized as a digital card and color-coded to match. View them one at a time and drag right to flip through the spread - or deal a full spread and get one card from every color, so you can put together a dynamic talk on the fly.",
+    body: "All of the key lessons have been summarized as color-coded flashcards. You can dial into them the same way that you can the skills, to quickly read summaries and distill lessons immediately. You can also deal a full spread to pull a card from every color and have all of the ingredients you need for delivering a dynamic talk on the fly.",
     film: DECK,
   },
   {
@@ -273,7 +280,7 @@ export const sectionTours: Record<SectionId, SectionTour> = {
         film: DECK,
       },
       {
-        id: "sec-cards-spread",
+        id: "sec-cards-spread-v2",
         target: "[data-tour='spread']",
         title: "A full spread",
         body: "Deal a full spread and you get one card of every color, ensuring that your talk lights up with all of the aspects of a highly engaging and dynamic speech.",
