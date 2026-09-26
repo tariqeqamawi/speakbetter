@@ -10,12 +10,7 @@
 // small queue on the device and are sent up the moment it is; the admin
 // dashboard reads the same shape from either place.
 
-export const CONSENT_LINE =
-  "None of your videos are ever stored. Your speech is turned into text and kept under a student number - never your name, and any names you mention are removed - so we can follow how you grow and help Coach become an even better coach.";
-
-/** The agreement itself, as the student ticks it. */
-export const CONSENT_AGREE =
-  "Speak Better is an evolving system that we are passionate about improving by using Speak Better and Coach. In using Speak Better and Coach you agree to transcripts of your speech being used anonymously as text to help improve the service. This is also how you are able to track your improvement over time.";
+export { CONSENT_AGREE, CONSENT_LINE } from "@/data/consent";
 
 export type ReviewRating = "spot-on" | "partly" | "off";
 

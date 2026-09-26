@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { SUPPORT_EMAIL } from "@/data/support";
 import { CohortDates } from "@/components/cohort-dates";
 import Image from "next/image";
 import { CheckIcon, ChevronDownIcon, XIcon } from "@/components/icons";
@@ -534,6 +536,19 @@ function LandingBody() {
           <Pricing />
         </div>
       </section>
+
+      <footer className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 border-t border-navy-600 pt-6 text-xs text-ink-faint">
+        <span>&copy; 2026 Speak Better</span>
+        <Link href="/terms" className="hover:text-ink">
+          Terms of Service
+        </Link>
+        <Link href="/privacy" className="hover:text-ink">
+          Privacy Policy
+        </Link>
+        <a href={`mailto:${SUPPORT_EMAIL}`} className="hover:text-ink">
+          {SUPPORT_EMAIL}
+        </a>
+      </footer>
     </div>
   );
 }

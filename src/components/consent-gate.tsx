@@ -1,5 +1,6 @@
 "use client";
 
+import { LegalLinks } from "@/components/legal-page";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { useStore } from "@/lib/store";
@@ -28,6 +29,9 @@ export function ConsentCheck({ checked, onChange }: { checked: boolean; onChange
       <span className="flex flex-col gap-1.5">
         <span className="text-sm font-semibold text-ink">{CONSENT_AGREE}</span>
         <span className="text-xs leading-snug text-ink-muted">{CONSENT_LINE}</span>
+        <span className="text-xs text-ink-faint">
+          Read the full <LegalLinks />.
+        </span>
       </span>
     </label>
   );

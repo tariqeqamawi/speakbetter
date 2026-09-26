@@ -1,4 +1,6 @@
 import { guarantee } from "@/data/pricing";
+import { LegalLinks } from "@/components/legal-page";
+import { CONSENT_AGREE } from "@/data/consent";
 import { TierTabs } from "@/components/tier-tabs";
 import { GuaranteeSeal } from "@/components/guarantee-seal";
 import { PricingFaq } from "@/components/pricing-faq";
@@ -26,11 +28,14 @@ export function Pricing() {
         </div>
       </div>
 
-      {/* Said before anyone pays: agreeing is a condition of the course. */}
-      <p className="mx-auto max-w-xl text-center text-xs text-ink-muted">
-        Speak Better learns from its students. No video is ever stored - your speech is kept as text, under a student
-        number, never your name - and agreeing to that is part of joining.
-      </p>
+      {/* Said before anyone pays: agreeing is a condition of the course,
+          in the same words the student ticks when they start. */}
+      <div className="mx-auto flex max-w-xl flex-col gap-1.5 text-center text-xs text-ink-muted">
+        <p>{CONSENT_AGREE}</p>
+        <p className="text-ink-faint">
+          By joining you agree to the <LegalLinks />.
+        </p>
+      </div>
 
       <p className="text-center text-xs text-ink-faint">
         Checkout stub - Stripe payment arrives with service integration. Prices in USD.
