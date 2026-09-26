@@ -31,8 +31,9 @@ export function CohortDates() {
           <CalendarIcon className="size-5 shrink-0 text-figurative" />
           <span className="text-lg font-bold text-ink sm:text-xl">{cohort.startLabel}</span>
         </span>
+        <span className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">{foundingCohort.headline}</span>
         <span className="text-sm text-ink-muted text-balance">
-          {foundingCohort.headline} - {foundingCohort.line} This round runs for {cohort.weeks} weeks - {cohort.runLabel} - and
+          {foundingCohort.line} This round runs for {cohort.weeks} weeks - {cohort.runLabel} - and
           you keep {cohort.accessLabel} to the app. Founding members win the Founding Cohort trophy, which no later round can.
         </span>
         <span className="flex items-start gap-2 rounded-xl bg-mindset/10 px-3.5 py-2 text-left text-sm text-mindset text-balance">
