@@ -208,6 +208,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **25 September**
+- Tap-to-pause Coach; welcome Send it; tour fixes (laptop clip, card-only challenge stops, shorter
+  opening); fewer stars; gold VIP; VIP \$2,497 struck; app glow and glass cards — `ee91102`
 - Hero: two columns with Tariq's AI video; Posture Warm Up + Don't Give Your Power Away lessons (83);
   From shy to shining at the top of Today — `853e05d`
 - App-in-action films re-recorded: skills (lesson plays + portrait), 3D road into a challenge, dashboard
