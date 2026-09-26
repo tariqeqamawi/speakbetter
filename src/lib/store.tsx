@@ -171,6 +171,22 @@ export interface AppState {
    *  condition of the course: nothing past welcome opens without it
    *  (components/consent-gate.tsx). */
   consentAt?: string;
+  /** The student's own measure of the course (components/check-in.tsx):
+   *  how confident they feel on camera when they start and when they
+   *  finish, whether they'd recommend it, and - if they choose - what
+   *  changed for them, with permission to quote it without their name. */
+  checkIns?: CheckIns;
+}
+
+export interface CheckIns {
+  startConfidence?: number;
+  startAt?: string;
+  endConfidence?: number;
+  endAt?: string;
+  /** 0-10: how likely they are to recommend Speak Better. */
+  recommend?: number;
+  story?: string;
+  quoteOk?: boolean;
 }
 
 const STARTING_FREEZES = 2;
@@ -245,6 +261,8 @@ interface StoreApi {
   recordAttempt: (attempt: Attempt) => void;
   /** They agreed to the consent line - required to use the course. */
   giveConsent: () => void;
+  /** Record a check-in answer (merged into state.checkIns). */
+  checkIn: (patch: Partial<CheckIns>) => void;
   /** The student's verdict on one of Coach's reviews. */
   rateAttempt: (id: string, rating: "spot-on" | "partly" | "off", note?: string) => void;
   /** Post a before-and-after to the community (§12). */
@@ -604,6 +622,8 @@ function StoreCore({
       recordAttempt: (attempt) =>
         applyWithBadges((p) => ({ ...p, attempts: [...p.attempts, attempt] })),
       giveConsent: () => persist({ ...stateRef.current, consentAt: new Date().toISOString() }),
+      checkIn: (patch) =>
+        persist({ ...stateRef.current, checkIns: { ...stateRef.current.checkIns, ...patch } }),
       rateAttempt: (id, rating, note) =>
         persist({
           ...stateRef.current,

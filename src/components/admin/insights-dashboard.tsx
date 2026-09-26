@@ -5,6 +5,7 @@ import { challenges } from "@/data/challenges";
 import { categories } from "@/data/categories";
 import { sampleCohort, type Rating, type SampleCohort } from "@/data/admin-sample";
 import { queued, REVIEW_RATINGS } from "@/lib/insights";
+import { AdminNav } from "@/components/admin/admin-nav";
 
 // Tariq's view of the cohort: how the app is used, where students stop,
 // how good Coach's reviews are, what students say, what it all means -
@@ -44,7 +45,7 @@ export function InsightsDashboard() {
   return (
     <div className="flex flex-col gap-8 py-6">
       <header className="flex flex-col gap-2">
-        <p className="text-xs font-semibold uppercase tracking-widest text-ink-faint">Admin</p>
+        <AdminNav at="insights" />
         <h1 className="text-3xl font-semibold tracking-tight">Cohort insights</h1>
         <p className="max-w-2xl text-sm text-ink-muted">
           Every student is a number, never a name. No video is stored - only what was said, as text, and how the app was
@@ -79,7 +80,7 @@ export function InsightsDashboard() {
   );
 }
 
-function Panel({ id, title, blurb, children }: { id: string; title: string; blurb?: string; children: React.ReactNode }) {
+export function Panel({ id, title, blurb, children }: { id: string; title: string; blurb?: string; children: React.ReactNode }) {
   return (
     <section id={id} className="flex scroll-mt-24 flex-col gap-4 rounded-2xl border border-navy-600 bg-navy-800 p-5">
       <div>
@@ -91,7 +92,7 @@ function Panel({ id, title, blurb, children }: { id: string; title: string; blur
   );
 }
 
-function Stat({ value, label, accent = "text-ink" }: { value: string | number; label: string; accent?: string }) {
+export function Stat({ value, label, accent = "text-ink" }: { value: string | number; label: string; accent?: string }) {
   return (
     <div className="flex flex-col rounded-xl border border-navy-600 bg-navy-900/60 px-4 py-3">
       <b className={`text-2xl font-bold tabular-nums ${accent}`}>{value}</b>
@@ -100,7 +101,7 @@ function Stat({ value, label, accent = "text-ink" }: { value: string | number; l
   );
 }
 
-const pct = (n: number, d: number) => (d ? Math.round((n / d) * 100) : 0);
+export const pct = (n: number, d: number) => (d ? Math.round((n / d) * 100) : 0);
 
 // ── Overview ──────────────────────────────────────────────────────────
 function Overview({ data }: { data: SampleCohort }) {
@@ -133,8 +134,9 @@ function Progress({ data }: { data: SampleCohort }) {
   const [copied, setCopied] = useState(false);
   const p = useMemo(() => {
     const start = new Date(data.days[0]).getTime();
-    const weekOf = (at: string) => Math.min(3, Math.floor((new Date(at).getTime() - start) / (7 * 86400000)));
-    const weeks = [0, 1, 2, 3].map((w) => data.takes.filter((t) => weekOf(t.at) === w));
+    const count = Math.ceil(data.days.length / 7);
+    const weekOf = (at: string) => Math.min(count - 1, Math.floor((new Date(at).getTime() - start) / (7 * 86400000)));
+    const weeks = Array.from({ length: count }, (_, w) => w).map((w) => data.takes.filter((t) => weekOf(t.at) === w));
     const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
     const weekScore = weeks.map((ts) => avg(ts.map((t) => t.score)));
     const weekColor = weeks.map((ts) =>
@@ -173,7 +175,7 @@ function Progress({ data }: { data: SampleCohort }) {
   const gain = p.lastAvg - p.firstAvg;
   const fastest = p.colorGain[0];
   const summary = [
-    `Speak Better - cohort progress over 4 weeks (${p.n} students with 3+ recorded takes)`,
+    `Speak Better - cohort progress over ${p.weekScore.length} weeks (${p.n} students with 3+ recorded takes)`,
     `Average score: ${Math.round(p.firstAvg)} on their first take -> ${Math.round(p.lastAvg)} on their latest (+${Math.round(gain)} points, +${pct(gain, p.firstAvg)}%)`,
     `${pct(p.improved, p.n)}% of students improved`,
     `Colors lit (60+): ${p.litFirst.toFixed(1)} -> ${p.litLast.toFixed(1)} of 7`,
@@ -243,7 +245,7 @@ function Progress({ data }: { data: SampleCohort }) {
                     key={w}
                     title={`${c.name}, week ${w + 1}: ${Math.round(wc[c.id])}`}
                     className="w-full max-w-3 rounded-t-sm"
-                    style={{ height: `${wc[c.id]}%`, background: `var(--color-${c.id})`, opacity: 0.3 + w * 0.233 }}
+                    style={{ height: `${wc[c.id]}%`, background: `var(--color-${c.id})`, opacity: 0.3 + (w / Math.max(1, p.weekColor.length - 1)) * 0.7 }}
                   />
                 ))}
               </div>
@@ -256,7 +258,7 @@ function Progress({ data }: { data: SampleCohort }) {
               </span>
             ))}
           </div>
-          <p className="text-xs text-ink-faint">Four bars a color, week 1 (faint) to week 4 (full).</p>
+          <p className="text-xs text-ink-faint">One bar a week for each color, week 1 (faint) to week {p.weekColor.length} (full).</p>
         </div>
       </div>
 
@@ -399,6 +401,8 @@ function DropOff({ data }: { data: SampleCohort }) {
 // ── Coach quality ─────────────────────────────────────────────────────
 function Quality({ data }: { data: SampleCohort }) {
   const [gold, setGold] = useState<Set<number>>(new Set());
+  // Tariq's own score for a take - the data room's "Coach vs Tariq".
+  const [mine, setMine] = useState<Record<number, string>>({});
   const byChallenge = challenges
     .map((c) => {
       const rated = data.takes.filter((t) => t.challenge === c.slug && t.rating);
@@ -445,7 +449,8 @@ function Quality({ data }: { data: SampleCohort }) {
 
       <h3 className="pt-2 text-sm font-semibold">Where he missed - the training queue</h3>
       <p className="-mt-3 text-xs text-ink-faint">
-        Mark a take ⭐ gold to teach Coach from it, once you&apos;ve written the review it should have had.
+        Give a take your own score to measure how closely Coach agrees with you, and mark it ⭐ gold to teach him
+        from it once you&apos;ve written the review it should have had.
       </p>
       <ul className="flex flex-col gap-2">
         {misses.map(({ t, i }) => (
@@ -455,7 +460,19 @@ function Quality({ data }: { data: SampleCohort }) {
               <span>·</span>
               <span className="truncate">{TITLE.get(t.challenge)}</span>
               <span>·</span>
-              <span>score {t.score}</span>
+              <span>Coach scored {t.score}</span>
+              <label className="flex items-center gap-1">
+                · yours
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={mine[i] ?? (t.tariqScore !== undefined ? String(t.tariqScore) : "")}
+                  onChange={(e) => setMine((m) => ({ ...m, [i]: e.target.value }))}
+                  aria-label="Your score for this take"
+                  className="w-12 rounded border border-navy-600 bg-navy-900 px-1 text-ink"
+                />
+              </label>
               <button
                 type="button"
                 onClick={() =>

@@ -20,6 +20,7 @@ import { LevelIcon, levelMeta } from "@/components/level-icon";
 import { FlameIcon } from "@/components/icons";
 import { streakBonusPercent } from "@/lib/progress";
 import { CheckIcon } from "@/components/icons";
+import { CheckIn } from "@/components/check-in";
 
 // The daily home. A library of 24 challenges invites browsing; this
 // screen names the one thing to do today, which is what actually
@@ -97,6 +98,10 @@ export function Today() {
           <Stat label="Day streak" value={streak} accent="text-acting" />
         </div>
       </header>
+
+      {/* How confident they feel - asked at the start, and again at the
+          end (check-in.tsx). */}
+      <CheckIn />
 
       {/* Nothing behind them yet: one line saying where to start,
           rather than three zeroes and no instruction. */}

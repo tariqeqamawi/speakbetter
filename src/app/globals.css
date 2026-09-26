@@ -3533,3 +3533,29 @@ html.bare .demo-banner {
   color: transparent;
   filter: drop-shadow(0 1px 8px rgb(245 190 70 / 0.25));
 }
+
+/* The data room's one-pager prints alone, in its own colors, as the PDF
+   for an investor email (components/admin/data-room.tsx). */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 9999;
+  }
+  .print-area,
+  .print-area * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  html,
+  body {
+    background: var(--color-navy-900) !important;
+  }
+}

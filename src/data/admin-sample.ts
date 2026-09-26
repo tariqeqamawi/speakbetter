@@ -1,8 +1,10 @@
 import { challenges } from "@/data/challenges";
 import { categories, type CategoryId } from "@/data/categories";
+import { priceCents, UPGRADE_CENTS, type Plan } from "@/data/pricing";
 
 // A made-up cohort for the admin dashboard to stand on until the real
-// one arrives (supabase/training.sql). Forty students over four weeks,
+// one arrives (supabase/training.sql). Forty students over a full six-week
+// cohort (3 October to 13 November),
 // in the same shape the tables will hand back - so when the database is
 // switched on, the dashboard swaps this for a query and nothing else
 // changes. Seeded, so it reads the same on every load.
@@ -27,6 +29,8 @@ export interface SampleTake {
   coachFocus: string;
   rating?: Rating;
   ratingNote?: string;
+  /** Tariq's own score, on the takes he reviewed himself. */
+  tariqScore?: number;
 }
 
 export interface SampleQuestion {
@@ -54,6 +58,20 @@ export interface SampleStudent {
   number: number;
   level: string;
   joined: string;
+  tier: Plan;
+  /** Everything they paid, upgrade included, before any refund. */
+  paidCents: number;
+  upgraded: boolean;
+  refunded: boolean;
+  /** Still practising in the final week. */
+  completed: boolean;
+  /** Stayed on month to month after the six weeks. */
+  monthly: boolean;
+  confidenceStart: number;
+  confidenceEnd?: number;
+  recommend?: number;
+  story?: string;
+  quoteOk?: boolean;
 }
 
 export interface SampleCohort {
@@ -153,6 +171,15 @@ const AREAS: [string, number][] = [
 
 const DAY = 86400000;
 
+const STORIES = [
+  "I used to rehearse voicemails. Last week I gave a toast at my sister's wedding and people came up to me afterwards.",
+  "The filler words are mostly gone. My manager noticed before I told her I was doing this.",
+  "I pitched to investors on Zoom and didn't read from my notes once.",
+  "I finally started the YouTube channel I'd been putting off for two years.",
+  "I stopped apologising at the start of every meeting I run.",
+  "Seeing my own colors grow week by week kept me going when I wanted to quit.",
+];
+
 // How fast each color grows with practice, relative to the others: the
 // story colors move quickest, Advanced slowest - as they should.
 const GROWTH: Record<CategoryId, number> = {
@@ -174,11 +201,11 @@ const START: Record<CategoryId, number> = {
   advanced: -30,
 };
 
-export function sampleCohort(now = Date.UTC(2026, 9, 24)): SampleCohort {
+export function sampleCohort(now = Date.UTC(2026, 10, 13)): SampleCohort {
   const r = rng(40);
   const pick = <T,>(xs: T[]) => xs[Math.floor(r() * xs.length)];
-  const start = now - 27 * DAY;
-  const days = Array.from({ length: 28 }, (_, i) => new Date(start + i * DAY).toISOString().slice(0, 10));
+  const start = now - 41 * DAY;
+  const days = Array.from({ length: 42 }, (_, i) => new Date(start + i * DAY).toISOString().slice(0, 10));
   const road = challenges.map((c) => c.slug);
 
   const students: SampleStudent[] = [];
@@ -191,12 +218,14 @@ export function sampleCohort(now = Date.UTC(2026, 9, 24)): SampleCohort {
     const level = r() < 0.55 ? "beginner" : r() < 0.75 ? "intermediate" : "advanced";
     const joinedDay = Math.floor(r() * 4);
     const drive = 0.35 + r() * 0.65;
-    students.push({ number: n, level, joined: days[joinedDay] });
+    // A second stream for what came later, so the patterns above stay put.
+    const r2 = rng(400 + n);
 
     // Along the road, one challenge at a time, until they stop.
     let day = joinedDay;
     let skill = 45 + r() * 20 + (level === "advanced" ? 12 : level === "intermediate" ? 6 : 0);
     let lastActive = joinedDay;
+    let reachedEnd = false;
     let taken = 0;
     const base = Object.fromEntries(categories.map((c) => [c.id, START[c.id] + (r() - 0.5) * 16])) as Record<CategoryId, number>;
     for (let i = 0; i < road.length && day < days.length; i++) {
@@ -234,14 +263,51 @@ export function sampleCohort(now = Date.UTC(2026, 9, 24)): SampleCohort {
           coachFocus: pick(FOCUS),
           rating,
           ratingNote: rating && rating !== "spot-on" && r() < 0.6 ? pick(MISSES) : undefined,
+          // Tariq reviews about one take in eight himself. Coach's gap
+          // from him narrows as he's corrected, week by week.
+          tariqScore:
+            r2() < 0.13 ? Math.round(Math.max(10, Math.min(99, score + (r2() - 0.5) * 2 * (16 - (day / 42) * 11)))) : undefined,
         });
         lastActive = day;
         taken++;
+        if (i === road.length - 1) reachedEnd = true;
         day += r() < 0.7 ? 1 : 2;
       }
-      const stay = hard ? 0.72 * drive + 0.1 : 0.9 * drive + 0.1;
+      const stay = hard ? 0.8 + 0.15 * drive : 0.94 + 0.055 * drive;
       if (r() > stay) break;
     }
+
+    // Who they were as a customer, and what they said at the ends.
+    const tierRoll = r2();
+    let tier: Plan = tierRoll < 0.45 ? "foundations" : tierRoll < 0.85 ? "coached" : "founders";
+    let paidCents = priceCents[tier];
+    const upgraded = tier === "foundations" && drive > 0.6 && r2() < 0.35;
+    if (upgraded) {
+      tier = "coached";
+      paidCents += UPGRADE_CENTS;
+    }
+    const refunded = lastActive - joinedDay < 10 && r2() < 0.3;
+    const completed = !refunded && (reachedEnd || lastActive >= days.length - 7);
+    const confidenceStart = Math.max(1, Math.min(7, Math.round(2 + r2() * 4 + (level === "advanced" ? 1 : 0))));
+    const confidenceEnd = completed ? Math.min(10, confidenceStart + 2 + Math.round(r2() * 3.4)) : undefined;
+    const recommend = completed ? (r2() < 0.72 ? 9 + Math.round(r2()) : r2() < 0.8 ? 7 + Math.round(r2()) : 5) : undefined;
+    const story = completed && r2() < 0.6 ? STORIES[Math.floor(r2() * STORIES.length)] : undefined;
+    students.push({
+      number: n,
+      level,
+      joined: days[joinedDay],
+      tier,
+      paidCents,
+      upgraded,
+      refunded,
+      completed,
+      monthly: completed && r2() < 0.42,
+      confidenceStart,
+      confidenceEnd,
+      recommend,
+      story,
+      quoteOk: story ? r2() < 0.75 : undefined,
+    });
 
     for (let q = 0, k = Math.floor(r() * 5 * drive); q < k; q++) {
       const [question, topic] = pick(QUESTIONS);

@@ -48,6 +48,7 @@ const badge = (id: string, title: string, icon: string, back: number) => ({
 export const demoState: AppState = {
   unlocked: true,
   consentAt: day(5),
+  checkIns: { startConfidence: 3, startAt: day(5) },
   level: "advanced",
   displayName: "Sample Student",
   intention:
