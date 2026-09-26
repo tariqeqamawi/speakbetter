@@ -208,6 +208,7 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **26 September**
+- Origin story moved to /about, "About" in the landing header — `62a91b7`
 - Data room (/admin/data-room): one-pager PDF, outcomes, traction, unit economics, forecast, moat;
   confidence + recommend check-ins on Today; Tariq's own score in the training queue — `0e0f71c`
 - Consent as one line + Yes, I agree + What does that mean? (Tariq's explanation and decline) — `c1786a8`
