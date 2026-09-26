@@ -69,7 +69,7 @@ export function LandingShowcase() {
         {/* A take being recorded - a student on their own phone, lit by
             a ring light, the brief on screen. */}
         <Phone label="Recording a take">
-          <SelfieTake take={SELFIE_TAKES[0]} className="rounded-none" />
+          <SelfieTake take={SELFIE_TAKES[0]} className="!aspect-auto h-full rounded-none" />
         </Phone>
         <div className="flex max-w-md flex-col gap-4">
           {/* The same five as the How it works section higher up.
