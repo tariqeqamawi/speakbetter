@@ -109,13 +109,13 @@ export const tiers: Tier[] = [
     has: foundations,
     accent: "mindset",
     cta: "Get Starter",
-    note: "6 weeks' access, including every weekly live session. Upgrade to Complete within your first 14 days for $200.",
+    note: "6 weeks' access, including every weekly live session. Upgrade to Complete within your first 14 days for $199.",
   },
   {
     id: "coached",
     name: "Complete",
     tagline: "The full digital experience - everything in Starter, plus the interactive Coach and his spoken feedback.",
-    price: "$499",
+    price: "$498",
     future: "$1,498",
     term: "one payment - 6 weeks' access",
     featured: true,
@@ -148,12 +148,12 @@ export const tiers: Tier[] = [
  *  are what a student reads; these are what they are charged. */
 export const priceCents: Record<Plan, number> = {
   foundations: 29900,
-  coached: 49900,
+  coached: 49800,
   founders: 99700,
 };
 
 /** Starter to Complete: the difference, not a second full price. A
- *  student who has already paid $299 is not asked for $499. */
+ *  student who has already paid $299 is not asked for $498. */
 export const UPGRADE_CENTS = priceCents.coached - priceCents.foundations;
 
 /** How long after joining a Starter student can still upgrade for the
@@ -168,8 +168,8 @@ export const upgradeOffer = {
   // What a Starter student sees when they tap Coach - Tariq's words.
   title: "Written and visual feedback only",
   body: "To have Coach talk to you and have Coach talk back to you, please upgrade.",
-  cta: "Upgrade for $200",
-  /** Said under the button: what the $200 buys, and for how long. */
+  cta: "Upgrade for $199",
+  /** Said under the button: what the $199 buys, and for how long. */
   term: "For the rest of your six weeks.",
 } as const;
 
