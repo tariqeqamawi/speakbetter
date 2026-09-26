@@ -208,6 +208,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **26 September**
+- Data room (/admin/data-room): one-pager PDF, outcomes, traction, unit economics, forecast, moat;
+  confidence + recommend check-ins on Today; Tariq's own score in the training queue — `0e0f71c`
 - Consent as one line + Yes, I agree + What does that mean? (Tariq's explanation and decline) — `c1786a8`
 - /terms and /privacy fitted to the product; consent wording under the prices; landing footer — `97eb0c3`
 - Consent required to take the course (welcome tick-box, one-time gate, line under pricing); /admin
