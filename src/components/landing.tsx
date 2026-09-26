@@ -253,6 +253,10 @@ function LandingBody() {
         <h2 className="rv mx-auto mb-2 max-w-3xl text-center text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
           How Speak Better is different to every other speaking course or app on the market
         </h2>
+        <p className="rv mx-auto -mt-3 max-w-2xl text-center text-lg text-ink-muted text-balance sm:text-xl" style={delay(80)}>
+          The only AI coach trained on a complete speaking method - it tells you which skills you used, which you
+          missed, and exactly which lesson to watch next.
+        </p>
         {/* Tariq saying it: this is not just another online course. */}
         <div className="rv mx-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-navy-600 shadow-2xl shadow-navy-950/80" style={delay(150)}>
           <LazyVimeoPlayer
