@@ -207,6 +207,11 @@ Tariq topped up the account, so the cap is gone.
 Newest first. Each links the commit that did it; every commit message says why, not just
 what.
 
+**26 September**
+- Coach training, step one: 👌/🤏/👎 on every review with "what did he miss", consent line, 🔥/👇 on
+  six areas, usage + Coach-question tracking (queued on device), `supabase/training.sql`, and /admin
+  on a sample cohort (heatmap, drop-off, Coach quality, voice, insights, student journey) — `6db4709`
+
 **25 September**
 - Tap-to-pause Coach; welcome Send it; tour fixes (laptop clip, card-only challenge stops, shorter
   opening); fewer stars; gold VIP; VIP \$2,497 struck; app glow and glass cards — `ee91102`
