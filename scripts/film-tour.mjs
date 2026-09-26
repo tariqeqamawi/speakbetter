@@ -42,7 +42,7 @@ async function ease(p, from, to, ms) {
 
 /** Seconds cut from the start of a film - the page loading, which is a
  *  black rectangle and then a world assembling itself. */
-const TRIM = { road3d: 3, road2d: 3 };
+const TRIM = { road3d: 3, road2d: 3, dashboard: 1.5 };
 
 /** Travel the 3D road forward with the scroll wheel, for `ms`. */
 async function travelRoad(p, ms) {
@@ -151,21 +151,24 @@ const FILMS = {
 
   // The dashboard, tab by tab.
   async dashboard(p) {
+    // Quick snapshots of the dashboard, tab by tab: the spectrum, the
+    // trophy case, the community, the challenges, the streak - a glance
+    // at each, scrolled a little so it shows more than its heading.
     await p.goto(`${BASE}/demo?bare=1`, { waitUntil: "load" });
-    await p.waitForTimeout(1800);
-    for (const tab of ["Challenges", "Lessons", "Spectrum", "Streak", "Badges"]) {
-      await p
-        .locator("nav[aria-label='Dashboard sections'] button", { hasText: tab })
-        .click()
-        .catch(() => {});
-      await p.waitForTimeout(400);
+    await p.waitForTimeout(2200);
+    for (const tab of ["Spectrum", "Trophies", "Community", "Challenges", "Streak"]) {
+      await p.locator("nav[aria-label='Dashboard sections'] button", { hasText: tab }).click().catch(() => {});
+      await p.waitForTimeout(700);
+      const y = await p.evaluate(() => window.scrollY);
       const h = await p.evaluate(() => document.body.scrollHeight);
-      await ease(p, 0, Math.min(600, h - 900), 1700);
-      await p.waitForTimeout(600);
-      await ease(p, Math.min(600, h - 900), 0, 700);
+      const to = Math.min(y + 520, h - 844);
+      await ease(p, y, to, 1500);
+      await p.waitForTimeout(700);
+      await ease(p, to, y, 600);
     }
-    await p.waitForTimeout(600);
+    await p.waitForTimeout(500);
   },
+
 
   // The deck: a color pressed, then a full spread dealt.
   async deck(p) {
