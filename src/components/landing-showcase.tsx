@@ -79,7 +79,7 @@ export function LandingShowcase() {
               ways depending on where you were reading. A visitor who
               notices that does not think "two summaries", they think
               "which one is true". Repetition is the smaller cost. */}
-          <h3 className="text-xl font-semibold tracking-tight text-ink">How to use Speak Better - quick guide</h3>
+          <h2 className="text-3xl font-semibold tracking-tight text-ink text-balance sm:text-4xl">How to use Speak Better - quick guide</h2>
           <ol className="flex flex-col gap-2">
             {[
               ["Watch a challenge + included skills", "text-structure"],
