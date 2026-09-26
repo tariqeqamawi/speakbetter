@@ -20,6 +20,7 @@ import { SELFIE_TAKES } from "@/data/selfie-takes";
 import { HeroBeat } from "@/components/hero-beat";
 import { TheReality } from "@/components/the-reality";
 import { JoinCta } from "@/components/join-cta";
+import { LazyVimeoPlayer } from "@/components/lazy-vimeo-player";
 import { foundingCohort } from "@/data/pricing";
 import { StickyJoin } from "@/components/sticky-join";
 import { HeroLion } from "@/components/hero-lion";
@@ -70,13 +71,16 @@ function LandingBody() {
         {/* The mark, alive: the lion roars every ten seconds (the brand
             clip, lion and mic only - the wave beneath is the live one),
             and holds still for anyone who asked for less motion. */}
+        {/* On a laptop, two columns: the promise on the left, Tariq on the
+            right. On a phone, one column, in the same order. */}
+        <div className="grid w-full max-w-6xl items-center gap-8 lg:grid-cols-2 lg:gap-12">
+        <div className="flex flex-col items-center gap-3 lg:items-start lg:text-left">
         <div className="flex w-full max-w-md flex-col items-center">
-          <HeroLion className="h-44 w-auto sm:h-64 lg:h-72" />
-          <Soundwave variant="hero" className="-mt-3 h-16 w-full sm:-mt-4 sm:h-24" />
+          <HeroLion className="h-44 w-auto sm:h-64 lg:h-44" />
+          <Soundwave variant="hero" className="-mt-3 h-16 w-full sm:-mt-4 sm:h-24 lg:h-14" />
         </div>
 
         {/* The promise, in one breath - then the rest in one more. */}
-        <div className="flex max-w-2xl flex-col items-center gap-3">
           {/* The cohort is the offer now, so the first line says what
               is being sold: six weeks, dated, with everybody else on
               it - not a course that sits on a shelf. */}
@@ -101,6 +105,22 @@ function LandingBody() {
             Join a small private cohort for 6 weeks - the full Speak Better experience, at a special founding price, in
             return for your feedback on the app and a testimonial.
           </p>
+        </div>
+        <div className="w-full">
+          {/* Tariq, straight away: why speaking still matters when AI can
+              write your words - you can't rely on it in person. Plays in
+              place on a tap; nothing loads until then. */}
+          <div className="w-full overflow-hidden rounded-2xl border border-navy-600 shadow-2xl shadow-navy-950/80">
+            <LazyVimeoPlayer
+              vimeoId="1082011047"
+              title="Speak Better - You Can't Rely On AI In Person"
+              poster="/thumbs/1082011047.jpg"
+            />
+          </div>
+        </div>
+        </div>
+
+        <div className="flex max-w-2xl flex-col items-center gap-3">
           {/* The dates, high enough that nobody has to hunt for them.
               Two facts, in the order they are asked: when does it
               start, and what happens if I buy right now. */}
