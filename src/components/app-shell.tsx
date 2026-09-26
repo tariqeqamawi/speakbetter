@@ -1,6 +1,9 @@
 "use client";
 
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { useStore } from "@/lib/store";
+import { areaOf, track } from "@/lib/insights";
 
 // The column the app lives in. With the rail on a laptop (see Sidebar)
 // the content shifts across to sit beside it; for a visitor - the
@@ -10,6 +13,7 @@ import { useStore } from "@/lib/store";
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { state, ready } = useStore();
   const railed = ready && state.unlocked;
+  useUsage(railed);
   return (
     <>
       {/* Inside the app, the landing page's light: a soft green and purple
@@ -24,4 +28,40 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </main>
     </>
   );
+}
+
+/** Which parts of the app students open, and how long they stay - the
+ *  heatmap on /admin. Only time the page is actually on screen counts. */
+function useUsage(on: boolean) {
+  const path = usePathname();
+  useEffect(() => {
+    if (!on || !path || path.startsWith("/admin")) return;
+    const area = areaOf(path);
+    track({ type: "view", area, path });
+    let shown = document.visibilityState === "visible" ? Date.now() : 0;
+    let total = 0;
+    const vis = () => {
+      if (document.visibilityState === "visible") shown = Date.now();
+      else if (shown) {
+        total += Date.now() - shown;
+        shown = 0;
+      }
+    };
+    let saved = false;
+    const save = () => {
+      if (saved) return;
+      saved = true;
+      if (shown) total += Date.now() - shown;
+      const seconds = Math.round(total / 1000);
+      if (seconds >= 2) track({ type: "time", area, seconds });
+    };
+    document.addEventListener("visibilitychange", vis);
+    // Closing the tab or reloading never runs the cleanup below.
+    window.addEventListener("pagehide", save);
+    return () => {
+      document.removeEventListener("visibilitychange", vis);
+      window.removeEventListener("pagehide", save);
+      save();
+    };
+  }, [on, path]);
 }

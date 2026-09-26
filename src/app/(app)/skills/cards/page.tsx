@@ -5,6 +5,7 @@ import { rulesCard } from "@/data/deck";
 import { SectionTour } from "@/components/section-tour";
 import { ChevronDownIcon } from "@/components/icons";
 import { wholeDeck } from "@/data/deck";
+import { FeatureReaction } from "@/components/feature-reaction";
 
 export const metadata: Metadata = { title: "Cards" };
 
@@ -46,6 +47,7 @@ export default function CardsPage() {
       </details>
 
       <CardDeck cards={cards} />
+      <FeatureReaction feature="deck" label="the deck" />
     </div>
   );
 }

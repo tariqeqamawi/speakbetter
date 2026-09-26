@@ -1,0 +1,530 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { challenges } from "@/data/challenges";
+import { sampleCohort, type Rating, type SampleCohort } from "@/data/admin-sample";
+import { queued, REVIEW_RATINGS } from "@/lib/insights";
+
+// Tariq's view of the cohort: how the app is used, where students stop,
+// how good Coach's reviews are, what students say, what it all means -
+// and any one student's whole journey, by number. Reads the sample
+// cohort (data/admin-sample.ts) until the database is on; the shapes are
+// the same, so only the source changes.
+
+const TITLE = new Map(challenges.map((c) => [c.slug, c.title]));
+const EMOJI: Record<Rating, string> = { "spot-on": "👌", partly: "🤏", off: "👎" };
+const RATING_COLOR: Record<Rating, string> = { "spot-on": "bg-mindset", partly: "bg-storytelling", off: "bg-acting" };
+const FEATURE_NAME: Record<string, string> = {
+  road: "The road",
+  dial: "Skill dial",
+  deck: "Card deck",
+  dashboard: "Dashboard",
+  trophies: "Trophy case",
+  "ask-coach": "Ask Coach",
+};
+
+const SECTIONS = [
+  ["overview", "Overview"],
+  ["usage", "Usage"],
+  ["dropoff", "Drop-off"],
+  ["quality", "Coach quality"],
+  ["voice", "Voice of the student"],
+  ["insights", "AI insights"],
+  ["journey", "Student journey"],
+] as const;
+
+export function InsightsDashboard() {
+  const data = useMemo(() => sampleCohort(), []);
+  const [local, setLocal] = useState(0);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- the device's queue, read after hydration
+  useEffect(() => setLocal(queued().length), []);
+
+  return (
+    <div className="flex flex-col gap-8 py-6">
+      <header className="flex flex-col gap-2">
+        <p className="text-xs font-semibold uppercase tracking-widest text-ink-faint">Admin</p>
+        <h1 className="text-3xl font-semibold tracking-tight">Cohort insights</h1>
+        <p className="max-w-2xl text-sm text-ink-muted">
+          Every student is a number, never a name. No video is stored - only what was said, as text, and how the app was
+          used.
+        </p>
+        <p className="w-fit rounded-full border border-storytelling/40 bg-storytelling/10 px-3 py-1 text-xs text-storytelling">
+          Sample cohort - the real one appears here once the database is switched on. This device has queued {local}{" "}
+          event{local === 1 ? "" : "s"} of its own.
+        </p>
+        <nav className="flex flex-wrap gap-2 pt-2">
+          {SECTIONS.map(([id, name]) => (
+            <a
+              key={id}
+              href={`#${id}`}
+              className="rounded-full border border-navy-600 px-3 py-1 text-xs text-ink-muted hover:text-ink"
+            >
+              {name}
+            </a>
+          ))}
+        </nav>
+      </header>
+
+      <Overview data={data} />
+      <Usage data={data} />
+      <DropOff data={data} />
+      <Quality data={data} />
+      <Voice data={data} />
+      <Insights data={data} />
+      <Journey data={data} />
+    </div>
+  );
+}
+
+function Panel({ id, title, blurb, children }: { id: string; title: string; blurb?: string; children: React.ReactNode }) {
+  return (
+    <section id={id} className="flex scroll-mt-24 flex-col gap-4 rounded-2xl border border-navy-600 bg-navy-800 p-5">
+      <div>
+        <h2 className="text-lg font-semibold">{title}</h2>
+        {blurb && <p className="text-sm text-ink-muted">{blurb}</p>}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function Stat({ value, label, accent = "text-ink" }: { value: string | number; label: string; accent?: string }) {
+  return (
+    <div className="flex flex-col rounded-xl border border-navy-600 bg-navy-900/60 px-4 py-3">
+      <b className={`text-2xl font-bold tabular-nums ${accent}`}>{value}</b>
+      <span className="text-xs text-ink-faint">{label}</span>
+    </div>
+  );
+}
+
+const pct = (n: number, d: number) => (d ? Math.round((n / d) * 100) : 0);
+
+// ── Overview ──────────────────────────────────────────────────────────
+function Overview({ data }: { data: SampleCohort }) {
+  const last = data.days.slice(-7);
+  const active = new Set(data.usage.filter((u) => last.includes(u.day)).map((u) => u.studentNo)).size;
+  const rated = data.takes.filter((t) => t.rating);
+  const spot = rated.filter((t) => t.rating === "spot-on").length;
+  const minutes = Math.round(data.usage.reduce((s, u) => s + u.seconds, 0) / 60 / data.students.length);
+  return (
+    <Panel id="overview" title="Overview">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <Stat value={data.students.length} label="students" />
+        <Stat value={active} label="active this week" accent="text-mindset" />
+        <Stat value={data.takes.length} label="challenge takes" />
+        <Stat value={`${pct(spot, rated.length)}%`} label="reviews rated 👌 spot on" accent="text-storytelling" />
+        <Stat value={data.questions.length} label="questions asked Coach" />
+        <Stat value={minutes} label="minutes per student" />
+      </div>
+    </Panel>
+  );
+}
+
+// ── Usage heatmap ─────────────────────────────────────────────────────
+function Usage({ data }: { data: SampleCohort }) {
+  const areas = useMemo(() => {
+    const total = new Map<string, number>();
+    for (const u of data.usage) total.set(u.area, (total.get(u.area) ?? 0) + u.seconds);
+    return [...total.entries()].sort((a, b) => b[1] - a[1]);
+  }, [data]);
+  const grid = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const u of data.usage) m.set(`${u.area}|${u.day}`, (m.get(`${u.area}|${u.day}`) ?? 0) + u.seconds);
+    return m;
+  }, [data]);
+  const max = Math.max(...grid.values());
+  const top = areas[0]?.[1] ?? 1;
+  return (
+    <Panel id="usage" title="Where the time goes" blurb="Minutes spent in each part of the app, day by day.">
+      <div className="overflow-x-auto">
+        <table className="border-separate border-spacing-[3px] text-xs">
+          <thead>
+            <tr>
+              <th />
+              {data.days.map((d) => (
+                <th key={d} className="px-0.5 font-normal text-ink-faint">
+                  {d.slice(8)}
+                </th>
+              ))}
+              <th className="pl-3 text-left font-normal text-ink-faint">total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {areas.map(([area, total]) => (
+              <tr key={area}>
+                <td className="whitespace-nowrap pr-3 text-ink-muted">{area}</td>
+                {data.days.map((d) => {
+                  const v = grid.get(`${area}|${d}`) ?? 0;
+                  return (
+                    <td
+                      key={d}
+                      title={`${area}, ${d}: ${Math.round(v / 60)} min`}
+                      className="size-5 rounded-[3px]"
+                      style={{ background: v ? `rgba(31,232,144,${0.12 + (v / max) * 0.88})` : "rgba(255,255,255,0.03)" }}
+                    />
+                  );
+                })}
+                <td className="pl-3">
+                  <div className="flex items-center gap-2">
+                    <div className="h-1.5 rounded-full bg-mindset/70" style={{ width: `${(total / top) * 80}px` }} />
+                    <span className="tabular-nums text-ink-faint">{Math.round(total / 60)}m</span>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Panel>
+  );
+}
+
+// ── Drop-off ──────────────────────────────────────────────────────────
+function DropOff({ data }: { data: SampleCohort }) {
+  const reached = challenges.map((c) => ({
+    c,
+    n: new Set(data.takes.filter((t) => t.challenge === c.slug).map((t) => t.studentNo)).size,
+  }));
+  const total = data.students.length;
+  // The one step where the most students stop.
+  const lost = reached.map(({ n }, i) => (i ? reached[i - 1].n - n : 0));
+  const worst = lost.indexOf(Math.max(...lost));
+  return (
+    <Panel
+      id="dropoff"
+      title="How far students get"
+      blurb="Students who recorded each challenge at least once, in road order. A big step down is where students stop."
+    >
+      <ol className="flex flex-col gap-1.5">
+        {reached.map(({ c, n }, i) => {
+          const steep = i === worst;
+          return (
+            <li key={c.slug} className="grid grid-cols-[2rem_minmax(0,14rem)_1fr_3rem_4rem] items-center gap-2 text-xs">
+              <span className="font-semibold text-ink-faint">{c.phase}</span>
+              <span className="truncate text-ink-muted" title={c.title}>
+                {c.title}
+              </span>
+              <div className="h-3 rounded-full bg-navy-900">
+                <div
+                  className={`h-3 rounded-full ${steep ? "bg-acting" : "bg-body-language/70"}`}
+                  style={{ width: `${pct(n, total)}%` }}
+                />
+              </div>
+              <span className="text-right tabular-nums">{n}</span>
+              <span className={`tabular-nums ${steep ? "font-semibold text-acting" : "text-ink-faint"}`}>
+                {lost[i] > 0 ? `−${lost[i]}` : ""}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+    </Panel>
+  );
+}
+
+// ── Coach quality ─────────────────────────────────────────────────────
+function Quality({ data }: { data: SampleCohort }) {
+  const [gold, setGold] = useState<Set<number>>(new Set());
+  const byChallenge = challenges
+    .map((c) => {
+      const rated = data.takes.filter((t) => t.challenge === c.slug && t.rating);
+      const count = (r: Rating) => rated.filter((t) => t.rating === r).length;
+      return { c, total: rated.length, spot: count("spot-on"), partly: count("partly"), off: count("off") };
+    })
+    .filter((x) => x.total >= 3)
+    .sort((a, b) => a.spot / a.total - b.spot / b.total);
+  const misses = data.takes
+    .map((t, i) => ({ t, i }))
+    .filter(({ t }) => t.rating === "off" && t.ratingNote)
+    .slice(-8)
+    .reverse();
+
+  return (
+    <Panel
+      id="quality"
+      title="How good are Coach's reviews?"
+      blurb="Students rate every review 👌 spot on, 🤏 partly right or 👎 way off the mark. Weakest challenges first."
+    >
+      <div className="flex flex-col gap-1.5">
+        {byChallenge.map(({ c, total, spot, partly, off }) => (
+          <div key={c.slug} className="grid grid-cols-[minmax(0,14rem)_1fr_3rem] items-center gap-3 text-xs">
+            <span className="truncate text-ink-muted" title={c.title}>
+              {c.title}
+            </span>
+            <div className="flex h-3 overflow-hidden rounded-full bg-navy-900">
+              <div className={RATING_COLOR["spot-on"]} style={{ width: `${pct(spot, total)}%` }} />
+              <div className={RATING_COLOR.partly} style={{ width: `${pct(partly, total)}%` }} />
+              <div className={RATING_COLOR.off} style={{ width: `${pct(off, total)}%` }} />
+            </div>
+            <span className="text-right tabular-nums text-ink-faint">{pct(spot, total)}%</span>
+          </div>
+        ))}
+        <div className="flex gap-4 pt-1 text-xs text-ink-faint">
+          {REVIEW_RATINGS.map((r) => (
+            <span key={r.id} className="flex items-center gap-1.5">
+              <span className={`size-2 rounded-full ${RATING_COLOR[r.id]}`} />
+              {r.emoji} {r.label}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <h3 className="pt-2 text-sm font-semibold">Where he missed - the training queue</h3>
+      <p className="-mt-3 text-xs text-ink-faint">
+        Mark a take ⭐ gold to teach Coach from it, once you&apos;ve written the review it should have had.
+      </p>
+      <ul className="flex flex-col gap-2">
+        {misses.map(({ t, i }) => (
+          <li key={i} className="flex flex-col gap-1.5 rounded-xl border border-navy-600 bg-navy-900/60 p-3 text-xs">
+            <div className="flex items-center gap-2 text-ink-faint">
+              <b className="text-ink">Student #{t.studentNo}</b>
+              <span>·</span>
+              <span className="truncate">{TITLE.get(t.challenge)}</span>
+              <span>·</span>
+              <span>score {t.score}</span>
+              <button
+                type="button"
+                onClick={() =>
+                  setGold((g) => {
+                    const n = new Set(g);
+                    if (n.has(i)) n.delete(i);
+                    else n.add(i);
+                    return n;
+                  })
+                }
+                className={`ml-auto rounded-full border px-2 py-0.5 ${
+                  gold.has(i) ? "border-storytelling text-storytelling" : "border-navy-600 hover:text-ink"
+                }`}
+              >
+                {gold.has(i) ? "⭐ Gold" : "Mark gold"}
+              </button>
+            </div>
+            <p className="text-ink-muted">&ldquo;{t.transcript}&rdquo;</p>
+            <p>
+              <span className="text-ink-faint">Coach: </span>
+              {t.coachFocus}
+            </p>
+            <p className="text-acting">👎 &ldquo;{t.ratingNote}&rdquo;</p>
+          </li>
+        ))}
+      </ul>
+    </Panel>
+  );
+}
+
+// ── Voice of the student ──────────────────────────────────────────────
+function Voice({ data }: { data: SampleCohort }) {
+  const features = Object.keys(FEATURE_NAME).map((f) => {
+    const rs = data.reactions.filter((r) => r.feature === f);
+    return {
+      f,
+      love: rs.filter((r) => r.reaction === "love").length,
+      dislike: rs.filter((r) => r.reaction === "dislike").length,
+      notes: rs.filter((r) => r.note).map((r) => r.note!),
+    };
+  });
+  const topics = new Map<string, { n: number; example: string }>();
+  for (const q of data.questions) {
+    const t = topics.get(q.topic) ?? { n: 0, example: q.question };
+    topics.set(q.topic, { n: t.n + 1, example: t.example });
+  }
+  const topicList = [...topics.entries()].sort((a, b) => b[1].n - a[1].n);
+  const topMax = topicList[0]?.[1].n ?? 1;
+
+  return (
+    <Panel id="voice" title="Voice of the student" blurb="🔥 and 👇 on each part of the app, and what students ask Coach.">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {features.map(({ f, love, dislike, notes }) => (
+          <div key={f} className="flex flex-col gap-2 rounded-xl border border-navy-600 bg-navy-900/60 p-3 text-xs">
+            <div className="flex items-center justify-between">
+              <b className="text-sm">{FEATURE_NAME[f]}</b>
+              <span className="tabular-nums text-ink-muted">
+                🔥 {love} · 👇 {dislike}
+              </span>
+            </div>
+            <div className="flex h-2 overflow-hidden rounded-full bg-navy-900">
+              <div className="bg-figurative" style={{ width: `${pct(love, love + dislike)}%` }} />
+              <div className="bg-navy-600" style={{ width: `${pct(dislike, love + dislike)}%` }} />
+            </div>
+            {[...new Set(notes)].slice(0, 2).map((n) => (
+              <p key={n} className="text-ink-faint">
+                👇 &ldquo;{n}&rdquo;
+              </p>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      <h3 className="pt-2 text-sm font-semibold">What students ask Coach</h3>
+      <ul className="flex flex-col gap-1.5">
+        {topicList.map(([topic, { n, example }]) => (
+          <li key={topic} className="grid grid-cols-[7rem_1fr] items-center gap-3 text-xs">
+            <span className="text-ink-muted">{topic}</span>
+            <div className="flex items-center gap-2">
+              <div className="h-2 rounded-full bg-structure/70" style={{ width: `${(n / topMax) * 45}%` }} />
+              <span className="tabular-nums text-ink-faint">{n}</span>
+              <span className="truncate text-ink-faint">e.g. &ldquo;{example}&rdquo;</span>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </Panel>
+  );
+}
+
+// ── AI insights ───────────────────────────────────────────────────────
+// Until the insights agent runs weekly over the real tables, the same
+// questions it will answer are answered here by plain rules over the
+// data - so the panel shows the kind of thing it will say.
+function Insights({ data }: { data: SampleCohort }) {
+  const findings = useMemo(() => {
+    const out: { title: string; detail: string; suggestion: string }[] = [];
+
+    const reached = challenges.map((c) => new Set(data.takes.filter((t) => t.challenge === c.slug).map((t) => t.studentNo)).size);
+    let worst = 1;
+    for (let i = 1; i < reached.length; i++) {
+      if (reached[i - 1] - reached[i] > reached[worst - 1] - reached[worst]) worst = i;
+    }
+    const drop = challenges[worst];
+    out.push({
+      title: `The biggest drop is at "${drop.title}"`,
+      detail: `${reached[worst - 1]} students reached the challenge before it; ${reached[worst]} went on to record this one.`,
+      suggestion: "Add an easier warm-up take, or have Coach check in by name on the day a student stalls here.",
+    });
+
+    const notes = data.takes.filter((t) => t.ratingNote).map((t) => t.ratingNote!.toLowerCase());
+    const body = notes.filter((n) => /hand|gesture|facial|expression/.test(n)).length;
+    if (body) {
+      out.push({
+        title: "Coach is missing the body",
+        detail: `${body} of ${notes.length} "what did he miss" notes are about hands, gestures or facial expression.`,
+        suggestion: "Give Coach's review prompt an explicit body-language pass, and write gold examples for these takes.",
+      });
+    }
+
+    const love = (f: string) => {
+      const rs = data.reactions.filter((r) => r.feature === f);
+      return pct(rs.filter((r) => r.reaction === "love").length, rs.length);
+    };
+    const ranked = Object.keys(FEATURE_NAME).sort((a, b) => love(a) - love(b));
+    out.push({
+      title: `${FEATURE_NAME[ranked.at(-1)!]} is the favourite; ${FEATURE_NAME[ranked[0]]} the least loved`,
+      detail: `${love(ranked.at(-1)!)}% 🔥 against ${love(ranked[0])}% 🔥.`,
+      suggestion: `Read the 👇 notes on ${FEATURE_NAME[ranked[0]].toLowerCase()} before adding anything new to it.`,
+    });
+
+    const topic = [...data.questions.reduce((m, q) => m.set(q.topic, (m.get(q.topic) ?? 0) + 1), new Map<string, number>())].sort(
+      (a, b) => b[1] - a[1],
+    )[0];
+    if (topic) {
+      out.push({
+        title: `Most-asked: ${topic[0].toLowerCase()}`,
+        detail: `${topic[1]} of ${data.questions.length} questions to Coach.`,
+        suggestion: "A short lesson or a live-session segment on this would answer many students at once.",
+      });
+    }
+    return out;
+  }, [data]);
+
+  return (
+    <Panel
+      id="insights"
+      title="AI insights"
+      blurb="What the insights agent concludes each week from everything above. Shown here from rules until it's switched on."
+    >
+      <ol className="grid gap-3 lg:grid-cols-2">
+        {findings.map((f, i) => (
+          <li key={i} className="flex flex-col gap-1.5 rounded-xl border border-navy-600 bg-navy-900/60 p-4 text-sm">
+            <b>{f.title}</b>
+            <p className="text-xs text-ink-muted">{f.detail}</p>
+            <p className="text-xs text-mindset">→ {f.suggestion}</p>
+          </li>
+        ))}
+      </ol>
+    </Panel>
+  );
+}
+
+// ── One student's journey ─────────────────────────────────────────────
+function Journey({ data }: { data: SampleCohort }) {
+  const [no, setNo] = useState(40);
+  const student = data.students.find((s) => s.number === no)!;
+  const takes = data.takes.filter((t) => t.studentNo === no);
+  const questions = data.questions.filter((q) => q.studentNo === no);
+  const timeline = [
+    ...takes.map((t) => ({ at: t.at, kind: "take" as const, t })),
+    ...questions.map((q) => ({ at: q.at, kind: "question" as const, q })),
+  ].sort((a, b) => (a.at < b.at ? -1 : 1));
+  const minutes = Math.round(data.usage.filter((u) => u.studentNo === no).reduce((s, u) => s + u.seconds, 0) / 60);
+  const first = takes[0]?.score;
+  const last = takes.at(-1)?.score;
+
+  // The score line, take by take.
+  const W = 600;
+  const H = 120;
+  const lo = Math.max(0, Math.min(...takes.map((t) => t.score)) - 10);
+  const hi = Math.min(100, Math.max(...takes.map((t) => t.score)) + 5);
+  const y = (score: number) => H - ((score - lo) / Math.max(1, hi - lo)) * H;
+  const pts = takes.map((t, i) => [takes.length > 1 ? (i / (takes.length - 1)) * W : W / 2, y(t.score)]);
+
+  return (
+    <Panel id="journey" title="One student's journey" blurb="Everything one student did, in order - by number, never by name.">
+      <label className="flex items-center gap-2 text-sm">
+        Student
+        <select
+          value={no}
+          onChange={(e) => setNo(Number(e.target.value))}
+          className="rounded-lg border border-navy-600 bg-navy-900 px-2 py-1"
+        >
+          {data.students.map((s) => (
+            <option key={s.number} value={s.number}>
+              #{s.number}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+        <Stat value={student.level} label="level" />
+        <Stat value={takes.length} label="takes" />
+        <Stat value={first !== undefined && last !== undefined ? `${first} → ${last}` : "-"} label="first → latest score" accent="text-mindset" />
+        <Stat value={questions.length} label="questions to Coach" />
+        <Stat value={minutes} label="minutes in the app" />
+      </div>
+
+      {takes.length > 1 && (
+        <svg viewBox={`-8 -8 ${W + 16} ${H + 16}`} className="h-32 w-full" preserveAspectRatio="none" aria-label="Score over time">
+          <line x1={0} x2={W} y1={y(60)} y2={y(60)} stroke="currentColor" className="text-navy-600" strokeDasharray="4 4" />
+          <polyline
+            points={pts.map((p) => p.join(",")).join(" ")}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            className="text-mindset"
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+      )}
+
+      <ol className="flex flex-col gap-1.5 border-l border-navy-600 pl-4 text-xs">
+        {timeline.map((e, i) =>
+          e.kind === "take" ? (
+            <li key={i} className="flex flex-wrap items-baseline gap-x-2">
+              <span className="w-14 shrink-0 text-ink-faint">{e.at.slice(5, 10)}</span>
+              <span className={e.t.passed ? "text-mindset" : "text-acting"}>{e.t.score}</span>
+              <span className="text-ink-muted">{TITLE.get(e.t.challenge)}</span>
+              {e.t.rating && <span title={e.t.rating}>{EMOJI[e.t.rating]}</span>}
+              {e.t.ratingNote && <span className="text-ink-faint">&ldquo;{e.t.ratingNote}&rdquo;</span>}
+            </li>
+          ) : (
+            <li key={i} className="flex flex-wrap items-baseline gap-x-2">
+              <span className="w-14 shrink-0 text-ink-faint">{e.at.slice(5, 10)}</span>
+              <span className="text-structure">asked</span>
+              <span className="text-ink-muted">&ldquo;{e.q.question}&rdquo;</span>
+            </li>
+          ),
+        )}
+      </ol>
+    </Panel>
+  );
+}

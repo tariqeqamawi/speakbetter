@@ -3,6 +3,7 @@ import { ChevronDownIcon } from "@/components/icons";
 import { SkillDial } from "@/components/skill-dial";
 import { SectionTabs } from "@/components/section-tabs";
 import { SectionTour } from "@/components/section-tour";
+import { FeatureReaction } from "@/components/feature-reaction";
 
 export const metadata: Metadata = {
   title: "Skills",
@@ -33,6 +34,7 @@ export default function SkillsPage() {
       </details>
 
       <SkillDial />
+      <FeatureReaction feature="dial" label="the dial" />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { AskCoach } from "@/components/ask-coach";
 import { CoachHistory } from "@/components/coach-history";
 import { ChevronDownIcon } from "@/components/icons";
 import { SectionTour } from "@/components/section-tour";
+import { FeatureReaction } from "@/components/feature-reaction";
 
 export const metadata: Metadata = {
   title: "Coach",
@@ -44,6 +45,7 @@ export default function CoachPage() {
       <div className="flex w-full flex-1 items-center justify-center">
         <AskCoach />
       </div>
+      <FeatureReaction feature="ask-coach" label="talking to Coach" />
 
       <CoachHistory />
     </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { track } from "@/lib/insights";
 import { useEffect, useRef, useState } from "react";
 import { useStore } from "@/lib/store";
 import { challenges } from "@/data/challenges";
@@ -157,6 +158,7 @@ export function AskCoach() {
       if (!res.ok || !json.answer) throw new Error(json.error || "no answer");
       setQuestion(json.question ?? payload.question ?? "");
       setAnswer(json.answer);
+      if (json.question ?? payload.question) track({ type: "coach-question", question: json.question ?? payload.question ?? "" });
       noteCoachAnswer();
       // The words land in a few seconds; the voice takes about thirty
       // more. Show them now, open, and let him say he is working on

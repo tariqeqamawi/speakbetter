@@ -21,6 +21,7 @@ import { JourneyPhases } from "@/components/journey-phases";
 import { SpeakingTime } from "@/components/speaking-time";
 import { SectionBanner, SubSection } from "@/components/section-banner";
 import { ChallengesIcon, CheckIcon, ChevronDownIcon, FilmIcon, FlameIcon, GroupIcon, MedalIcon, SkillsIcon, SpectrumIcon } from "@/components/icons";
+import { FeatureReaction } from "@/components/feature-reaction";
 import {
   DashboardPanel,
   useIsPhone,
@@ -382,6 +383,8 @@ export default function DashboardPage() {
           {badgesPanel}
         </>
       )}
+
+      <FeatureReaction feature="dashboard" label="your dashboard" />
 
     </div>
   );

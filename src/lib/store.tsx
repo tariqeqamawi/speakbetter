@@ -94,6 +94,10 @@ export interface Attempt {
   voice?: VoiceProfile;
   /** True while the stand-in coach answered rather than Gemini. */
   mock?: boolean;
+  /** How the student rated this review, and what Coach missed if they
+   *  said (components/rate-review.tsx) - training data for Coach. */
+  rating?: "spot-on" | "partly" | "off";
+  ratingNote?: string;
 }
 
 /**
@@ -234,6 +238,8 @@ interface StoreApi {
   /** Coach answered a question - counts toward his trophy. */
   noteCoachAnswer: () => void;
   recordAttempt: (attempt: Attempt) => void;
+  /** The student's verdict on one of Coach's reviews. */
+  rateAttempt: (id: string, rating: "spot-on" | "partly" | "off", note?: string) => void;
   /** Post a before-and-after to the community (§12). */
   shareReel: (reel: SharedReel) => void;
   dismissCelebration: (badgeId: string) => void;
@@ -590,6 +596,13 @@ function StoreCore({
         }),
       recordAttempt: (attempt) =>
         applyWithBadges((p) => ({ ...p, attempts: [...p.attempts, attempt] })),
+      rateAttempt: (id, rating, note) =>
+        persist({
+          ...stateRef.current,
+          attempts: stateRef.current.attempts.map((a) =>
+            a.id === id ? { ...a, rating, ...(note !== undefined ? { ratingNote: note } : {}) } : a,
+          ),
+        }),
       // INTEGRATION SWAP POINT (§12, stack §19): today this is a row in
       // the student's own state; with Supabase it becomes an insert
       // into the community feed, and the local copy is the cache.

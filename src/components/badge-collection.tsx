@@ -6,6 +6,7 @@ import { SectionBanner } from "@/components/section-banner";
 import { TrophyIcon } from "@/components/icons";
 import { TrophyRoom } from "@/components/trophy-room";
 import { caseTrophies } from "@/lib/trophy-case";
+import { FeatureReaction } from "@/components/feature-reaction";
 
 // The trophy case: the student's own trophies, in the trophy room.
 //
@@ -33,6 +34,7 @@ export function BadgeCollection({ state }: { state: AppState }) {
       <SectionBanner title="Trophy case" Icon={TrophyIcon} accentClass="text-storytelling" large />
       <div className="p-4 sm:p-5">
         <TrophyRoom trophies={trophies} initialAt={at} studentName={state.displayName} />
+        <FeatureReaction feature="trophies" label="the trophy case" />
       </div>
     </div>
   );

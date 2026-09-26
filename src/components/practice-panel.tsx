@@ -1,5 +1,6 @@
 "use client";
 
+import { RateReview } from "@/components/rate-review";
 import { createContext, useContext, useEffect, useId, useRef, useState } from "react";
 import { upload } from "@vercel/blob/client";
 import { useStore, type Attempt, type FeedbackNote } from "@/lib/store";
@@ -973,6 +974,9 @@ export function Feedback({
         </div>
       </details>
       )}
+
+      {/* The student's verdict on the review itself - how Coach learns. */}
+      {settled && !preview && !attempt.mock && <RateReview attempt={attempt} challengeSlug={challenge.slug} />}
 
       {!preview && !revisit && (
         <button

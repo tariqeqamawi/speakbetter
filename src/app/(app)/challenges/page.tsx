@@ -6,6 +6,7 @@ import { ChallengesIcon, ChevronDownIcon } from "@/components/icons";
 import { IntroTabs } from "@/components/intro-tabs";
 import { ThenAndNow } from "@/components/then-and-now";
 import { SectionTour } from "@/components/section-tour";
+import { FeatureReaction } from "@/components/feature-reaction";
 
 export const metadata: Metadata = {
   title: "Challenges",
@@ -49,6 +50,7 @@ export default function ChallengesPage() {
       {/* The S.T.O.R.Y. road: a 3D world to travel, or a 2D map to scroll
           - the student's choice, remembered on the device. */}
       <LiveAdventure />
+      <FeatureReaction feature="road" label="the road" />
     </div>
   );
 }
