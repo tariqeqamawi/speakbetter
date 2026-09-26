@@ -208,6 +208,8 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **26 September**
+- Consent required to take the course (welcome tick-box, one-time gate, line under pricing); /admin
+  cohort progress: first vs latest, score and seven colors by week, copy for investors — `9c9e783`
 - Coach training, step one: 👌/🤏/👎 on every review with "what did he miss", consent line, 🔥/👇 on
   six areas, usage + Coach-question tracking (queued on device), `supabase/training.sql`, and /admin
   on a sample cohort (heatmap, drop-off, Coach quality, voice, insights, student journey) — `6db4709`
