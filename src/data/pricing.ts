@@ -130,7 +130,7 @@ export const tiers: Tier[] = [
     sub: "The founders set - and the teacher reviewing your takes himself",
     tagline: "The full experience - the AI coach, the weekly live sessions, and personal one-to-one feedback from Tariq himself.",
     price: "$997",
-    future: "$2,222",
+    future: "$2,497",
     term: "one payment - 6 weeks, and the deck and book are yours to keep",
     has: founders,
     accent: "storytelling",
