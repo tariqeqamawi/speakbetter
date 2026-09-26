@@ -106,14 +106,14 @@ export function StoryPreview() {
               </div>
             ) : (
               <div className="-mb-6 -mt-8">
-                <AdventureScreen stops={stops} phases={worldPhases} heightClass="h-[34rem]" skyImage={ROAD_SKY} />
+                <AdventureScreen stops={stops} phases={worldPhases} heightClass="h-[34rem]" skyImage={ROAD_SKY} demo />
               </div>
             )}
           </div>
         </div>
         <figcaption className="text-center text-xs text-ink-muted">
-          A student a few challenges in - passed, open and still to come. Switch to 3D to travel it.
-          <span className="block text-ink-faint">Scroll or drag it, or tap a letter.</span>
+          A student a few challenges in - passed, open and still to come. Switch to 3D to watch it travelled.
+          <span className="block text-ink-faint">{mode === "2d" ? "Scroll it, or tap a letter." : "Down the road, up to the next challenge, and in."}</span>
         </figcaption>
       </figure>
     </div>

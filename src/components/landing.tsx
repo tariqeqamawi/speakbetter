@@ -388,11 +388,13 @@ function LandingBody() {
 
       {/* Two mentors in your pocket - the coach on one phone, the
           teacher zoomed to portrait on the other */}
-      <section className="flex flex-col items-center gap-8 rounded-2xl border border-navy-600 bg-navy-800 p-6 sm:p-10 lg:flex-row lg:justify-center lg:gap-14">
+      {/* One phone arrives, the second slides out from under it, then the
+          words. */}
+      <Reveal as="section" threshold={0.35} className="flex flex-col items-center gap-8 rounded-2xl border border-navy-600 bg-navy-800 p-6 sm:p-10 lg:flex-row lg:justify-center lg:gap-14">
         <div className="flex shrink-0 items-end gap-4 sm:gap-6">
           {/* The lion, as the coach page shows it: large, a line of its
               review beneath in the color of the skill it names. */}
-          <div className="relative w-44 shrink-0 rounded-[2.2rem] border-4 border-navy-600 bg-navy-950 p-1.5 shadow-2xl shadow-navy-950 sm:w-52">
+          <div className="rv relative z-10 w-44 shrink-0 rounded-[2.2rem] border-4 border-navy-600 bg-navy-950 p-1.5 shadow-2xl shadow-navy-950 sm:w-52">
             <span className="absolute left-1/2 top-3 z-10 h-1.5 w-14 -translate-x-1/2 rounded-full bg-navy-700" />
             <div className="relative flex aspect-[9/19] flex-col items-center justify-center gap-3 overflow-hidden rounded-[1.8rem] bg-navy-950 px-3">
               <span className="absolute inset-x-0 top-6 text-center text-[0.55rem] font-semibold uppercase tracking-wider text-advanced">
@@ -410,7 +412,7 @@ function LandingBody() {
             </div>
           </div>
           {/* The teacher, zoomed to portrait, the zoom button lit. */}
-          <div className="relative w-44 shrink-0 rounded-[2.2rem] border-4 border-navy-600 bg-navy-950 p-1.5 shadow-2xl shadow-navy-950 sm:w-52">
+          <div className="mentor-slide relative z-0 w-44 shrink-0 rounded-[2.2rem] border-4 border-navy-600 bg-navy-950 p-1.5 shadow-2xl shadow-navy-950 sm:w-52">
             <span className="absolute left-1/2 top-3 z-10 h-1.5 w-14 -translate-x-1/2 rounded-full bg-navy-700" />
             <div className="relative aspect-[9/19] overflow-hidden rounded-[1.8rem] bg-navy-950">
               <Image
@@ -438,7 +440,7 @@ function LandingBody() {
           </div>
         </div>
 
-        <div className="flex max-w-md flex-col gap-3 text-center lg:text-left">
+        <div className="rv flex max-w-md flex-col gap-3 text-center lg:text-left" style={delay(1250)}>
           <h2 className="text-2xl font-semibold tracking-tight text-balance">
             Two mentors in your pocket
           </h2>
@@ -458,7 +460,7 @@ function LandingBody() {
             Works on every lesson and every challenge video, and the whole app installs to your home screen.
           </p>
         </div>
-      </section>
+      </Reveal>
 
       <JoinCta label="Sign Me Up" seal sealSize={176} />
 

@@ -3463,3 +3463,25 @@ html.bare .demo-banner {
 @media (prefers-reduced-motion: reduce) {
   .proof-drift { animation: none; }
 }
+
+/* A tap, shown: a ring that presses in and fades (the 3D preview's demo). */
+@keyframes demo-tap {
+  0% { transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
+  30% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
+}
+.demo-tap { animation: demo-tap 0.7s ease-out forwards; }
+
+/* Two mentors: the second phone starts tucked under the first and slides
+ * out from beneath it. */
+.reveal .mentor-slide {
+  opacity: 0;
+  transform: translateX(calc(-100% - 1.5rem)) scale(0.94);
+  transition:
+    transform 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.45s,
+    opacity 0.3s ease 0.45s;
+}
+.reveal[data-in] .mentor-slide { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .reveal .mentor-slide { opacity: 1; transform: none; transition: none; }
+}

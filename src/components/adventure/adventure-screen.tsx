@@ -60,6 +60,7 @@ export function AdventureScreen({
   fallbackAvatar = "/lion-head.png",
   skyImage,
   heightClass = "h-[calc(100dvh-4rem)]",
+  demo = false,
 }: {
   stops: WorldStop[];
   phases: WorldPhase[];
@@ -68,6 +69,10 @@ export function AdventureScreen({
   /** How tall the road stands - the screen under the header, unless the
    *  page around it needs room of its own. */
   heightClass?: string;
+  /** A silent, self-playing preview (the landing page): glide down the
+   *  road past the challenges done, up to the next one, tap it, dive in -
+   *  and round again. No sound, no Coach, no controls. */
+  demo?: boolean;
 }) {
   const road = useMemo(() => layoutRoad(stops.length, stops.map((s) => s.phase)), [stops]);
   // The checkpoint the student is on.
@@ -108,7 +113,7 @@ export function AdventureScreen({
   // Drag down (or scroll down) to go forward, with momentum.
   useEffect(() => {
     const el = frame.current;
-    if (!el) return;
+    if (!el || demo) return;
     let lastY: number | null = null;
     // A press that barely moves is a tap - on a portal, perhaps - not a drag.
     let from: { x: number; y: number; t: number; far: number } | null = null;
@@ -157,7 +162,7 @@ export function AdventureScreen({
       el.removeEventListener("wheel", wheel);
       el.removeEventListener("keydown", key);
     };
-  }, [travel]);
+  }, [travel, demo]);
 
   // Which checkpoint the traveller is nearest, and which phase that
   // puts them in - the phase changes the moment they pass under its
@@ -200,7 +205,8 @@ export function AdventureScreen({
   // SOUND - on unless the student has turned it off, and remembered.
   // Nothing plays until they have touched the road, so it never starts
   // at somebody out of a silent page.
-  const [sound, setSound] = useState(true);
+  const [soundOn, setSound] = useState(true);
+  const sound = soundOn && !demo;
   useEffect(() => {
     try {
       // Read after mounting, so the server's render and the first client
@@ -240,6 +246,7 @@ export function AdventureScreen({
   const busy = useRef(false);
   const startLine = useCallback(
     (line: Line) => {
+      if (demo) return;
       busy.current = true;
       setCaption(line);
       setTalking(true);
@@ -260,7 +267,7 @@ export function AdventureScreen({
       if (activated()) playCoachLine(line.src);
       else setWaiting(true);
     },
-    [sound],
+    [sound, demo],
   );
   const say = useCallback(
     (line: Line) => {
@@ -405,6 +412,56 @@ export function AdventureScreen({
     setTimeout(() => router.push(href), 2100);
   };
 
+  // THE DEMO: the road driving itself, round and round.
+  const [tap, setTap] = useState(false);
+  const [fade, setFade] = useState(false);
+  useEffect(() => {
+    if (!demo || !onScreen) return;
+    const firstOpen = Math.max(0, stops.findIndex((st) => st.state === "here"));
+    const target = road.stops[firstOpen];
+    const from = Math.max(0, road.stops[Math.max(0, firstOpen - 3)] - AHEAD - 6);
+    const stopAt = target - AHEAD - 2;
+    let raf = 0;
+    const clock = { last: performance.now() };
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const later = (ms: number, f: () => void) => timers.push(setTimeout(f, ms));
+    const drive = (now: number) => {
+      const dt = Math.min(0.05, (now - clock.last) / 1000);
+      clock.last = now;
+      // Easing into the stop: full speed, slowing over the last stretch.
+      const left = stopAt - travel.s;
+      const speed = Math.max(4, Math.min(34, left * 1.4));
+      travel.place(Math.min(stopAt, travel.s + speed * dt));
+      if (travel.s < stopAt - 0.05) {
+        raf = requestAnimationFrame(drive);
+        return;
+      }
+      // Arrived: a tap on the portal, the dive, and back to the start.
+      later(900, () => setTap(true));
+      later(1500, () => {
+        setTap(false);
+        travel.enterPortal(target);
+        setDiving(true);
+      });
+      later(3500, () => setFade(true));
+      later(4000, () => {
+        travel.jump(from);
+        setDiving(false);
+      });
+      later(4400, () => {
+        setFade(false);
+        clock.last = performance.now();
+        raf = requestAnimationFrame(drive);
+      });
+    };
+    travel.jump(from);
+    raf = requestAnimationFrame(drive);
+    return () => {
+      cancelAnimationFrame(raf);
+      timers.forEach(clearTimeout);
+    };
+  }, [demo, onScreen, stops, road, travel]);
+
   // A CHALLENGE NOT YET OPEN. Explore as far ahead as you like, but tap
   // one you have not reached and you are told so, and taken back to the
   // one you are on.
@@ -495,6 +552,7 @@ export function AdventureScreen({
       )}
 
       {/* Sound, off by default. */}
+      {!demo && (
       <button
         type="button"
         onClick={toggleSound}
@@ -504,6 +562,7 @@ export function AdventureScreen({
       >
         {sound ? "🔊" : "🔈"}
       </button>
+      )}
 
       <SkyCoach talking={talking} />
 
@@ -539,10 +598,19 @@ export function AdventureScreen({
       )}
 
       {/* Through the portal. */}
+      {demo && tap && (
+        <span aria-hidden className="demo-tap pointer-events-none absolute left-1/2 top-[52%] z-30 size-14 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/90 bg-white/25" />
+      )}
+      {demo && (
+        <span
+          aria-hidden
+          className={`pointer-events-none absolute inset-0 z-40 bg-[#070c18] transition-opacity duration-400 ${fade ? "opacity-100" : "opacity-0"}`}
+        />
+      )}
       {diving && (
         <div className="portal-flash pointer-events-none absolute inset-0 z-30 grid place-items-center">
           <span
-            className="text-4xl font-extrabold tracking-tight text-white"
+            className={`${demo ? "text-2xl" : "text-4xl"} font-extrabold tracking-tight text-white`}
             style={{ textShadow: `0 0 24px ${phase?.color}, 0 0 60px ${phase?.color}` }}
           >
             Start Challenge

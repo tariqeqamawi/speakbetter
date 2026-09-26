@@ -184,6 +184,17 @@ export class Travel {
     this.target = s;
     this.v = 0;
   }
+  /** Be at a distance, at once - still, and out of any portal. */
+  jump(s: number) {
+    this.s = s;
+    this.v = 0;
+    this.target = null;
+    this.portal = null;
+  }
+  /** Be at a distance, keeping what else is going on (the demo's glide). */
+  place(s: number) {
+    this.s = s;
+  }
   enterPortal(s: number) {
     this.portal = { s, since: performance.now() };
     this.v = 0;
