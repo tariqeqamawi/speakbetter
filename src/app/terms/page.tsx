@@ -127,7 +127,8 @@ export default function TermsPage() {
             {SUPPORT_EMAIL}
           </a>{" "}
           within {guarantee.days} days of paying and we will refund you in full to your original payment method -
-          usually within 5 to 10 working days - and close your access. After {guarantee.days} days, payments are not
+          usually within 5 to 10 working days - and close your access. If you are on VIP Ultimate and your printed
+          deck and book have already been sent, they are yours to keep. After {guarantee.days} days, payments are not
           refundable, except where the law says otherwise or we cancel your cohort.
         </p>
       </section>
