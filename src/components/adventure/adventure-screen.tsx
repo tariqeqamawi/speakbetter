@@ -358,15 +358,39 @@ export function AdventureScreen({
     talk(y && y.from + 110, TALK.city);
     return out.sort((a, b) => a.s - b.s);
   }, [road, stops]);
+  // What he has already said today, by the words - kept on the device, so
+  // coming back to the road later the same day does not have him say his
+  // welcome (or anything else) again. A new day, and he greets you afresh.
+  const spokenToday = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("coach-road-said") ?? "{}") as { day?: string; lines?: string[] };
+      if (saved.day === new Date().toDateString()) spokenToday.current = new Set(saved.lines ?? []);
+    } catch {
+      // nothing saved: a fresh day
+    }
+  }, []);
+  const rememberSaid = (text: string) => {
+    spokenToday.current.add(text);
+    try {
+      localStorage.setItem("coach-road-said", JSON.stringify({ day: new Date().toDateString(), lines: [...spokenToday.current] }));
+    } catch {
+      // no storage: he may repeat himself tomorrow-style
+    }
+  };
   const spoken = useRef(new Set<number>());
   useEffect(() => {
     // Anywhere round his place will do - he is in the sky - including just
     // past it, where a jump to the start of a section lands.
-    const i = spots.findIndex((sp, k) => !spoken.current.has(k) && sp.s <= realTo && at > sp.s - 30 && at < sp.s + 14);
+    const i = spots.findIndex(
+      (sp, k) =>
+        !spoken.current.has(k) && !spokenToday.current.has(sp.line.text) && sp.s <= realTo && at > sp.s - 30 && at < sp.s + 14,
+    );
     if (i < 0) return;
     spoken.current.add(i);
+    if (!demo) rememberSaid(spots[i].line.text);
     say(spots[i].line);
-  }, [at, spots, realTo, say]);
+  }, [at, spots, realTo, say, demo]);
 
   // Back for another session: once a day, as the road opens.
   useEffect(() => {

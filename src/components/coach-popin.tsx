@@ -119,12 +119,31 @@ export function CoachPopIn() {
   // The jaw, pumped by an envelope: a beat on each word from the
   // browser's voice, or a steady flutter while the coach's own audio
   // plays. Same motion either way - the mark reads as talking.
+  //
+  // Syllables, not a flutter: the mouth opens on a syllable and closes in
+  // the gap, about twice a second, never the same shape twice - the same
+  // rhythm as the big lion. A steady five-a-second flap read as chattering
+  // teeth on a lion this small.
   const animate = () => {
+    let level = 0;
+    let target = 0;
+    let next = 0;
+    let open = false;
+    let last = performance.now();
     const tick = () => {
-      envRef.current *= 0.94;
-      const t = performance.now() / 1000;
-      const flutter = 0.55 + 0.45 * Math.sin(t * 2 * Math.PI * 5.2);
-      setJaw(envRef.current * flutter * 6);
+      const now = performance.now();
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      envRef.current *= 0.97;
+      const voiced = envRef.current > 0.2;
+      if (!voiced) target = 0;
+      else if (now > next) {
+        open = !open;
+        target = open ? 0.45 + Math.random() * 0.4 : Math.random() * 0.08;
+        next = now + (open ? 180 + Math.random() * 140 : 90 + Math.random() * 70);
+      }
+      level += (target - level) * Math.min(1, dt * 18);
+      setJaw(level * 7);
       rafRef.current = requestAnimationFrame(tick);
     };
     tick();
