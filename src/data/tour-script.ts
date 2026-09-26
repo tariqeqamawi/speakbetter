@@ -45,6 +45,10 @@ export interface TourStop {
    *  the whole-app tour opens on one. A section tour does not: the
    *  student already pressed the button that means "show me". */
   intro?: boolean;
+  /** Show the page itself: lightly dimmed and untouchable, scrolling
+   *  slowly down to this element while Coach speaks - so the student sees
+   *  what the screen looks like without being able to wander off in it. */
+  showcase?: string;
 }
 
 const ROAD = { src: "/film/tour-road3d.mp4", poster: "/film/tour-road3d.jpg" };
@@ -103,11 +107,11 @@ export const mainTour: TourStop[] = [
   },
   {
     id: "inside-challenge",
-    // No highlight and no challenge page under it: told, with the film,
-    // over a dimmed screen. Pointing at the Record button put the tour on
-    // a live challenge page - its video a click away, the button off the
-    // bottom of a laptop's screen.
-    route: "/challenges",
+    // The challenge page itself, shown rather than pointed at: lightly
+    // dimmed and untouchable, gliding from the brief and the challenge
+    // video down to where a take is recorded or uploaded.
+    route: "/challenges/speaking-baseline",
+    showcase: "[data-tour='record']",
     title: "Inside a challenge",
     body: "Once you know what a challenge is asking for, press record and speak straight to your camera, or upload a take you filmed earlier. I watch it properly: your voice, your body language, your confidence on camera, your storytelling, and more. Then you get a full visual review card, and on the higher tiers, spoken feedback from me directly.",
     film: REVIEW,

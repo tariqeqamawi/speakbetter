@@ -332,6 +332,7 @@ export function AdventureScreen({
     const to = phases.findIndex((p) => p.id === phase?.id);
     lastPhase.current = phase?.id;
     if (!(to > from && to <= reached)) return;
+    if (document.body.dataset.touring) return;
     if (sound) playGateChime();
     const k = TALK.arrive[to - 1];
     if (k !== undefined) say({ text: ROAD_TALK[k], src: talkClip(k) });
@@ -382,6 +383,8 @@ export function AdventureScreen({
   useEffect(() => {
     // Anywhere round his place will do - he is in the sky - including just
     // past it, where a jump to the start of a section lands.
+    // Not while a guided tour is showing the road: only the guide speaks.
+    if (document.body.dataset.touring) return;
     const i = spots.findIndex(
       (sp, k) =>
         !spoken.current.has(k) && !spokenToday.current.has(sp.line.text) && sp.s <= realTo && at > sp.s - 30 && at < sp.s + 14,
@@ -395,6 +398,7 @@ export function AdventureScreen({
   // Back for another session: once a day, as the road opens.
   useEffect(() => {
     if (hereIndex === 0) return;
+    if (document.body.dataset.touring) return;
     try {
       const today = new Date().toDateString();
       if (localStorage.getItem("coach-welcome-back") === today) return;

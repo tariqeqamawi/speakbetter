@@ -138,6 +138,33 @@ export function TourRunner({
   );
   const live = said.clip === clip ? said : { phrase: undefined, word: -1 };
 
+  // A showcase stop: from the top of the page, a slow glide down to the
+  // part it is about, over roughly the time Coach takes to say it.
+  useEffect(() => {
+    if (!stop?.showcase) return;
+    if (stop.route && pathname !== stop.route) return;
+    const sel = stop.showcase;
+    let raf = 0;
+    const t0 = window.setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+      const el = document.querySelector(sel);
+      if (!el) return;
+      const end = Math.max(0, el.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.35);
+      const start = performance.now();
+      const glide = (now: number) => {
+        const k = Math.min(1, (now - start) / 9000);
+        const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+        window.scrollTo(0, end * e);
+        if (k < 1) raf = requestAnimationFrame(glide);
+      };
+      raf = requestAnimationFrame(glide);
+    }, 1200);
+    return () => {
+      clearTimeout(t0);
+      cancelAnimationFrame(raf);
+    };
+  }, [stop, pathname]);
+
   // Find what this stop is pointing at, and follow it while the page
   // settles under it.
   useEffect(() => {
@@ -180,6 +207,15 @@ export function TourRunner({
   }, [stop, pathname, router]);
 
   const done = useCallback(() => onClose(false), [onClose]);
+  // Any tour running (the full one or a section's) marks the page, so
+  // voices that belong to the app itself - Coach on the road, its fanfare -
+  // stay quiet while only the guide speaks.
+  useEffect(() => {
+    document.body.dataset.touring = "1";
+    return () => {
+      delete document.body.dataset.touring;
+    };
+  }, []);
 
   const next = useCallback(() => {
     hapticTap();
@@ -300,12 +336,15 @@ export function TourRunner({
           screen spent hiding the app in order to point at one twentieth
           of it - during a tour whose entire job is showing somebody the
           app. What is left is a ring around the thing being talked
-          about and a tap-anywhere-else to leave, so the app stays lit
+          about and the tour's own X to leave (the app itself is shown, not touchable), so the app stays lit
           and legible and the eye is guided rather than the alternative
           being blacked out. */}
       {hole ? (
         <>
-          <div className="absolute inset-0" onClick={done} />
+          {/* The app shows through but can't be touched: a click on it
+              does nothing, rather than ending the tour or opening
+              whatever is under the pointer. The tour is left with its X. */}
+          <div className="absolute inset-0 cursor-default" onClick={(e) => e.stopPropagation()} />
           <div
             aria-hidden
             className="tour-ring pointer-events-none absolute rounded-2xl ring-2 ring-storytelling"
@@ -326,9 +365,9 @@ export function TourRunner({
            properly dark. */
         <div
           className={`absolute inset-0 transition-colors duration-500 ${
-            opening ? "bg-navy-950" : "bg-navy-950/80"
+            opening ? "bg-navy-950" : stop.showcase ? "bg-navy-950/25" : "bg-navy-950/80"
           }`}
-          onClick={done}
+          onClick={(e) => e.stopPropagation()}
         />
       )}
 
