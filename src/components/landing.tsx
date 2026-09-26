@@ -245,6 +245,14 @@ function LandingBody() {
         <h2 className="rv mx-auto mb-2 max-w-3xl text-center text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
           How Speak Better is different to every other speaking course or app on the market
         </h2>
+        {/* Tariq saying it: this is not just another online course. */}
+        <div className="rv mx-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-navy-600 shadow-2xl shadow-navy-950/80" style={delay(150)}>
+          <LazyVimeoPlayer
+            vimeoId="1082012628"
+            title="Speak Better - It's Not Just Another Online Course"
+            poster="/thumbs/1081197526.jpg"
+          />
+        </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="rv flex flex-col gap-4 rounded-2xl border border-navy-600 bg-navy-900/60 p-6 sm:p-7" style={delay(300)}>
             <div className="relative -mx-2 -mt-2 aspect-[3/2] overflow-hidden rounded-xl">
