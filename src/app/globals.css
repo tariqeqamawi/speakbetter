@@ -3468,3 +3468,32 @@ html.bare .demo-banner {
     background: var(--color-navy-900) !important;
   }
 }
+
+/* The admin rooms' Brass Tacks skin (components/admin/admin-frame.tsx):
+   the same panels, re-inked - white paper, black ink, greys, and one
+   brass accent where a figure needs to stand out. Only the tokens change,
+   so every chart and panel follows. */
+.skin-plain {
+  --color-navy-950: #ffffff;
+  --color-navy-900: #f5f5f3;
+  --color-navy-850: #efefec;
+  --color-navy-800: #ffffff;
+  --color-navy-700: #e7e7e3;
+  --color-navy-600: #d6d6d1;
+  --color-ink: #141414;
+  --color-ink-muted: #4a4a48;
+  --color-ink-faint: #85857f;
+  --color-mindset: #1c1c1c;
+  --color-structure: #3d3d3b;
+  --color-body-language: #5a5a57;
+  --color-storytelling: #8a6a2c;
+  --color-figurative: #a8812f;
+  --color-acting: #9c9c96;
+  --color-advanced: #b8b8b2;
+  background: #ffffff;
+  color: var(--color-ink);
+  box-shadow: 0 0 0 1px #e2e2dd;
+}
+.skin-plain :is(.shadow-2xl, .shadow-lg) {
+  box-shadow: none;
+}

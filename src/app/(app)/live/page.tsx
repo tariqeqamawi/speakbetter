@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { LiveSessions } from "@/components/live-sessions";
 import { LiveIcon } from "@/components/icons";
 import { cohort } from "@/data/cohort";
+import { FeatureReaction } from "@/components/feature-reaction";
 
 export const metadata: Metadata = {
   title: "Live sessions",
@@ -22,6 +23,7 @@ export default function LivePage() {
         </p>
       </header>
       <LiveSessions />
+      <FeatureReaction feature="live" label="the live sessions" />
     </div>
   );
 }

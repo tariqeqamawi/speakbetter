@@ -4,12 +4,22 @@ import { useEffect, useState } from "react";
 import { track } from "@/lib/insights";
 
 // One quiet line under each main part of the app - the road, the dial,
-// the deck, the dashboard, the trophies, Ask Coach: 🔥 if it's working
-// for you, 👇 if it isn't, and on 👇 one optional line on why. A student's
-// answer is remembered on the device, so it's asked once, not every visit
-// (tapping the other one changes it).
+// the lessons, the deck, the dashboard, the trophies, Ask Coach, the live
+// sessions and the community: 🔥 if it's working for you, 👇 if it isn't,
+// and on 👇 one optional line on why. A student's answer is remembered on
+// the device, so it's asked once, not every visit (tapping the other one
+// changes it).
 
-export type Feature = "road" | "dial" | "deck" | "dashboard" | "trophies" | "ask-coach";
+export type Feature =
+  | "road"
+  | "dial"
+  | "deck"
+  | "lessons"
+  | "dashboard"
+  | "trophies"
+  | "ask-coach"
+  | "live"
+  | "community";
 
 const KEY = "feature-reactions-v1";
 

@@ -137,8 +137,24 @@ const QUESTIONS: [string, string][] = [
   ["How do I get rid of 'like'?", "Filler words"],
 ];
 
+/** Every part of the app with a 🔥/👇 under it (components/feature-reaction.tsx). */
+export const FEATURE_NAME: Record<string, string> = {
+  road: "The road",
+  dial: "Skill dial",
+  lessons: "Lessons",
+  deck: "Card deck",
+  dashboard: "Dashboard",
+  trophies: "Trophy case",
+  "ask-coach": "Ask Coach",
+  live: "Live sessions",
+  community: "Community",
+};
+
 const REACTION_NOTES: Record<string, string[]> = {
   road: ["The 3D road makes my phone hot", "Wish I could see what's next without scrolling"],
+  lessons: ["Some lessons feel too short to get the idea", "I'd like subtitles on every lesson"],
+  live: ["The time zone is hard for me", "Wish the recordings had chapters"],
+  community: ["Rooms are quiet in the mornings", "Hard to find people at my level"],
   dial: ["Took me a while to realise I could spin it"],
   deck: [],
   dashboard: ["Too much on one screen", "I only look at the streak"],
@@ -153,6 +169,9 @@ const FEATURE_LOVE: Record<string, number> = {
   dashboard: 0.62,
   trophies: 0.45,
   "ask-coach": 0.8,
+  lessons: 0.86,
+  live: 0.82,
+  community: 0.58,
 };
 
 const AREAS: [string, number][] = [
@@ -191,14 +210,17 @@ const GROWTH: Record<CategoryId, number> = {
   "body-language": 1.0,
   advanced: 0.6,
 };
+// Where each color starts against the student's overall skill: a first
+// take lights two or so (story and confidence come first), the rest
+// arrive challenge by challenge, Advanced last.
 const START: Record<CategoryId, number> = {
-  storytelling: -2,
-  figurative: -14,
-  acting: -10,
-  structure: -6,
-  mindset: -4,
-  "body-language": -8,
-  advanced: -30,
+  storytelling: -10,
+  figurative: -26,
+  acting: -22,
+  structure: -18,
+  mindset: -12,
+  "body-language": -20,
+  advanced: -40,
 };
 
 export function sampleCohort(now = Date.UTC(2026, 10, 13)): SampleCohort {

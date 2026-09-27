@@ -3,6 +3,7 @@ import { BackLink } from "@/components/back-link";
 import { categories, categoryById, type CategoryId } from "@/data/categories";
 import { lessonsInCategory } from "@/data/lessons";
 import { CategoryTheater } from "@/components/category-theater";
+import { FeatureReaction } from "@/components/feature-reaction";
 
 export function generateStaticParams() {
   return categories.map((c) => ({ category: c.id }));
@@ -34,6 +35,7 @@ export default async function CategoryPage(props: PageProps<"/skills/[category]"
       </header>
 
       <CategoryTheater category={cat} lessons={lessons} />
+      <FeatureReaction feature="lessons" label="the lessons" />
     </div>
   );
 }

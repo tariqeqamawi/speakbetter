@@ -3,9 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { challenges } from "@/data/challenges";
 import { categories } from "@/data/categories";
-import { sampleCohort, type Rating, type SampleCohort } from "@/data/admin-sample";
+import { FEATURE_NAME, sampleCohort, type Rating, type SampleCohort } from "@/data/admin-sample";
 import { queued, REVIEW_RATINGS } from "@/lib/insights";
-import { AdminNav } from "@/components/admin/admin-nav";
+import { AdminFrame } from "@/components/admin/admin-frame";
+import { CohortSpectrum, LIT_AT } from "@/components/admin/cohort-spectrum";
 
 // Tariq's view of the cohort: how the app is used, where students stop,
 // how good Coach's reviews are, what students say, what it all means -
@@ -16,24 +17,16 @@ import { AdminNav } from "@/components/admin/admin-nav";
 const TITLE = new Map(challenges.map((c) => [c.slug, c.title]));
 const EMOJI: Record<Rating, string> = { "spot-on": "👌", partly: "🤏", off: "👎" };
 const RATING_COLOR: Record<Rating, string> = { "spot-on": "bg-mindset", partly: "bg-storytelling", off: "bg-acting" };
-const FEATURE_NAME: Record<string, string> = {
-  road: "The road",
-  dial: "Skill dial",
-  deck: "Card deck",
-  dashboard: "Dashboard",
-  trophies: "Trophy case",
-  "ask-coach": "Ask Coach",
-};
 
-const SECTIONS = [
-  ["overview", "Overview"],
-  ["progress", "Cohort progress"],
-  ["usage", "Usage"],
-  ["dropoff", "Drop-off"],
-  ["quality", "Coach quality"],
-  ["voice", "Voice of the student"],
-  ["insights", "AI insights"],
-  ["journey", "Student journey"],
+const TABS = [
+  { id: "overview", label: "Overview" },
+  { id: "progress", label: "Cohort progress" },
+  { id: "usage", label: "Usage" },
+  { id: "dropoff", label: "Drop-off" },
+  { id: "quality", label: "Coach quality" },
+  { id: "voice", label: "Voice of the student" },
+  { id: "insights", label: "AI insights" },
+  { id: "journey", label: "Student journeys" },
 ] as const;
 
 export function InsightsDashboard() {
@@ -43,40 +36,45 @@ export function InsightsDashboard() {
   useEffect(() => setLocal(queued().length), []);
 
   return (
-    <div className="flex flex-col gap-8 py-6">
-      <header className="flex flex-col gap-2">
-        <AdminNav at="insights" />
-        <h1 className="text-3xl font-semibold tracking-tight">Cohort insights</h1>
-        <p className="max-w-2xl text-sm text-ink-muted">
-          Every student is a number, never a name. No video is stored - only what was said, as text, and how the app was
-          used.
-        </p>
+    <AdminFrame
+      at="insights"
+      title="Cohort insights"
+      blurb="Every student is a number, never a name. No video is stored - only what was said, as text, and how the app was used."
+      banner={
         <p className="w-fit rounded-full border border-storytelling/40 bg-storytelling/10 px-3 py-1 text-xs text-storytelling">
           Sample cohort - the real one appears here once the database is switched on. This device has queued {local}{" "}
           event{local === 1 ? "" : "s"} of its own.
         </p>
-        <nav className="flex flex-wrap gap-2 pt-2">
-          {SECTIONS.map(([id, name]) => (
-            <a
-              key={id}
-              href={`#${id}`}
-              className="rounded-full border border-navy-600 px-3 py-1 text-xs text-ink-muted hover:text-ink"
-            >
-              {name}
-            </a>
-          ))}
-        </nav>
-      </header>
-
-      <Overview data={data} />
-      <Progress data={data} />
-      <Usage data={data} />
-      <DropOff data={data} />
-      <Quality data={data} />
-      <Voice data={data} />
-      <Insights data={data} />
-      <Journey data={data} />
-    </div>
+      }
+      tabs={TABS}
+      render={(tab) => {
+        switch (tab) {
+          case "overview":
+            return <Overview data={data} />;
+          case "progress":
+            return (
+              <div className="flex flex-col gap-6">
+                <Progress data={data} />
+                <Panel id="spectrum" title="The spectrum, first take → latest">
+                  <CohortSpectrum data={data} />
+                </Panel>
+              </div>
+            );
+          case "usage":
+            return <Usage data={data} />;
+          case "dropoff":
+            return <DropOff data={data} />;
+          case "quality":
+            return <Quality data={data} />;
+          case "voice":
+            return <Voice data={data} />;
+          case "insights":
+            return <Insights data={data} />;
+          case "journey":
+            return <Journey data={data} />;
+        }
+      }}
+    />
   );
 }
 
@@ -157,7 +155,7 @@ function Progress({ data }: { data: SampleCohort }) {
         last: avg(paired.map(({ last }) => last.spectrum[c.id])),
       }))
       .sort((a, b) => b.last - b.first - (a.last - a.first));
-    const lit = (sp: Record<string, number>) => Object.values(sp).filter((v) => v >= 60).length;
+    const lit = (sp: Record<string, number>) => Object.values(sp).filter((v) => v >= LIT_AT).length;
     return {
       weekScore,
       weekColor,
@@ -178,7 +176,7 @@ function Progress({ data }: { data: SampleCohort }) {
     `Speak Better - cohort progress over ${p.weekScore.length} weeks (${p.n} students with 3+ recorded takes)`,
     `Average score: ${Math.round(p.firstAvg)} on their first take -> ${Math.round(p.lastAvg)} on their latest (+${Math.round(gain)} points, +${pct(gain, p.firstAvg)}%)`,
     `${pct(p.improved, p.n)}% of students improved`,
-    `Colors lit (60+): ${p.litFirst.toFixed(1)} -> ${p.litLast.toFixed(1)} of 7`,
+    `Colors lit: ${p.litFirst.toFixed(1)} -> ${p.litLast.toFixed(1)} of 7`,
     `Fastest-growing skill: ${fastest.c.name} (+${Math.round(fastest.last - fastest.first)})`,
     ...p.weekScore.map((v, i) => `Week ${i + 1}: average ${Math.round(v)} (${p.weekN[i]} students active)`),
   ].join("\n");
@@ -199,7 +197,7 @@ function Progress({ data }: { data: SampleCohort }) {
         <Stat value={`${pct(p.improved, p.n)}%`} label={`of ${p.n} students improved`} accent="text-storytelling" />
         <Stat
           value={`${p.litFirst.toFixed(1)} → ${p.litLast.toFixed(1)}`}
-          label="colors lit (60+) of 7"
+          label="colors lit, of 7"
           accent="text-body-language"
         />
       </div>
@@ -336,7 +334,11 @@ function Usage({ data }: { data: SampleCohort }) {
                       key={d}
                       title={`${area}, ${d}: ${Math.round(v / 60)} min`}
                       className="size-5 rounded-[3px]"
-                      style={{ background: v ? `rgba(31,232,144,${0.12 + (v / max) * 0.88})` : "rgba(255,255,255,0.03)" }}
+                      style={{
+                        background: v
+                          ? `color-mix(in oklab, var(--color-mindset) ${Math.round(12 + (v / max) * 88)}%, transparent)`
+                          : "color-mix(in oklab, var(--color-ink) 4%, transparent)",
+                      }}
                     />
                   );
                 })}
@@ -636,9 +638,211 @@ function Insights({ data }: { data: SampleCohort }) {
   );
 }
 
-// ── One student's journey ─────────────────────────────────────────────
+// ── Journeys ──────────────────────────────────────────────────────────
+// Every student's journey at once - how the cohort unfolded - or one
+// student's, in full. Tapping a student in the all-students view opens
+// theirs.
 function Journey({ data }: { data: SampleCohort }) {
+  const [mode, setMode] = useState<"all" | "one">("all");
   const [no, setNo] = useState(40);
+  const open = (n: number) => {
+    setNo(n);
+    setMode("one");
+  };
+  return (
+    <Panel
+      id="journey"
+      title="Student journeys"
+      blurb="How every student's journey unfolded, or one student's in full - by number, never by name."
+    >
+      <div className="flex gap-2 text-sm">
+        {(
+          [
+            ["all", "All students"],
+            ["one", "One student"],
+          ] as const
+        ).map(([m, label]) => (
+          <button
+            key={m}
+            type="button"
+            onClick={() => setMode(m)}
+            className={`rounded-full border px-3 py-1 ${mode === m ? "border-ink bg-ink text-navy-900" : "border-navy-600 text-ink-muted"}`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      {mode === "all" ? <AllJourneys data={data} onOpen={open} /> : <OneJourney data={data} no={no} setNo={setNo} />}
+    </Panel>
+  );
+}
+
+type Student = SampleCohort["students"][number];
+const STATUS_LINE: Record<string, string> = { finished: "text-mindset", stopped: "text-ink-faint", refunded: "text-acting" };
+const statusOf = (s: Student) => (s.refunded ? "refunded" : s.completed ? "finished" : "stopped");
+const mean = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
+
+function AllJourneys({ data, onOpen }: { data: SampleCohort; onOpen: (n: number) => void }) {
+  const byStudent = useMemo(
+    () => data.students.map((s) => ({ s, takes: data.takes.filter((t) => t.studentNo === s.number) })),
+    [data],
+  );
+
+  // Take by take: every student's score line, and the cohort's average
+  // wherever at least five students got that far.
+  const W = 800;
+  const H = 220;
+  const most = Math.max(...byStudent.map((j) => j.takes.length));
+  const x = (i: number) => (most > 1 ? (i / (most - 1)) * W : 0);
+  const y = (score: number) => H - ((score - 20) / 80) * H;
+  const average = Array.from({ length: most }, (_, i) => {
+    const at = byStudent.filter((j) => j.takes[i]).map((j) => j.takes[i].score);
+    return at.length >= 5 ? mean(at) : null;
+  });
+
+  // Day by day: a lane per student, a square per day, lit by their best
+  // score that day. Finishers first, then by how much they did.
+  const lanes = [...byStudent].sort(
+    (a, b) => Number(b.s.completed) - Number(a.s.completed) || b.takes.length - a.takes.length || a.s.number - b.s.number,
+  );
+  const best = (takes: SampleCohort["takes"], day: string) => {
+    const ts = takes.filter((t) => t.at.slice(0, 10) === day);
+    return ts.length ? Math.max(...ts.map((t) => t.score)) : null;
+  };
+  const finished = byStudent.filter((j) => j.s.completed);
+  const withEnd = data.students.filter((s) => s.confidenceEnd !== undefined);
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <Stat value={data.students.length} label="students" />
+        <Stat value={`${pct(finished.length, data.students.length)}%`} label="finished the six weeks" accent="text-mindset" />
+        <Stat
+          value={`${Math.round(mean(finished.map((j) => j.takes[0]?.score ?? 0)))} → ${Math.round(mean(finished.map((j) => j.takes.at(-1)?.score ?? 0)))}`}
+          label="finishers' score, first take → last"
+          accent="text-mindset"
+        />
+        <Stat
+          value={`${mean(withEnd.map((s) => s.confidenceStart)).toFixed(1)} → ${mean(withEnd.map((s) => s.confidenceEnd!)).toFixed(1)}`}
+          label="self-rated confidence, start → end"
+          accent="text-body-language"
+        />
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <h3 className="text-sm font-semibold">Every journey, take by take</h3>
+        <svg viewBox={`-10 -10 ${W + 20} ${H + 20}`} className="h-64 w-full" preserveAspectRatio="none" aria-label="Every student's score, take by take">
+          <line x1={0} x2={W} y1={y(60)} y2={y(60)} stroke="currentColor" className="text-navy-600" strokeDasharray="4 4" vectorEffect="non-scaling-stroke" />
+          {byStudent.map(({ s, takes }) =>
+            takes.length > 1 ? (
+              <polyline
+                key={s.number}
+                points={takes.map((t, i) => `${x(i)},${y(t.score)}`).join(" ")}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.2}
+                strokeOpacity={0.45}
+                vectorEffect="non-scaling-stroke"
+                className={`${STATUS_LINE[statusOf(s)]} cursor-pointer hover:[stroke-opacity:1] hover:[stroke-width:3]`}
+                onClick={() => onOpen(s.number)}
+              >
+                <title>{`Student #${s.number} - ${takes.length} takes, ${takes[0].score} → ${takes.at(-1)!.score} (${statusOf(s)})`}</title>
+              </polyline>
+            ) : null,
+          )}
+          <polyline
+            points={average.flatMap((v, i) => (v === null ? [] : [`${x(i)},${y(v)}`])).join(" ")}
+            fill="none"
+            stroke="currentColor"
+            className="text-ink"
+            strokeWidth={3}
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+        <div className="flex flex-wrap gap-4 text-xs text-ink-muted">
+          <span className="flex items-center gap-1.5">
+            <span className="h-0.5 w-4 bg-ink" />
+            Cohort average
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="h-0.5 w-4 bg-mindset" />
+            Finished
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="h-0.5 w-4 bg-ink-faint" />
+            Stopped
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="h-0.5 w-4 bg-acting" />
+            Refunded
+          </span>
+          <span className="text-ink-faint">Dashed: the pass mark. Tap a line to open that student.</span>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <h3 className="text-sm font-semibold">Every journey, day by day</h3>
+        <div className="overflow-x-auto">
+          <table className="border-separate border-spacing-[2px] text-[0.65rem]">
+            <thead>
+              <tr>
+                <th />
+                {data.days.map((d, i) => (
+                  <th key={d} className="font-normal text-ink-faint">
+                    {i % 7 === 0 ? `W${i / 7 + 1}` : ""}
+                  </th>
+                ))}
+                <th className="pl-2 text-left font-normal text-ink-faint">takes</th>
+                <th className="pl-2 text-left font-normal text-ink-faint">confidence</th>
+              </tr>
+            </thead>
+            <tbody>
+              {lanes.map(({ s, takes }) => (
+                <tr key={s.number}>
+                  <td className="pr-2">
+                    <button type="button" onClick={() => onOpen(s.number)} className="whitespace-nowrap text-ink-muted hover:text-ink">
+                      #{s.number}
+                    </button>
+                  </td>
+                  {data.days.map((d) => {
+                    const v = best(takes, d);
+                    return (
+                      <td
+                        key={d}
+                        title={v === null ? undefined : `#${s.number}, ${d}: ${v}`}
+                        className="size-3 rounded-[2px]"
+                        style={{
+                          background:
+                            v === null
+                              ? "color-mix(in oklab, var(--color-ink) 4%, transparent)"
+                              : v >= 60
+                                ? `color-mix(in oklab, var(--color-mindset) ${Math.round(25 + ((v - 60) / 40) * 75)}%, transparent)`
+                                : "color-mix(in oklab, var(--color-acting) 60%, transparent)",
+                        }}
+                      />
+                    );
+                  })}
+                  <td className="pl-2 tabular-nums text-ink-muted">{takes.length}</td>
+                  <td className="whitespace-nowrap pl-2 tabular-nums text-ink-muted">
+                    {s.confidenceStart}
+                    {s.confidenceEnd !== undefined ? ` → ${s.confidenceEnd}` : ""}
+                    {s.refunded ? <span className="text-acting"> · refunded</span> : null}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-xs text-ink-faint">
+          A row per student, a square per day. Green: a passing take that day, brighter for a higher score. Red: a
+          take below the pass mark. Finishers first, then by how many takes. Tap a number to open that student.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function OneJourney({ data, no, setNo }: { data: SampleCohort; no: number; setNo: (n: number) => void }) {
   const student = data.students.find((s) => s.number === no)!;
   const takes = data.takes.filter((t) => t.studentNo === no);
   const questions = data.questions.filter((q) => q.studentNo === no);
@@ -659,7 +863,7 @@ function Journey({ data }: { data: SampleCohort }) {
   const pts = takes.map((t, i) => [takes.length > 1 ? (i / (takes.length - 1)) * W : W / 2, y(t.score)]);
 
   return (
-    <Panel id="journey" title="One student's journey" blurb="Everything one student did, in order - by number, never by name.">
+    <div className="flex flex-col gap-4">
       <label className="flex items-center gap-2 text-sm">
         Student
         <select
@@ -682,6 +886,14 @@ function Journey({ data }: { data: SampleCohort }) {
         <Stat value={questions.length} label="questions to Coach" />
         <Stat value={minutes} label="minutes in the app" />
       </div>
+      <p className="text-xs text-ink-muted">
+        {({ foundations: "Starter", coached: "Complete", founders: "VIP Ultimate" } as const)[student.tier]}
+        {student.upgraded ? " (upgraded)" : ""} · confidence {student.confidenceStart}
+        {student.confidenceEnd !== undefined ? ` → ${student.confidenceEnd}` : ""}
+        {student.recommend !== undefined ? ` · would recommend ${student.recommend}/10` : ""}
+        {student.refunded ? " · refunded" : student.completed ? " · finished" : " · stopped"}
+      </p>
+      {student.story && <p className="text-sm italic text-ink">&ldquo;{student.story}&rdquo;</p>}
 
       {takes.length > 1 && (
         <svg viewBox={`-8 -8 ${W + 16} ${H + 16}`} className="h-32 w-full" preserveAspectRatio="none" aria-label="Score over time">
@@ -716,6 +928,6 @@ function Journey({ data }: { data: SampleCohort }) {
           ),
         )}
       </ol>
-    </Panel>
+    </div>
   );
 }

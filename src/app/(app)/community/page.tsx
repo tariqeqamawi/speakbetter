@@ -6,6 +6,7 @@ import { Rooms } from "@/components/rooms";
 import { WeeklyBoard } from "@/components/weekly-board";
 import { SectionTour } from "@/components/section-tour";
 import { ChevronDownIcon, GroupIcon } from "@/components/icons";
+import { FeatureReaction } from "@/components/feature-reaction";
 
 export const metadata: Metadata = {
   title: "Community",
@@ -52,6 +53,7 @@ export default function CommunityPage() {
 
       <CommunityFeed />
       <WeeklyBoard />
+      <FeatureReaction feature="community" label="the community" />
     </div>
   );
 }

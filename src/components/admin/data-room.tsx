@@ -2,9 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { categories } from "@/data/categories";
-import { sampleCohort, type SampleCohort } from "@/data/admin-sample";
+import { FEATURE_NAME, sampleCohort, type Rating, type SampleCohort } from "@/data/admin-sample";
+import { REVIEW_RATINGS } from "@/lib/insights";
 import { priceCents, tiers, type Plan } from "@/data/pricing";
-import { AdminNav } from "@/components/admin/admin-nav";
+import { AdminFrame } from "@/components/admin/admin-frame";
+import { CohortSpectrum } from "@/components/admin/cohort-spectrum";
 import { Panel, Stat, pct } from "@/components/admin/insights-dashboard";
 
 // The case for backing Speak Better, built from the cohort itself: does
@@ -120,30 +122,131 @@ function measure(data: SampleCohort) {
 
 type M = ReturnType<typeof measure>;
 
+const TABS = [
+  { id: "summary", label: "One-pager" },
+  { id: "outcomes", label: "Does it work?" },
+  { id: "feedback", label: "What students love" },
+  { id: "traction", label: "Traction" },
+  { id: "economics", label: "Unit economics" },
+  { id: "forecast", label: "Forecast" },
+  { id: "moat", label: "The moat" },
+] as const;
+
 export function DataRoom() {
   const data = useMemo(() => sampleCohort(), []);
   const m = useMemo(() => measure(data), [data]);
   return (
-    <div className="flex flex-col gap-8 py-6">
-      <header className="flex flex-col gap-3 print:hidden">
-        <AdminNav at="data-room" />
-        <h1 className="text-3xl font-semibold tracking-tight">Data room</h1>
-        <p className="max-w-2xl text-sm text-ink-muted">
-          The evidence for backing Speak Better: whether it works, whether people pay and stay, what each student is
-          worth, and what it could grow into. Built from the cohort&apos;s own records - students by number, never by
-          name.
-        </p>
+    <AdminFrame
+      at="data-room"
+      title="Data room"
+      blurb="The evidence for backing Speak Better: whether it works, whether people pay and stay, what each student is worth, and what it could grow into. Built from the cohort's own records - students by number, never by name."
+      banner={
         <p className="w-fit rounded-full border border-storytelling/40 bg-storytelling/10 px-3 py-1 text-xs text-storytelling">
           Sample cohort - every figure switches to the real founding cohort once the database is on.
         </p>
-      </header>
+      }
+      tabs={TABS}
+      render={(tab) => {
+        switch (tab) {
+          case "summary":
+            return <OnePager m={m} />;
+          case "outcomes":
+            return (
+              <div className="flex flex-col gap-6">
+                <Outcomes m={m} />
+                <Panel id="spectrum" title="The Speaking Spectrum, first take → latest">
+                  <CohortSpectrum data={data} />
+                </Panel>
+              </div>
+            );
+          case "feedback":
+            return <Feedback data={data} />;
+          case "traction":
+            return <Traction m={m} />;
+          case "economics":
+            return <Economics m={m} />;
+          case "forecast":
+            return <Forecast m={m} />;
+          case "moat":
+            return <Moat m={m} />;
+        }
+      }}
+    />
+  );
+}
 
-      <OnePager m={m} />
-      <Outcomes m={m} />
-      <Traction m={m} />
-      <Economics m={m} />
-      <Forecast m={m} />
-      <Moat m={m} />
+// ── What students love ────────────────────────────────────────────────
+// The students' own verdicts, in two kinds: on Coach's reviews (👌 spot
+// on, 🤏 partly right, 👎 way off the mark) and on each part of the app
+// (🔥 love it, 👇 not for me) - with what they wrote when they said no.
+function Feedback({ data }: { data: SampleCohort }) {
+  const rated = data.takes.filter((t) => t.rating);
+  const count = (r: Rating) => rated.filter((t) => t.rating === r).length;
+  const features = Object.keys(FEATURE_NAME)
+    .map((f) => {
+      const rs = data.reactions.filter((r) => r.feature === f);
+      const love = rs.filter((r) => r.reaction === "love").length;
+      const dislike = rs.length - love;
+      return { f, love, dislike, total: rs.length, notes: [...new Set(rs.flatMap((r) => (r.note ? [r.note] : [])))] };
+    })
+    .filter((x) => x.total)
+    .sort((a, b) => b.love / b.total - a.love / a.total);
+  const reacted = new Set(data.reactions.map((r) => r.studentNo)).size;
+
+  return (
+    <div className="flex flex-col gap-6">
+      <Panel
+        id="features"
+        title="Which parts of the app students love"
+        blurb={`🔥 love it or 👇 not for me, under each part of the app - ${data.reactions.length} reactions from ${reacted} students, most loved first.`}
+      >
+        <ol className="flex flex-col gap-3">
+          {features.map(({ f, love, dislike, total, notes }) => (
+            <li key={f} className="flex flex-col gap-1.5">
+              <div className="grid grid-cols-[8rem_1fr_7rem] items-center gap-3 text-sm">
+                <b className="text-ink">{FEATURE_NAME[f]}</b>
+                <div className="flex h-3 overflow-hidden rounded-full bg-navy-900">
+                  <div className="bg-figurative" style={{ width: `${pct(love, total)}%` }} />
+                  <div className="bg-navy-600" style={{ width: `${pct(dislike, total)}%` }} />
+                </div>
+                <span className="text-right text-xs tabular-nums text-ink-muted">
+                  🔥 {love} · 👇 {dislike} · <b className="text-ink">{pct(love, total)}%</b>
+                </span>
+              </div>
+              {notes.length > 0 && (
+                <p className="pl-[8.75rem] text-xs text-ink-faint">
+                  {notes.slice(0, 2).map((n) => `👇 “${n}”`).join("   ")}
+                </p>
+              )}
+            </li>
+          ))}
+        </ol>
+      </Panel>
+
+      <Panel
+        id="reviews"
+        title="How students rate Coach's reviews"
+        blurb={`Every review ends with the same question - ${rated.length} answered.`}
+      >
+        <div className="grid grid-cols-3 gap-3">
+          {REVIEW_RATINGS.map((r) => (
+            <Stat
+              key={r.id}
+              value={`${r.emoji} ${pct(count(r.id), rated.length)}%`}
+              label={r.label}
+              accent={r.id === "spot-on" ? "text-mindset" : r.id === "partly" ? "text-storytelling" : "text-acting"}
+            />
+          ))}
+        </div>
+        <div className="flex h-4 overflow-hidden rounded-full">
+          <div className="bg-mindset" style={{ width: `${pct(count("spot-on"), rated.length)}%` }} />
+          <div className="bg-storytelling" style={{ width: `${pct(count("partly"), rated.length)}%` }} />
+          <div className="bg-acting" style={{ width: `${pct(count("off"), rated.length)}%` }} />
+        </div>
+        <p className="text-xs text-ink-faint">
+          Week by week, and where Coach missed, are on the moat tab and in Cohort insights → Coach quality.
+        </p>
+      </Panel>
     </div>
   );
 }
