@@ -11,7 +11,7 @@ import { SkyDome } from "./sky-dome";
 import { City } from "./city";
 import { Bloom, GateSparks, Sky, SpeedSparks } from "./fx";
 import { AHEAD, ColourWall, RoadsideComment, RoadsideTrophy, Traveller } from "./world-details";
-import { GATE_BEFORE, hills, layoutRoad, pointAt, reachedPhase, seeded, sideAt, type RoadLayout, type Travel, ROAD_HALF, bankLift, tiltAt, groundAt, surfaceAt, upAt } from "./road-geometry";
+import { GATE_BEFORE, VICTORY_AFTER, hills, layoutRoad, pointAt, reachedPhase, seeded, sideAt, type RoadLayout, type Travel, ROAD_HALF, bankLift, tiltAt, groundAt, surfaceAt, upAt, LOOP } from "./road-geometry";
 
 // The S.T.O.R.Y. adventure as a world you travel through.
 //
@@ -76,15 +76,32 @@ function phaseSpans(road: RoadLayout, stops: WorldStop[], phases: WorldPhase[]) 
     const first = road.stops[idx[0]] ?? 0;
     const last = road.stops[idx[idx.length - 1]] ?? 0;
     return { ...p, from: first - GATE_BEFORE, to: last + GATE_BEFORE, col: glowing(new THREE.Color(p.color)) };
-  });
+  }).map((sp, _, all) => ({
+    ...sp,
+    // Past the last challenge: the victory stretch, in every colour.
+    victory: road.stops[stops.length - 1] + VICTORY_AFTER,
+    all: all.map((x) => x.col),
+  }));
 }
 
 type Span = ReturnType<typeof phaseSpans>[number];
+const tmpVictory = new THREE.Color();
 
 /** The ground's colour at a distance along the road: the phase it is
  *  in, blended into the next across the boundary so the land shades
  *  from one colour into the next rather than stepping. */
 function colourAt(spans: Span[], s: number, out: THREE.Color): THREE.Color {
+  // THE VICTORY STRETCH: after the last challenge the land and its lights
+  // run through every section's colour in turn - green, cyan, gold, red,
+  // magenta, and round again - all the way to the finish.
+  const last = spans[spans.length - 1];
+  if (last && s > last.victory) {
+    const n = last.all.length;
+    const u = (s - last.victory) / 26;
+    const i = Math.floor(u);
+    const mix = tmpVictory.copy(last.all[i % n]).lerp(last.all[(i + 1) % n], THREE.MathUtils.smoothstep(u - i, 0.55, 1));
+    return out.copy(last.col).lerp(mix, THREE.MathUtils.smoothstep(s, last.victory, last.victory + 30));
+  }
   const BLEND = 14;
   for (let i = 0; i < spans.length; i++) {
     const a = spans[i];
@@ -381,9 +398,9 @@ const TERRAIN_FRAG = /* glsl */ `
     col += vNeon * spark * stw * 1.1 * crowd * (1.0 - dotsK);
 
     float fog = 1.0 - exp(-uFogDensity * uFogDensity * vDepth * vDepth);
-    // A light haze, never a wall: however far off, the land keeps its
-    // lines rather than dissolving into one flat colour against the sky.
-    gl_FragColor = vec4(mix(col, uFog, fog * 0.5), 1.0);
+    // DEPTH: the far land sinks into a dark haze - graded, never a wall -
+    // so near and far read apart instead of everything equally sharp.
+    gl_FragColor = vec4(mix(col, uFog, fog * 0.85), 1.0);
   }
 `;
 
@@ -492,8 +509,8 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
         uniforms: {
           uTime: { value: 0 },
           uFrom: { value: 0 },
-          uFog: { value: new THREE.Color("#060b1c") },
-          uFogDensity: { value: 0.003 },
+          uFog: { value: new THREE.Color("#040816") },
+          uFogDensity: { value: 0.0036 },
           uHorizon: { value: new THREE.Color("#3a3f8f") },
           // Where Your Impact's rays converge: the city, far past the road.
           uTarget: { value: road.length + 330 },
@@ -516,7 +533,7 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
       const here = travel.s + AHEAD;
       const sp = spans.find((x) => here >= x.from && here < x.to) ?? spans[0];
       if (sp) {
-        hazeTarget.set("#060b1c").lerp(tintOf(sp.color), 0.3);
+        hazeTarget.set("#040816").lerp(tintOf(sp.color), 0.2);
         const u = material.uniforms.uFog.value as THREE.Color;
         u.lerp(hazeTarget, 0.03);
         const fog = scene.fog as THREE.FogExp2 | null;
@@ -714,8 +731,80 @@ function Road({ road, spans, trail }: { road: RoadLayout; spans: Span[]; trail: 
   );
 }
 
-/** The finish: an arch over the road in all five phase colours. */
+/** "FINISH", drawn once onto a canvas: white letters with a glow that
+ *  runs through every section's colour. */
+function finishLabel(cols: THREE.Color[]) {
+  const c = document.createElement("canvas");
+  c.width = 1024;
+  c.height = 256;
+  const g = c.getContext("2d")!;
+  g.font = "900 170px system-ui, -apple-system, 'Segoe UI', sans-serif";
+  g.textAlign = "center";
+  g.textBaseline = "middle";
+  const grad = g.createLinearGradient(140, 0, 884, 0);
+  cols.forEach((col, i) => grad.addColorStop(i / Math.max(1, cols.length - 1), `#${col.clone().multiplyScalar(0.8).getHexString()}`));
+  // The glow, twice over, then the letters.
+  g.shadowColor = "rgba(255,255,255,0.9)";
+  for (const blur of [60, 28]) {
+    g.shadowBlur = blur;
+    g.fillStyle = grad;
+    g.fillText("FINISH", 512, 132);
+  }
+  g.shadowBlur = 0;
+  g.fillStyle = "#ffffff";
+  g.fillText("FINISH", 512, 132);
+  // A coloured core inside each white letter, so the bloom doesn't turn
+  // the word into one white glare.
+  g.save();
+  g.globalCompositeOperation = "source-atop";
+  g.fillStyle = grad;
+  g.globalAlpha = 0.55;
+  g.fillText("FINISH", 512, 132);
+  g.restore();
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+// The sparks pouring off the finish arch: each leaves a point on the arch,
+// drifts out and up and fades, and is reborn - all in the shader, so a few
+// hundred cost nothing.
+const FINISH_SPARK_VERT = /* glsl */ `
+  uniform float uTime;
+  uniform float uR;
+  attribute float aAngle;
+  attribute float aSeed;
+  attribute vec3 aCol;
+  varying vec3 vCol;
+  varying float vFade;
+  void main() {
+    float life = fract(uTime * (0.22 + aSeed * 0.25) + aSeed * 7.0);
+    vec2 dir = vec2(cos(aAngle), sin(aAngle));
+    float fly = life * (5.0 + aSeed * 7.0);
+    vec3 p = vec3(dir * (uR + fly * 0.6), (aSeed - 0.5) * 2.0 + sin(aSeed * 40.0) * fly);
+    p.y += life * life * 4.0;
+    vCol = aCol;
+    vFade = (1.0 - life) * smoothstep(0.0, 0.08, life);
+    vec4 mv = modelViewMatrix * vec4(p, 1.0);
+    gl_PointSize = (2.0 + aSeed * 3.0) * (260.0 / -mv.z);
+    gl_Position = projectionMatrix * mv;
+  }
+`;
+const FINISH_SPARK_FRAG = /* glsl */ `
+  varying vec3 vCol;
+  varying float vFade;
+  void main() {
+    vec2 q = gl_PointCoord - 0.5;
+    float a = exp(-dot(q, q) * 18.0) * vFade;
+    gl_FragColor = vec4(vCol * 1.6 * a, a);
+  }
+`;
+
+/** THE FINISH: a great arch of light over the road in all five colours,
+ *  the colours chasing round it, sparks pouring off it, a ring of light
+ *  behind it and FINISH written above - the victory stretch's last word. */
 function FinishGate({ road, spans }: { road: RoadLayout; spans: Span[] }) {
+  const R = 12;
   const { position, facing } = useMemo(() => {
     const p = pointAt(road, road.finish);
     return { position: p, facing: pointAt(road, road.finish - 1) };
@@ -724,21 +813,110 @@ function FinishGate({ road, spans }: { road: RoadLayout; spans: Span[] }) {
   useEffect(() => {
     group.current?.lookAt(facing.x, position.y, facing.z);
   }, [facing, position]);
+  const cols = useMemo(() => spans.map((sp) => sp.col.clone()), [spans]);
+  // The arch in many short segments, so the colours can chase round it.
+  const SEG = 40;
+  const A0 = -0.22;
+  const A1 = Math.PI + 0.22;
+  const segs = useMemo(
+    () =>
+      Array.from({ length: SEG }, (_, i) => {
+        const mat = new THREE.MeshBasicMaterial({ toneMapped: false });
+        const geo = new THREE.TorusGeometry(R, 0.55, 10, 6, (A1 - A0) / SEG + 0.01);
+        return { mat, geo, rot: A0 + ((A1 - A0) * i) / SEG };
+      }),
+    [A0, A1],
+  );
+  const halo = useMemo(
+    () => new THREE.MeshBasicMaterial({ color: "#ffffff", transparent: true, opacity: 0.25, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }),
+    [],
+  );
+  const label = useMemo(() => (typeof document === "undefined" ? null : finishLabel(cols)), [cols]);
+  const sparks = useMemo(() => {
+    const N = 520;
+    const ang = new Float32Array(N);
+    const seed = new Float32Array(N);
+    const col = new Float32Array(N * 3);
+    const pos = new Float32Array(N * 3);
+    const rand = seeded(11);
+    for (let i = 0; i < N; i++) {
+      ang[i] = A0 + rand() * (A1 - A0);
+      seed[i] = rand();
+      const c = cols[Math.floor(((ang[i] - A0) / (A1 - A0)) * cols.length) % cols.length] ?? cols[0];
+      col.set([c.r, c.g, c.b], i * 3);
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    g.setAttribute("aAngle", new THREE.BufferAttribute(ang, 1));
+    g.setAttribute("aSeed", new THREE.BufferAttribute(seed, 1));
+    g.setAttribute("aCol", new THREE.BufferAttribute(col, 3));
+    const m = new THREE.ShaderMaterial({
+      vertexShader: FINISH_SPARK_VERT,
+      fragmentShader: FINISH_SPARK_FRAG,
+      uniforms: { uTime: { value: 0 }, uR: { value: R } },
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+    const pts = new THREE.Points(g, m);
+    pts.frustumCulled = false;
+    return pts;
+  }, [cols, A0, A1]);
+  useEffect(
+    () => () => {
+      segs.forEach((s) => {
+        s.mat.dispose();
+        s.geo.dispose();
+      });
+      halo.dispose();
+      label?.dispose();
+      sparks.geometry.dispose();
+      (sparks.material as THREE.Material).dispose();
+    },
+    [segs, halo, label, sparks],
+  );
+  const tmp = useMemo(() => new THREE.Color(), []);
+  /* eslint-disable react-hooks/immutability -- colours and a uniform, set every frame */
+  useFrame(({ clock }) => {
+    const t = clock.elapsedTime;
+    const n = cols.length;
+    segs.forEach((s, i) => {
+      // The colours chase round the arch, a bright pulse riding them.
+      const u = (i / SEG) * n - t * 0.8;
+      const k = Math.floor(u);
+      const f = u - k;
+      const a = cols[((k % n) + n) % n];
+      const b = cols[(((k + 1) % n) + n) % n];
+      const pulse = 1.1 + 0.9 * Math.pow(0.5 + 0.5 * Math.sin(t * 3 - i * 0.5), 6);
+      s.mat.color.copy(tmp.copy(a).lerp(b, THREE.MathUtils.smoothstep(f, 0.6, 1))).multiplyScalar(pulse);
+    });
+    halo.opacity = 0.18 + 0.1 * Math.sin(t * 2.2);
+    (sparks.material as THREE.ShaderMaterial).uniforms.uTime.value = t;
+  });
+  /* eslint-enable react-hooks/immutability */
   return (
     <group ref={group} position={position}>
-      {spans.map((sp, i) => {
-        const a0 = (Math.PI * i) / spans.length;
-        const a1 = (Math.PI * (i + 1)) / spans.length;
-        return (
-          <mesh key={sp.id} position={[0, 0, 0]} rotation={[0, 0, a0]}>
-            <torusGeometry args={[5.5, 0.28, 12, 24, a1 - a0]} />
-            <meshBasicMaterial color={sp.col} toneMapped={false} />
-          </mesh>
-        );
-      })}
-      {[-5.5, 5.5].map((x) => (
-        <mesh key={x} position={[x, -0.2, 0]}>
-          <boxGeometry args={[0.5, 0.6, 0.5]} />
+      {segs.map((s, i) => (
+        <mesh key={i} geometry={s.geo} material={s.mat} rotation={[0, 0, s.rot]} />
+      ))}
+      {/* A soft ring of light behind it. */}
+      <mesh material={halo} position={[0, 0, -1.2]} rotation={[0, 0, A0]}>
+        <torusGeometry args={[R + 1.6, 1.4, 8, 64, A1 - A0]} />
+      </mesh>
+      <mesh material={halo} position={[0, 0, 1.2]} rotation={[0, 0, A0]}>
+        <torusGeometry args={[R - 1.4, 0.35, 8, 64, A1 - A0]} />
+      </mesh>
+      <primitive object={sparks} />
+      {label && (
+        <mesh position={[0, R + 5.2, 0]}>
+          <planeGeometry args={[22, 5.5]} />
+          {/* Dimmed, so it glows rather than glares. */}
+          <meshBasicMaterial map={label} color="#b4b4b4" transparent toneMapped={false} depthWrite={false} side={THREE.DoubleSide} />
+        </mesh>
+      )}
+      {[-R * Math.cos(A0), R * Math.cos(A0)].map((x) => (
+        <mesh key={x} position={[x, -0.4, 0]}>
+          <cylinderGeometry args={[1.1, 1.5, 1.2, 16]} />
           <meshStandardMaterial color="#1a2340" />
         </mesh>
       ))}
@@ -777,9 +955,13 @@ function Rig({
   travel,
   onMove,
   limit,
+  calm = false,
 }: {
   road: RoadLayout;
   travel: Travel;
+  /** The calm "3D" view: high up and looking down on the road, like a
+   *  map come to life - no speed effects, no shake, no lean. */
+  calm?: boolean;
   /** As far as the traveller may go. */
   limit: number;
   onMove: (s: number) => void;
@@ -790,6 +972,11 @@ function Rig({
   const pos = useMemo(() => new THREE.Vector3(), []);
   const at = useMemo(() => new THREE.Vector3(), []);
   const across = useMemo(() => new THREE.Vector3(), []);
+  const entry = useMemo(() => new THREE.Vector3(), []);
+  const fwd = useMemo(() => new THREE.Vector3(), []);
+  const sEye = useMemo(() => new THREE.Vector3(), []);
+  const sLook = useMemo(() => new THREE.Vector3(), []);
+  const offset = useMemo(() => new THREE.Vector3(), []);
   const last = useRef(-1);
   const lastAt = useRef(0);
   const roll = useRef(0);
@@ -867,44 +1054,33 @@ function Rig({
     // Flat out, the camera stays low but drops back - the chase camera
     // straining to keep up - while the view widens and the blur and
     // streaks come on hard.
-    // THE LOOP: the camera holds where it is - same place, same view -
-    // and watches the traveller go up and round and come back down,
-    // picking up again once they're through.
-    // ON A STUNT: the camera steps out to the side - upright, never
-    // rolling - and watches the traveller go round the loop or through
-    // the corkscrew from there, turning to follow them. Stop halfway and
-    // it waits; go back and it follows back. It glides out and back in.
     const tS = s + AHEAD;
-    const stunt = road.stunts.find((z) => tS > z.a - 25 && tS < z.a + z.len + 25);
-    if (stunt) {
-      const k = THREE.MathUtils.smoothstep(tS, stunt.a - 25, stunt.a) * (1 - THREE.MathUtils.smoothstep(tS, stunt.a + stunt.len, stunt.a + stunt.len + 25));
-      if (stunt.kind === "climb") {
-        // The speaker: from back down the road, looking up its face as
-        // the traveller climbs it and goes over the top.
-        pointAt(road, stunt.a - 40, pos).setY(pos.y + 14);
-      } else {
-        const along = stunt.kind === "loop" ? stunt.a + stunt.len / 2 : THREE.MathUtils.clamp(tS, stunt.a, stunt.a + stunt.len);
-        const back = stunt.kind === "loop" ? 0 : 38;
-        groundAt(road, along - back, pos);
-        sideAt(road, along - back, across);
-        // Out to the side and up: the loop seen in profile, the corkscrew
-        // from over the shoulder.
-        const outD = stunt.kind === "loop" ? 70 : 34;
-        const outY = stunt.kind === "loop" ? 40 : 24;
-        pos.addScaledVector(across, -outD).setY(pos.y + outY);
-      }
-      // Where the traveller is now.
-      surfaceAt(road, tS, road.rideAt(tS), 1.3, at);
-      pointAt(road, s + f * 2 - b * 4 - up * 5, eye).setY(eye.y + 7.5);
-      // Blend from the usual chase view to the side view as the stunt begins.
-      eye.lerp(pos, k);
+    if (calm) {
+      // THE CALM VIEW: high above and behind the traveller, looking down
+      // the road ahead - the whole stretch laid out like a map.
+      pointAt(road, tS - 40, pos);
+      pointAt(road, tS + 10, at);
+      eye.copy(pos).setY(pos.y + 46);
       look.copy(at);
+      if (carried.current) camera.position.add(moved.copy(pos).sub(prevPos));
+      prevPos.copy(pos);
+      carried.current = true;
+      camera.position.lerp(eye, 1 - Math.pow(0.001, dt));
       camera.up.set(0, 1, 0);
-      camera.position.lerp(eye, 1 - Math.pow(0.02, dt));
       camera.lookAt(look);
-      prevPos.copy(pointAt(road, s + f * 2 - b * 4 - up * 5, pos));
-      if (Math.abs(s - last.current) > 0.25) {
+      travel.feel = 0;
+      travel.boost = 0;
+      const cam = camera as THREE.PerspectiveCamera;
+      if (cam.fov !== 55) {
+        cam.fov = 55;
+        cam.updateProjectionMatrix();
+      }
+      gl.domElement.parentElement?.style.setProperty("--road-speed", "0");
+      gl.domElement.parentElement?.style.setProperty("--road-boost", "0");
+      const now = performance.now();
+      if (Math.abs(s - last.current) > 0.25 && (now - lastAt.current > 100 || Math.abs(travel.v) < 0.3)) {
         last.current = s;
+        lastAt.current = now;
         onMove(s);
       }
       return;
@@ -930,6 +1106,54 @@ function Rig({
       eye.addScaledVector(across, ride * 0.7);
       eye.y += bankLift(road, s + AHEAD, ride * 0.7);
       look.addScaledVector(across, ride * 0.5);
+    }
+    // ON A STUNT the camera stays behind the traveller, as on the rest of
+    // the road - upright, never rolling - and follows them round the
+    // loop, through the corkscrew and up the speaker. Stop halfway and it
+    // waits; go back and it goes back with them.
+    const stunt = road.stunts.find((z) => tS > z.a - 25 && tS < z.a + z.len + 25);
+    if (stunt) {
+      const k = THREE.MathUtils.smoothstep(tS, stunt.a - 25, stunt.a) * (1 - THREE.MathUtils.smoothstep(tS, stunt.a + stunt.len, stunt.a + stunt.len + 25));
+      // Where the traveller is now.
+      surfaceAt(road, tS, road.rideAt(tS), 1.3, at);
+      if (stunt.kind === "climb") {
+        // Up the face of the speaker: back down the road behind them and
+        // out from its surface - under them on the face, above on the top.
+        const bs = tS - AHEAD;
+        pointAt(road, bs, sEye).addScaledVector(upAt(road, bs, across), 7.5);
+        pointAt(road, tS + 9, sLook).addScaledVector(upAt(road, tS + 9, across), 1.2);
+      } else {
+        // The loop and the corkscrew: a fixed distance behind the traveller
+        // along the way the stunt runs, so however the road turns over
+        // the camera never ends up beside, above or ahead of them.
+        groundAt(road, stunt.a, entry);
+        sideAt(road, stunt.a, across);
+        fwd.set(across.z, 0, -across.x);
+        const along = offset.subVectors(at, entry).dot(fwd);
+        groundAt(road, THREE.MathUtils.clamp(tS, stunt.a, stunt.a + stunt.len), sLook);
+        const lat = offset.subVectors(sLook, entry).dot(across);
+        const lift = stunt.kind === "loop" ? 0.35 * (at.y - entry.y) : 4 * road.stuntAt(tS);
+        const gFwd = offset.subVectors(sLook, entry).dot(fwd);
+        sEye.copy(entry).addScaledVector(fwd, along - AHEAD).addScaledVector(across, lat);
+        sEye.y = entry.y + 7.5 + lift;
+        if (stunt.kind === "loop") {
+          // Over the top of the loop the traveller is on the far side of
+          // it, facing back: to keep them in view without ever turning over,
+          // the camera eases a little out to the side as they go over, and
+          // back in behind them as they come down.
+          const u = THREE.MathUtils.clamp((tS - stunt.a) / stunt.len, 0, 1);
+          const w = Math.pow(Math.sin(Math.PI * u), 2);
+          offset.copy(entry).addScaledVector(fwd, gFwd - 6).addScaledVector(across, lat - 26);
+          offset.y = entry.y + LOOP.R * 0.75;
+          sEye.lerp(offset, w);
+        }
+        sLook.copy(at);
+      }
+      // Blended in and out over the way in and the way out.
+      offset.subVectors(eye, pos);
+      eye.lerp(sEye, k);
+      look.lerp(sLook, k);
+      pos.subVectors(eye, offset);
     }
     // Carried along with the road as it moves, then eased toward the
     // spot - so at speed the camera keeps its place behind the traveller
@@ -991,7 +1215,7 @@ export type PickPortal = (clientX: number, clientY: number) => number | null;
 
 /** Answers PickPortal by projecting each portal onto the screen: its
  *  centre, and its radius at that distance. */
-function Picker({ road, pickRef }: { road: RoadLayout; pickRef: React.RefObject<PickPortal | null> }) {
+function Picker({ road, pickRef, far = 70 }: { road: RoadLayout; pickRef: React.RefObject<PickPortal | null>; far?: number }) {
   const { camera, gl } = useThree();
   useEffect(() => {
     const cam = camera as THREE.PerspectiveCamera;
@@ -1009,7 +1233,7 @@ function Picker({ road, pickRef }: { road: RoadLayout; pickRef: React.RefObject<
         const d = toP.length();
         // In front, near enough to be seen, not so near it has faded
         // for the traveller to pass through.
-        if (toP.dot(forward) <= 0 || d > 70 || d < 4) return;
+        if (toP.dot(forward) <= 0 || d > far || d < 4) return;
         const r = (2.5 / (d * Math.tan(THREE.MathUtils.degToRad(cam.fov / 2)))) * (rect.height / 2);
         p.project(cam);
         const x = rect.left + ((p.x + 1) / 2) * rect.width;
@@ -1024,7 +1248,7 @@ function Picker({ road, pickRef }: { road: RoadLayout; pickRef: React.RefObject<
     return () => {
       pickRef.current = null;
     };
-  }, [camera, gl, road, pickRef]);
+  }, [camera, gl, road, pickRef, far]);
   return null;
 }
 
@@ -1038,6 +1262,7 @@ export function AdventureWorld({
   limit,
   skyImage,
   active = true,
+  calm = false,
 }: {
   stops: WorldStop[];
   phases: WorldPhase[];
@@ -1059,8 +1284,10 @@ export function AdventureWorld({
   /** Draw frames at all - false while the road is scrolled out of view,
    *  so it costs nothing when nobody can see it. */
   active?: boolean;
+  /** The calm "3D" view: no stunts or skyways, seen from high above. */
+  calm?: boolean;
 }) {
-  const road = useMemo(() => layoutRoad(stops.length, stops.map((s) => s.phase)), [stops]);
+  const road = useMemo(() => layoutRoad(stops.length, stops.map((s) => s.phase), { calm }), [stops, calm]);
   const spans = useMemo(() => phaseSpans(road, stops, phases), [road, stops, phases]);
   const phaseCol = useMemo(() => new Map(phases.map((p) => [p.id, new THREE.Color(p.color)])), [phases]);
   // The section the student is in; every one after it is dormant.
@@ -1116,9 +1343,9 @@ export function AdventureWorld({
       dpr={typeof window !== "undefined" && window.matchMedia("(pointer: fine)").matches ? [1, 1.75] : [1, 1.25]}
       frameloop={active ? "always" : "never"}
       gl={{ antialias: true, powerPreference: "high-performance" }}
-      camera={{ fov: 62, near: 0.1, far: 1400, position: [0, 3, 6] }}
+      camera={{ fov: 62, near: 0.1, far: 1200, position: [0, 3, 6] }}
       onCreated={({ scene }) => {
-        scene.fog = new THREE.FogExp2("#060b1c", 0.0024);
+        scene.fog = new THREE.FogExp2("#040816", 0.0032);
       }}
     >
       <hemisphereLight args={["#8090d0", "#0a0f20", 2.2]} />
@@ -1172,7 +1399,13 @@ export function AdventureWorld({
       {spans.find((sp) => sp.id === "Y") && (
         <City road={road} travel={travel} revealFrom={spans.find((sp) => sp.id === "Y")!.from + 240} />
       )}
-      <Megastructures road={road} colourAt={colourFixed} dense={spans.find((sp) => sp.id === "Y")} />
+      <Megastructures
+        road={road}
+        colourAt={colourFixed}
+        dense={spans.find((sp) => sp.id === "Y")}
+        victory={spans[spans.length - 1]?.victory}
+        calm={calm}
+      />
       <Traveller
         road={road}
         travel={travel}
@@ -1182,7 +1415,7 @@ export function AdventureWorld({
         powers={powerColours}
         powerCount={powerCount}
       />
-      <SpeedSparks road={road} travel={travel} colourAt={colourAlong} />
+      {!calm && <SpeedSparks road={road} travel={travel} colourAt={colourAlong} />}
       <SectionWeather road={road} travel={travel} spans={spans} />
       {stops.map((stop, i) => (
         <Portal
@@ -1198,8 +1431,8 @@ export function AdventureWorld({
         />
       ))}
       <FinishGate road={road} spans={spans} />
-      <Rig road={road} travel={travel} onMove={onMove} limit={limit ?? road.finish + 10} />
-      {pickRef && <Picker road={road} pickRef={pickRef} />}
+      <Rig road={road} travel={travel} onMove={onMove} limit={limit ?? road.finish + 10} calm={calm} />
+      {pickRef && <Picker road={road} pickRef={pickRef} far={calm ? 140 : 70} />}
     </Canvas>
   );
 }

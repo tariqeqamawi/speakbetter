@@ -69,6 +69,7 @@ export function AdventureScreen({
   heightClass = "h-[calc(100dvh-4rem)]",
   demo = false,
   demoOnce = false,
+  calm = false,
 }: {
   stops: WorldStop[];
   phases: WorldPhase[];
@@ -84,8 +85,10 @@ export function AdventureScreen({
   /** With demo: play it once and, after the dive, open the challenge
    *  (for recording the tour film). */
   demoOnce?: boolean;
+  /** The calm "3D" view: the road without its stunts, seen from above. */
+  calm?: boolean;
 }) {
-  const road = useMemo(() => layoutRoad(stops.length, stops.map((s) => s.phase)), [stops]);
+  const road = useMemo(() => layoutRoad(stops.length, stops.map((s) => s.phase), { calm }), [stops, calm]);
   // The checkpoint the student is on.
   const hereIndex = Math.max(0, stops.findIndex((s) => s.state === "here"));
   // The challenges open and not yet done, in road order.
@@ -98,8 +101,17 @@ export function AdventureScreen({
     // (For looking at a landmark: ?road-at=mic|speakers|headphones.)
     if (typeof window !== "undefined") {
       const at = new URLSearchParams(window.location.search).get("road-at") as keyof MonumentPlan | null;
+      // (And the stunts, the victory stretch, the finish: ?road-at=loop.)
+      const stunt = road.stunts.find((z) => z.kind === (at as string));
+      if (stunt) return Math.max(0, stunt.a - 40);
+      if ((at as string) === "victory") return road.stops[road.stops.length - 1] + 20;
+      if ((at as string) === "finish") return road.finish - 90;
+      const weave = road.skyways.find((w) => (w as { wave?: boolean }).wave);
+      if ((at as string) === "weave" && weave) return weave.a + 60;
+      if ((at as string) === "tube") return structurePlan(road).tunnels[0].from - 10;
       const m = at ? structurePlan(road).monuments[at] : undefined;
-      const ms = Array.isArray(m) ? m[0] : m && "s" in m ? m.s : m?.a;
+      const first = Array.isArray(m) ? m[0] : m;
+      const ms = typeof first === "number" ? first : first && "s" in first ? first.s : first?.a;
       if (ms !== undefined) return Math.max(0, ms - 150);
     }
     return hereIndex > 0 ? Math.max(0, road.stops[hereIndex] - AHEAD - 2) : 0;
@@ -607,7 +619,7 @@ export function AdventureScreen({
       aria-label="The S.T.O.R.Y. road. Drag down or use the down arrow to travel forward."
       className={`relative w-full touch-none select-none ${heightClass} overflow-hidden bg-[#070c18] outline-none`}
     >
-      <AdventureWorld stops={stops} phases={phases} travel={travel} onMove={onMove} avatar={avatar} pickRef={pickRef} limit={limit} skyImage={skyImage} active={onScreen} />
+      <AdventureWorld stops={stops} phases={phases} travel={travel} onMove={onMove} avatar={avatar} pickRef={pickRef} limit={limit} skyImage={skyImage} active={onScreen} calm={calm} />
 
       {bannerPhase && (
         <div key={banner!.key} className="phase-banner pointer-events-none absolute inset-x-0 top-16 z-20 flex justify-center px-4">
@@ -793,6 +805,29 @@ export function AdventureScreen({
           </span>
         )}
         {atFinish && <span className="text-lg font-bold text-ink">The finish line</span>}
+        {/* NEXT CHALLENGE: fly straight to just before the next portal
+            that's open and not yet done - tap again for the one after,
+            round to the first. Its own pill, above the letters, where it
+            can't be missed; hidden while a Start button is showing. */}
+        {openStops.length > 0 && !demo && !canStart && !diving && !(hereIndex > 0 && at < road.stops[0] - 4) && (
+          <button
+            type="button"
+            onClick={() => {
+              const here = travel.s + AHEAD;
+              const next = openStops.find((i) => road.stops[i] > here + 4) ?? openStops[0];
+              travel.goTo(Math.max(0, road.stops[next] - AHEAD - 2));
+            }}
+            aria-label="Next open challenge"
+            className="pointer-events-auto mb-1 flex items-center gap-2 rounded-full border-2 bg-navy-950/85 py-2 pl-5 pr-4 text-sm font-bold text-ink shadow-lg backdrop-blur"
+            style={{ borderColor: phase?.color, boxShadow: `0 0 20px -4px ${phase?.color}` }}
+          >
+            Next challenge
+            <svg viewBox="0 0 24 24" className="size-4" fill="currentColor" aria-hidden>
+              <path d="M5 5.5v13a1 1 0 0 0 1.5.86l10-6.5a1 1 0 0 0 0-1.72l-10-6.5A1 1 0 0 0 5 5.5z" />
+              <rect x="17.5" y="5" width="2.5" height="14" rx="1" />
+            </svg>
+          </button>
+        )}
         {/* S.T.O.R.Y. - tap a letter to fly to that stretch of road. */}
         <div className="pointer-events-auto mt-3 flex gap-2">
           {phases.map((p) => {
@@ -821,27 +856,6 @@ export function AdventureScreen({
               </button>
             );
           })}
-          {/* NEXT CHALLENGE: fly straight to just before the next portal
-              that's open and not yet done - tap again for the one after,
-              round to the first. For anyone who'd rather not drive. */}
-          {openStops.length > 0 && !demo && (
-            <button
-              type="button"
-              onClick={() => {
-                const here = travel.s + AHEAD;
-                const next = openStops.find((i) => road.stops[i] > here + 4) ?? openStops[0];
-                travel.goTo(Math.max(0, road.stops[next] - AHEAD - 2));
-              }}
-              aria-label="Next open challenge"
-              title="Next open challenge"
-              className="grid size-11 place-items-center rounded-full border-2 border-white/70 bg-[rgba(7,12,24,0.7)] text-white"
-            >
-              <svg viewBox="0 0 24 24" className="size-5" fill="currentColor" aria-hidden>
-                <path d="M5 5.5v13a1 1 0 0 0 1.5.86l10-6.5a1 1 0 0 0 0-1.72l-10-6.5A1 1 0 0 0 5 5.5z" />
-                <rect x="17.5" y="5" width="2.5" height="14" rx="1" />
-              </svg>
-            </button>
-          )}
         </div>
         {/* The dial: hold and push up to go forward, down to go back -
             the other way to travel, beside the letters. */}

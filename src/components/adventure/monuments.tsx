@@ -9,10 +9,11 @@ import { CLIMB, ROAD_HALF, groundAt, pointAt, sideAt, type RoadLayout } from "./
 // else in the city, so it takes long enough to pass them for the penny
 // to drop: "wait - is that a microphone?"
 //
-// - A PODCAST MIC, the broadcast kind: a long body in a yoke on a stand,
-//   the foam windscreen at its front, and a band of light round its
-//   middle like the on-air light. It stands beside a skyway, so the road
-//   lifts up and runs alongside it.
+// - PODCAST MICS, the broadcast kind, standing upright like towers
+//   either side of the road: a base, a tall stand, a yoke, the body with
+//   its foam windscreen on top and grille rings, and a band of light round
+//   its middle like the on-air light - the same size as the buildings, so
+//   the shape reads from far off.
 // - A PAIR OF SPEAKER STACKS, one either side of the road: big woofers
 //   low, tweeters at the top, all pulsing to a beat.
 // - HEADPHONES as an archway: the headband spans the road, the cups
@@ -22,7 +23,8 @@ import { CLIMB, ROAD_HALF, groundAt, pointAt, sideAt, type RoadLayout } from "./
 // shapes read against the sky; the glowing parts in the section's colour.
 
 export interface MonumentPlan {
-  mic?: { s: number; side: number };
+  /** The podcast mics, standing like towers: where, and which side. */
+  mic?: { s: number; side: number }[];
   /** The speaker the road climbs: where the climb begins. */
   speakers?: { a: number };
   /** Every great arch of the road is a pair of headphones. */
@@ -85,39 +87,35 @@ export function Monuments({ road, colourAt, plan }: { road: RoadLayout; colourAt
     };
     // (In each group: -z runs along the road, x across it, y up.)
 
-    if (plan.mic) {
-      const { s, side } = plan.mic;
+    for (const { s, side } of plan.mic ?? []) {
       const c = colourAt(s).clone().lerp(new THREE.Color("#ffffff"), 0.25).multiplyScalar(1.6);
       const g = new THREE.Group();
-      const H = 48; // the height of the yoke's pivot - level with the skyway
-      const L = 150; // the body's length
-      const R = 28;
+      const P = 62; // the stand's height, up to the yoke
+      const R = 13; // the body's radius
+      const L = 58; // the body's length
+      const HEAD = 24; // the foam windscreen
       // Base and stand.
-      g.add(mesh(new THREE.CylinderGeometry(34, 40, 8, 40), glass, 0, 4, 0));
-      g.add(mesh(new THREE.CylinderGeometry(4, 5, H, 16), glass, 0, H / 2, 0));
-      // The yoke: a U round the body.
-      const yoke = new THREE.Group();
-      yoke.position.set(0, H, 0);
-      yoke.add(mesh(new THREE.BoxGeometry(R * 2 + 16, 5, 6), glass, 0, 0, 0));
-      for (const x of [-(R + 6), R + 6]) yoke.add(mesh(new THREE.BoxGeometry(5, 38, 8), glass, x, 18, 0));
-      g.add(yoke);
-      // The body, tilted up a little, pointing along the road toward the
-      // traveller coming in.
+      g.add(mesh(new THREE.CylinderGeometry(15, 18, 4, 40), glass, 0, 2, 0));
+      g.add(mesh(new THREE.CylinderGeometry(2.2, 2.8, P, 16), glass, 0, P / 2, 0));
+      // The yoke: a U cradling the body.
+      g.add(mesh(new THREE.BoxGeometry(R * 2 + 9, 3, 5), glass, 0, P, 0));
+      for (const x of [-(R + 3.5), R + 3.5]) g.add(mesh(new THREE.BoxGeometry(2.6, 30, 5), glass, x, P + 15, 0));
+      // The body, upright, leaning a little toward the road.
       const body = new THREE.Group();
-      body.position.set(0, H + 32, 0);
-      // (Foam head toward the traveller coming in, angled to the road.)
-      body.rotation.set(0.18, Math.PI - side * 0.55, 0);
-      body.add(mesh(new THREE.CylinderGeometry(R, R * 0.92, L, 40), glass, 0, 0, 0, Math.PI / 2));
-      // The foam windscreen at the front: rounder, fatter, a grille of rings.
-      body.add(mesh(new THREE.CylinderGeometry(R * 1.12, R * 1.12, 44, 40), glass, 0, 0, L / 2 + 16, Math.PI / 2));
-      body.add(mesh(new THREE.SphereGeometry(R * 1.12, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), glass, 0, 0, L / 2 + 38, Math.PI / 2));
-      for (const z of [L / 2 + 2, L / 2 + 14, L / 2 + 26]) body.add(mesh(new THREE.TorusGeometry(R * 1.14, 0.8, 8, 48), glow(c.clone().multiplyScalar(0.5)), 0, 0, z));
-      // THE ON-AIR BAND, round the middle of the body.
-      body.add(mesh(new THREE.CylinderGeometry(R * 1.04, R * 1.04, 10, 48, 1, true), glow(c), 0, 0, -6, Math.PI / 2));
-      // The back plate and its cable.
-      body.add(mesh(new THREE.CylinderGeometry(R * 0.8, R * 0.8, 6, 32), glass, 0, 0, -L / 2 - 3, Math.PI / 2));
+      body.position.set(0, P + 4, 0);
+      body.rotation.set(0, 0, side * 0.12);
+      body.add(mesh(new THREE.CylinderGeometry(R, R * 0.9, L, 40), glass, 0, L / 2, 0));
+      // THE ON-AIR BAND round its middle.
+      body.add(mesh(new THREE.CylinderGeometry(R * 1.04, R * 1.04, 5, 48, 1, true), glow(c), 0, L * 0.42, 0));
+      // The foam windscreen on top: fatter, rounded, ringed with light.
+      body.add(mesh(new THREE.CylinderGeometry(R * 1.14, R * 1.1, HEAD, 40), glass, 0, L + HEAD / 2, 0));
+      body.add(mesh(new THREE.SphereGeometry(R * 1.14, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), glass, 0, L + HEAD, 0));
+      for (const y of [L + 3, L + HEAD / 2, L + HEAD - 3])
+        body.add(mesh(new THREE.TorusGeometry(R * 1.16, 0.5, 8, 48), glow(c.clone().multiplyScalar(0.6)), 0, y, 0, Math.PI / 2));
+      // The cable, dropping from its base.
+      body.add(mesh(new THREE.CylinderGeometry(R * 0.5, R * 0.5, 4, 24), glass, 0, -2, 0));
       g.add(body);
-      placeAt(g, road, s, side * (ROAD_HALF + 58));
+      placeAt(g, road, s, side * (ROAD_HALF + 34));
       root.add(g);
     }
 

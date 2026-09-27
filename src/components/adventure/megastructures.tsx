@@ -81,7 +81,7 @@ const GLASS_FRAG = /* glsl */ `
       + vTint * fres * 0.42
       + vTint * floors * (0.3 + fres) * 0.9;
     float fog = 1.0 - exp(-uFogD * uFogD * vDepth * vDepth);
-    gl_FragColor = vec4(mix(col, uFog, fog * 0.5), 1.0);
+    gl_FragColor = vec4(mix(col, uFog, fog * 0.85), 1.0);
   }
 `;
 
@@ -182,9 +182,21 @@ const TOWER_FRAG = /* glsl */ `
     vec3 base = vec3(0.022, 0.035, 0.07) * (0.55 + 0.7 * side);
     vec3 col = base + vec3(0.12, 0.18, 0.35) * fres * 0.35 + vGlow * g * up;
     float fog = 1.0 - exp(-uFogD * uFogD * vDepth * vDepth);
-    gl_FragColor = vec4(mix(col, uFog, fog * 0.5), 1.0);
+    gl_FragColor = vec4(mix(col, uFog, fog * 0.85), 1.0);
   }
 `;
+
+// THE VICTORY STRETCH's towers: the same buildings, their glowing
+// details in every section's colour - green, cyan, gold, red, magenta -
+// brighter, and beating slowly like a crowd on its feet.
+const VICTORY_VERT = TOWER_VERT.replace(
+  "vGlow = h1 < 0.4 ? vec3(0.25, 0.55, 1.0) : h1 < 0.7 ? vec3(0.66, 0.36, 1.0) : vec3(0.2, 0.95, 0.75);",
+  "vGlow = h1 < 0.2 ? vec3(0.12, 0.91, 0.56) : h1 < 0.4 ? vec3(0.13, 0.85, 0.96) : h1 < 0.6 ? vec3(1.0, 0.84, 0.04) : h1 < 0.8 ? vec3(1.0, 0.29, 0.17) : vec3(0.96, 0.24, 0.88);",
+);
+const VICTORY_FRAG = TOWER_FRAG.replace("uniform vec3 uFog;", "uniform vec3 uFog;\n  uniform float uTime;").replace(
+  "vGlow * g * up;",
+  "vGlow * g * up * (1.5 + 0.9 * pow(0.5 + 0.5 * sin(uTime * 2.4 + vSeed * 3.0 - vW.y * 0.04), 3.0));",
+);
 
 type Kind = "box" | "cyl" | "cyl6" | "cone4" | "cone8" | "sphere" | "arc" | "gRing" | "gDisc" | "gSphere";
 const KINDS: Kind[] = ["box", "cyl", "cyl6", "cone4", "cone8", "sphere", "arc", "gRing", "gDisc", "gSphere"];
@@ -224,8 +236,11 @@ function buildCity(
   keep: Keep,
   colourAt: ColourAt,
   clear: Keep = [],
+  victory = Infinity,
 ) {
   const parts = Object.fromEntries(KINDS.map((k) => [k, [] as THREE.Matrix4[]])) as Record<Kind, THREE.Matrix4[]>;
+  /** The victory stretch's glass, lit in every colour. */
+  const vParts = Object.fromEntries(KINDS.map((k) => [k, [] as THREE.Matrix4[]])) as Record<Kind, THREE.Matrix4[]>;
   /** The speaking landmarks' glass, kept apart to be drawn with a white
    *  glow round their edges so the shapes read against the sky. */
   const lmParts = Object.fromEntries(KINDS.map((k) => [k, [] as THREE.Matrix4[]])) as Record<Kind, THREE.Matrix4[]>;
@@ -256,7 +271,7 @@ function buildCity(
       local.rotation.set(rx, ry, rz);
       local.scale.set(sx, sy, sz);
       local.updateMatrix();
-      const into = type >= 7 && !GLOWS.has(k) ? lmParts : parts;
+      const into = type >= 7 && !GLOWS.has(k) ? lmParts : s > victory && !GLOWS.has(k) ? vParts : parts;
       into[k].push(m.multiplyMatrices(anchor.matrix, local.matrix).clone());
       if (GLOWS.has(k)) tints[k].push(glow);
     };
@@ -359,6 +374,11 @@ function buildCity(
       put("cone8", 0, h * 0.7, 0, w * 0.7, h * 0.6, w * 0.7);
       top = h;
     }
+    // In the victory stretch every tower is crowned with a ring of light.
+    if (s > victory) {
+      put("gRing", 0, top + 2, 0, w * 1.2, w * 1.2, w * 1.2, 0, Math.PI / 2);
+      put("gSphere", 0, top + 5, 0, 3.2, 3.2, 3.2);
+    }
     towers.push({ s, d, top: top - 30 });
   };
 
@@ -366,15 +386,16 @@ function buildCity(
   // THE NEAR ROW, lining the road.
   for (let s = 60; s < end; ) {
     const c = inCity(s);
+    const won = s > victory;
     for (const sd of c > 0.3 ? [-1, 1] : [rand() < 0.5 ? -1 : 1]) {
-      const d = sd * (ROAD_HALF + 20 + rand() * (c > 0.3 ? 30 : 45));
+      const d = sd * (ROAD_HALF + (won ? 14 : 20) + rand() * (won ? 18 : c > 0.3 ? 30 : 45));
       if (kept(s, d)) continue;
       // One in six is a nod to speaking - a mic, headphones, a speaker
       // stack - that reads as a tower until you look again.
       const speaking = rand() < 0.17;
       tower(s, d, 6 + rand() * 9, (70 + rand() * 110) * (1 + c * 0.4), speaking ? 7 + Math.floor(rand() * 4) : Math.floor(rand() * 7));
     }
-    s += THREE.MathUtils.lerp(28 + rand() * 24, 9 + rand() * 8, c);
+    s += won ? 7 + rand() * 5 : THREE.MathUtils.lerp(28 + rand() * 24, 9 + rand() * 8, c);
   }
   // THE FAR ROW, along the edges of the land: taller, bigger, mostly
   // spires, needles and obelisks - the skyline you're always heading for.
@@ -389,11 +410,37 @@ function buildCity(
     }
     s += THREE.MathUtils.lerp(40 + rand() * 35, 14 + rand() * 10, c);
   }
-  return { parts, lmParts, tints, towers };
+  return { parts, lmParts, vParts, tints, towers };
 }
 
-function City({ road, dense, keep, colourAt, clear }: { road: RoadLayout; dense?: { from: number; to: number }; keep: Keep; colourAt: ColourAt; clear: Keep }) {
-  const { parts, lmParts, tints, towers } = useMemo(() => buildCity(road, seeded(97), dense, keep, colourAt, clear), [road, dense, keep, colourAt, clear]);
+function City({
+  road,
+  dense,
+  keep,
+  colourAt,
+  clear,
+  victory,
+}: {
+  road: RoadLayout;
+  dense?: { from: number; to: number };
+  keep: Keep;
+  colourAt: ColourAt;
+  clear: Keep;
+  victory?: number;
+}) {
+  const { parts, lmParts, vParts, tints, towers } = useMemo(
+    () => buildCity(road, seeded(97), dense, keep, colourAt, clear, victory),
+    [road, dense, keep, colourAt, clear, victory],
+  );
+  const winning = useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        vertexShader: VICTORY_VERT,
+        fragmentShader: VICTORY_FRAG,
+        uniforms: { uFog: { value: new THREE.Color("#040816") }, uFogD: { value: 0.003 }, uTime: { value: 0 } },
+      }),
+    [],
+  );
   // The landmarks' glass: the same dark glass, lit round its edges in
   // white, so a giant mic or a pair of headphones stands out.
   const rimmed = useMemo(
@@ -401,10 +448,10 @@ function City({ road, dense, keep, colourAt, clear }: { road: RoadLayout; dense?
       new THREE.ShaderMaterial({
         vertexShader: GLASS_VERT,
         fragmentShader: GLASS_FRAG.replace(
-          "gl_FragColor = vec4(mix(col, uFog, fog * 0.5), 1.0);",
-          "col = vec3(0.012, 0.013, 0.018) * (0.6 + 0.8 * side) + vec3(0.55, 0.62, 0.78) * pow(1.0 - abs(dot(N, V)), 2.2) * 0.6;\n    gl_FragColor = vec4(mix(col, uFog, fog * 0.5), 1.0);",
+          "gl_FragColor = vec4(mix(col, uFog, fog * 0.85), 1.0);",
+          "col = vec3(0.012, 0.013, 0.018) * (0.6 + 0.8 * side) + vec3(0.55, 0.62, 0.78) * pow(1.0 - abs(dot(N, V)), 2.2) * 0.6;\n    gl_FragColor = vec4(mix(col, uFog, fog * 0.85), 1.0);",
         ),
-        uniforms: { uFog: { value: new THREE.Color("#060b1c") }, uFogD: { value: 0.0024 } },
+        uniforms: { uFog: { value: new THREE.Color("#040816") }, uFogD: { value: 0.003 } },
       }),
     [],
   );
@@ -415,6 +462,7 @@ function City({ road, dense, keep, colourAt, clear }: { road: RoadLayout; dense?
   /* eslint-disable react-hooks/immutability -- a shader uniform, set every frame */
   useFrame(({ clock }) => {
     pulse.uniforms.uTime.value = clock.elapsedTime;
+    winning.uniforms.uTime.value = clock.elapsedTime;
   });
   /* eslint-enable react-hooks/immutability */
   const material = useMemo(
@@ -422,7 +470,7 @@ function City({ road, dense, keep, colourAt, clear }: { road: RoadLayout; dense?
       new THREE.ShaderMaterial({
         vertexShader: TOWER_VERT,
         fragmentShader: TOWER_FRAG,
-        uniforms: { uFog: { value: new THREE.Color("#060b1c") }, uFogD: { value: 0.0024 } },
+        uniforms: { uFog: { value: new THREE.Color("#040816") }, uFogD: { value: 0.003 } },
       }),
     [],
   );
@@ -446,8 +494,15 @@ function City({ road, dense, keep, colourAt, clear }: { road: RoadLayout; dense?
           mesh.frustumCulled = false;
           return mesh;
         }),
+        KINDS.filter((k) => vParts[k].length).map((k) => {
+          const mesh = new THREE.InstancedMesh(unitGeo(k), winning, vParts[k].length);
+          vParts[k].forEach((mx, i) => mesh.setMatrixAt(i, mx));
+          mesh.instanceMatrix.needsUpdate = true;
+          mesh.frustumCulled = false;
+          return mesh;
+        }),
       ),
-    [parts, lmParts, tints, material, pulse, rimmed],
+    [parts, lmParts, vParts, tints, material, pulse, rimmed, winning],
   );
   useEffect(
     () => () => {
@@ -458,8 +513,9 @@ function City({ road, dense, keep, colourAt, clear }: { road: RoadLayout; dense?
       material.dispose();
       pulse.dispose();
       rimmed.dispose();
+      winning.dispose();
     },
-    [meshes, material, pulse, rimmed],
+    [meshes, material, pulse, rimmed, winning],
   );
   return (
     <group>
@@ -501,7 +557,7 @@ function Corridors({ road, colourAt, runs }: { road: RoadLayout; colourAt: Colou
     count,
     useMemo(() => new THREE.BoxGeometry(1, 1, 1), []),
     useMemo(
-      () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color("#060b1c") }, uFogD: { value: 0.0024 } } }),
+      () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color("#040816") }, uFogD: { value: 0.003 } } }),
       [],
     ),
   );
@@ -584,7 +640,7 @@ function Venue({ road, colourAt, venues }: { road: RoadLayout; colourAt: ColourA
   const rows = venues.reduce((n, v) => n + Math.max(0, Math.floor((v.seatsTo - v.stage - 14) / ROW)), 0);
   const seatCount = rows * PER_ROW * 2;
   const glass = useMemo(
-    () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color("#060b1c") }, uFogD: { value: 0.0024 } } }),
+    () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color("#040816") }, uFogD: { value: 0.003 } } }),
     [],
   );
   const seats = useInstanced(seatCount, useMemo(() => new THREE.BoxGeometry(1, 1, 1), []), useMemo(() => glass.clone(), [glass]));
@@ -713,7 +769,7 @@ function SpotlightRuns({ road, colourAt, runs }: { road: RoadLayout; colourAt: C
   }, [runs]);
   const gantries = rigs.length / 2;
   const glass = useMemo(
-    () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color("#060b1c") }, uFogD: { value: 0.0024 } } }),
+    () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color("#040816") }, uFogD: { value: 0.003 } } }),
     [],
   );
   const beams = useInstanced(gantries * 3, useMemo(() => new THREE.BoxGeometry(1, 1, 1), []), glass);
@@ -970,7 +1026,7 @@ function Pylons({ road, colourAt }: { road: RoadLayout; colourAt: ColourAt }) {
     return out;
   }, [road]);
   const glass = useMemo(
-    () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color("#060b1c") }, uFogD: { value: 0.0024 } } }),
+    () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color("#040816") }, uFogD: { value: 0.003 } } }),
     [],
   );
   const posts = useInstanced(spots.length * 3, useMemo(() => new THREE.BoxGeometry(1, 1, 1), []), glass);
@@ -1033,9 +1089,11 @@ const TUBE_VERT = /* glsl */ `
     gl_Position = projectionMatrix * mv;
   }
 `;
-// Inside the tube: dark glass, rings of light around it every few
-// metres, strips of light running its length, and stars in the glass -
-// a few of them twinkling.
+// Inside the tube: dark glass, never lit all over - the light MOVES, the
+// way it runs through O's land. Tracers of light race along the walls in
+// the direction of travel, each a bright head and a fading tail; every
+// so often a lamp, like a street light in a tunnel, throws a pool of
+// light that flares as you pass under it; and a few stars in the glass.
 const TUBE_FRAG = /* glsl */ `
   uniform vec3 uColor;
   uniform float uLen;
@@ -1045,21 +1103,38 @@ const TUBE_FRAG = /* glsl */ `
   void main() {
     float along = vUv.x * uLen;
     float around = vUv.y;
-    // A ring of light now and then - sparse.
-    float ringD = (fract(along / 21.0) - 0.5) * 21.0;
-    float ring = exp(-ringD * ringD * 3.0);
-    // LAMPS in rows round the walls, like the lights along the road -
-    // at speed they strobe past.
-    vec2 q = vec2(along / 4.5, around * 12.0);
-    vec2 fq = fract(q) - 0.5;
-    float lamp = exp(-(fq.x * fq.x * 70.0 + fq.y * fq.y * 160.0));
-    // And a few stars in the glass.
+    // TRACERS: 14 lanes round the wall, each with streaks at its own
+    // spacing and speed, all running forward.
+    float lanes = 14.0;
+    float lane = floor(around * lanes);
+    float inLane = fract(around * lanes) - 0.5;
+    float h = fract(sin(lane * 91.7 + 3.1) * 43758.5453);
+    float gap = 40.0 + h * 50.0;
+    float x = fract((along - uTime * (38.0 + h * 40.0) + h * 300.0) / gap) * gap;
+    // x: how far behind the head this point is (0 at the head).
+    float hx = min(x, gap - x);
+    float head = exp(-hx * hx * 2.0);
+    float tail = exp(-(gap - x) / 7.0) * step(0.5, h + 0.2);
+    float streak = (head * 2.2 + tail * 0.8) * exp(-inLane * inLane * 60.0);
+    // LAMPS: one every 34 units, a hot pool on the wall, flaring bright
+    // as it comes close.
+    float lampD = (fract(along / 34.0) - 0.5) * 34.0;
+    float lampA = abs(fract(around * 2.0 + 0.25) - 0.5);
+    float lamp = exp(-lampD * lampD * 0.6) * exp(-lampA * lampA * 90.0);
+    float pool = exp(-lampD * lampD * 0.03) * 0.35;
+    float near = 1.0 + 2.5 * exp(-vDepth / 14.0);
+    // A few stars in the glass.
     vec2 cell = floor(vec2(along * 1.2, around * 90.0));
-    float h = fract(sin(dot(cell, vec2(12.9898, 78.233))) * 43758.5453);
+    float hs = fract(sin(dot(cell, vec2(12.9898, 78.233))) * 43758.5453);
     vec2 f = fract(vec2(along * 1.2, around * 90.0)) - 0.5;
-    float star = step(0.95, h) * exp(-dot(f, f) * 30.0) * (0.5 + 0.5 * sin(uTime * (1.0 + h * 3.0) + h * 50.0));
-    vec3 base = vec3(0.015, 0.025, 0.06);
-    vec3 col = base + uColor * (ring * 1.3 + lamp * 1.8) + vec3(0.8, 0.85, 1.0) * star * 0.8;
+    float star = step(0.96, hs) * exp(-dot(f, f) * 30.0) * (0.5 + 0.5 * sin(uTime * (1.0 + hs * 3.0) + hs * 50.0));
+    vec3 base = vec3(0.008, 0.012, 0.03);
+    vec3 warm = vec3(1.0, 0.92, 0.75);
+    vec3 col = base
+      + mix(uColor, vec3(1.0), head * 0.5) * streak
+      + warm * (lamp * 1.4 + pool * 0.18) * near
+      + uColor * pool * 0.2 * near
+      + vec3(0.8, 0.85, 1.0) * star * 0.6;
     float ends = smoothstep(0.0, 6.0, along) * smoothstep(uLen, uLen - 6.0, along);
     gl_FragColor = vec4(col * (0.35 + 0.65 * ends), 1.0);
   }
@@ -1200,7 +1275,10 @@ export function structurePlan(road: RoadLayout) {
   const tunnels: { from: number; to: number }[] = [];
   const venues: { stage: number; seatsTo: number }[] = [];
   const spotRuns: { from: number; to: number }[] = [];
+  const lastStop = road.stops[road.stops.length - 1] ?? 0;
   openStretches(road).forEach((st, i) => {
+    // The victory stretch, after the last challenge, is all towers.
+    if (st.from > lastStop) return;
     // A stretch with a loop or a corkscrew in it holds nothing else.
     if (road.stunts.some((z) => z.a < st.to + 40 && z.a + z.len > st.from - 40)) return;
     // Nor one where the road is up on a skyway.
@@ -1229,20 +1307,31 @@ export function structurePlan(road: RoadLayout) {
     ...road.stunts.map((z) => ({ from: z.a - 20, to: z.a + z.len + 20 })),
   ];
 
-  // THE MONUMENTS (monuments.tsx). The podcast mic beside the city's
-  // skyway; the speakers either side of T's skyway; the headphones in
-  // place of the second great arch.
+  // THE MONUMENTS (monuments.tsx). Podcast mics standing like towers
+  // either side of the road - a pair beside the city's highest skyway,
+  // one more in the open land of O (after the loop); the speaker the road
+  // climbs; the headphones in place of every great arch.
   const monuments: MonumentPlan = {};
   const tallest = [...road.skyways].sort((p, q) => q.h - p.h)[0];
-  if (tallest) monuments.mic = { s: (tallest.a + tallest.b) / 2, side: 1 };
+  const loop = road.stunts.find((z) => z.kind === "loop");
+  const n = road.stops.length;
+  const micAt = tallest ? (tallest.a + tallest.b) / 2 : (road.stops[Math.round(n * 0.85)] + road.stops[Math.round(n * 0.85) - 1]) / 2;
+  monuments.mic = [
+    { s: micAt - 45, side: 1 },
+    { s: micAt + 55, side: -1 },
+  ];
+  if (loop) {
+    const after = road.stops.find((x) => x > loop.a + loop.len);
+    if (after) monuments.mic.push({ s: after + 70, side: -1 });
+  }
   const climb = road.stunts.find((z) => z.kind === "climb");
   if (climb) monuments.speakers = { a: climb.a };
   // Every great arch is now a giant pair of headphones.
   monuments.headphones = arches.splice(0, arches.length);
   /** Where the towers keep well clear, to let the monuments stand alone. */
-  const clear = [monuments.mic, climb ? { s: climb.a + climb.len / 2 } : undefined]
-    .filter((m): m is { s: number; side?: number } => Boolean(m))
-    .map((m) => ({ from: m.s - 90, to: m.s + 90 }))
+  const clear = [...monuments.mic.map((m) => ({ from: m.s - 38, to: m.s + 38 })), climb ? { s: climb.a + climb.len / 2 } : undefined]
+    .filter((m): m is { from: number; to: number } | { s: number } => Boolean(m))
+    .map((m) => ("s" in m ? { from: m.s - 90, to: m.s + 90 } : m))
     .concat(monuments.headphones.map((s) => ({ from: s - 25, to: s + 25 })));
   return { arches, corridors, tunnels, venues, spotRuns, keep, monuments, clear };
 }
@@ -1251,29 +1340,31 @@ export function Megastructures({
   road,
   colourAt,
   dense,
+  victory,
+  calm = false,
 }: {
   road: RoadLayout;
   colourAt: ColourAt;
   /** Where the city is thickest: Y, heading into the skyline. */
   dense?: { from: number; to: number };
+  /** Where the victory stretch begins: every tower after it in all colours. */
+  victory?: number;
+  /** The calm view from above: no tubes or cables over the road to hide it. */
+  calm?: boolean;
 }) {
   const plan = useMemo(() => structurePlan(road), [road]);
   const cableRuns = useMemo(() => road.skyways.filter((w) => w.h < 30).map((w) => ({ from: w.a + 45, to: w.b - 45 })), [road]);
   const denseSpan = useMemo(() => (dense ? { from: dense.from, to: dense.to } : undefined), [dense]);
   return (
     <group>
-      <City road={road} dense={denseSpan} keep={plan.keep} colourAt={colourAt} clear={plan.clear} />
+      <City road={road} dense={denseSpan} keep={plan.keep} colourAt={colourAt} clear={plan.clear} victory={victory} />
       <Monuments road={road} colourAt={colourAt} plan={plan.monuments} />
       <Venue road={road} colourAt={colourAt} venues={plan.venues} />
       <Corridors road={road} colourAt={colourAt} runs={plan.corridors} />
-      <Tubes road={road} colourAt={colourAt} tunnels={plan.tunnels} />
+      {!calm && <Tubes road={road} colourAt={colourAt} tunnels={plan.tunnels} />}
       <Pylons road={road} colourAt={colourAt} />
       {/* The cable tangle over the first skyway (the lowest). */}
-      <Cables
-        road={road}
-        colourAt={colourAt}
-        runs={cableRuns}
-      />
+      {!calm && <Cables road={road} colourAt={colourAt} runs={cableRuns} />}
       <SpotlightRuns road={road} colourAt={colourAt} runs={plan.spotRuns} />
     </group>
   );
