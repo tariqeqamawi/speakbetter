@@ -769,6 +769,12 @@ export function Feedback({
         accentClass="text-body-language"
         open
       >
+        {/* The take's spectrum as the app draws it everywhere - the wave,
+            the colors this challenge needed glowing - and the bars under
+            it that name each color and its number. */}
+        <div className="mb-4 overflow-hidden rounded-xl bg-navy-950/70 p-3">
+          <SpectrumWave values={attempt.spectrum} highlight={challenge.targetSkills} max={100} className="h-36 w-full sm:h-44" />
+        </div>
         <SpectrumBars spectrum={attempt.spectrum} revealCount={barsShown} required={challenge.targetSkills} />
       </ReviewSection>
 

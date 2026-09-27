@@ -2,6 +2,7 @@
 
 import { categories, categoryById, type CategoryId } from "@/data/categories";
 import { SpectrumBars } from "@/components/spectrum";
+import { SpectrumWave } from "@/components/spectrum-wave";
 import { LessonLink } from "@/components/practice-panel";
 import { useEffect, useRef, useState } from "react";
 import { TalkingLion, type SpokenCue } from "@/components/talking-lion";
@@ -263,8 +264,7 @@ export function CoachDemo() {
               - there are others - but the only one trained on a complete
               method, that ties what it sees to the lesson that fixes it. */}
           <p className="mt-3 max-w-xl text-lg font-semibold leading-snug text-ink text-balance sm:text-xl">
-            The only AI coach trained on a complete speaking method - it tells you which skills you used, which you
-            missed, and exactly which lesson to watch next.
+            He tells you which skills you used, which you missed, and exactly which lesson to watch next.
           </p>
           <ReadMore lines={2} className="mt-2 max-w-lg text-sm leading-relaxed text-ink-muted text-balance">
             Thanks to the advances in technology, Coach actually watches your videos, is fully context-aware, and can
@@ -329,6 +329,10 @@ export function CoachDemo() {
         </DemoSection>
 
         <DemoSection title={`Your color spectrum - ${lit} of 7 lit up`} Icon={SpectrumIcon} accentClass="text-body-language">
+          {/* The wave first, as every real review shows it, then the bars. */}
+          <div className="mb-4 overflow-hidden rounded-xl bg-navy-950/70 p-3">
+            <SpectrumWave values={SAMPLE_SPECTRUM} highlight={["storytelling", "mindset"]} max={100} className="h-36 w-full sm:h-44" />
+          </div>
           <SpectrumBars spectrum={SAMPLE_SPECTRUM} required={["storytelling", "mindset"]} />
         </DemoSection>
 

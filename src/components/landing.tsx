@@ -195,8 +195,6 @@ function LandingBody() {
           one twice. */}
       <TestimonialStream items={earlyProof} columns={2} />
 
-      <ProofLine tag="teacher" />
-
       <SectionMark id="different" />
 
       {/* The premise and its punchline, each with its picture: the
@@ -208,36 +206,35 @@ function LandingBody() {
           belongs to the right card only, so the difference is felt
           before it's read. */}
       <Reveal as="section" className="flex flex-col gap-6">
-        {/* This comparison was carrying a screen-reader-only heading,
-            which meant the single clearest claim on the page - that
-            this is a different KIND of thing from what they have
-            bought before - was invisible to everybody who can see. */}
-        <h2 className="rv mx-auto mb-2 max-w-3xl text-center text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-          How Speak Better is different to every other speaking course or app on the market
-        </h2>
-        <p className="rv mx-auto -mt-3 max-w-2xl text-center text-lg text-ink-muted text-balance sm:text-xl" style={delay(80)}>
-          The only AI coach trained on a complete speaking method - it tells you which skills you used, which you
-          missed, and exactly which lesson to watch next.
-        </p>
-        {/* The Speaking Spectrum, first - it is the difference. Other
-            speaking apps, even the ones with an AI coach, hand back generic
-            advice; this reads a take across seven color-coded areas and
-            lights each one up as the skill is shown. */}
-        <div className="rv mx-auto flex w-full max-w-3xl flex-col items-center gap-4 rounded-3xl border border-navy-600 bg-navy-800 p-6 sm:p-8" style={delay(120)}>
-          <span className="spectrum-rule h-1 w-16 rounded-full" />
-          <h3 className="text-2xl font-semibold tracking-tight sm:text-3xl">The Speaking Spectrum</h3>
-          <p className="max-w-xl text-center text-ink-muted text-balance">
-            Other speaking apps give you generic advice - even the ones with AI coaching. Speak Better shows your
-            speaking across seven key areas, color-coded, each one lighting up as you demonstrate its skills. It&apos;s
-            unlike anything out there.
+        {/* One blue-glass container for the claim that sets Speak Better
+            apart: Tariq saying it on video, the heading, the words, and the
+            Speaking Spectrum itself - the thing no other course or app has.
+            The comparison cards follow it as the proof. */}
+        <div className="rv blue-glass mx-auto flex w-full max-w-4xl flex-col items-center gap-6 rounded-3xl p-5 sm:p-8">
+          {/* Tariq saying it: this is not just another online course. */}
+          <div className="w-full overflow-hidden rounded-2xl border border-white/10 shadow-2xl shadow-navy-950/80">
+            <LazyVimeoPlayer
+              vimeoId="1082012628"
+              title="Speak Better - It's Not Just Another Online Course"
+              poster="/thumbs/1081197526.jpg"
+            />
+          </div>
+          <h2 className="max-w-3xl text-center text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+            Speak Better&apos;s Speaking Spectrum makes it unlike any other course or app on the market
+          </h2>
+          <p className="-mt-2 max-w-2xl text-center text-lg text-ink-muted text-balance sm:text-xl">
+            Other speaking apps give you generic advice, even the ones <em>with</em> AI coaching. Speak Better shows
+            your speaking across seven key areas, color-coded, each one lighting up as you demonstrate its skills.
+            It&apos;s unlike anything out there.
           </p>
+          <span className="spectrum-rule h-1 w-16 rounded-full" />
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ink-faint">Before and after</p>
           <SpectrumDemo />
           <ul className="flex max-w-2xl flex-wrap justify-center gap-2">
             {categories.map((cat) => (
               <li
                 key={cat.id}
-                className="flex items-center gap-2 rounded-full border border-navy-600 bg-navy-900 px-3 py-1.5 text-sm text-ink-muted"
+                className="flex items-center gap-2 rounded-full border border-navy-600 bg-navy-900/70 px-3 py-1.5 text-sm text-ink-muted"
               >
                 <span className={`size-2 rounded-full ${cat.bgClass}`} />
                 {cat.name}
@@ -246,14 +243,6 @@ function LandingBody() {
           </ul>
         </div>
 
-        {/* Tariq saying it: this is not just another online course. */}
-        <div className="rv mx-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-navy-600 shadow-2xl shadow-navy-950/80" style={delay(150)}>
-          <LazyVimeoPlayer
-            vimeoId="1082012628"
-            title="Speak Better - It's Not Just Another Online Course"
-            poster="/thumbs/1081197526.jpg"
-          />
-        </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="rv flex flex-col gap-4 rounded-2xl border border-navy-600 bg-navy-900/60 p-6 sm:p-7" style={delay(300)}>
             <div className="relative -mx-2 -mt-2 aspect-[3/2] overflow-hidden rounded-xl">
@@ -332,6 +321,10 @@ function LandingBody() {
         </div>
       </Reveal>
 
+      {/* Someone who got results, standing on their own after the
+          comparison - not beside a wall of other quotes. */}
+      <ProofLine tag="results" />
+
       {/* How a take is actually made - people recording themselves on
           their own phones, the app's recording screen over them. The
           difference just claimed, shown. */}
@@ -395,6 +388,8 @@ function LandingBody() {
       <FirstChallenge />
 
       <SectionMark id="mentors" />
+      {/* What students say about the teacher, before the two mentors. */}
+      <ProofLine tag="teacher" />
       {/* Two mentors in your pocket - the coach on one phone, the
           teacher zoomed to portrait on the other */}
       {/* One phone arrives, the second slides out from under it, then the
@@ -475,8 +470,6 @@ function LandingBody() {
       <TheReality />
 
       <JoinCta label="Sign Me Up" seal sealSize={176} />
-
-      <ProofLine tag="results" />
 
       <SectionMark id="pricing" />
       {/* Pricing - the chapter mark carries the #pricing anchor every

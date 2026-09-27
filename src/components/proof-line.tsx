@@ -22,19 +22,18 @@ export function ProofLine({ tag, skip = 0 }: { tag: Proof; skip?: number }) {
   const who = credit(quote);
 
   return (
-    // White, like every other quotation on this page - a student's
-    // words are the one thing here that is not the seller speaking,
-    // and they should not be wearing the seller's colours.
-    // On a laptop the quote drifts slowly across from the left, fades at
-    // the right, and comes round again (globals.css, .proof-drift).
-    <div className="proof-lane w-full max-w-5xl">
-    <figure className="proof-drift quote-card flex w-full max-w-2xl gap-3 rounded-2xl border p-4 sm:max-w-md">
-      <Avatar name={who} className="size-9 shrink-0" />
-      <div className="flex min-w-0 flex-col gap-1.5">
-        <blockquote className="text-sm leading-relaxed">&ldquo;{quote.quote}&rdquo;</blockquote>
-        <figcaption className="text-xs font-semibold">{who}</figcaption>
-      </div>
+    // Its own moment, not one more card: a still pull-quote on blue
+    // glass, larger than the drifting walls of testimonials and kept
+    // apart from them - set against the section whose claim it proves.
+    <figure className="blue-glass relative mx-auto flex w-full max-w-3xl flex-col items-center gap-4 rounded-3xl px-6 py-8 text-center sm:px-12 sm:py-10">
+      <span aria-hidden className="absolute left-5 top-2 font-serif text-7xl leading-none text-body-language/40 sm:left-8">
+        &ldquo;
+      </span>
+      <blockquote className="text-lg font-medium leading-relaxed text-ink text-balance sm:text-xl">{quote.quote}</blockquote>
+      <figcaption className="flex items-center gap-2.5">
+        <Avatar name={who} className="size-9 shrink-0" />
+        <span className="text-sm font-semibold text-ink-muted">{who}</span>
+      </figcaption>
     </figure>
-    </div>
   );
 }
