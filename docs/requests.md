@@ -208,6 +208,7 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **26 September**
+- Landing restructure: How it works chapter (+ selfie phones), What's in the app (eight films), Skill Lessons copy, challenges bullets, mentors copy, collage opens Why it's different, 3D film trimmed — `0bc5a94`
 - Landing: record-yourself copy (Selfie feature); selfie phones show the brief + ticking challenge bullets — `1a2d2e8`
 - Landing: spectrum claim in a blue-glass container with the video; pull-quotes on blue glass, apart from the walls; wave above the bars in every review — `dff53f3`
 - Dashboard: phone sections bar first + glowing arrows, glowing live strip, ☰ section menu, Over time bars; Guided Tour / Full Guided Tour — `3ec1c6d`
