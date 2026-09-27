@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { AHEAD, pointAt, sideAt, type RoadLayout, type Travel } from "./road-geometry";
+import { AHEAD, bankLift, pointAt, sideAt, type RoadLayout, type Travel } from "./road-geometry";
 
 // What stands on and beside the road: the traveller and the neon line
 // they leave behind them, the gates between the phases, the trophies
@@ -130,6 +130,7 @@ export function Traveller({
     return t;
   }, [image]);
   const p = useMemo(() => new THREE.Vector3(), []);
+  const rideSide = useMemo(() => new THREE.Vector3(), []);
 
   /* eslint-disable react-hooks/immutability -- the ring's material is three.js's, set every frame */
   useFrame(({ clock, camera }) => {
@@ -148,6 +149,13 @@ export function Traveller({
       return;
     }
     disc.current?.scale.setScalar(1);
+    // Up the high side of a banked sweep, and back to the middle.
+    const ride = road.rideAt(s);
+    if (ride !== 0) {
+      sideAt(road, s, rideSide);
+      p.addScaledVector(rideSide, ride);
+      p.y += bankLift(road, s, ride);
+    }
     disc.current?.position.set(p.x, p.y + 1.3 + bob, p.z);
     disc.current?.lookAt(camera.position);
     // The power ring: one band per colour earned, turning.

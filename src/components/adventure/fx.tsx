@@ -129,17 +129,19 @@ export function SpeedSparks({
         debt.current -= 1;
         const i = next.current;
         next.current = (i + 1) % N;
-        const across = (Math.random() - 0.5) * 1.0;
+        const across = (Math.random() - 0.5) * 1.0 + road.rideAt(s);
         pos[i * 3] = p.x + side.x * across;
         pos[i * 3 + 1] = p.y + 0.06;
         pos[i * 3 + 2] = p.z + side.z * across;
         // Carried forward at most of your speed, so they fall behind you
         // slowly enough to see - streaming past either side of the
         // camera; thrown out sideways and up.
-        const keep = 0.8 + Math.random() * 0.1;
-        const out = (Math.random() < 0.5 ? -1 : 1) * (0.6 + Math.random() * 2.2);
+        // Carried forward slower than you, so they stream back past you
+        // and down the screen, fanning out low over the road.
+        const keep = 0.55 + Math.random() * 0.15;
+        const out = (Math.random() < 0.5 ? -1 : 1) * (0.8 + Math.random() * 3.2);
         vel[i * 3] = fwd.x * worldV * keep + side.x * out;
-        vel[i * 3 + 1] = 0.3 + Math.random() * 1.1;
+        vel[i * 3 + 1] = Math.random() * 0.35;
         vel[i * 3 + 2] = fwd.z * worldV * keep + side.z * out;
         ground[i] = p.y + 0.05;
         age[i] = 0;

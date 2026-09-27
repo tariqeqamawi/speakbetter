@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { ROAD_HALF, pointAt, seeded, sideAt, type RoadLayout } from "./road-geometry";
+import { ROAD_HALF, pointAt, seeded, sideAt, venueStretch, type RoadLayout } from "./road-geometry";
 
 // SCALE. On the tracks of Extreme-G the road ran between things far
 // bigger than you - towers, gantries, tunnels - and passing them is what
@@ -141,6 +141,9 @@ function buildCity(
   colourAt: ColourAt,
 ) {
   const parts = Object.fromEntries(KINDS.map((k) => [k, [] as THREE.Matrix4[]])) as Record<Kind, THREE.Matrix4[]>;
+  /** The speaking landmarks' glass, kept apart to be drawn with a white
+   *  glow round their edges so the shapes read against the sky. */
+  const lmParts = Object.fromEntries(KINDS.map((k) => [k, [] as THREE.Matrix4[]])) as Record<Kind, THREE.Matrix4[]>;
   /** Each glowing part's colour, in the same order as its matrices. */
   const tints = Object.fromEntries(KINDS.map((k) => [k, [] as THREE.Color[]])) as Record<Kind, THREE.Color[]>;
   const towers: Tower[] = [];
@@ -167,7 +170,8 @@ function buildCity(
       local.rotation.set(rx, ry, rz);
       local.scale.set(sx, sy, sz);
       local.updateMatrix();
-      parts[k].push(m.multiplyMatrices(anchor.matrix, local.matrix).clone());
+      const into = type >= 7 && !GLOWS.has(k) ? lmParts : parts;
+      into[k].push(m.multiplyMatrices(anchor.matrix, local.matrix).clone());
       if (GLOWS.has(k)) tints[k].push(glow);
     };
     // Which way the road is, in this object's own frame - so a speaker's
@@ -298,11 +302,25 @@ function buildCity(
     }
     s += THREE.MathUtils.lerp(40 + rand() * 35, 14 + rand() * 10, c);
   }
-  return { parts, tints, towers };
+  return { parts, lmParts, tints, towers };
 }
 
 function City({ road, dense, keep, colourAt }: { road: RoadLayout; dense?: { from: number; to: number }; keep: Keep; colourAt: ColourAt }) {
-  const { parts, tints, towers } = useMemo(() => buildCity(road, seeded(97), dense, keep, colourAt), [road, dense, keep, colourAt]);
+  const { parts, lmParts, tints, towers } = useMemo(() => buildCity(road, seeded(97), dense, keep, colourAt), [road, dense, keep, colourAt]);
+  // The landmarks' glass: the same dark glass, lit round its edges in
+  // white, so a giant mic or a pair of headphones stands out.
+  const rimmed = useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        vertexShader: GLASS_VERT,
+        fragmentShader: GLASS_FRAG.replace(
+          "gl_FragColor = vec4(mix(col, uFog, fog * 0.5), 1.0);",
+          "col += vec3(0.85, 0.92, 1.0) * (pow(1.0 - abs(dot(N, V)), 2.2) * 1.1 + 0.05);\n    gl_FragColor = vec4(mix(col, uFog, fog * 0.5), 1.0);",
+        ),
+        uniforms: { uFog: { value: new THREE.Color("#060b1c") }, uFogD: { value: 0.0024 } },
+      }),
+    [],
+  );
   const pulse = useMemo(
     () => new THREE.ShaderMaterial({ vertexShader: PULSE_VERT, fragmentShader: PULSE_FRAG, uniforms: { uTime: { value: 0 } } }),
     [],
@@ -333,8 +351,16 @@ function City({ road, dense, keep, colourAt }: { road: RoadLayout; dense?: { fro
         mesh.instanceMatrix.needsUpdate = true;
         mesh.frustumCulled = false;
         return mesh;
-      }),
-    [parts, tints, material, pulse],
+      }).concat(
+        KINDS.filter((k) => lmParts[k].length).map((k) => {
+          const mesh = new THREE.InstancedMesh(unitGeo(k), rimmed, lmParts[k].length);
+          lmParts[k].forEach((mx, i) => mesh.setMatrixAt(i, mx));
+          mesh.instanceMatrix.needsUpdate = true;
+          mesh.frustumCulled = false;
+          return mesh;
+        }),
+      ),
+    [parts, lmParts, tints, material, pulse, rimmed],
   );
   useEffect(
     () => () => {
@@ -344,8 +370,9 @@ function City({ road, dense, keep, colourAt }: { road: RoadLayout; dense?: { fro
       });
       material.dispose();
       pulse.dispose();
+      rimmed.dispose();
     },
-    [meshes, material, pulse],
+    [meshes, material, pulse, rimmed],
   );
   return (
     <group>
@@ -557,7 +584,7 @@ function Venue({ road, colourAt, venues }: { road: RoadLayout; colourAt: ColourA
   const backs = useInstanced(seatCount, useMemo(() => new THREE.BoxGeometry(1, 1, 1), []), useMemo(() => glass.clone(), [glass]));
   // A thin line of light along the top of each seat back - row after row
   // of them flashing past.
-  const rims = useInstanced(rows * 2, useMemo(() => new THREE.BoxGeometry(1, 1, 1), []), useMemo(() => new THREE.MeshBasicMaterial({ toneMapped: false }), []));
+  const rims = useInstanced(seatCount, useMemo(() => new THREE.BoxGeometry(1, 1, 1), []), useMemo(() => new THREE.MeshBasicMaterial({ toneMapped: false }), []));
   const floor = useInstanced(venues.length, useMemo(() => new THREE.BoxGeometry(1, 1, 1), []), useMemo(() => glass.clone(), [glass]));
   const edges = useInstanced(venues.length * 3, useMemo(() => new THREE.BoxGeometry(1, 1, 1), []), useMemo(() => new THREE.MeshBasicMaterial({ toneMapped: false }), []));
   const truss = useInstanced(venues.length * 3, useMemo(() => new THREE.BoxGeometry(1, 1, 1), []), useMemo(() => glass.clone(), [glass]));
@@ -586,7 +613,6 @@ function Venue({ road, colourAt, venues }: { road: RoadLayout; colourAt: ColourA
       if (colour) mesh.setColorAt(i, colour);
     };
     let si = 0;
-    let ri = 0;
     venues.forEach((v, vi) => {
       c.copy(colourAt(v.stage)).multiplyScalar(1.5);
       // The stage floor, just under the road, wide and deep.
@@ -626,23 +652,25 @@ function Venue({ road, colourAt, venues }: { road: RoadLayout; colourAt: ColourA
       // THE AUDIENCE: rows of seats either side, raked upward away from
       // the stage and turned back to face it.
       for (let s = v.stage + 14; s + ROW <= v.seatsTo; s += ROW) {
-        const rake = (s - v.stage - 14) * 0.18;
         for (const sd of [-1, 1]) {
           for (let k = 0; k < PER_ROW; k++) {
             const d = sd * (FROM + k * SEAT);
-            at(s, d, rake + 0.35, true);
+            // The rows curve round toward the stage, the way an
+            // auditorium's do - flat on the ground, the road through the
+            // middle aisle.
+            const curve = (k * SEAT) * (k * SEAT) * 0.012;
+            at(s - curve, d, 0.3, true);
             o.scale.set(1.05, 0.25, 0.9);
             put(seats, si);
-            at(s + 0.45, d, rake + 0.95, true);
+            at(s - curve + 0.45, d, 0.85, true);
             o.scale.set(1.05, 1.0, 0.14);
             put(backs, si);
+            // A light along each seat's top edge - row after row of them.
+            at(s - curve + 0.45, d, 1.38, true);
+            o.scale.set(1.05, 0.07, 0.07);
+            put(rims, si, c.clone().multiplyScalar(0.8));
             si++;
           }
-          // One light along the whole row's top edge.
-          const mid = sd * (FROM + ((PER_ROW - 1) * SEAT) / 2);
-          at(s + 0.45, mid, rake + 1.47, true);
-          o.scale.set(PER_ROW * SEAT, 0.07, 0.07);
-          put(rims, ri++, c.clone().multiplyScalar(0.8));
         }
       }
     });
@@ -667,7 +695,7 @@ function Venue({ road, colourAt, venues }: { road: RoadLayout; colourAt: ColourA
  *  throwing beams down onto it that sway slowly - you drive from one pool
  *  of light into the next, like crossing a stage under the rig. */
 function SpotlightRuns({ road, colourAt, runs }: { road: RoadLayout; colourAt: ColourAt; runs: { from: number; to: number }[] }) {
-  const EVERY = 16;
+  const EVERY = 32;
   const H = 17;
   const rigs = useMemo(() => {
     const out: { s: number; d: number; phase: number }[] = [];
@@ -1022,7 +1050,7 @@ export function structurePlan(road: RoadLayout) {
     if (i % 6 === 3) spotRuns.push({ from: mid - half, to: mid + half });
     else if (i % 3 === 0) arches.push(mid);
     else if (i % 3 === 1) corridors.push({ from: mid - half, to: mid + half });
-    else if (i % 6 === 2) tunnels.push({ from: mid - half, to: mid + half });
+    else if (!venueStretch(i)) tunnels.push({ from: mid - half, to: mid + half });
     else {
       // Out of a tube, onto a stage, and past the audience.
       const tubeTo = mid - 18;

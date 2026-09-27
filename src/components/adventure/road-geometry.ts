@@ -31,7 +31,7 @@ export const ROAD_HALF = 4.4;
  *  turns right (its left edge lifted). */
 export function tiltAt(road: RoadLayout, s: number): number {
   const lean = Math.max(-0.22, Math.min(0.22, road.bendAt(s) * 30));
-  return lean * (0.4 + 0.6 * road.bankAt(s));
+  return (lean * (0.4 + 0.6 * road.bankAt(s)) + road.sweepTilt(s)) * (1 - road.flatAt(s));
 }
 
 /** How much higher than the road's middle a point d across it sits, once
@@ -56,6 +56,22 @@ export interface RoadLayout {
   /** How much the camera may bank at a distance: only where the story
    *  wants the motion - the curves of O and the plunge of R. */
   bankAt: (s: number) => number;
+  /** The great banked sweeps at each change of colour: extra lean, in
+   *  radians, on top of the ordinary lean into a bend. */
+  sweepTilt: (s: number) => number;
+  /** How far across the road the traveller rides at s - up the high
+   *  side of a banked sweep and back to the middle. */
+  rideAt: (s: number) => number;
+  /** 1 where the road runs flat and level (the auditorium), 0 elsewhere. */
+  flatAt: (s: number) => number;
+}
+
+/** Stretch i of the road: between checkpoint i-1 (or the start) and
+ *  checkpoint i (or the finish). Every sixth, from the sixth, ends in the
+ *  stage and the auditorium (megastructures.tsx, structurePlan) - where
+ *  the road runs flat. */
+export function venueStretch(i: number): boolean {
+  return i % 3 === 2 && i % 6 !== 2;
 }
 
 // THE ROAD IS DRIVEN, NOT DRAWN. It is built the way a car travels:
@@ -105,13 +121,46 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLay
   };
   const from = (id: string) => ranges.find((x) => x.id === id)?.from ?? 0;
 
+  // THE AUDITORIUM runs flat and level: from just before the stage to the
+  // checkpoint after the seats.
+  const marks = [0, ...stops, finish];
+  const flats: { a: number; b: number }[] = [];
+  for (let i = 0; i < marks.length - 1; i++)
+    if (venueStretch(i)) flats.push({ a: (marks[i] + marks[i + 1]) / 2 - 30, b: marks[i + 1] + 5 });
+  const flatAt = (s: number) =>
+    flats.reduce(
+      (m, f) => Math.max(m, THREE.MathUtils.smoothstep(s, f.a - 30, f.a) * (1 - THREE.MathUtils.smoothstep(s, f.b, f.b + 30))),
+      0,
+    );
+
+  // THE GREAT SWEEPS: at each change of colour the road throws itself
+  // into a big banked turn - left at one, right at the next - leaning
+  // hard, the traveller riding up the high side of it and back down.
+  // Placed in the open land before each new colour's gate, clear of the
+  // checkpoints either side.
+  const gates: number[] = [];
+  for (let i = 1; i < stops.length; i++) if (phaseOf[i] && phaseOf[i] !== phaseOf[i - 1]) gates.push(stops[i] - GATE_BEFORE);
+  const SWEEP_A = 1.15; // how far it turns, radians
+  const sweeps = gates.map((g, k) => ({ a: g - 110, b: g + 30, dir: k % 2 ? 1 : -1 }));
+  /** 0 before a sweep, 1 after it, easing through it. */
+  const sweepTurn = (s: number) => sweeps.reduce((h, w) => h + w.dir * SWEEP_A * THREE.MathUtils.smootherstep(s, w.a, w.b), 0);
+  /** How deep into its sweep s is: 0 at the ends, 1 at the middle. */
+  const sweepShape = (s: number) =>
+    sweeps.reduce((m, w) => (s > w.a && s < w.b ? Math.sin((Math.PI * (s - w.a)) / (w.b - w.a)) * w.dir : m), 0);
+  const sweepTilt = (s: number) => sweepShape(s) * 0.72;
+  const rideAt = (s: number) => {
+    const k = sweepShape(s);
+    // Up the high side: a turn to the right lifts the left edge.
+    return -Math.sign(k) * Math.pow(Math.abs(k), 1.5) * (ROAD_HALF - 1.2);
+  };
+
   const heading = (s: number) => {
     // The same bends, drawn out over the longer road.
     const u = s / STRETCH;
     const gentle = 0.23 * Math.sin(u / 70) + 0.15 * Math.sin(u / 27);
     const wO = weight("O", s);
     const sweep = 0.62 * Math.sin((s - from("O")) / (58 * STRETCH));
-    return gentle * (1 - wO) + sweep * wO;
+    return gentle * (1 - wO) + sweep * wO + sweepTurn(s);
   };
   const slope = (s: number) => {
     // Drawn out the same way, and gentler for it: the hills a little
@@ -135,7 +184,7 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLay
     // that lift you to the horizon, a short calm between runs.
     const run = 0.35 + 0.65 * Math.max(0, Math.sin(s / 330 + 1.2));
     const dips = 0.21 * Math.sin(s / 42) * run * (1 - wR) * (1 - wY);
-    return swell * rest * (1 - wO * 0.6) + (0.17 * wT - 0.9 * wR + peaks * wY) * k + dips;
+    return (swell * rest * (1 - wO * 0.6) + (0.17 * wT - 0.9 * wR + peaks * wY) * k + dips) * (1 - flatAt(s));
   };
 
   const pts: THREE.Vector3[] = [];
@@ -158,7 +207,7 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLay
   const length = curve.getLength();
   const bendAt = (s: number) => (heading(s + 4) - heading(s - 4)) / 8;
   const bankAt = (s: number) => Math.min(1, weight("O", s) + weight("R", s));
-  return { curve, length, stops, finish, bendAt, bankAt };
+  return { curve, length, stops, finish, bendAt, bankAt, sweepTilt, rideAt, flatAt };
 }
 
 const tmpT = new THREE.Vector3();

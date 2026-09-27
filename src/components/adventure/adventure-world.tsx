@@ -413,7 +413,9 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
         // Near the road the land leans with it, so the banked road never
         // sinks into the ground on the inside of a bend.
         const lean = bankLift(road, s, d) * (1 - THREE.MathUtils.smoothstep(Math.abs(d), ROAD_HALF, ROAD_HALF + 8));
-        const y = p.y - 0.2 + rise + lean;
+        // Level ground round the auditorium, so its seats sit flat.
+        const levelled = rise * (1 - road.flatAt(s) * (1 - THREE.MathUtils.smoothstep(Math.abs(d), 40, 75)));
+        const y = p.y - 0.2 + levelled + lean;
         const v = r * (COLS + 1) + k;
         pos.set([x, y, z], v * 3);
         grid.set([r, k], v * 2);
@@ -747,6 +749,7 @@ function Rig({
   const look = useMemo(() => new THREE.Vector3(), []);
   const pos = useMemo(() => new THREE.Vector3(), []);
   const at = useMemo(() => new THREE.Vector3(), []);
+  const across = useMemo(() => new THREE.Vector3(), []);
   const last = useRef(-1);
   const lastAt = useRef(0);
   const roll = useRef(0);
@@ -824,6 +827,15 @@ function Rig({
     pointAt(road, s + AHEAD + 26 - f * 2 - up * 9, at);
     eye.set(pos.x, pos.y + 7.5 - f * 3 - b * 0.4 + up * 6.5, pos.z);
     look.set(at.x, at.y + 1.2 + f * 0.6, at.z);
+    // Through a banked sweep, the camera follows the traveller up the
+    // side of it.
+    const ride = road.rideAt(s + AHEAD);
+    if (ride !== 0) {
+      sideAt(road, s + AHEAD, across);
+      eye.addScaledVector(across, ride * 0.7);
+      eye.y += bankLift(road, s + AHEAD, ride * 0.7);
+      look.addScaledVector(across, ride * 0.5);
+    }
     // Carried along with the road as it moves, then eased toward the
     // spot - so at speed the camera keeps its place behind the traveller
     // rather than trailing far behind, and only the changes of height
@@ -859,7 +871,8 @@ function Rig({
     gl.domElement.parentElement?.style.setProperty("--road-speed", f.toFixed(3));
     gl.domElement.parentElement?.style.setProperty("--road-boost", b.toFixed(3));
     // Lean into the bends with the road - more the faster you go.
-    const target = THREE.MathUtils.clamp(tiltAt(road, s + AHEAD) * (0.9 + f * 0.5), -0.3, 0.3);
+    // (Up to the steep lean of the great sweeps.)
+    const target = THREE.MathUtils.clamp(tiltAt(road, s + AHEAD) * (0.9 + f * 0.5), -0.85, 0.85);
     roll.current += (target - roll.current) * Math.min(1, dt * 2.5);
     camera.rotateZ(roll.current);
     // Tell the page where we are - but at speed only ten times a second,
@@ -976,7 +989,11 @@ export function AdventureWorld({
   // travelling ahead to look adds nothing. (?ring-preview on the URL
   // shows it following the road instead, to see what it will look like.)
   const powerColours = useMemo(() => phases.map((p) => new THREE.Color(p.color)), [phases]);
-  const preview = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("ring-preview");
+  // Previewed on the vercel.app address (and with ?ring-preview anywhere);
+  // on speakbetter.app, only colours truly earned.
+  const preview =
+    typeof window !== "undefined" &&
+    (new URLSearchParams(window.location.search).has("ring-preview") || window.location.hostname.endsWith(".vercel.app"));
   const powerCount = useMemo(
     () =>
       preview
