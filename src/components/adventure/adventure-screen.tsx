@@ -88,6 +88,8 @@ export function AdventureScreen({
   const road = useMemo(() => layoutRoad(stops.length, stops.map((s) => s.phase)), [stops]);
   // The checkpoint the student is on.
   const hereIndex = Math.max(0, stops.findIndex((s) => s.state === "here"));
+  // The challenges open and not yet done, in road order.
+  const openStops = stops.map((st, i) => (st.state === "here" ? i : -1)).filter((i) => i >= 0);
   // The road opens at the challenge the student is on, its Start button
   // showing - or, for someone new, at the very beginning, in the open land
   // before the first. (Back at the beginning, a button flies them on to
@@ -819,6 +821,27 @@ export function AdventureScreen({
               </button>
             );
           })}
+          {/* NEXT CHALLENGE: fly straight to just before the next portal
+              that's open and not yet done - tap again for the one after,
+              round to the first. For anyone who'd rather not drive. */}
+          {openStops.length > 0 && !demo && (
+            <button
+              type="button"
+              onClick={() => {
+                const here = travel.s + AHEAD;
+                const next = openStops.find((i) => road.stops[i] > here + 4) ?? openStops[0];
+                travel.goTo(Math.max(0, road.stops[next] - AHEAD - 2));
+              }}
+              aria-label="Next open challenge"
+              title="Next open challenge"
+              className="grid size-11 place-items-center rounded-full border-2 border-white/70 bg-[rgba(7,12,24,0.7)] text-white"
+            >
+              <svg viewBox="0 0 24 24" className="size-5" fill="currentColor" aria-hidden>
+                <path d="M5 5.5v13a1 1 0 0 0 1.5.86l10-6.5a1 1 0 0 0 0-1.72l-10-6.5A1 1 0 0 0 5 5.5z" />
+                <rect x="17.5" y="5" width="2.5" height="14" rx="1" />
+              </svg>
+            </button>
+          )}
         </div>
         {/* The dial: hold and push up to go forward, down to go back -
             the other way to travel, beside the letters. */}
