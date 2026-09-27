@@ -12,17 +12,17 @@ import * as THREE from "three";
 
 /** World units between one checkpoint and the next. Long enough that
  *  reaching the next one is a short journey, not a flick. */
-export const SPACING = 56;
+export const SPACING = 112;
 /** Road before the first checkpoint - open land to travel before the
  *  first challenge, so you set off into the world rather than arriving
  *  at a door - and after the last before the gate. */
-export const LEAD_IN = 90;
-export const LEAD_OUT = 60;
+export const LEAD_IN = 135;
+export const LEAD_OUT = 100;
 /** How far ahead of the camera the traveller walks. Everything that
  *  says "where you are" reads the traveller, not the camera. */
 export const AHEAD = 17;
 /** How far before a phase's first checkpoint its gate stands. */
-export const GATE_BEFORE = 32;
+export const GATE_BEFORE = 48;
 
 export interface RoadLayout {
   curve: THREE.CatmullRomCurve3;
@@ -67,6 +67,11 @@ export function phaseRanges(stops: number[], phaseOf: string[], finish: number) 
   });
 }
 
+/** How much longer the road is than its first design: the land between
+ *  challenges doubled, because travelling it is a pleasure - the bends,
+ *  swells and the plunge stretched to match rather than repeated. */
+const STRETCH = 2;
+
 export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLayout {
   const stops = Array.from({ length: checkpoints }, (_, i) => LEAD_IN + i * SPACING);
   const finish = LEAD_IN + (checkpoints - 1) * SPACING + LEAD_OUT;
@@ -77,19 +82,25 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLay
   const weight = (id: string, s: number) => {
     const r = ranges.find((x) => x.id === id);
     if (!r) return 0;
-    const EASE = id === "R" ? 40 : 26;
+    const EASE = (id === "R" ? 40 : 26) * STRETCH;
     return THREE.MathUtils.smoothstep(s, r.from - EASE, r.from + EASE) * (1 - THREE.MathUtils.smoothstep(s, r.to - EASE, r.to + EASE));
   };
   const from = (id: string) => ranges.find((x) => x.id === id)?.from ?? 0;
 
   const heading = (s: number) => {
-    const gentle = 0.23 * Math.sin(s / 70) + 0.15 * Math.sin(s / 27);
+    // The same bends, drawn out over the longer road.
+    const u = s / STRETCH;
+    const gentle = 0.23 * Math.sin(u / 70) + 0.15 * Math.sin(u / 27);
     const wO = weight("O", s);
-    const sweep = 0.62 * Math.sin((s - from("O")) / 58);
+    const sweep = 0.62 * Math.sin((s - from("O")) / (58 * STRETCH));
     return gentle * (1 - wO) + sweep * wO;
   };
   const slope = (s: number) => {
-    const swell = (3.2 / 95) * Math.cos(s / 95) + (0.9 / 37) * Math.cos(s / 37);
+    // Drawn out the same way, and gentler for it: the hills a little
+    // higher than they were (x1.3), not twice as high.
+    const u = s / STRETCH;
+    const k = 1.3 / STRETCH;
+    const swell = ((3.2 / 95) * Math.cos(u / 95) + (0.9 / 37) * Math.cos(u / 37)) * k * STRETCH;
     const wT = weight("T", s);
     const wO = weight("O", s);
     const wR = weight("R", s);
@@ -97,8 +108,8 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLay
     const rest = Math.max(0, 1 - wT - wR - wY);
     // Y: over the mountains - up one and down it, up the next and down
     // it - before the plain.
-    const peaks = 0.5 * Math.sin(((s - from("Y")) / 100) * Math.PI * 2);
-    return swell * rest * (1 - wO * 0.6) + 0.17 * wT - 0.9 * wR + peaks * wY;
+    const peaks = 0.5 * Math.sin(((s - from("Y")) / (100 * STRETCH)) * Math.PI * 2);
+    return swell * rest * (1 - wO * 0.6) + (0.17 * wT - 0.9 * wR + peaks * wY) * k;
   };
 
   const pts: THREE.Vector3[] = [];

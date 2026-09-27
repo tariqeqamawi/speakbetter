@@ -113,7 +113,7 @@ function placesFor(road: RoadLayout, from: number, to: number, n: number, seed: 
 /** S - Start With Awareness: a quiet grove of low trees with glowing
  *  crystals among them. Where somebody first looks inward. */
 function Grove({ road, from, to, color }: SceneProps) {
-  const spots = useMemo(() => placesFor(road, from, to, 26, 21), [road, from, to]);
+  const spots = useMemo(() => placesFor(road, from, to, 20, 21), [road, from, to]);
   const c = new THREE.Color(color);
   // Glass trees outlined in light, the way the land is.
   const edges = useMemo(() => new THREE.EdgesGeometry(new THREE.ConeGeometry(1.3, 3, 7)), []);
@@ -181,7 +181,7 @@ function Equaliser({ road, from, to, color }: SceneProps) {
 /** O - Own Your Stories: open books drifting in the air above the land,
  *  pages lifting. */
 function Library({ road, from, to, color }: SceneProps) {
-  const spots = useMemo(() => placesFor(road, from, to, 22, 41, 8, 30), [road, from, to]);
+  const spots = useMemo(() => placesFor(road, from, to, 16, 41, 8, 30), [road, from, to]);
   const group = useRef<THREE.Group>(null);
   const cover = new THREE.Color(color).multiplyScalar(0.6);
   useFrame(({ clock }) => {

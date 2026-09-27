@@ -339,6 +339,14 @@ const TERRAIN_FRAG = /* glsl */ `
   }
 `;
 
+/** A section's colour as a THREE.Color, made once. */
+const tints = new Map<string, THREE.Color>();
+function tintOf(hex: string): THREE.Color {
+  let c = tints.get(hex);
+  if (!c) tints.set(hex, (c = new THREE.Color(hex)));
+  return c;
+}
+
 /** The land either side of the road, with its grid of light. */
 function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; travel: Travel }) {
   const geo = useMemo(() => {
@@ -434,7 +442,22 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
   // Each wave starts from wherever the traveller is when it sets off.
   const lastLoop = useRef(-1);
   /* eslint-disable react-hooks/immutability */
-  useFrame(({ clock }) => {
+  const hazeTarget = useMemo(() => new THREE.Color(), []);
+  useFrame(({ clock, scene }) => {
+    // THE AIR OF EACH SECTION: the haze over the far land leans toward
+    // the colour of the section you're in - green mist in S, cyan in T,
+    // gold in O - easing across as you cross from one to the next.
+    {
+      const here = travel.s + AHEAD;
+      const sp = spans.find((x) => here >= x.from && here < x.to) ?? spans[0];
+      if (sp) {
+        hazeTarget.set("#060b1c").lerp(tintOf(sp.color), 0.3);
+        const u = material.uniforms.uFog.value as THREE.Color;
+        u.lerp(hazeTarget, 0.03);
+        const fog = scene.fog as THREE.FogExp2 | null;
+        if (fog) fog.color.copy(u);
+      }
+    }
     const t = clock.elapsedTime;
     material.uniforms.uTime.value = t;
 
@@ -601,7 +624,7 @@ function Rig({
   limit: number;
   onMove: (s: number) => void;
 }) {
-  const { camera } = useThree();
+  const { camera, gl } = useThree();
   const eye = useMemo(() => new THREE.Vector3(), []);
   const look = useMemo(() => new THREE.Vector3(), []);
   const pos = useMemo(() => new THREE.Vector3(), []);
@@ -610,7 +633,9 @@ function Rig({
   const roll = useRef(0);
   const yaw = useRef(0);
   const pitch = useRef(0);
+  const speed = useRef(0);
 
+  /* eslint-disable react-hooks/immutability -- the camera is three.js's, moved every frame */
   useFrame((_, dt) => {
     travel.step(Math.min(dt, 0.05) * 60, limit);
     const s = travel.s;
@@ -641,6 +666,18 @@ function Rig({
     pitch.current += (travel.look.pitch - pitch.current) * ease;
     camera.rotateY(yaw.current);
     camera.rotateX(pitch.current);
+    // THE FEELING OF SPEED: the view widens a little as you go faster
+    // and settles as you slow, and the page draws faint streaks past the
+    // edges from the same number.
+    const pace = Math.min(1, Math.abs(travel.v) / 1.6);
+    speed.current += (pace - speed.current) * Math.min(1, dt * 3);
+    const cam = camera as THREE.PerspectiveCamera;
+    const fov = 62 + speed.current * 12;
+    if (Math.abs(cam.fov - fov) > 0.05) {
+      cam.fov = fov;
+      cam.updateProjectionMatrix();
+    }
+    gl.domElement.parentElement?.style.setProperty("--road-speed", speed.current.toFixed(3));
     // Bank into the bends, the way a car or a plane leans into a curve.
     // In the calm opening phases the camera stays level; it leans into
     // the curves only where the story does - O's sweeps and R's plunge.
@@ -652,6 +689,7 @@ function Rig({
       onMove(s);
     }
   });
+  /* eslint-enable react-hooks/immutability */
   return null;
 }
 
@@ -753,7 +791,7 @@ export function AdventureWorld({
       // student's photo included. The glow comes from the bloom, not the
       // grade, so photos show as uploaded and the neon stays pure.
       flat
-      dpr={[1, 1.25]}
+      dpr={typeof window !== "undefined" && window.matchMedia("(pointer: fine)").matches ? [1, 1.75] : [1, 1.25]}
       frameloop={active ? "always" : "never"}
       gl={{ antialias: true, powerPreference: "high-performance" }}
       camera={{ fov: 62, near: 0.1, far: 1400, position: [0, 3, 6] }}
@@ -810,7 +848,7 @@ export function AdventureWorld({
       <Bloom />
       <Scenery road={road} spans={spans} />
       {spans.find((sp) => sp.id === "Y") && (
-        <City road={road} travel={travel} revealFrom={spans.find((sp) => sp.id === "Y")!.from + 60} />
+        <City road={road} travel={travel} revealFrom={spans.find((sp) => sp.id === "Y")!.from + 120} />
       )}
       {stops.flatMap((stop, i) =>
         (stop.classmates ?? []).map(({ name, avatar }, k) => (

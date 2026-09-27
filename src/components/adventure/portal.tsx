@@ -61,6 +61,23 @@ function canvasTex(w: number, h: number, draw: (g: CanvasRenderingContext2D) => 
   return t;
 }
 
+/** A soft round pool of light, for the road under a portal. */
+let poolTex: THREE.Texture | null = null;
+function pool() {
+  if (poolTex || typeof document === "undefined") return poolTex;
+  const c = document.createElement("canvas");
+  c.width = c.height = 128;
+  const g = c.getContext("2d")!;
+  const grad = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+  grad.addColorStop(0, "rgba(255,255,255,0.85)");
+  grad.addColorStop(0.35, "rgba(255,255,255,0.35)");
+  grad.addColorStop(1, "rgba(255,255,255,0)");
+  g.fillStyle = grad;
+  g.fillRect(0, 0, 128, 128);
+  poolTex = new THREE.CanvasTexture(c);
+  return poolTex;
+}
+
 /** The rim of a portal that can't be entered yet. */
 const SHUT_RIM = new THREE.Color("#2b303b");
 
@@ -220,6 +237,23 @@ export function Portal({
           toneMapped={false}
         />
       </mesh>
+      {/* The portal lights the road beneath it: a pool of its glow on the
+          ground, white under an open one, its colour under a done one -
+          like light on wet tarmac. None under a shut one. */}
+      {!shut && (
+        <mesh position={[0, -3.25, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[9, 9]} />
+          <meshBasicMaterial
+            map={pool()}
+            color={state === "here" ? "#ffffff" : colour}
+            transparent
+            opacity={state === "here" ? 0.55 : 0.35}
+            depthWrite={false}
+            blending={THREE.AdditiveBlending}
+            toneMapped={false}
+          />
+        </mesh>
+      )}
       <mesh position={[0, 3.35, 0]}>
         <planeGeometry args={[5.6, 1.09]} />
         <meshBasicMaterial ref={bannerMat} map={banner} transparent depthWrite={false} side={THREE.DoubleSide} toneMapped={false} />

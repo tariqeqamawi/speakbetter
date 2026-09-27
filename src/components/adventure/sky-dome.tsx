@@ -111,6 +111,8 @@ export function SkyDome({ image }: { image: string }) {
   useFrame(({ camera, clock }) => {
     mesh.current?.position.copy(camera.position);
     material.uniforms.uTime.value = clock.elapsedTime;
+    // The painted sky drifts, very slowly, so it's alive but never busy.
+    material.uniforms.uOffset.value.x = 0.5 + clock.elapsedTime * 0.00012;
   });
   /* eslint-enable react-hooks/immutability */
   return (

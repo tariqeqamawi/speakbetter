@@ -224,7 +224,7 @@ export function AdventureScreen({
       const dy = e.clientY - lastY;
       lastY = e.clientY;
       if (from) from.far = Math.max(from.far, Math.hypot(e.clientX - from.x, e.clientY - from.y));
-      travel.push(dy * 0.045, 0.5);
+      travel.push(dy * 0.07, 0.5);
     };
     const up = (e: PointerEvent) => {
       lastY = null;
@@ -234,12 +234,12 @@ export function AdventureScreen({
     };
     const wheel = (e: WheelEvent) => {
       e.preventDefault();
-      travel.push(e.deltaY * 0.0045);
+      travel.push(e.deltaY * 0.0075);
     };
     const key = (e: KeyboardEvent) => {
       if (e.key === "ArrowDown" || e.key === "ArrowUp") {
         e.preventDefault();
-        travel.push(e.key === "ArrowDown" ? 0.9 : -0.9);
+        travel.push(e.key === "ArrowDown" ? 1.5 : -1.5);
       }
     };
     el.addEventListener("pointerdown", down);
@@ -483,7 +483,7 @@ export function AdventureScreen({
       clock.last = now;
       // Easing into the stop: full speed, slowing over the last stretch.
       const left = stopAt - travel.s;
-      const speed = Math.max(4, Math.min(34, left * 1.4));
+      const speed = Math.max(6, Math.min(68, left * 1.4));
       travel.place(Math.min(stopAt, travel.s + speed * dt));
       if (travel.s < stopAt - 0.05) {
         raf = requestAnimationFrame(drive);
@@ -629,6 +629,12 @@ export function AdventureScreen({
           <RoadLegendButton />
         </div>
       )}
+
+      {/* Speed: faint streaks rushing past the edges, as strong as the
+          road is fast (--road-speed, set by the camera each frame). */}
+      <div aria-hidden className="road-streaks pointer-events-none absolute inset-0 z-[5]" />
+      {/* Now and then, a shooting star across the top of the sky. */}
+      <span aria-hidden className="road-shooting-star pointer-events-none absolute left-[10%] top-[12%] z-[4] h-px w-24" />
 
       <SkyCoach talking={talking} />
 

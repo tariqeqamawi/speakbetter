@@ -12,7 +12,7 @@ import type { Travel } from "./road-geometry";
 // the road coasts to a stop. The arrows at either end do the same when
 // held - forward at a steady pace, or back.
 
-const FULL = 1.02; // travel speed at the top of the dial, per 60th of a second
+const FULL = 2.2; // travel speed at the top of the dial, per 60th of a second - the road is twice as long
 const DEAD = 0.1; // the still band around the middle
 
 export function RoadDial({ travel, color = "#ffffff" }: { travel: Travel; color?: string }) {

@@ -3524,3 +3524,35 @@ html.bare .demo-banner {
 @media (prefers-reduced-motion: reduce) {
   .tile-fade-in { animation: none; }
 }
+
+/* The 3D road at speed: streaks rushing out from the centre of the view,
+   invisible at rest and strongest at the dial's top speed. The camera
+   sets --road-speed (0-1) on the canvas's box every frame. */
+.road-streaks {
+  opacity: calc(var(--road-speed, 0) * 0.9);
+  background: repeating-conic-gradient(
+    from 0deg at 50% 42%,
+    transparent 0deg 2.6deg,
+    rgba(255, 255, 255, 0.07) 2.6deg 2.8deg,
+    transparent 2.8deg 5.3deg
+  );
+  mask-image: radial-gradient(circle at 50% 42%, transparent 28%, #000 78%);
+  -webkit-mask-image: radial-gradient(circle at 50% 42%, transparent 28%, #000 78%);
+}
+/* A shooting star now and then, high in the sky. */
+.road-shooting-star {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9));
+  border-radius: 999px;
+  opacity: 0;
+  transform: rotate(-18deg);
+  animation: road-shooting-star 19s linear infinite 4s;
+}
+@keyframes road-shooting-star {
+  0%, 94% { opacity: 0; translate: 0 0; }
+  95% { opacity: 1; }
+  99% { opacity: 0.9; translate: 55vw 12vh; }
+  100% { opacity: 0; translate: 60vw 13vh; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .road-streaks, .road-shooting-star { display: none; }
+}
