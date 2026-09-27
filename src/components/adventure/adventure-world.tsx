@@ -419,7 +419,11 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
         // sinks into the ground on the inside of a bend.
         const lean = bankLift(road, s, d) * (1 - THREE.MathUtils.smoothstep(Math.abs(d), ROAD_HALF, ROAD_HALF + 8));
         // Level ground round the auditorium, so its seats sit flat.
-        const levelled = rise * (1 - road.flatAt(s) * (1 - THREE.MathUtils.smoothstep(Math.abs(d), 40, 75)));
+        const levelled =
+          rise *
+          (1 - road.flatAt(s) * (1 - THREE.MathUtils.smoothstep(Math.abs(d), 40, 75))) *
+          // Under a skyway the land lies low, so the road clearly flies.
+          (1 - Math.min(1, road.liftAt(s) / 18) * (1 - THREE.MathUtils.smoothstep(Math.abs(d), 70, 130)));
         const chasm = gap * 70 * (1 - THREE.MathUtils.smoothstep(Math.abs(d), 45, 85));
         const y = p.y - 0.2 + levelled + lean - chasm;
         const v = r * (COLS + 1) + k;

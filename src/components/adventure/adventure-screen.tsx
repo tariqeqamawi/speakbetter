@@ -5,6 +5,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AHEAD, GATE_BEFORE, Travel, layoutRoad, reachedPhase } from "./road-geometry";
+import { structurePlan } from "./megastructures";
+import type { MonumentPlan } from "./monuments";
 import { RoadDial } from "./road-dial";
 import { useRoadChrome } from "./road-chrome";
 import { RoadLegendButton } from "./road-legend";
@@ -90,7 +92,15 @@ export function AdventureScreen({
   // showing - or, for someone new, at the very beginning, in the open land
   // before the first. (Back at the beginning, a button flies them on to
   // where they are.)
-  const start = hereIndex > 0 ? Math.max(0, road.stops[hereIndex] - AHEAD - 2) : 0;
+  const start = useMemo(() => {
+    // (For looking at a landmark: ?road-at=mic|speakers|headphones.)
+    if (typeof window !== "undefined") {
+      const at = new URLSearchParams(window.location.search).get("road-at") as keyof MonumentPlan | null;
+      const m = at ? structurePlan(road).monuments[at] : undefined;
+      if (m) return Math.max(0, m.s - 150);
+    }
+    return hereIndex > 0 ? Math.max(0, road.stops[hereIndex] - AHEAD - 2) : 0;
+  }, [road, hereIndex]);
   const [travel] = useState(() => new Travel(start));
   const [s, setS] = useState(start);
   const frame = useRef<HTMLDivElement>(null);

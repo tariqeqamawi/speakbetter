@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { Monuments, type MonumentPlan } from "./monuments";
 import { ROAD_HALF, groundAt, pointAt, seeded, sideAt, venueStretch, type RoadLayout } from "./road-geometry";
 
 // SCALE. On the tracks of Extreme-G the road ran between things far
@@ -139,6 +140,7 @@ function buildCity(
   dense: { from: number; to: number } | undefined,
   keep: Keep,
   colourAt: ColourAt,
+  clear: Keep = [],
 ) {
   const parts = Object.fromEntries(KINDS.map((k) => [k, [] as THREE.Matrix4[]])) as Record<Kind, THREE.Matrix4[]>;
   /** The speaking landmarks' glass, kept apart to be drawn with a white
@@ -154,7 +156,8 @@ function buildCity(
   const local = new THREE.Object3D();
   const m = new THREE.Matrix4();
   const inCity = (s: number) => (dense ? THREE.MathUtils.smoothstep(s, dense.from - 60, dense.from + 120) : 0);
-  const kept = (s: number, d: number) => Math.abs(d) < 44 && keep.some((k) => s > k.from - 20 && s < k.to + 20);
+  const kept = (s: number, d: number) =>
+    (Math.abs(d) < 44 && keep.some((k) => s > k.from - 20 && s < k.to + 20)) || clear.some((k) => s > k.from && s < k.to);
 
   const tower = (s: number, d: number, w: number, h: number, type: number) => {
     groundAt(road, s, p);
@@ -296,6 +299,7 @@ function buildCity(
     const c = inCity(s);
     for (const sd of [-1, 1]) {
       if (rand() < 0.35 - c * 0.3) continue;
+      if (clear.some((k) => s > k.from && s < k.to)) continue;
       const d = sd * (80 + rand() * 75);
       const type = rand() < 0.22 ? 7 + Math.floor(rand() * 4) : [1, 2, 6, 6, 5, 0, 3][Math.floor(rand() * 7)];
       tower(s, d, 10 + rand() * 14, 150 + rand() * 190, type);
@@ -305,8 +309,8 @@ function buildCity(
   return { parts, lmParts, tints, towers };
 }
 
-function City({ road, dense, keep, colourAt }: { road: RoadLayout; dense?: { from: number; to: number }; keep: Keep; colourAt: ColourAt }) {
-  const { parts, lmParts, tints, towers } = useMemo(() => buildCity(road, seeded(97), dense, keep, colourAt), [road, dense, keep, colourAt]);
+function City({ road, dense, keep, colourAt, clear }: { road: RoadLayout; dense?: { from: number; to: number }; keep: Keep; colourAt: ColourAt; clear: Keep }) {
+  const { parts, lmParts, tints, towers } = useMemo(() => buildCity(road, seeded(97), dense, keep, colourAt, clear), [road, dense, keep, colourAt, clear]);
   // The landmarks' glass: the same dark glass, lit round its edges in
   // white, so a giant mic or a pair of headphones stands out.
   const rimmed = useMemo(
@@ -1138,7 +1142,21 @@ export function structurePlan(road: RoadLayout) {
     ...spotRuns,
     ...road.stunts.map((z) => ({ from: z.a - 20, to: z.a + z.len + 20 })),
   ];
-  return { arches, corridors, tunnels, venues, spotRuns, keep };
+
+  // THE MONUMENTS (monuments.tsx). The podcast mic beside the city's
+  // skyway; the speakers either side of T's skyway; the headphones in
+  // place of the second great arch.
+  const monuments: MonumentPlan = {};
+  const tallest = [...road.skyways].sort((p, q) => q.h - p.h)[0];
+  if (tallest) monuments.mic = { s: (tallest.a + tallest.b) / 2, side: 1 };
+  const mid = road.skyways.find((w) => w.h > 30 && w.h < 45);
+  if (mid) monuments.speakers = { s: (mid.a + mid.b) / 2 };
+  if (arches.length > 1) monuments.headphones = { s: arches.splice(1, 1)[0] };
+  /** Where the towers keep well clear, to let the monuments stand alone. */
+  const clear = [monuments.mic, monuments.speakers, monuments.headphones]
+    .filter((m): m is { s: number } => Boolean(m))
+    .map((m) => ({ from: m.s - 70, to: m.s + 70 }));
+  return { arches, corridors, tunnels, venues, spotRuns, keep, monuments, clear };
 }
 
 export function Megastructures({
@@ -1155,7 +1173,8 @@ export function Megastructures({
   const denseSpan = useMemo(() => (dense ? { from: dense.from, to: dense.to } : undefined), [dense]);
   return (
     <group>
-      <City road={road} dense={denseSpan} keep={plan.keep} colourAt={colourAt} />
+      <City road={road} dense={denseSpan} keep={plan.keep} colourAt={colourAt} clear={plan.clear} />
+      <Monuments road={road} colourAt={colourAt} plan={plan.monuments} />
       <Venue road={road} colourAt={colourAt} venues={plan.venues} />
       <Arches road={road} colourAt={colourAt} at={plan.arches} />
       <Corridors road={road} colourAt={colourAt} runs={plan.corridors} />
