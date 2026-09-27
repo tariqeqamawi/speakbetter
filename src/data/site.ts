@@ -11,6 +11,8 @@ export interface SitePage {
 
 /** In the header, in this order. */
 export const SITE_NAV: SitePage[] = [
+  { href: "/landing", label: "Speak Better App" },
+  { href: "/mentorship", label: "Work with Me" },
   { href: "/about", label: "About" },
   { href: "/book", label: "The Book" },
   { href: "/deck", label: "The Deck" },
@@ -27,7 +29,7 @@ export const SITE_FOOTER: SitePage[] = [
 ];
 
 /** Every page that wears the website's header rather than the app's. */
-export const SITE_PATHS = ["/landing", ...SITE_FOOTER.map((p) => p.href)];
+export const SITE_PATHS = [...new Set(["/landing", ...SITE_FOOTER.map((p) => p.href)])];
 
 /**
  * A "Talk to us" that opens the visitor's own email, addressed and with
