@@ -390,3 +390,4 @@ what.
 - Chat: schema, working rooms, per-challenge seeds, live sessions page — `ab43d17`, `24ec4f8`, `07e1c6d`
 - The app's choppiness fixed (one keyframe, 13× main-thread work) and real glass — `728c360`
 - The road twice as long and ~2× faster at the top of the dial; haze takes each section's colour, the view widens and streaks at speed, portals light the road, a shooting star, the nebula drifts — `ea232c8`
+- The road flies like Extreme-G 3: lights along both edges, wider road leaning into bends, camera drops low at speed, motion blur, wind, slight shake flat out; smoother at speed — `4d5ec5e`
