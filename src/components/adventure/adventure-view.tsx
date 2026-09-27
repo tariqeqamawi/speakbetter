@@ -5,6 +5,7 @@ import { AdventureScreen } from "./adventure-screen";
 import { Adventure2D } from "./adventure-2d";
 import { LevelPicker } from "@/components/level-picker";
 import { ROAD_SKY } from "./world-phases";
+import { FullScreenIcon, useRoadChrome } from "./road-chrome";
 import type { WorldPhase, WorldStop } from "./adventure-world";
 
 // The adventure, as a world or as a page - the student's choice, kept on
@@ -33,6 +34,7 @@ export function AdventureView({
   stickyTop?: string;
 }) {
   const [mode, setMode] = useState<Mode>("3d");
+  const chrome = useRoadChrome();
   useEffect(() => {
     try {
       // After mounting, so the server's render and the first client
@@ -75,8 +77,20 @@ export function AdventureView({
               </button>
             ))}
           </div>
-          {/* The level they are travelling it at, and where to change it. */}
-          <LevelPicker />
+          {/* In and out of full screen - where the page offers it. */}
+          {chrome.canFull && (
+            <button
+              type="button"
+              onClick={() => chrome.setFull(!chrome.full)}
+              aria-label={chrome.full ? "Exit full screen" : "Full screen"}
+              className="grid size-9 place-items-center rounded-full border border-navy-600 bg-navy-950/80 text-ink-muted backdrop-blur hover:text-ink"
+            >
+              <FullScreenIcon full={chrome.full} />
+            </button>
+          )}
+          {/* The level they are travelling it at, and where to change it -
+              not in full screen, which keeps to the essentials. */}
+          {!chrome.full && <LevelPicker />}
         </div>
       </div>
       {mode === "3d" ? (

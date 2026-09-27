@@ -70,7 +70,7 @@ export function TierArt({ has }: { has: string[] }) {
           // the real card faces and backs).
           <span className="relative block size-full">
             <Image
-              src="/deck/printed-deck-walnut.webp"
+              src="/deck/printed-deck-oak.webp"
               alt="The printed Speak Better deck fanned on a desk beside its box"
               fill
               sizes="120px"

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AHEAD, GATE_BEFORE, Travel, layoutRoad, reachedPhase } from "./road-geometry";
 import { RoadDial } from "./road-dial";
+import { useRoadChrome } from "./road-chrome";
 import { SkyCoach } from "./sky-coach";
 import { ROAD_LINES, ROAD_TALK, roadLineClip, talkClip } from "@/data/greetings";
 import { activated, playApplause, playCoachLine, playGateChime, playRoadWhoosh } from "@/lib/feedback-fx";
@@ -106,6 +107,45 @@ export function AdventureScreen({
   const avatar = state.avatar && /^(data:image|\/|https?:)/.test(state.avatar) ? state.avatar : fallbackAvatar;
 
   const onMove = useCallback((next: number) => setS(next), []);
+  const chrome = useRoadChrome();
+
+  // Two fingers pinching together, in full screen: out of full screen.
+  useEffect(() => {
+    const el = frame.current;
+    if (!el || !chrome.full) return;
+    const pts = new Map<number, { x: number; y: number }>();
+    let start = 0;
+    const gap = () => {
+      const [a, b] = [...pts.values()];
+      return Math.hypot(a.x - b.x, a.y - b.y);
+    };
+    const down = (e: PointerEvent) => {
+      pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pts.size === 2) start = gap();
+    };
+    const move = (e: PointerEvent) => {
+      if (!pts.has(e.pointerId)) return;
+      pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pts.size === 2 && start > 0 && gap() < start * 0.65) {
+        start = 0;
+        chrome.setFull(false);
+      }
+    };
+    const up = (e: PointerEvent) => {
+      pts.delete(e.pointerId);
+      start = 0;
+    };
+    el.addEventListener("pointerdown", down);
+    el.addEventListener("pointermove", move);
+    el.addEventListener("pointerup", up);
+    el.addEventListener("pointercancel", up);
+    return () => {
+      el.removeEventListener("pointerdown", down);
+      el.removeEventListener("pointermove", move);
+      el.removeEventListener("pointerup", up);
+      el.removeEventListener("pointercancel", up);
+    };
+  }, [chrome]);
   // The finish line is crossed only with every challenge done: before
   // then you can preview the whole road, but it stops short of the arch.
   const allDone = stops.every((st) => st.state === "done");
@@ -519,8 +559,9 @@ export function AdventureScreen({
         </div>
       )}
 
-      {/* Sound, off by default. */}
-      {!demo && (
+      {/* Sound, off by default - not in full screen, which keeps to the
+          essentials. */}
+      {!demo && !chrome.full && (
       <button
         type="button"
         onClick={toggleSound}

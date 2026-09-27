@@ -20,7 +20,7 @@ const PIECES = [
   {
     src: "/deck/printed-deck-walnut.webp",
     title: "Card deck - walnut desk",
-    note: "In use: VIP tier, \"Deck: app + printed\" tile.",
+    note: "Alternative: warm, the deck fanned beside a lidded box.",
     w: 1600,
     h: 1062,
   },
@@ -34,7 +34,7 @@ const PIECES = [
   {
     src: "/deck/printed-deck-oak.webp",
     title: "Card deck - light oak desk",
-    note: "Alternative: daylight, the deck standing in an open box.",
+    note: "In use: VIP tier, \"Deck: app + printed\" tile. Daylight, the deck standing in an open box.",
     w: 1600,
     h: 1062,
   },

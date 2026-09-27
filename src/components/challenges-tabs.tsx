@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useStore } from "@/lib/store";
+import { RoadChromeContext } from "@/components/adventure/road-chrome";
 
 // The Challenges page as two tabs.
 //
@@ -49,9 +50,42 @@ export function ChallengesTabs({
   // less the tab bar when it is showing.
   const box = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState<number | null>(null);
-  // A phone turned on its side: the header, the tabs and the tab bar
-  // would leave the road a letterbox, so it takes the whole screen.
-  const [immersive, setImmersive] = useState(false);
+  // FULL SCREEN: the road alone, over everything - no header, no tabs,
+  // no tab bar - with only the exit, the 2D/3D switch and the dial on it.
+  // Entered with its button; a phone turned on its side goes there by
+  // itself (the rest would leave the road a letterbox) until the student
+  // chooses otherwise. Where the browser allows, it is real full screen,
+  // browser bars and all gone.
+  const [full, setFullState] = useState(false);
+  const chose = useRef(false);
+  const setFull = (on: boolean) => {
+    chose.current = true;
+    setFullState(on);
+    const el = box.current;
+    try {
+      if (on && el?.requestFullscreen && !document.fullscreenElement) el.requestFullscreen().catch(() => {});
+      if (!on && document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    } catch {
+      // no Fullscreen API (iPhone Safari): the fixed layer is full screen enough
+    }
+  };
+  // Leaving real full screen from outside (Esc, the phone's back gesture)
+  // leaves ours too.
+  useEffect(() => {
+    const onChange = () => {
+      if (!document.fullscreenElement) setFullState(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setFullState(false);
+    };
+    document.addEventListener("fullscreenchange", onChange);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("fullscreenchange", onChange);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, []);
+
   useLayoutEffect(() => {
     if (current !== "challenges") return;
     const html = document.documentElement;
@@ -62,8 +96,8 @@ export function ChallengesTabs({
       const el = box.current;
       if (!el) return;
       const side = window.innerWidth > window.innerHeight && window.innerHeight < 520;
-      setImmersive(side);
-      if (side) {
+      if (side && !chose.current) setFullState(true);
+      if (full || (side && !chose.current)) {
         setHeight(window.innerHeight);
         return;
       }
@@ -81,7 +115,7 @@ export function ChallengesTabs({
     };
     // Again when the box is pinned or unpinned, so it is measured where it
     // actually sits.
-  }, [current, immersive]);
+  }, [current, full]);
 
   const tabButton = (t: Tab, label: string) => (
     <button
@@ -113,23 +147,13 @@ export function ChallengesTabs({
         <div
           ref={box}
           className={
-            immersive
+            full
               ? "fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-[#070c18]"
               : "-mx-4 overflow-y-auto overscroll-contain sm:mx-0 sm:overflow-hidden sm:rounded-2xl"
           }
           style={{ height: height ?? "70vh", ["--road-h" as string]: height ? `${height}px` : "70vh" }}
         >
-          {road}
-          {/* Full screen on its side: the one way back out to the tabs. */}
-          {immersive && (
-            <button
-              type="button"
-              onClick={() => setTab("orientation")}
-              className="fixed left-1/2 top-3 z-[60] -translate-x-1/2 rounded-full border border-navy-600 bg-navy-950/80 px-3 py-1.5 text-xs font-semibold text-ink-muted backdrop-blur"
-            >
-              ← Orientation
-            </button>
-          )}
+          <RoadChromeContext.Provider value={{ full, canFull: true, setFull }}>{road}</RoadChromeContext.Provider>
         </div>
       )}
     </div>
