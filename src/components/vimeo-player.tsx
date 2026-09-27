@@ -145,6 +145,22 @@ function screenAngle(): number {
   return typeof legacy === "number" ? ((legacy % 360) + 360) % 360 : 0;
 }
 
+/**
+ * Play - and if the browser refuses (an iPhone won't start a video with
+ * sound unless the tap landed inside the video itself), start it muted
+ * instead, which every browser allows. The "Tap for sound" button then
+ * appears on the frame (onPlay sees the player muted), and one tap on it
+ * brings the sound back.
+ */
+function playOrMute(player: Player) {
+  player.play().catch(() => {
+    player
+      .setMuted(true)
+      .then(() => player.play())
+      .catch(() => {});
+  });
+}
+
 export function VimeoPlayer({
   vimeoId,
   title,
@@ -334,7 +350,7 @@ export function VimeoPlayer({
       .ready()
       .then(() => {
         setReady(true);
-        if (autoplay) player.play().catch(() => {});
+        if (autoplay) playOrMute(player);
       })
       .catch(() => {});
     player.getDuration().then(setDuration).catch(() => {});
@@ -459,7 +475,7 @@ export function VimeoPlayer({
     const p = playerRef.current;
     if (!p) return;
     if (playing) p.pause().catch(() => {});
-    else p.play().catch(() => {});
+    else playOrMute(p);
   }, [playing]);
 
   const replay = useCallback(() => {
