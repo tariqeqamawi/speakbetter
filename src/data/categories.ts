@@ -27,6 +27,8 @@ export interface Category {
    *  student had to work out they were the same thing. One name per
    *  colour, short enough to read anywhere it lands. */
   short: string;
+  /** The familiar term under the name - "Storytelling" under Tell. */
+  subtitle: string;
   colorName: string;
   blurb: string;
   bgClass: string;
@@ -37,9 +39,10 @@ export interface Category {
 export const categories: Category[] = [
   {
     id: "storytelling",
-    name: "Storytelling",
-    short: "Storytelling",
-    code: "STORY",
+    name: "Tell",
+    subtitle: "Storytelling",
+    short: "Tell",
+    code: "TELL",
     colorName: "Neon yellow",
     blurb: "Relive experiences instead of reporting them - scenes, morals, and stories that sell.",
     bgClass: "bg-storytelling",
@@ -48,9 +51,10 @@ export const categories: Category[] = [
   },
   {
     id: "figurative",
-    name: "Figurative & Sensory",
-    short: "Figurative & Sensory",
-    code: "IMAGE",
+    name: "Paint",
+    subtitle: "Figurative & Sensory",
+    short: "Paint",
+    code: "PAINT",
     colorName: "Bright orange",
     blurb: "Metaphor, simile, hyperbole, analogy - language that paints instead of describes.",
     bgClass: "bg-figurative",
@@ -59,8 +63,9 @@ export const categories: Category[] = [
   },
   {
     id: "acting",
-    name: "Acting",
-    short: "Acting",
+    name: "Act",
+    subtitle: "Acting",
+    short: "Act",
     code: "ACT",
     colorName: "Bright red",
     blurb: "Voice, character, emotion, and scene work - deliver the experience, don't just say it.",
@@ -70,8 +75,9 @@ export const categories: Category[] = [
   },
   {
     id: "structure",
-    name: "Structure",
-    short: "Structure",
+    name: "Frame",
+    subtitle: "Structure",
+    short: "Frame",
     code: "FRAME",
     colorName: "Magenta",
     blurb: "Openings, frameworks, open loops, and payoffs - the architecture of a talk.",
@@ -81,19 +87,21 @@ export const categories: Category[] = [
   },
   {
     id: "mindset",
-    name: "Confidence",
-    short: "Confidence",
-    code: "MIND",
+    name: "Presence",
+    subtitle: "Confidence",
+    short: "Presence",
+    code: "PRESENCE",
     colorName: "Neon green",
-    blurb: "Fear, confidence, and conviction - the inner game that everything else stands on.",
+    blurb: "Fear, nerves, and conviction - the inner game that everything else stands on, and the presence it gives you.",
     bgClass: "bg-mindset",
     textClass: "text-mindset",
     borderClass: "border-mindset",
   },
   {
     id: "body-language",
-    name: "Body & Physical",
-    short: "Body & Physical",
+    name: "Body",
+    subtitle: "Body Language",
+    short: "Body",
     code: "BODY",
     colorName: "Bright cyan",
     blurb: "Gestures, posture, movement - expressing visually what you say verbally.",
@@ -103,8 +111,9 @@ export const categories: Category[] = [
   },
   {
     id: "advanced",
-    name: "Advanced",
-    short: "Advanced",
+    name: "Pro",
+    subtitle: "Advanced",
+    short: "Pro",
     code: "PRO",
     colorName: "Deep crimson",
     blurb: "Slides, mic drops, going live, memorization - the professional's toolkit.",

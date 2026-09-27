@@ -62,7 +62,9 @@ export default function DeckPage() {
           {categories.map((c) => (
             <li key={c.id} className={`flex flex-col gap-2 rounded-2xl border bg-navy-800/60 p-4 ${c.borderClass}`}>
               <span className={`block h-1.5 w-10 rounded-full ${c.bgClass}`} />
-              <b className={`text-sm font-bold uppercase tracking-wider ${c.textClass}`}>{c.name}</b>
+              <b className={`text-sm font-bold uppercase tracking-wider ${c.textClass}`}>
+                {c.name} <span className="font-semibold normal-case tracking-normal text-ink-faint">· {c.subtitle}</span>
+              </b>
               <span className="text-sm text-ink-muted">A {c.colorName.toLowerCase()} card for {ROLE[c.id]}.</span>
             </li>
           ))}

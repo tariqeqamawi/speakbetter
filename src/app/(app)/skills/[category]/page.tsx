@@ -27,7 +27,10 @@ export default async function CategoryPage(props: PageProps<"/skills/[category]"
       <header className="flex flex-col gap-2">
         <BackLink href="/skills">Skills</BackLink>
         <div className={`h-1 w-14 rounded-full ${cat.bgClass}`} />
-        <h1 className="text-3xl font-semibold tracking-tight">{cat.name}</h1>
+        <h1 className="flex flex-col text-3xl font-semibold tracking-tight">
+          {cat.name}
+          <span className="text-sm font-semibold uppercase tracking-[0.2em] text-ink-faint">{cat.subtitle}</span>
+        </h1>
         <p className="max-w-lg text-ink-muted">{cat.blurb}</p>
         <p className="text-xs text-ink-faint">
           {lessons.length} lessons · one to two minutes each

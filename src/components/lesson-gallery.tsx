@@ -182,7 +182,9 @@ export function LessonGallery() {
               <CategoryIcon category={color} className="size-3.5" />
               {cat.colorName}
             </span>
-            <h3 className="text-2xl font-semibold tracking-tight text-ink">{cat.name}</h3>
+            <h3 className="text-2xl font-semibold tracking-tight text-ink">
+              {cat.name} <span className="text-base font-medium text-ink-faint">{cat.subtitle}</span>
+            </h3>
             <p className="text-sm text-ink-muted">{cat.blurb}</p>
             <span className="text-xs text-ink-faint">
               {shown.length} lessons · about {minutes} minutes · one to two minutes each · yours from day one

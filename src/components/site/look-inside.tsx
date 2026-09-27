@@ -37,7 +37,7 @@ function spreads(): Spread[] {
               <span className="w-5 text-right text-[#8a8f9c]">{i + 1}</span>
               <span className={`size-2.5 shrink-0 translate-y-[-1px] rounded-full ${c.bgClass}`} />
               <span>
-                {c.name} <span className="text-[#8a8f9c]">- {c.colorName.toLowerCase()}</span>
+                {c.name} <span className="text-[#8a8f9c]">- {c.subtitle.toLowerCase()}</span>
               </span>
             </li>
           ))}
@@ -51,6 +51,7 @@ function spreads(): Spread[] {
         <p className="text-[0.65rem] font-bold uppercase tracking-[0.3em] text-[#8a8f9c]">Chapter {i + 1}</p>
         <span className={`block h-1.5 w-16 rounded-full ${c.bgClass}`} />
         <p className="font-serif text-3xl leading-tight text-[#141824]">{c.name}</p>
+        <p className="-mt-3 font-serif text-base text-[#6b6f7c]">{c.subtitle}</p>
         <p className="font-serif text-sm italic text-[#6b6f7c]">The {c.colorName.toLowerCase()} color</p>
         <p className="font-serif text-[1.02rem] leading-relaxed text-[#232838]">{c.blurb}</p>
       </div>

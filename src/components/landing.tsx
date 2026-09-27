@@ -235,7 +235,8 @@ function LandingBody() {
                 className="flex items-center gap-2 rounded-full border border-navy-600 bg-navy-900/70 px-3 py-1.5 text-sm text-ink-muted"
               >
                 <span className={`size-2 rounded-full ${cat.bgClass}`} />
-                {cat.name}
+                <b className="font-semibold text-ink">{cat.name}</b>
+                <span className="text-ink-faint">{cat.subtitle}</span>
               </li>
             ))}
           </ul>

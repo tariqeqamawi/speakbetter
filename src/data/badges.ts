@@ -57,13 +57,13 @@ const minutesOf = (s: BadgeEvalState) => s.attempts.reduce((sum, a) => sum + (a.
 
 /** One trophy per skill, for watching every lesson in it. */
 const LIBRARY: { category: CategoryId; title: string; message: string }[] = [
-  { category: "mindset", title: "Mind Over Matter", message: "Every Confidence lesson watched. The part of speaking that happens before you open your mouth - done." },
-  { category: "storytelling", title: "Once Upon a Time", message: "Every Storytelling lesson watched. You know how a story is built now; go and tell one." },
-  { category: "figurative", title: "Word Painter", message: "Every Figurative & Sensory lesson watched. The palette is yours." },
-  { category: "acting", title: "Method Actor", message: "Every Acting lesson watched. Now perform the moment instead of reporting it." },
-  { category: "structure", title: "The Architect", message: "Every Structure lesson watched. You can build a talk that stands up on its own." },
-  { category: "body-language", title: "Body of Work", message: "Every Body & Physical lesson watched. Your whole body is part of the talk now." },
-  { category: "advanced", title: "Grandmaster", message: "Every Advanced lesson watched. The tricks the professionals use - all of them." },
+  { category: "mindset", title: "Mind Over Matter", message: "Every Presence lesson watched. The part of speaking that happens before you open your mouth - done." },
+  { category: "storytelling", title: "Once Upon a Time", message: "Every Tell lesson watched. You know how a story is built now; go and tell one." },
+  { category: "figurative", title: "Word Painter", message: "Every Paint lesson watched. The palette is yours." },
+  { category: "acting", title: "Method Actor", message: "Every Act lesson watched. Now perform the moment instead of reporting it." },
+  { category: "structure", title: "The Architect", message: "Every Frame lesson watched. You can build a talk that stands up on its own." },
+  { category: "body-language", title: "Body of Work", message: "Every Body lesson watched. Your whole body is part of the talk now." },
+  { category: "advanced", title: "Grandmaster", message: "Every Pro lesson watched. The tricks the professionals use - all of them." },
 ];
 
 export interface BadgeDef {

@@ -25,7 +25,7 @@ interface Stop {
 const STOPS: Stop[] = [
   { n: 1, title: "Record Your Speaking Baseline", state: "done" },
   { n: 2, title: "Tell a Story Without Any Help", state: "done" },
-  { n: 3, title: "Watch All The Confidence & Presence Skills", state: "here" },
+  { n: 3, title: "Watch All The Presence Skills", state: "here" },
   { n: 4, title: "No Filler Words", state: "ahead" },
   { n: 5, title: "Find Your Resonance", state: "ahead" },
   { n: 6, title: "Narrate A Scene From Your Day", state: "locked" },
