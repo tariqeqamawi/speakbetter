@@ -17,8 +17,8 @@ const BEATS = [
     line: "You don't learn to sing by going to concerts.",
   },
   {
-    image: "/hero/driving-course.jpg",
-    alt: "On the sofa in the evening, watching a driving lesson on a laptop, the car keys unused on the table",
+    image: "/hero/driving-course-v2.jpg",
+    alt: "A man at his desk watching a driving video on his laptop - the view from the driver's seat - his car keys unused beside it",
     line: "You didn't learn to drive by buying a course.",
   },
   {
