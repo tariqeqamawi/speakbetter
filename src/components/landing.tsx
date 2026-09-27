@@ -19,7 +19,6 @@ import { SpectrumDemo } from "@/components/spectrum-demo";
 import { SelfieTake } from "@/components/selfie-take";
 import { SELFIE_TAKES } from "@/data/selfie-takes";
 import { HeroBeat } from "@/components/hero-beat";
-import { TheReality } from "@/components/the-reality";
 import { JoinCta } from "@/components/join-cta";
 import { LazyVimeoPlayer } from "@/components/lazy-vimeo-player";
 import { foundingCohort } from "@/data/pricing";
@@ -37,7 +36,6 @@ import { WhatItIs } from "@/components/what-it-is";
 import { LionArtWhenNear, LionMouth } from "@/components/lion-mouth";
 import { FirstChallenge } from "@/components/first-challenge";
 import { CoachDemo } from "@/components/coach-demo";
-import { HowItWorks } from "@/components/how-it-works";
 import { SectionMark, SectionNav } from "@/components/landing-sections";
 import { ReadMore } from "@/components/read-more";
 
@@ -180,8 +178,6 @@ function LandingBody() {
             repeated: the same quote twice reads as the only quote. */}
         <TestimonialStream items={earlyProof} columns={2} />
 
-        {/* The other side of it - said, and then shown. */}
-        <TheReality />
 
         {/* What it is, and what is in it. The second paragraph here used
             to say "master public speaking, overcome fear and shyness in
@@ -202,28 +198,15 @@ function LandingBody() {
 
       {/* Coach, demonstrated - once, here, where the claim was made.
           
-          The five steps first, because "how does this work" is the
-          question a visitor has at this point and it answers in five
-          seconds. Then the long explanation, folded: it is good copy
-          and most readers do not want it, and a page that shows
-          everything to everybody is a page nobody finishes. Then the
-          thing itself.
+          What he looks for, folded - good copy most readers don't want
+          - then the thing itself. The five steps of how it works live in
+          "Inside the app" (landing-showcase.tsx), with the rest of the
+          app.
           
           This is the ONLY worked review on the page. It used to be
           here and again inside the challenge preview, so a reader
           met the same review twice. */}
       <section className="flex w-full flex-col items-center gap-5">
-        {/* "How it works" rather than "Experience your Speak Better
-            Coach". The old heading promised an experience and then
-            delivered a list, and a reader who has been promised an
-            experience reads a list as a let-down. This one says
-            exactly what is underneath it. */}
-        <h2 className="max-w-2xl text-center text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-          How it works
-        </h2>
-
-        <HowItWorks />
-
         <details className="group w-full max-w-2xl rounded-2xl border border-navy-600 bg-navy-800">
           <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm font-semibold text-ink [&::-webkit-details-marker]:hidden">
             What Coach looks for, in full
@@ -361,11 +344,10 @@ function LandingBody() {
           <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
             This is how you actually record yourself
           </h2>
-          <ReadMore lines={2} className="text-ink-muted text-balance" buttonClassName="self-center">
+          <p className="text-ink-muted text-balance">
             No studio, no crew. Prop up your phone, press record, and speak for a minute or two - the brief on screen
-            while you do. Then Coach watches it. That is why Speak Better works differently from every other course
-            and app: the others have you watch. This one has you speak.
-          </ReadMore>
+            while you do. Then Coach watches it.
+          </p>
         </div>
         <div className="-mx-4 flex w-[calc(100%+2rem)] gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:w-full sm:max-w-4xl sm:grid-cols-4 sm:overflow-visible sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {SELFIE_TAKES.map((t) => (

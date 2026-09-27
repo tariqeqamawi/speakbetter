@@ -1,6 +1,5 @@
 import { PhoneFilm } from "@/components/phone-film";
-import { SelfieTake } from "@/components/selfie-take";
-import { SELFIE_TAKES } from "@/data/selfie-takes";
+import { HowItWorks } from "@/components/how-it-works";
 import { WhatsInside } from "@/components/whats-inside";
 import { ListenIcon, TrophyIcon } from "@/components/icons";
 import { ReadMore } from "@/components/read-more";
@@ -28,6 +27,25 @@ function Phone({ children, label }: { children: React.ReactNode; label: string }
 export function LandingShowcase() {
   return (
     <>
+      {/* How it works first - the five steps, with the two things a
+          student gets for each take - then what's inside, then the app
+          itself on film. The quick guide that used to close this section
+          said the same five steps a second time, so it's gone. */}
+      <section className="flex w-full flex-col items-center gap-5">
+        <h2 className="max-w-2xl text-center text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+          How it works
+        </h2>
+        <HowItWorks />
+        <ul className="flex flex-col items-center gap-1.5 text-sm text-ink-muted sm:flex-row sm:gap-6">
+          <li className="flex items-center gap-2">
+            <TrophyIcon className="size-4 text-storytelling" />A pass pays by score - a better take is worth more.
+          </li>
+          <li className="flex items-center gap-2">
+            <ListenIcon className="size-4 text-advanced" />Every review is kept to read back, and to ask about.
+          </li>
+        </ul>
+      </section>
+
       {/* The standalone lesson player is gone.
           
           "A lesson, exactly as you'll see it" sat between the coach
@@ -65,54 +83,6 @@ export function LandingShowcase() {
         </div>
       </section>
 
-      {/* Record, send, hear back */}
-      <section className="flex flex-col items-center gap-8 rounded-2xl border border-navy-600 bg-navy-800 p-6 sm:flex-row sm:justify-center sm:gap-14 sm:p-10">
-        {/* A take being recorded - a student on their own phone, lit by
-            a ring light, the brief on screen. */}
-        <Phone label="Recording a take">
-          <SelfieTake take={SELFIE_TAKES[0]} className="!aspect-auto h-full rounded-none" />
-        </Phone>
-        <div className="flex max-w-md flex-col gap-4">
-          {/* The same five as the How it works section higher up.
-              
-              It used to be three of them - record, upload, receive -
-              which made the page describe its own loop two different
-              ways depending on where you were reading. A visitor who
-              notices that does not think "two summaries", they think
-              "which one is true". Repetition is the smaller cost. */}
-          <h2 className="text-3xl font-semibold tracking-tight text-ink text-balance sm:text-4xl">How to use Speak Better - quick guide</h2>
-          <ol className="flex flex-col gap-2">
-            {[
-              ["Watch a challenge + included skills", "text-structure"],
-              ["Record yourself speaking", "text-acting"],
-              ["Upload your take for “Coach”", "text-body-language"],
-              ["Receive detailed feedback", "text-mindset"],
-              ["Improve quickly", "text-storytelling"],
-            ].map(([step, color], i) => (
-              <li key={step} className="flex items-center gap-3">
-                <span className={`grid size-8 shrink-0 place-items-center rounded-full border border-current text-sm font-bold ${color}`}>
-                  {i + 1}
-                </span>
-                <span className="text-lg font-semibold text-ink">{step}</span>
-              </li>
-            ))}
-          </ol>
-          <ReadMore lines={2} className="text-ink-muted">
-            Every recorded attempt goes from your phone to your lion coach, and is actually watched. The coach
-            watches your physical delivery - what you&apos;re wearing, the props you use, how you deliver your
-            stories, your body language and gestures, your eye contact - tells you which lessons you&apos;re using,
-            and shows you which colors you&apos;re lighting across the spectrum of speaking skills. Then it gives a
-            verdict - passed or not - and awards XP for every challenge completed.
-          </ReadMore>
-          <p className="text-ink-muted">
-            It makes public speaking not only fun, but effective and efficient.
-          </p>
-          <ul className="flex flex-col gap-1.5 text-sm text-ink-muted">
-            <li className="flex items-center gap-2"><TrophyIcon className="size-4 text-storytelling" />A pass pays by score - a better take is worth more.</li>
-            <li className="flex items-center gap-2"><ListenIcon className="size-4 text-advanced" />Every review is kept to read back, and to ask about.</li>
-          </ul>
-        </div>
-      </section>
     </>
   );
 }

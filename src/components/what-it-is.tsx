@@ -28,25 +28,11 @@ const COUNTS = [
 export function WhatItIs() {
   return (
     <div className="flex w-full max-w-4xl flex-col gap-6 rounded-2xl border border-navy-600 bg-navy-800 p-6 sm:p-8">
-      <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start sm:gap-7">
-        {/* The logo mark, not lion-head.png - that one is a frame from
-            the roar animation, caught mid-open, and at ninety-six
-            pixels the open mouth reads as a rendering fault rather
-            than a roar. The mark is the lion at rest and is what the
-            brand uses everywhere else on this page. */}
-        <Image
-          src="/logo-mark.png"
-          alt=""
-          width={220}
-          height={220}
-          className="size-24 shrink-0 object-contain sm:size-32"
-        />
-        <p className="text-lg text-ink-muted text-balance sm:text-xl">
-          <strong className="font-semibold text-ink">Speak Better is built on practice:</strong> short lessons,
-          real on-camera challenges, and true interactive feedback through an AI coach that watches your videos
-          and gives you detailed, accurate feedback based on your physical and spoken performance.
-        </p>
-      </div>
+      {/* The "built on practice" paragraph that opened this box was
+          the fourth telling of practise-don't-watch before the reader
+          reached the comparison that makes the case properly - so the
+          box is only what's in it now. */}
+      <h3 className="text-center text-sm font-semibold uppercase tracking-[0.25em] text-ink-faint">What you get</h3>
 
       {/* Each number with a picture of what it is, counting up from 1
           the first time it is seen. */}
