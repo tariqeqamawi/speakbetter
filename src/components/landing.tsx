@@ -2,7 +2,7 @@ import Link from "next/link";
 import { SUPPORT_EMAIL } from "@/data/support";
 import { CohortDates } from "@/components/cohort-dates";
 import Image from "next/image";
-import { CheckIcon, ChevronDownIcon, XIcon } from "@/components/icons";
+import { CheckIcon, XIcon } from "@/components/icons";
 import { Soundwave } from "@/components/soundwave";
 import { categories } from "@/data/categories";
 import { StoryPreview } from "@/components/story-preview";
@@ -29,8 +29,7 @@ import { TestimonialStream } from "@/components/testimonial-stream";
 import { ProofLine } from "@/components/proof-line";
 import { Reveal } from "@/components/reveal";
 import { delay } from "@/lib/reveal-delay";
-import { LionPitch } from "@/components/lion-pitch";
-import { LANDING_PITCH, LANDING_PITCH_AUDIO, HEADLINE_AUDIO } from "@/data/welcome-speech";
+import { HEADLINE_AUDIO } from "@/data/welcome-speech";
 import { SpeakLine } from "@/components/speak-line";
 import { proofOf, splitForPage, type Proof } from "@/data/testimonials";
 import { LionArtWhenNear, LionMouth } from "@/components/lion-mouth";
@@ -176,40 +175,16 @@ function LandingBody() {
 
       <SectionMark id="coach" />
 
-      {/* Coach, in his own voice, before anything else argues for him.
-          A claim ABOUT a thing is always weaker than the thing. */}
-      <LionPitch line={LANDING_PITCH} audioSrc={LANDING_PITCH_AUDIO} />
-
       {/* Coach, demonstrated - once, here, where the claim was made.
           
-          What he looks for, folded - good copy most readers don't want
-          - then the thing itself. The five steps of how it works live in
-          "Inside the app" (landing-showcase.tsx), with the rest of the
-          app.
+          The review card is the whole explanation: what he looks for
+          is shown working, so it isn't also described. The five steps
+          of how it works live in "Inside the app" (landing-showcase.tsx).
           
           This is the ONLY worked review on the page. It used to be
           here and again inside the challenge preview, so a reader
           met the same review twice. */}
       <section className="flex w-full flex-col items-center gap-5">
-        <details className="group w-full max-w-2xl rounded-2xl border border-navy-600 bg-navy-800">
-          <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm font-semibold text-ink [&::-webkit-details-marker]:hidden">
-            What Coach looks for, in full
-            <ChevronDownIcon className="ml-auto size-4 shrink-0 text-ink-faint transition-transform group-open:rotate-180" />
-          </summary>
-          <div className="flex flex-col gap-3 px-4 pb-4 text-ink-muted">
-            <p>
-              You record a challenge and, in a minute or two, Coach the lion watches your video and makes note
-              of your hand gestures, your body language, your presence, your confidence, your storytelling,
-              your acting, your sensory details and your structure.
-            </p>
-            <p>
-              Then he gives you a detailed breakdown of what you did, what you can improve, and specific notes
-              on your spoken and physical delivery. You&apos;ll know whether you passed or missed, and
-              you&apos;ll watch your ability grow take by take.
-            </p>
-          </div>
-        </details>
-
         <CoachDemo />
         <JoinCta label="Start My Speaking Journey" price />
       </section>

@@ -256,6 +256,9 @@ export function CoachDemo() {
         <div className="flex flex-col items-center gap-1 text-center">
           <h3 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">Meet Coach</h3>
           <p className="text-sm text-ink-muted text-balance">The lion who watches all of your videos.</p>
+          {/* All that was kept of the "Hello, I'm Coach" pitch that used
+              to stand above this card: the whole method in four words. */}
+          <p className="mt-2 text-base font-semibold text-figurative">&ldquo;Tariq teaches. I review.&rdquo;</p>
           {/* The positioning, said plainly: not "the first AI speaking coach"
               - there are others - but the only one trained on a complete
               method, that ties what it sees to the lesson that fixes it. */}
