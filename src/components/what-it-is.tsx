@@ -16,7 +16,7 @@ import { CountUp } from "@/components/count-up";
 // answer to "yes, but what do I actually get" - so they are drawn at
 // the size of a claim, in the colours they belong to.
 
-const COUNTS = [
+export const COUNTS = [
   { n: 83, label: "skill lessons", color: "text-storytelling", image: "/what/lessons.webp" },
   { n: 24, label: "interactive challenges", color: "text-structure", image: "/what/challenges.webp" },
   { n: 79, label: "cards in the digital deck", color: "text-figurative", image: "/what/cards.webp" },

@@ -31,7 +31,7 @@ import { badgeDefs } from "@/data/badges";
 // needs a paragraph to explain has its own section further down the
 // page; this is the inventory, not the argument.
 
-const FEATURES = [
+export const FEATURES = [
   {
     Icon: VideoIcon,
     name: "Selfie recorder",
