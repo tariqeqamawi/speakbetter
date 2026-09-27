@@ -1,6 +1,7 @@
 import { Avatar } from "@/components/avatar";
 import { SleepOffscreen } from "@/components/sleep-offscreen";
 import { credit, type Testimonial } from "@/data/testimonials";
+import { ReadMore } from "@/components/read-more";
 
 // Students' own words, floating up the page.
 //
@@ -120,7 +121,11 @@ function Quote({ t }: { t: Testimonial }) {
     // quote reads as something lifted from elsewhere rather than as
     // more of the seller's own copy. See .quote-card in globals.
     <figure className="quote-card flex flex-col gap-2.5 rounded-2xl border p-4 shadow-2xl shadow-navy-950/60">
-      <blockquote className="text-sm leading-relaxed">&ldquo;{t.quote}&rdquo;</blockquote>
+      {/* Long quotes fold to five lines - the whole of one is a tap away,
+          and the column of them stays scannable. */}
+      <ReadMore lines={5} buttonClassName="!text-current opacity-60 hover:opacity-100">
+        <blockquote className="text-sm leading-relaxed">&ldquo;{t.quote}&rdquo;</blockquote>
+      </ReadMore>
       <figcaption className="flex items-center gap-2.5">
         <Avatar name={who} className="size-8" />
         <span className="quote-name text-xs font-semibold">{who}</span>

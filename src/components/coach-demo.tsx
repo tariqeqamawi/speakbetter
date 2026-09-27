@@ -6,6 +6,7 @@ import { LessonLink } from "@/components/practice-panel";
 import { useEffect, useRef, useState } from "react";
 import { TalkingLion, type SpokenCue } from "@/components/talking-lion";
 import { Confetti } from "@/components/confetti";
+import { ReadMore } from "@/components/read-more";
 import {
   BrushIcon,
   CheckCircleIcon,
@@ -262,12 +263,12 @@ export function CoachDemo() {
             The only AI coach trained on a complete speaking method - it tells you which skills you used, which you
             missed, and exactly which lesson to watch next.
           </p>
-          <p className="mt-2 max-w-lg text-sm leading-relaxed text-ink-muted text-balance">
+          <ReadMore lines={2} className="mt-2 max-w-lg text-sm leading-relaxed text-ink-muted text-balance">
             Thanks to the advances in technology, Coach actually watches your videos, is fully context-aware, and can
             see details such as eye contact and hand gestures. He is trained on the full Speak Better methodology,
             knows when you are using different skills, and can suggest what to do next time to improve your
             delivery.
-          </p>
+          </ReadMore>
         </div>
         <TalkingLion
           text={SPOKEN}

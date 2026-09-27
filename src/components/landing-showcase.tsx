@@ -3,6 +3,7 @@ import { SelfieTake } from "@/components/selfie-take";
 import { SELFIE_TAKES } from "@/data/selfie-takes";
 import { WhatsInside } from "@/components/whats-inside";
 import { ListenIcon, TrophyIcon } from "@/components/icons";
+import { ReadMore } from "@/components/read-more";
 
 // The app, shown rather than described (master plan §15): a lesson as
 // it plays inside, with the words and symbols that land on the sentence
@@ -40,12 +41,12 @@ export function LandingShowcase() {
       {/* A preview of the app - short films of the real pages */}
       <section className="flex flex-col items-center gap-4">
         <h2 className="text-2xl font-semibold tracking-tight">See the app in action</h2>
-        <p className="max-w-lg text-center text-ink-muted">
+        <ReadMore lines={2} className="max-w-lg text-center text-ink-muted" buttonClassName="self-center">
           Your interactive challenges in the S.T.O.R.Y. framework - travelled as a 3D adventure, or taken as a
           map in 2D; color-coded skills that you can dial into
           and watch; and your gamified dashboard - trophies, streak, speaking spectrum, leaderboards and the
           community, all in one place.
-        </p>
+        </ReadMore>
         <div className="-mx-4 flex w-[calc(100%+2rem)] gap-6 overflow-x-auto px-4 pb-2 sm:mx-0 sm:w-full sm:justify-center sm:overflow-visible sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {/* The challenges both ways a student can take them: travelling
               the S.T.O.R.Y. road in 3D, or scrolling it as a map. */}
@@ -96,13 +97,13 @@ export function LandingShowcase() {
               </li>
             ))}
           </ol>
-          <p className="text-ink-muted">
+          <ReadMore lines={2} className="text-ink-muted">
             Every recorded attempt goes from your phone to your lion coach, and is actually watched. The coach
             watches your physical delivery - what you&apos;re wearing, the props you use, how you deliver your
             stories, your body language and gestures, your eye contact - tells you which lessons you&apos;re using,
             and shows you which colors you&apos;re lighting across the spectrum of speaking skills. Then it gives a
             verdict - passed or not - and awards XP for every challenge completed.
-          </p>
+          </ReadMore>
           <p className="text-ink-muted">
             It makes public speaking not only fun, but effective and efficient.
           </p>

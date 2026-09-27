@@ -1,4 +1,5 @@
 import { LionMouth } from "@/components/lion-mouth";
+import { ReadMore } from "@/components/read-more";
 
 // Coach, talking to the visitor directly.
 //
@@ -32,9 +33,9 @@ export function LionPitch({ line }: { line: string; audioSrc?: string }) {
         <LionMouth level={0} className="w-full" />
       </div>
 
-      <p className="max-w-xl text-center text-lg leading-relaxed text-ink text-balance sm:text-xl">
+      <ReadMore lines={3} className="max-w-xl text-center text-lg leading-relaxed text-ink text-balance sm:text-xl" buttonClassName="self-center">
         {line}
-      </p>
+      </ReadMore>
     </section>
   );
 }

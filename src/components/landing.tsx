@@ -38,6 +38,8 @@ import { LionArtWhenNear, LionMouth } from "@/components/lion-mouth";
 import { FirstChallenge } from "@/components/first-challenge";
 import { CoachDemo } from "@/components/coach-demo";
 import { HowItWorks } from "@/components/how-it-works";
+import { SectionMark, SectionNav } from "@/components/landing-sections";
+import { ReadMore } from "@/components/read-more";
 
 // The landing page (master plan §15): promo video as centerpiece,
 // pay-to-unlock, straight into the app. Promo video choice is an open
@@ -57,6 +59,8 @@ export function Landing() {
   return (
     <LionArtWhenNear>
       <LandingBody />
+      {/* The chapters, held down the right edge (landing-sections.tsx). */}
+      <SectionNav />
       {/* On a phone, the way to the tiers held at the foot of the screen. */}
       <StickyJoin />
     </LionArtWhenNear>
@@ -66,6 +70,7 @@ export function Landing() {
 function LandingBody() {
   return (
     <div className="flex flex-col gap-16 py-8">
+      <SectionMark id="overview" />
 
       {/* Hero */}
       <section className="flex flex-col items-center gap-6 text-center">
@@ -189,6 +194,8 @@ function LandingBody() {
         <JoinCta label="Join Speak Better Now" seal />
       </section>
 
+      <SectionMark id="coach" />
+
       {/* Coach, in his own voice, before anything else argues for him.
           A claim ABOUT a thing is always weaker than the thing. */}
       <LionPitch line={LANDING_PITCH} audioSrc={LANDING_PITCH_AUDIO} />
@@ -241,6 +248,8 @@ function LandingBody() {
       </section>
 
       <ProofLine tag="teacher" />
+
+      <SectionMark id="different" />
 
       {/* The method, as a side-by-side: every other course vs this one.
           The left card is deliberately drained of color - the palette
@@ -352,11 +361,11 @@ function LandingBody() {
           <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
             This is how you actually record yourself
           </h2>
-          <p className="text-ink-muted text-balance">
+          <ReadMore lines={2} className="text-ink-muted text-balance" buttonClassName="self-center">
             No studio, no crew. Prop up your phone, press record, and speak for a minute or two - the brief on screen
             while you do. Then Coach watches it. That is why Speak Better works differently from every other course
             and app: the others have you watch. This one has you speak.
-          </p>
+          </ReadMore>
         </div>
         <div className="-mx-4 flex w-[calc(100%+2rem)] gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:w-full sm:max-w-4xl sm:grid-cols-4 sm:overflow-visible sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {SELFIE_TAKES.map((t) => (
@@ -367,8 +376,10 @@ function LandingBody() {
         </div>
       </section>
 
+      <SectionMark id="app" />
       <LandingShowcase />
 
+      <SectionMark id="spectrum" />
       {/* The spectrum */}
       <section className="flex flex-col items-center gap-4">
         <h2 className="text-2xl font-semibold tracking-tight">
@@ -395,6 +406,7 @@ function LandingBody() {
 
       <ProofLine tag="lessons" />
 
+      <SectionMark id="lessons" />
       {/* The library, in full */}
       <section className="flex flex-col items-center gap-4">
         <h2 className="text-2xl font-semibold tracking-tight">
@@ -410,6 +422,7 @@ function LandingBody() {
 
       <ProofLine tag="storytelling" />
 
+      <SectionMark id="challenges" />
       {/* The journey */}
       <section className="flex flex-col items-center gap-4">
         <h2 className="max-w-2xl text-center text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
@@ -427,6 +440,7 @@ function LandingBody() {
       {/* The first challenge, shown rather than run. */}
       <FirstChallenge />
 
+      <SectionMark id="mentors" />
       {/* Two mentors in your pocket - the coach on one phone, the
           teacher zoomed to portrait on the other */}
       {/* One phone arrives, the second slides out from under it, then the
@@ -486,17 +500,16 @@ function LandingBody() {
             Two mentors in your pocket
           </h2>
           <p className="text-sm leading-relaxed text-ink-muted">
-            One of the ideas behind the app was to give you the experience of having a mentor in your
-            pocket. Now you have two! <b className="font-semibold text-ink">Tariq</b> delivers every lesson
-            and introduces every challenge. <b className="font-semibold text-ink">Coach, the lion</b>, gives
-            you all of your feedback and guides you through the app.
+            <b className="font-semibold text-ink">Tariq</b> delivers every lesson and introduces every challenge.{" "}
+            <b className="font-semibold text-ink">Coach, the lion</b>, gives you all of your feedback and guides you
+            through the app.
           </p>
-          <p className="text-sm leading-relaxed text-ink-muted">
-            Every lesson is recorded in the studio in landscape, so you get the full picture on a monitor,
-            a TV or a laptop. On your phone there&apos;s a portrait zoom button: one tap and the lesson fills
-            the tall screen, close enough to see the hand gestures, the eye contact, and the small details
-            a letterboxed strip would shrink away.
-          </p>
+          <ReadMore lines={2} className="text-sm leading-relaxed text-ink-muted" buttonClassName="self-center lg:self-start">
+            Every lesson is recorded in the studio in landscape, so you get the full picture on a monitor, a TV or a
+            laptop. On your phone there&apos;s a portrait zoom button: one tap and the lesson fills the tall screen,
+            close enough to see the hand gestures, the eye contact, and the small details a letterboxed strip would
+            shrink away.
+          </ReadMore>
           <p className="text-xs text-ink-faint">
             Works on every lesson and every challenge video, and the whole app installs to your home screen.
           </p>
@@ -507,8 +520,10 @@ function LandingBody() {
 
       <ProofLine tag="results" />
 
-      {/* Pricing */}
-      <section id="pricing" className="flex scroll-mt-20 flex-col items-center gap-6">
+      <SectionMark id="pricing" />
+      {/* Pricing - the chapter mark carries the #pricing anchor every
+          Join button points at. */}
+      <section className="flex flex-col items-center gap-6">
         <div className="flex flex-col items-center gap-2 text-center">
           <div className="spectrum-rule h-1 w-16 rounded-full" />
           <TestimonialStream items={lateProof} columns={3} />
