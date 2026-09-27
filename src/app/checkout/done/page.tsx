@@ -34,7 +34,8 @@ export default async function CheckoutDonePage({
   if (id && stripeEnabled()) {
     try {
       const session = await stripe().checkout.sessions.retrieve(id);
-      if (session.payment_status === "paid") {
+      // Paid, or free with a 100% code (no payment required).
+      if (session.payment_status === "paid" || session.payment_status === "no_payment_required") {
         plan = session.metadata?.plan ?? null;
         email = session.customer_details?.email ?? null;
       }

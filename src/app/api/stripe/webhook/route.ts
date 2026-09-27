@@ -36,7 +36,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ received: true });
 
   const session = event.data.object;
-  if (session.payment_status !== "paid") return NextResponse.json({ received: true });
+  // Paid - or free because a code took it to nothing (ALUMNI2026, for the
+  // students who were with Tariq before the app), which Stripe marks
+  // "no payment required". Both are a real purchase.
+  if (session.payment_status !== "paid" && session.payment_status !== "no_payment_required")
+    return NextResponse.json({ received: true });
 
   const plan = session.metadata?.plan;
   const studentId = session.metadata?.studentId;
