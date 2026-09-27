@@ -1,7 +1,4 @@
 import { guarantee } from "@/data/pricing";
-import { LegalLinks } from "@/components/legal-page";
-import { CONSENT_REASSURE, CONSENT_SHORT } from "@/data/consent";
-import { ConsentMeaning } from "@/components/consent-gate";
 import { TierTabs } from "@/components/tier-tabs";
 import { GuaranteeSeal } from "@/components/guarantee-seal";
 import { PricingFaq } from "@/components/pricing-faq";
@@ -29,20 +26,8 @@ export function Pricing() {
         </div>
       </div>
 
-      {/* Said before anyone pays: agreeing is a condition of the course,
-          in the same words the student ticks when they start. */}
-      <div className="mx-auto flex max-w-xl flex-col gap-1.5 text-center text-xs text-ink-muted">
-        <p>
-          {CONSENT_SHORT} {CONSENT_REASSURE} <ConsentMeaning />
-        </p>
-        <p className="text-ink-faint">
-          Read the <LegalLinks />.
-        </p>
-      </div>
-
-      <p className="text-center text-xs text-ink-faint">
-        Checkout stub - Stripe payment arrives with service integration. Prices in USD.
-      </p>
+      {/* The agreement is asked at checkout, on the next page - not here. */}
+      <p className="text-center text-xs text-ink-faint">Prices in USD. You&apos;ll confirm everything on the next page.</p>
 
       <div className="flex justify-center">
         <PricingFaq />

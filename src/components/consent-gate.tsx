@@ -7,6 +7,7 @@ import { LegalLinks } from "@/components/legal-page";
 import { CONSENT_DECLINE, CONSENT_EXPLAIN, CONSENT_REASSURE, CONSENT_SHORT } from "@/data/consent";
 import { guarantee } from "@/data/pricing";
 import { supportMailto } from "@/data/support";
+import { SITE_PATHS } from "@/data/site";
 
 // Consent is a condition of Speak Better, not a setting: Coach gets
 // better by learning from what students say, so a student who won't let
@@ -164,8 +165,19 @@ export function ConsentGate() {
   const { state, ready, giveConsent } = useStore();
   const path = usePathname() ?? "";
 
-  // Welcome asks it itself; /admin is Tariq's.
-  if (!ready || !state.unlocked || state.consentAt || path.startsWith("/welcome") || path.startsWith("/admin")) {
+  // Welcome asks it itself; /admin is Tariq's; and nobody is asked
+  // anything while browsing the website - only inside the course (and at
+  // checkout, which asks it on the page).
+  if (
+    !ready ||
+    !state.unlocked ||
+    state.consentAt ||
+    path.startsWith("/welcome") ||
+    path.startsWith("/admin") ||
+    path.startsWith("/checkout") ||
+    path === "/pricing" ||
+    SITE_PATHS.includes(path)
+  ) {
     return null;
   }
 

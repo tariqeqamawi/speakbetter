@@ -33,7 +33,7 @@ export default function DeckPage() {
   return (
     <div className="flex flex-col gap-20 pb-10">
       <div className="flex flex-col items-center gap-8">
-        <SiteHero ghost="The Deck" kicker="The Speak Better deck" title="Every speaking skill, in your hand" accent="text-figurative">
+        <SiteHero ghost="The Deck" kicker="The Speak Better deck" title="Your whole speaking toolkit, in seven colors" accent="text-figurative">
           {cards} cards, color-coded to seven areas of public speaking, designed for speakers who desire engaging talks
           on the fly.
         </SiteHero>

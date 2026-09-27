@@ -39,6 +39,13 @@ export function UnlockButton({
 
   const go = async () => {
     if (busy) return;
+    // Choosing a tier goes to the checkout page - where the agreement is
+    // asked and Stripe takes over. Only an upgrade, already inside the
+    // app and already agreed, goes straight to payment.
+    if (!upgrade) {
+      router.push(`/checkout?plan=${plan}`);
+      return;
+    }
     setBusy(true);
     try {
       const res = await fetch("/api/checkout", {

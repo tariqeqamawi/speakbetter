@@ -67,10 +67,10 @@ export default function BookPage() {
         </div>
         <div className="relative mx-auto w-full max-w-2xl">
           <Image
-            src="/book/book-mockup-neon.webp"
-            alt="Speak Better: The 7 Colors of Fearless, Unforgettable Speaking - the book"
+            src="/book/book-oak-v1.webp"
+            alt="Speak Better: The 7 Colors of Fearless, Unforgettable Speaking - the hardback on an oak desk beside the card deck"
             width={1600}
-            height={1063}
+            height={1062}
             priority
             sizes="(min-width: 1024px) 55vw, 100vw"
             className="h-auto w-full rounded-3xl"

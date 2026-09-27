@@ -117,7 +117,7 @@ export function TierArt({ has }: { has: string[] }) {
       <Tile on={h("book")} label="The book">
         <span className="relative block size-full">
           <Image
-            src="/book/book-mockup-neon.webp"
+            src="/book/book-oak-v1-portrait.webp"
             alt="The Speak Better book: The 7 Colors of Fearless, Unforgettable Speaking, by Tariq EQ Amawi"
             fill
             sizes="120px"

@@ -7,7 +7,7 @@ import Link from "next/link";
 
 const ITEMS = [
   { href: "/deck", src: "/deck/printed-deck-oak.webp", alt: "The printed Speak Better card deck", label: "The Deck", w: 1600, h: 1063 },
-  { href: "/book", src: "/book/book-mockup-neon.webp", alt: "The Speak Better book", label: "The Book", w: 1600, h: 1063, big: true },
+  { href: "/book", src: "/book/book-oak-v1-portrait.webp", alt: "The Speak Better book", label: "The Book", w: 850, h: 1062, big: true },
   { href: "/landing", src: "/screenshots/today-narrow.png", alt: "The Speak Better app on a phone", label: "The App", w: 824, h: 1600, phone: true },
 ];
 
