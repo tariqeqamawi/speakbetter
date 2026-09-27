@@ -23,7 +23,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// The card a shared link opens into (iMessage, WhatsApp, socials): the
+// lion, the name, the waveform and the promise, 1200x630.
+const PREVIEW = { url: "/social/speak-better-preview-v1.png", width: 1200, height: 630, alt: "Speak Better - Discover your true colors, speak, and roar on screen or stage." };
+const SHARE_LINE = "Discover your true colors, speak, and roar on screen or stage. A guided 6-week speaking experience, with an AI coach on every take.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL("https://speakbetter.app"),
   title: {
     default: "Speak Better",
     template: "%s · Speak Better",
@@ -42,17 +48,17 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Speak Better",
-    description:
-      "A speaking course built on practice, not playback. Short lessons, real on-camera challenges, and AI coaching across the full spectrum of speaking skills.",
-    images: ["/logo-full.png"],
+    description: SHARE_LINE,
+    images: [PREVIEW],
     type: "website",
+    siteName: "Speak Better",
+    url: "https://speakbetter.app",
   },
   twitter: {
     card: "summary_large_image",
     title: "Speak Better",
-    description:
-      "Short lessons, real on-camera challenges, and AI coaching in full color.",
-    images: ["/logo-full.png"],
+    description: SHARE_LINE,
+    images: [PREVIEW],
   },
 };
 
