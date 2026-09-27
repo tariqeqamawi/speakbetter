@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { categories } from "@/data/categories";
 import { LionMouth } from "@/components/lion-mouth";
-import { BookIcon, VideoIcon } from "@/components/icons";
+import { VideoIcon } from "@/components/icons";
 
 // What a tier includes, as pictures from the app itself: a few lesson
 // stills, the deck fanned in its seven colors (digital, or printed
@@ -84,9 +84,18 @@ export function TierArt({ has }: { has: string[] }) {
           </span>
         </span>
       </Tile>
+      {/* The book itself - Speak Better: Unleash Your True Colors and Roar
+          on Screen and Stage - rendered from the copy Tariq holds up in
+          the storybook lesson (public/book). */}
       <Tile on={h("book")} label="The book">
-        <span className="grid size-11 place-items-center rounded-md border border-navy-500 bg-navy-800 text-storytelling">
-          <BookIcon className="size-6" />
+        <span className="relative h-[3.6rem] w-11">
+          <Image
+            src="/book/speak-better-book.webp"
+            alt="The Speak Better book: Unleash Your True Colors and Roar on Screen and Stage"
+            fill
+            sizes="44px"
+            className="object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)]"
+          />
         </span>
       </Tile>
     </div>
