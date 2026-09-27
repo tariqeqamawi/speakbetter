@@ -12,13 +12,13 @@ import Image from "next/image";
 
 const BEATS = [
   {
-    image: "/hero/concert-v2.jpg",
-    alt: "At a concert, a woman standing at her seat belting along with the singer on stage, the people around her looking up, amused",
+    image: "/hero/concert-v3.jpg",
+    alt: "In a packed standing crowd at a concert, a woman belts out the song, eyes closed, hand on her heart - the singer far off on the stage",
     line: "You don't learn to sing by going to concerts.",
   },
   {
-    image: "/hero/driving-course-v3.jpg",
-    alt: "A woman on her sofa gripping a steering wheel in front of her laptop, which shows the view from a driver's seat - her real car keys unused on the table",
+    image: "/hero/driving-course-v4.jpg",
+    alt: "Leaning in on the sofa, gripping a steering wheel in front of a laptop that shows the view from a driver's seat - the real car keys unused beside it",
     line: "You didn't learn to drive by buying a course.",
   },
   {
