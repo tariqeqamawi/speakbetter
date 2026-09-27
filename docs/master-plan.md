@@ -2,8 +2,23 @@
 
 *A speaking course built on practice, not playback — and a way to see, in color, how dynamic a speaker someone is becoming.*
 
-> Draft v2 · Prepared 2026-08-07 · revised 2026-08-17 with the on-screen cue engine (§03), the XP model and the finish moment (§11), and the card deck as built (§16).
+> Draft v2 · Prepared 2026-08-07 · revised 2026-08-17 with the on-screen cue engine (§03), the XP model and the finish moment (§11), and the card deck as built (§16) · revised 2026-09-26 with everything built from 23 to 26 September (summary below; new §20 and §21).
 > The live formatted version of this plan is published as an artifact; this file is the repo's canonical copy.
+
+---
+
+## Changes since 23 September
+
+Four days, and the product changed shape more than in any week before it. The day-by-day record is `docs/requests.md` (the *Shipped* log) and the commit messages; this is what it adds up to.
+
+- **The road is a real 3D world.** The tilted CSS map is gone from `/challenges`. In its place is a three.js road through five lands, one per STORY phase, with portals for challenges, Coach speaking from the sky, trophies standing beside the portals they are won at, and a flat 2D map for anyone who would rather scroll (§14, *The road, rebuilt*). Challenges inside an open section can now be taken in any order (§04).
+- **The trophies are real objects.** Seventy rendered trophies in five materials, a trophy room with a stage and a reveal wherever one is won, and harder rules that ask for consistency across different challenges rather than one good take (§11, §14).
+- **The offer settled, then its price.** No free trial anywhere. A founding cohort of 20 starting 3 October, at **$299 / $498 / $997** (Starter / Complete / VIP Ultimate), each shown beside its later price struck through, a 14-day any-reason guarantee, an optional monthly plan after the six weeks, and a Starter-to-Complete upgrade for the $199 difference within 14 days (§15). The paywall stays **off** until Tariq says the first students are coming (§21).
+- **The landing page became nine numbered chapters** with a navigator down the right edge, Read more on long copy, three Join buttons, testimonials placed once each, and one core claim: **Speak Better's Speaking Spectrum makes it unlike any other course or app** (§05, §15). The origin story moved to `/about`; Terms of Service and a Privacy Policy exist (`/terms`, `/privacy`).
+- **Consent is a condition of the course.** Students agree that their speech is kept anonymously, as text, under a student number, so Coach can be trained and their own progress measured. No video is ever stored (§13).
+- **Coach can now be trained.** Every review is rated 👌/🤏/👎, nine areas of the app carry 🔥/👇 reactions, Today asks for check-ins (confidence at the start and end, recommend, what changed), and `supabase/training.sql` is the database all of this goes into (§07, §13).
+- **Tariq and investors have a view.** `/admin` (Cohort insights) and `/admin/data-room`, running on a sample cohort until Supabase is on (§20).
+- **The app looks and moves differently.** A green, purple and teal glow behind glass cards; a phone dashboard led by a sticky sections bar and a ☰ menu; the spectrum drawn as a wave above the bars in every review; the tour cut from nineteen stops to ten and renamed *Guided Tour* / *Full Guided Tour* (§14).
 
 ---
 
@@ -23,8 +38,8 @@ The course is built from two kinds of content that work together, not two separa
 
 | Pillar | Scale | What it is |
 |---|---|---|
-| **Skills** | ~80 videos · 1–2 min each | Short, focused lessons — the "what." Reference material, organized by the different dimensions of dynamic speaking. |
-| **Challenges** | 21 challenges · 5 STORY phases | Real speaking tasks — the "practice." Each one asks the student to perform, on camera, not just watch. |
+| **Skills** | 83 lessons · 1–2 min each | Short, focused lessons — the "what." Reference material, organized by the different dimensions of dynamic speaking. |
+| **Challenges** | 24 challenges · 5 STORY phases | Real speaking tasks — the "practice." Each one asks the student to perform, on camera, not just watch. |
 
 Lessons stay short on purpose: the goal is to get a student from curiosity to attempt in minutes, not hours. Every challenge is designed to be repeatable, so a student can fail, get specific feedback, and immediately try again while the lesson is still fresh. Repetition with feedback — not runtime of video watched — is the thing the whole course is optimized for.
 
@@ -67,6 +82,8 @@ The palette is deliberately neon and highly saturated — these colors are meant
 Seven is the working set, and it's treated as a ceiling rather than a target — categories are deliberately held to seven or fewer, growing only if a skill genuinely doesn't nest into any existing color as Skills is built out. What matters structurally is that every lesson belongs to exactly one category, and every category has one color, consistently across the course, the book, and the card deck.
 
 Students aren't expected to work through Skills front to back like a syllabus. It's meant to be dipped into — a student heading into a specific challenge is pointed to the handful of lessons most relevant to it, watches those in a few minutes, and goes straight into attempting the challenge.
+
+The library is **83 lessons** as of 25 September: *Posture Warm Up* joined Body & Physical and *Don't Give Your Power Away* joined Confidence & Presence. Both already had transcripts, summaries and cues; they only needed to be made lessons. The count is said as 83 everywhere a student or a buyer reads it, and the two tour lines that say it were re-voiced.
 
 Each color also carries a **short code** — the deck's shorthand, used anywhere a full category name won't fit, and printed in the corner of every card (§16):
 
@@ -118,6 +135,7 @@ The challenges are the spine of the course, and they're arranged along the **STO
 - Each challenge draws on specific categories from Skills, and points the student to those lessons before they attempt it.
 - Completing a challenge means recording and uploading a real, on-camera attempt — there's no way to pass a challenge without actually speaking. (One deliberate exception: the passive Mindset Toolbox item in phase one.)
 - Challenges can be retried. A student can attempt one again to raise their score, or move on and return to it later.
+- **Inside an open phase, the order is the student's.** Since 25 September every challenge in a phase that is open can be taken in any order. The phases themselves still open in sequence, at the ranks in §11. A challenge in a phase not yet open says *"Complete your current section to unlock this one."*
 
 Difficulty and scope build phase by phase: STORY opens with baseline self-awareness, trains the voice as an instrument, moves into storytelling craft, deepens into emotional truth, and ends with real-world formats. Early challenges are approachable wins; later ones ask for more range — more categories in play at once, less room to lean on one strength.
 
@@ -167,8 +185,8 @@ Nearly every challenge below already has its explainer video filmed and hosted; 
 | Bring a Story to Life With Multiple Characters | [Challenge 19: Tell A Story With Multiple Characters](https://vimeo.com/1081947627) |
 | Share a Story You've Healed | [Challenge 12: Share A Story You've Healed](https://vimeo.com/1081936936) |
 
-#### 🌍 Y — Your Voice in the World
-*Apply what you've learned in real-world speaking formats and challenges.*
+#### 🌍 Y — Your Impact
+*Apply what you've learned in real-world speaking formats and challenges.* (Renamed from "Your Voice in the World" on 24 September.)
 
 | Challenge | Matched course video |
 |---|---|
@@ -176,7 +194,7 @@ Nearly every challenge below already has its explainer video filmed and hosted; 
 | Podcast Introduction Challenge | [Challenge 18: Podcast Intro & Guest Edification](https://vimeo.com/1081953650) |
 | Pitch Your Idea in 30 Seconds | [Challenge 17: Mastering Your Elevator Pitch](https://vimeo.com/1081950736) |
 
-Three filmed challenge videos don't yet have a home in the STORY curriculum — [Challenge 7: Story with Set & Scene](https://vimeo.com/1081955083), [Challenge 20: Tell A Story Using Foreshadowing & Fulfilment](https://vimeo.com/1081952336), and [Challenge 21: Tell A Story With A Mic Drop Moment](https://vimeo.com/1081949655). All three fit naturally as additions to the O or Y phases, or as bonus challenges; where they land is an open question (§18). Two further videos — [Welcome To The Challenges!](https://vimeo.com/1081200318) and [How To Use The Skills In Your Challenges](https://vimeo.com/1081200420) — serve as the section's introduction rather than challenges themselves.
+Three more filmed challenges have since been placed, which makes the road 24 challenges: [Challenge 7: Story with Set & Scene](https://vimeo.com/1081955083) and [Challenge 20: Tell A Story Using Foreshadowing & Fulfilment](https://vimeo.com/1081952336) in **O**, and [Challenge 21: Tell A Story With A Mic Drop Moment](https://vimeo.com/1081949655) at the end of **Y** (`src/data/challenges.ts`). Two further videos — [Welcome To The Challenges!](https://vimeo.com/1081200318) and [How To Use The Skills In Your Challenges](https://vimeo.com/1081200420) — serve as the section's introduction rather than challenges themselves.
 
 ## 05 · The color-spectrum scoring system
 
@@ -189,6 +207,12 @@ Because every skill category already has a color, a student's uploaded performan
 **The score isn't just "good" or "bad." It's a picture of which colors were present — and which ones weren't, yet.**
 
 This turns feedback into something visual and intuitive — a spectrum or pie-style breakdown of color rather than a wall of notes — while the specific coaching text underneath still explains, in plain language, what to do differently next time.
+
+### The Speaking Spectrum is the differentiator (26 September)
+
+This idea now has a name, **the Speaking Spectrum**, and it is the claim the whole sales page rests on: *Speak Better's Speaking Spectrum makes it unlike any other course or app on the market.* Other speaking apps give generic advice, even the ones with AI coaching. This one reads a take across seven color-coded areas of skill and says which lit, which didn't, and which lesson to watch next. Every other feature can be copied. A scoring system built on the same seven categories as the curriculum, the book and the deck cannot be copied without copying the method too.
+
+It is drawn the same way everywhere. **Every review, in the app and in the landing page's sample, shows the take's spectrum as the wave**, the colors the challenge needed glowing, **above the bars** that name each color and its score. The wave is the picture and the bars are the reading of it, so a student never has to decode one without the other. Over time the same drawing compares first and latest (§14, *The spectrum, in words*), and the cohort's version of it is what `/admin` shows an investor (§20).
 
 ## 06 · The challenge experience, step by step
 
@@ -233,6 +257,12 @@ Every note has the shape *well done for X — next time try Y*, names a color, c
 **Time limits are the challenge's own** — three minutes unless it says otherwise, the pitch is thirty seconds — with five seconds of grace and no more, on the phone and on the server: being succinct is part of what the course teaches, and a limit that bends teaches the opposite.
 
 **The video's path:** phone → a private store (the server only issues the permission) → Gemini → deleted from both the moment the answer is back, or the moment it fails. Nothing about a recording persists on our side (§13). A review of a 45-second take costs a few cents and returns in under a minute.
+
+### How Coach gets better — the student tells us when he misses (26 September)
+
+A coach only improves if somebody knows when he was wrong, and until now nobody did. Every review ends with **"How did Coach do?"**: 👌 *spot on*, 🤏 *partly right*, 👎 *way off the mark*, with one optional line on what he missed. Those ratings, the student's words as text, and Coach's own review go into a **training queue** (`training_takes` in `supabase/training.sql`) where a take can be corrected, flagged as a gold example, and **scored by Tariq himself**. The gap between Coach's score and Tariq's, week by week, is the measure of whether the coach is learning the method. That gap is also the moat an investor is shown (§20).
+
+This rests on the consent in §13: the speech is kept as text under a student number, never as video and never under a name. The trade has to be one a student can see and agree to, or it isn't worth making.
 
 ## 08 · The transcript and video reference
 
@@ -311,7 +341,9 @@ Two things this deliberately is not. **The lessons are never locked** — a mile
 
 ### Trophies are earned, not collected
 
-A trophy asks for a thing actually done well, and usually more than once: the skill trophies want the coach's score at the bar in **two separate talks** (Handy: body language 75 twice; Oscar: acting 80 twice; Sensational: figurative 80 twice; I See You: body language 65 in five talks), the Storyteller trophy wants two passed talks at 80 on storytelling *and* the Storyteller rank, the count trophies pair a count with a rank or with minutes on camera (five uploads and 250 XP; fifteen uploads and thirty minutes), and **a challenge's medal wants a pass at 75** — a scrape-through pass is a pass, but the medal waits for the better take, which is also where the XP is. A student who has barely started holds one or two, not fifteen.
+A trophy asks for a thing actually done well, and usually more than once. **A skill is something you bring to everything**, so since 24 September the skill trophies count **different challenges**, not takes. Recording the same challenge twice with good gestures was the same story told twice, not a habit. Handy wants body language at 75 in four different challenges, I See You 70 in six, Storyteller and Sensational 80 in four, Oscar acting at 85 in five, and Full Spectrum all seven colors at 60 or more in one talk. The count trophies pair a count with a rank or with minutes on camera (five uploads and 250 XP; fifteen uploads and thirty minutes). **A challenge's trophy wants a pass at 75**, because a scrape-through pass is a pass but the trophy waits for the better take, which is also where the XP is. Its **gold twin** wants 90, which is the reason to record a challenge already passed. The early wins stay early on purpose (the first upload, the first pass, three days in a row) because a student needs something in the case in week one. A student who has barely started holds a few, not fifteen, and every trophy says under it exactly what it takes.
+
+Seventy trophies, and **material is the rank**: glass for the challenges, ceramic for how you speak and feel doing it, chrome for turning up again and again, gold for mastering a challenge, the S.T.O.R.Y. letters in spectrum blown glass for finishing a phase, enamel *Library* trophies for watching every lesson in a skill, obsidian for the rare ones (Iron Will is thirty days in a row), and one *Legendary*, The Lion's Roar, for finishing everything. A **Founding Cohort** trophy can be won only by recording a take before the first cohort's last session, and no later cohort can ever win it. How the case looks is in §14.
 
 ### Ask your coach
 
@@ -363,6 +395,24 @@ Beyond visible-by-default scores, opt-out privacy, and the first-vs-latest compa
 - Across retries, the AI keeps track of which attempt scored best against the same criteria each time, without the app needing to retain every video file — both the best attempt and the most recent attempt stay visible to the student.
 - The annotated-video enhancement (returning a student's video with their skills highlighted as they happen) is explicitly out of scope for the current build — it would mean handling and moving more video, which works against keeping storage and cost to a minimum. Worth revisiting later, not now.
 
+### A safety net under the record (24 September)
+
+Until accounts are switched on, a student's whole record lives in one browser. That is a fine privacy stance and a fatal durability one: iOS deletes the storage of a site not opened for a week, storage is per address (so the same app on a second hostname starts empty, which is how Tariq lost his own progress), and clearing site data takes everything. A cohort member losing four weeks of work in week five is a refund conversation.
+
+So there are three nets. The record, never the recordings, is **copied to our side as it changes**, and an empty or thinner record is never allowed to overwrite a fuller one. **`/restore`** puts it back, and can carry a record from one hostname to another. And a **progress file** the student downloads and keeps, which depends on nothing of ours still working. Restoring always **merges**: takes, lessons, trophies and streak days are combined and the counters take the higher value, so a restore can only ever give somebody more. None of this is a sync between devices. That is Supabase's job.
+
+### Consent is a condition of the course (26 September)
+
+Coach learns from what students say, so agreeing to that is part of joining, not a setting that can be switched off. What is agreed, in Tariq's words (`src/data/consent.ts`), is one line: *"By agreeing to use Speak Better you agree to our Terms of Service"*, and under it the reassurance that *your videos are never stored, and your name is never attached to what you say*. It does not say "personal information is never stored", because an email and a receipt are. **What does that mean?** opens his explanation: speech is used anonymously, **as text, transcripts only, never video**, to improve the service, and that is also how a student's own progress is tracked. There is an honest no. If they don't want this, Speak Better isn't the right fit, no harm done, and the 14-day guarantee refunds them.
+
+It is asked in three places so nobody meets it for the first time after paying: under the prices, with links to the Terms and Privacy Policy; at the end of welcome (**Yes, I agree** before *Send it*); and as a one-time gate over the app for anyone who was already inside.
+
+Underneath, `supabase/training.sql` holds what consent covers, and nothing in it is keyed by name. **`student_numbers`** gives each student a pseudonymous number, and every other table is written only through functions that look that number up, so nothing downstream ever sees an account id. The other tables are `training_takes` (transcript, Coach's review, rating, correction, gold flag, Tariq's score), `coach_questions`, `feature_reactions` (the 🔥/👇 on nine areas: the road, the dial, the deck, the dashboard, the trophies, Ask Coach, lessons, live sessions and the community), `events` (views, time on screen, tour steps), `check_ins`, `payments` and `insight_reports`. Until the database is on, all of it queues on the device.
+
+**Check-ins** give the evidence a voice (`check-in.tsx`, on Today). On day one: how confident do you feel on camera? At the end: the same question again, how likely are you to recommend it, and what changed. The last answer is quotable only if the student ticks that it is, and never with their name.
+
+The **Terms of Service** and **Privacy Policy** (`/terms`, `/privacy`) are standard documents rewritten around what this product actually does: one payment for a six-week cohort, the 14-day any-reason refund, an AI coach whose feedback can be wrong, and learning from speech as text under a number. The privacy policy follows the code: recordings go to private storage, are reviewed by Gemini and deleted; recent takes stay on the device; transcripts are kept under a student number. A refunded VIP keeps the printed deck and the book. What they deliberately leave out, and what still needs a lawyer, is in §21.
+
 ### Accounts — many students, one app (23 September 2026)
 
 Everything above was built against one student in one browser's storage. A cohort needs an account, and the account is **Supabase** (`supabase/schema.sql`, `src/lib/supabase/`): profiles, attempts, watched lessons, badges, streak days, quest chests, shares and cheers, every table behind Row Level Security that lets a student read and write only their own rows — with the two exceptions the community needs, where a share and a cheer are readable by everyone and writable only by the student they belong to. `week_board` is a `security_invoker` view, so the board is computed under the reader's own permissions rather than around them.
@@ -374,9 +424,9 @@ Signing in is a **magic link** — an email and one tap, no password to reset fo
 **Two pathways, one app.** Which one a student is on is their plan (§15), and the difference is what Coach gives back:
 
 1. **The full coach** — the review watched and spoken aloud with the words as captions, *Ask your coach* on call, the board, the notes when a review lands.
-2. **Written feedback** (`Starter`) — Coach's face and the same review in writing, scored the same way and with the same rigour, and under it one line: *Upgrade now for the full 24/7 coach experience.* The written review is a real review, not a teaser with the substance removed — which is the only version of this that's honest, and the only version that makes the upgrade look like more rather than like the end of a hostage situation.
+2. **Written feedback** (`Starter`) — Coach's face and the same review in writing, scored the same way and with the same rigour. Tapping Coach on Starter says what it includes, in Tariq's words: *"Written and visual feedback only. To have Coach talk to you and have Coach talk back to you, please upgrade."* The written review is a real review, not a teaser with the substance removed — which is the only version of this that's honest, and the only version that makes the upgrade look like more rather than like the end of a hostage situation.
 
-The whole layer is **inert until it's configured**: with no `NEXT_PUBLIC_SUPABASE_URL` and anon key in the environment, the app runs exactly as it did on local storage alone, so nothing about the single-student build was traded away to get here. What remains before a cohort can actually run: the project created and the schema applied, the two keys in Vercel, `RequireAccess` made to require an account rather than a local unlock, and a cohort invite path — a code on the link that sets the plan when the account is made.
+The whole layer is **inert until it's configured**: with no `NEXT_PUBLIC_SUPABASE_URL` and anon key in the environment, the app runs exactly as it did on local storage alone, so nothing about the single-student build was traded away to get here. What remains before a cohort can actually run: the project created and the schema applied, the two keys in Vercel, `RequireAccess` made to require an account rather than a local unlock, and a cohort invite path — a code on the link that sets the plan when the account is made. As of 26 September none of this is done, and there are three more schema files to apply with it (`training.sql`, `chat.sql`, `live.sql`). The full list is in §21.
 
 ## 14 · Design principles
 
@@ -396,7 +446,7 @@ The brand mark — a lion with a spectrum-colored mane, speaking into a micropho
 
 ### The navigation, as one thing (22 September 2026)
 
-Five destinations, the same five everywhere, in the same order: **Today · Challenges · Skills · Coach · You**. On a phone they are the bottom bar with **Coach raised out of the middle as the lion himself** - which retires the pill in the header corner and the second navigation it implied. On a laptop they are a **rail down the left** (`Sidebar` in `nav.tsx`, the column set by `app-shell.tsx`), always in view, with the content beside it instead of under a header of four links; between the two, at tablet width, the header carries them.
+Five destinations, the same five everywhere, in the same order: **Today · Challenges · Skills · Coach · Dash** (the last was *You* until 24 September; it opens the dashboard, so it says so). On a phone they are the bottom bar with **Coach raised out of the middle as the lion himself** - which retires the pill in the header corner and the second navigation it implied. On a laptop they are a **rail down the left** (`Sidebar` in `nav.tsx`, the column set by `app-shell.tsx`), always in view, with the content beside it instead of under a header of four links; between the two, at tablet width, the header carries them.
 
 **Community stopped being a destination.** Who's on your challenge, and this week's board, are part of **Today** (`today-community.tsx`), where a student actually asks the question, with *See everyone →* through to the full page. **Jump** (`/` or ctrl-K, or the button in the header) finds any lesson, challenge or section by name - eighty-one lessons is more than anyone will browse for a particular one.
 
@@ -412,13 +462,39 @@ Every card is now slightly see-through with the page blurred behind it, so the d
 
 **One bar of sub-navigation, not two.** A page used to carry the top bar, then its own tabs, then a row of filters: three bands of chrome before any content began. Tabs and filters are one bar now, directly under the top bar, and it is the only thing on the page that sticks.
 
+**The app took the landing page's light (25 September).** Behind the app, instead of flat navy, a soft green glow top left, purple top right and teal low down. The cards became true glass on top of it: dark navy fading to a lighter blue-grey, translucent enough for the glow to show through, a faint green and purple tint in the corners, and a hairline of light along the top edge. The app and the page that sells it now look like the same place, which matters because a visitor who pays should feel they walked into what they were shown.
+
 ### The trophy case
+
+*Superseded on 24 September by the trophy room, below. What follows is the CSS case it replaced, kept for the reasoning.*
 
 The grid of circles is gone. A trophy case holds **one trophy at a time**, on a lit podium under a beam, turning slowly so the lion on the back of the medal comes round (`trophy-stand.tsx`, `badge-collection.tsx`). Every badge became a real trophy without a single piece of the medal art being redrawn: the existing medallion is mounted in a ring, with two handles, on a stem, on a plinth. Each owns one of the seven colors, settled by a hash of its id so it never changes between visits. Won, it wears that color and shines; not yet won, it is the same shape in dull metal — an empty stand with a name on it is an invitation, where a hidden one is nothing at all.
 
 The podium and its pool of light **do not move**; only the trophy standing on them changes, arriving with a small lift. A stage that jumps on every tap is not a stage. The lion is watermarked across the back of the case at four per cent, **Won / All** filters the shelf, arrows or the buttons either side walk it, and the rest of the collection sits **behind a dropdown** — forty-odd trophies spread out under the case was a wall, and the case is the thing to look at.
 
+### The trophy room (24 September)
+
+Every trophy is now a **rendered object** rather than a drawn medallion: seventy of them, made with Higgsfield from prompts kept in the repo (`scripts/trophy-prompts.mjs`), because a set is only reproducible if the words that made it are kept. Each is a real thing in its material (a harp for Heartstrings, a tipped-forward theatre seat for Edge of the Seat, a T-rex in reading glasses for Thesaurus Rex), standing on the same plinth with a line of its skill's color along the base. The colors were measured against the Speaking Spectrum's swatches and corrected until every one sits within two degrees of its own, so the case doubles as a picture of what somebody is good at.
+
+The case is a room. One trophy stands in a spotlight on a podium, with smoke drifting through the beam and its reflection in the floor. The others wait either side in the dark, smaller the further out, and step forward when chosen. A phone gets a portrait stage with the neighbours tucked in close. Below that, every trophy is grouped by material: lit if won, a black **silhouette** if not, so a student can see there is a prize without seeing what it is. A trophy can be shared as a 1080×1350 picture drawn on the device, so nobody's name goes to a server to be drawn back. "Held by N% of this cohort" is shown only when it is true, which means ten or more students, counted from the progress backups.
+
+**Winning one is a reveal, wherever it happens.** The stage fills the screen, the lights go down, the trophy is lowered onto the disc, applause plays (synthesised, so there is no licence to track), and Coach says one of 21 fixed lines, *"Victory is yours"*, *"I want one of those"*, never the same one twice running. It waits its turn behind a review still landing, the XP splash, or Coach mid-sentence, and it never swallows a trophy if autoplay is refused.
+
+### The road, rebuilt in 3D (24–25 September)
+
+The CSS map tilted a flat picture back, which looks like perspective and isn't: nothing ever came towards you. Tariq's specification on 24 September asked for a road you travel, and on 25 September it replaced the map on `/challenges` (`live-adventure.tsx`, built on three.js, the same road on the landing page through `roadStops()`). Several sections below describe the map it replaced (the levels and checkered flags, *The map sleeps*, *The road does not drag sideways*, the pinch-to-zoom and the GPS trophy pins); their reasoning still holds, but those surfaces are gone.
+
+**Five lands, one road.** Each STORY phase is its own land of dark glass, lit by its own pattern of neon: ripples for S, a sound wave for T, a field of points for O, an uneven lattice over R's peaks, hexagons on Y's plain. A wave of light rolls through the land every few seconds. The road is *driven, not drawn*: built from a heading and a slope, so the story shapes it. T climbs, O sweeps through S-curves with the camera banking, R plunges into the depths, and Y crosses mountains towards a city of dark glass spires in all seven colors that you travel towards and never reach. Walls of color rise at each threshold, *Now entering* sweeps across the screen, and a brass fanfare (four of them, synthesised) plays as you cross into a phase you have actually reached. The sky is a painted purple planet with stars, chosen on `/prototype/skies`.
+
+**Portals, not circles.** Each challenge is a vortex in its phase's color with its number at the centre and its name above. Portals in the student's own section are live, with *Start challenge* diving the traveller into the eye of the vortex; portals in sections beyond are dormant rings; passed ones offer *Replay challenge*. Tapping a locked one says so and brings you back to where you are. The **traveller** carries the student's own photo with a neon trail behind it. Beside each portal stands the trophy it holds, as a silhouette until won. Classmates stand at the checkpoints they are on, with their profile pictures once they have uploaded one.
+
+**Coach in the sky.** He appears above the road as a head of light, speaks, and drifts away: his three lines from Tariq's specification, plus seventeen more of Tariq's lines in Coach's voice (arriving in each phase, halfway between challenges, *"Deep breath…"* before the plunge), and Tariq's own words at the finish line. All of it is recorded once, captioned, said once a day, and only on road actually travelled. Browsing ahead is allowed; being congratulated for it is not. **One Coach voice at a time**, app-wide (`lib/voice-floor.ts`), so the tour, a trophy, the road and a pop-in never talk over each other. The student's level lion sits beside the view switch, and tapping it changes level.
+
+**3D or 2D.** The switch is remembered on the device. 2D is the same road as a scrolling map: numbered stops down a winding path, Start on the current one, Replay and the score on passed ones. Some people would rather scroll than travel, and a phone with a weak graphics chip should not decide whether somebody can see their progress. The 3D scene draws only while it is on screen, at a slightly lower resolution cap, and is lighter on laptops for it.
+
 ### The journey's levels, and the line at the end
+
+*Describes the CSS map, retired on 25 September; the 3D road has its own finish (above).*
 
 The five STORY phases are numbered on the map — **Level 1** to **Level 5**, each on its own rule across the road, in the phase's color once it is open and gray while it is locked — because *phase four* is a word and *Level 4* is a place in a game, and the map is a game board. At the end of the road, two **checkered flags on poles**, waving on a slow cycle, with the number of challenges still between the student and the line said underneath. They are dim until the road is walked and lit when it is.
 
@@ -436,6 +512,8 @@ The tour is offered **at the end of welcome** rather than the next time a studen
 
 ### The map sleeps when it is not watched
 
+*The CSS map is retired; the 3D road inherited the rule and draws only while on screen.*
+
 The landing page idled hot, and none of the suspects were guilty: not the three films, not the roaring mark, not the soundwave, not the drifting lights. It was the **live journey map**, animating a full 3D scene far below the fold where nobody was looking. It now pauses whenever it is off screen — one line, `animation-play-state: paused` on everything inside it (`.map-asleep`). Measured in production across three seconds: 972ms of work down to 881ms, layout operations from 178 to 6. Worth keeping as a method more than as a fix — the page was measured rather than guessed at, and the guess would have been wrong.
 
 ### Watching a take back
@@ -448,7 +526,9 @@ The dashboard's panels lost their pictures with the review's (above): a tinted-r
 
 ### The dashboard on a phone
 
-On a laptop the dashboard's panels sit two to a row and read as one heads-up display. On a phone the same panels are reached by **a strip of six tabs in two rows of three** — Challenges, Lessons, Spectrum / Streak, Badges, Attempts — under a one-line card of the student (avatar, name, level, rank, the bar to the next rank; tapping it opens the full card). One panel is open at a time, at the full width of the screen. A rail down the side was tried first and squeezed every panel into two-thirds of a phone; a single scrolling strip hid half the sections.
+On a laptop the dashboard's panels sit two to a row and read as one heads-up display. On a phone one panel is open at a time, at the full width of the screen. A rail down the side was tried first and squeezed every panel into two-thirds of a phone. Two rows of tabs came next.
+
+**Since 26 September the phone dashboard starts with its sections bar**: straight under the header with no dead space above, pinned there, scrolling sideways, with glowing arrows at each end to say there is more to either side (the fear that a single scrolling strip hides half the sections is answered by the arrows). Under it, the **live session** strip, with a glowing border because it is the one thing on the page that can be missed. Then the student's card, then the open panel. **A ☰ menu** in the top right, with search to its left, opens any section from anywhere: Challenges, Skills, Spectrum, Streak, Trophies, Community. On a phone it switches the tab and on a laptop it scrolls to the panel. The header sits above everything pinned under it, so the menu is never covered. Community has been the sixth section since 24 September, because five screens of your own numbers raise one question none of them answer.
 
 The panels count in figures a student feels rather than in totals: **Challenges** shows how many were attempted, how many passed, and the **minutes spent speaking to a lens** ("13 minutes of speaking practiced and uploaded — well done, every minute in front of the lens counts"); **Lessons** shows lessons and **minutes watched**, and each color's lessons as a strip of stills, watched ones in color, so the library reads as something to look at rather than a list; **Attempts** carry a frame of the recording from the device's own copy, where one is still kept. **The trophy case** is the case described above: one trophy at a time on a lit podium, the day it was won and what won it, or — for one not yet won — what would.
 
@@ -478,11 +558,17 @@ Nothing a student earned is ever at risk: the XP, the trophies and the reviews s
 
 The spectrum's history was a row of stacked color blocks, one column per attempt: a chart that looked like data and said almost nothing, because counting the blocks in the third column to compare them with the seventh is work and the answer was a number with no meaning attached. It is one line per color now, largest first - *"Storytelling increased by 13 points"*, *"Confidence & presence stayed about the same"* - with where each sits now. **Points, not percent**: the spectrum is scored out of 100, so "up 13 points" is what happened and "up 13%" would be a different and wrong number. It compares the first third of the road with the last third, so one unusual take cannot pretend to be a trend.
 
+**Over time, as bars (26 September).** The *Over time* view of *Your spectrum* keeps the two waves, first take faint under the latest, and in place of the list of takes shows each color as a bar pair: the first take dark, the latest in full color, with both numbers and the change. The lines of words above are what happened; the bars show it at a glance.
+
 ### The road does not drag sideways
+
+*Written for the CSS map, retired on 25 September.*
 
 At rest the STORY road fits the screen and the only way through it is down - but the territory washes reach past the plane's edges by design, and an `auto` overflow turned that into 121 pixels of pointless horizontal travel on every phone. Measured before and after: it is now zero, and the scene pans sideways only once it has been zoomed past its own width. Pinching still works; the magnifier is the advertised way, because a pinch is the one gesture a phone browser fights the page over.
 
 ### Seven trophies, to choose between
+
+*Decided on 24 September: none of these. The trophies became rendered objects (see* The trophy room *above).*
 
 At `/prototype/trophies`, in two families. Four take the badge art that already exists - the forty-four medallions are the most characterful thing in the app, each its own little painting and its own colors - and only ask what it is standing in: a stepped plinth with its reflection on the floor, an open collector's ring on a post, a tapered column under a cone of light, or tilted back on a wedge the way a medal sits in a presentation case. Three draw a disc from scratch with the lion on it: a medal on a ribbon, a cup, a coin on its edge.
 
@@ -534,7 +620,9 @@ He arrives in the middle of the screen at full size - *"Hey there, welcome to Sp
 
 **Six section tours** as well as the long one - challenges, skills, cards, dashboard, community, and how to talk to Coach - three to six stops each, living on the page they are about. The whole-app tour is for arriving; these are for the other way a student gets lost, landing straight on the cards three weeks in with nobody to ask. They share one runner (`tour-runner.tsx`), so the short ones cannot drift from the long one. A section tour has no title card: pressing *Tour this section* is the decision to take it, and a second press on a card saying "let me show you around" is a door in front of a door.
 
-The top bar offers the tour that fits the page - **Take the full tour** on Today, **Tour this section** anywhere with one of its own - and it is the only door, because two doors into one room is clutter. A stop can also say two different things depending on the screen: telling somebody at a laptop to tap the portrait button is telling them about a control they do not have.
+The top bar offers the tour that fits the page - **Full Guided Tour** on Today, **Guided Tour** anywhere with one of its own (renamed on 26 September from *Take the full tour* and *Tour this section*) - and it is the only door, because two doors into one room is clutter. A stop can also say two different things depending on the screen: telling somebody at a laptop to tap the portrait button is telling them about a control they do not have.
+
+**Ten stops, not nineteen (25 September).** The six dashboard stops became one and the challenge stops became *Inside a challenge*, told over the real baseline challenge page, dimmed and untouchable. The challenges stop now describes the new road, in Tariq's words, with a film of it in 3D. Section tours never start themselves: an unasked-for tour interrupts at exactly the moment somebody is trying to look at what they just tapped. **The app cannot be clicked while a tour runs.** A stray tap used to end the tour, which is what threw people out on the skills dial, so the tour's own buttons are now the only way through or out. Welcome ends in one button, *Send it*, straight into the tour, skippable from inside. And **a tap on the lion pauses Coach** and a second tap carries on from the same place, on his page, in the tour and in Meet Coach.
 
 ### The review, spoken and seen
 
@@ -606,7 +694,9 @@ Lessons and challenges are presented as vertical carousels of **stills taken fro
 
 The app opens onto **Today**, not the challenge library. A library of 21 challenges invites browsing; a daily surface produces practice, and practice is the entire method. Today carries the greeting, the daily goal, one **named next action** chosen from real progress (resume what's underway, else the next unpassed challenge in journey order), where the student stands, their last talk's spectrum, and lessons to pick back up.
 
-**Streaks survive one missed day.** Every student holds a small number of freezes, spent automatically when exactly one day is missed between two active ones. Losing a long streak to a single busy day is the most common reason people abandon a habit app, and the SPARK principle here is literally *Keep Going*.
+Since 25 September Today opens with Tariq's own short film, *From shy to shining*, playing in place on a tap: the teacher's face is the first thing a student sees each day, not a number. The **check-ins** (§13) sit here too, once at the start of the cohort and once at the end, because Today is the page a student is guaranteed to open.
+
+**Streaks survive one missed day.** Every student holds a small number of freezes, spent automatically when exactly one day is missed between two active ones. Losing a long streak to a single busy day is the most common reason people abandon a habit app, and the SPARK principle here is literally *Keep Going*. The bonus a streak pays climbs 5% a day to +50% at ten days, then 2.5% a day to +100% at thirty, and stops. Past that the reward is a freeze every ten days rather than more XP, because an uncapped multiplier would make the hundredth day worth more than the work.
 
 ### The coach speaks up
 
@@ -639,6 +729,8 @@ Each challenge card carries a still, its brief, a **progress meter**, and a sing
 
 **The road remembers.** Beside a passed challenge, one line the coach said about that take — proof it watched, and a reason to read the review again. And when a rank opens the next phase, the graduation card floods with the phase's color, the lion roars it open, and the first challenge's still rises out of the dark.
 
+*The pins, the pinch zoom and the faces in the circles below belonged to the CSS map; on the 3D road a trophy stands beside its portal and the traveller carries the student's photo (above).*
+
 **Trophies pinned where they were won.** A badge is earned on a take, so it stands beside that take's node: a small gold GPS pin — a dot at the whole-road scale, its name shown when the map is zoomed in. The road is a record as well as a route.
 
 **A pinch to look closer.** The map zooms — a pinch or a double tap on a phone, ctrl+wheel or the −/+ buttons on a desktop — using the CSS `zoom` property, so it's a real layout scale: the page grows and scrolls as ever, and the scene scrolls sideways for the width that no longer fits. Zoomed in, the trophy pins say their names and the other students on each challenge appear beneath it (their initials and a count, from the same presence the *Students here* panel reads). Two rendering notes from building it: inside the tilted 3D plane a `box-shadow`, and any box shared by a pin and its label, rasterised as a dark square — so a pin's glow is a radial gradient and its label is a sibling, not a child.
@@ -659,9 +751,27 @@ It's a small control, but it serves the course's core subject directly: a course
 
 ## 15 · The landing page and purchase
 
-The landing page opens on the mark, roaring: the brand clip as an animated WebP of the lion and mic (the wave beneath is the live one), larger on a desktop, coming round every ten seconds behind a still that paints first (`scripts/build-lion-roar.py`). Then one breath — *Master public speaking in minutes, not months. Step into your true power as a speaker. Let your true colors shine and roar from screen or stage* — and one more (fears, nerves and shyness; one-to-two-minute lessons and challenges; a place to practice). The premise and its punchline each have a picture that changes with the line: a seat deep in a silhouetted concert crowd, the singer small and far away on a lit stage, for *you don't learn to sing by going to concerts*; and a midnight laptop lecture with the clock on the wall behind it for *so you won't become a speaker by only watching videos*. Both were stand-ins borrowed from elsewhere on the page until 23 September — byte-for-byte copies of the TEDx painting and the watch-passively photo — which is worth naming: a placeholder of the right shape is the kind that ships, and the kind that quietly stays. Then the reality on the other side — *the cameras are rolling, the audience is waiting, the stage is set* — the value counted (81 lessons, 24 challenges, 79 cards, one coach, seven colors), and the coach as the feature: one card, the lion large, the sample review beneath in the app's own shape. It tells how Speak Better came to be in six moments — the TEDx talk, the letters, the slams and standing ovations, the *Communicate and Captivate* cohorts, the bottleneck of one man watching every video, and the coach trained on the method — pictured ones zigzagging, the others as bands. Two phones for the two mentors: the lion on one, the teacher zoomed to portrait on the other. The library is a cascade: pick a color and its lessons run down one side, every title in order, while the other previews the color — its name, what it teaches, how many lessons and minutes — with the chosen lesson large but not full-width. The STORY journey is the map itself, live in a phone with a worked-in student (face on the road, takes in the circles, trophies pinned, pinch to look closer); tap a stop and the challenge's page appears beside it — brief, explainer, what passing takes, the warm-up lessons, and the record and upload buttons. It shows the app rather than describing it: the sample review with the lion speaking and the words as captions; **a lesson exactly as it plays inside**, with the words and symbols that land on the sentence being spoken; what's in the app, in eight lines; **the app in your hand** — three short films of the real pages in phone frames (the journey scrolled, the skills dial into a color's lessons, the dashboard tab by tab; live previews were tried and cost the page its frame rate); and **thirty seconds of the real thing** — a short film of a take sent, the coach watching, the score and colors landing, the notes and the verdict, recorded from the app itself. Then **the first one's on us** — *Experience Speak Better*. Not a description of the free baseline: the baseline challenge itself, live on the landing page (`first-challenge.tsx`) — its page as the app lays it out, the lion waiting beside it, and the real practice panel beneath: record with the clock, send, the watching scene, the review said aloud, the XP splash. A visitor is on the trial plan by default (`lib/plan.ts`), which allows exactly this challenge and one real review, so nothing is a mock, and whatever they record is their baseline if they go on to unlock. The hero's button and pricing's own card both point here (`/#try`). The second review is where the ask lands: *"Unlock the rest of the journey."*
+The landing page is the one place a stranger decides, and until 26 September it was twenty-one thousand pixels read as one scroll. It said *practise, don't just watch* five times before it made the case properly, and it showed the same review twice. It is now **nine numbered chapters** (`landing-sections.tsx`): **01 Overview · 02 Meet Coach · 03 Why it's different · 04 How it works · 05 What's in the app · 06 Skill Lessons · 07 The challenges · 08 Two mentors · 09 Pricing.** Each opens with a numbered mark (*02 · Meet Coach*). A navigator runs down the right edge on a laptop as dots, with names on hover or always shown on wide screens; on a phone it is a *Sections* button that also says where you are. Long paragraphs and long testimonials fold behind **Read more**, which appears only when the text is actually cut off. The rule behind all of it: every idea is said once, in the chapter where it proves something.
+
+- **01 Overview** is the promise and nothing else: the lion (it talks, mouth moving with the words, when *Listen to Coach* plays the headline), the headline, Tariq's *"You can't rely on AI in person"* video beside it on a laptop, the cohort's date, five ticks, and the door. A **founding cohort panel** says *Only 20 spots available* and gives the first two lines of why it is priced as it is; the rest of the reason, the six-week run and the Founding Cohort trophy are behind Read more.
+- **02 Meet Coach** is one card: *Tariq teaches. I review.*, the positioning line (*the only AI coach trained on a complete speaking method*), and the sample review in the app's own shape, spoken with captions, spectrum wave above the bars, confetti over the pass. The testimonials follow it, rising continuously without pausing on hover, and no quote appears twice on the page. The quotes that stand alone between chapters are still pull-quotes on **blue glass**, placed away from the testimonial walls.
+- **03 Why it's different** opens on the collage (*Imagine the cameras are rolling…*: candid phone-quality shots of people vlogging, podcasting and speaking) and then **three beats** side by side across the full width, or as a carousel on a phone: *you don't learn to sing by going to concerts*, *you didn't learn to drive by buying a course*, *you won't learn to speak just by watching videos*. Then the core claim, in one blue-glass container with Tariq's *"not just another online course"* video: **Speak Better's Speaking Spectrum makes it unlike any other course or app on the market** (§05), the before-and-after spectrum, and the comparison cards as the proof.
+- **04 How it works** is the five steps (watch, record, upload, receive feedback, improve) with a photo on each, then *This is how you actually record yourself*: "No studio, no crew, no fancy equipment. Simply prop up your phone and press record through the Speak Better Selfie feature." Four **selfie phones** each sit on a real challenge (a story, no filler words, describe vividly, the thirty-second pitch) and show what the recorder shows: the brief and that challenge's own criteria ticking off one by one as the take runs.
+- **05 What's in the app** is *What you get*: the five numbers as the things themselves, **animated tiles** (83 lessons as a collage of their thumbnails bordered in their colors, the 24 challenges as the 2D road scrolling, the deck fanning through its colors, Coach talking with captions, the spectrum turning from wave to bars), the other six features in a strip beneath, and **eight films** of the real app: the road in 3D and in 2D, skills, the deck, Ask Coach, the dashboard, the community, Today.
+- **06 Skill Lessons**: *Here is a preview of the full library of skills you are about to unlock, color-coded and waiting for you.* Pick a color, and its lessons run down one side while the chosen one plays.
+- **07 The challenges**: *Introducing true interactive challenges and the Speak Better S.T.O.R.Y. framework*, trophies, completing them together, and the road itself in a phone with its own 2D/3D switch. It is shown once, here. The 3D film no longer opens on an empty *Start challenge* screen; it starts already moving down the road.
+- **08 Two mentors**: the best of human and AI. Every lesson and challenge is studio-recorded by Tariq, and Coach reviews, encourages and guides. Two phones, Coach's arriving first and Tariq's sliding out from under it. The collage returns as the last thing read before the prices, as the reality waiting on the other side.
+- **09 Pricing**: the three tiers, the guarantee, the FAQ, and the consent line (§13, and below).
+
+**Three Join buttons** in the page (after the opening, after Meet Coach, before the prices), plus *Join Now* held in the header on a laptop and a join bar at the foot of a phone, *from $299*, which steps aside while the tiers are on screen. Every one lands on the tiers. The calls to action are frosted glass pills with a tint drifting through the seven colors. The 14-day guarantee is a minted gold seal carrying the lion, placed beside the first and last asks and under the tiers and nowhere else, because a seal on every door stops being a promise.
+
+**The origin story moved to `/about` (26 September).** In the middle of the pitch it asked a buyer to read a biography on the way to the prices; on its own page it is there for the people who go looking for it. It is linked as *About* in the header, on phones too, and ends with a Join door. It is Tariq's own telling, lightly edited: Bali in 2011 and the email from TEDx, the first speech, the stages, the formula behind a standing ovation, *Communicate and Captivate*, Coach the Lion, the mission. It is pictured as half-remembered photographs, a real-looking photo underneath each and an underdeveloped-film, neon-halation treatment on top, chosen on `/prototype/origin-styles`. The page footer links the **Terms of Service** and **Privacy Policy**.
+
+Two things came off the page and are worth remembering why. **The free first challenge and the live recorder**: mounting the camera on a sales page asks a large thing of a stranger who has decided nothing, and a free challenge beside a paid cohort sells two different things. There is no free trial anywhere now; the guarantee is how somebody tries it (§15, *The offer*). And **the placeholders**: the concert and lecture pictures were byte-for-byte copies of other images on the page until 23 September. A placeholder of the right shape is the kind that ships, and the kind that quietly stays.
 
 ### The offer — course + membership
+
+*This is the offer as first proposed. The cohort pricing below replaced it on 23 September and was settled on 25 September; the table is kept for the reasoning and the market comparison, not the numbers.*
 
 The shape is course plus membership, because the method deserves a price that says *this is the method*, and the coach costs something every time it's used. Three tiers, on the landing page and at `/pricing` — side by side on a desktop, as tabs on a phone (`tier-tabs.tsx`):
 
@@ -681,19 +791,37 @@ In the code the plan lives on the student's state (`data/pricing.ts`, `lib/plan.
 
 ### Paying, and the cohort's prices (23 September 2026)
 
-The first cohort is three one-off payments for **six weeks** of access - **Starter $300**, **Full Experience $500**, **Ultimate $1,000** - and not a subscription: a cohort starts and finishes together, so a monthly plan would be asking somebody to keep paying for a thing that has already ended. Six weeks is said everywhere a price is, including on Stripe's receipt and on the screen a student lands on after paying; the printed deck and the book in Ultimate are theirs to keep.
+The first cohort is three one-off payments for **six weeks** of access, not a subscription: a cohort starts and finishes together, so a monthly plan would be asking somebody to keep paying for a thing that has already ended. Six weeks is said everywhere a price is, including on Stripe's receipt and on the screen a student lands on after paying.
 
-**Starter is Coach in writing.** He watches every take and writes the full review card; there is no spoken review and no asking him questions. Opening his page on Starter shows him standing there with the line the offer is carried on - *"Upgrade to access Coach 24/7 and become the speaker you always dreamed of"* - the three things that are missing said as what they **are** rather than as what is withheld, and a button charging **$200**: the difference between what they paid and the Full Experience, never a second full price. Their written reviews keep working the whole time, because taking something away to make an offer look better is the wrong trade.
+The tiers were renamed on 23 September and priced for a **founding cohort** on 25 September (`src/data/pricing.ts`):
+
+| Tier | Founding price | Later price, shown struck through | What it adds |
+|---|---|---|---|
+| **Starter** (`foundations`) | **$299** | $997 | The full six weeks: every lesson, the challenges, the deck, Coach's written and visual feedback on every take, and every weekly live session. |
+| **Complete** (`coached`, featured) | **$498** | $1,498 | Coach on call 24/7: spoken reviews with captions, *Ask Coach*, the board. |
+| **VIP Ultimate** (`founders`) | **$997** | $2,497 | Tariq watching the student's takes himself and answering one to one, plus the **printed card deck** and **the book**, *Speak Better: Unleash Your True Colors and Roar on Screen and Stage*, shown in its tile as the real book. Both are theirs to keep, even after a refund. |
+
+The live cohort and the weekly sessions are in **every** tier. A cohort where only the top tier can attend the calls is a course with a VIP room attached, and it leaves out the students who most need to watch somebody else be coached. What VIP Ultimate sells is the one thing that genuinely cannot be given to everybody: the teacher's own time. So it has its own box above the ticks, not a sixteenth identical line. The name is set in gold.
+
+**Why a founding cohort, and why the struck prices.** There are **only 20 spots**, starting **3 October** (`src/data/cohort.ts`). They are priced low in return for something real: before Speak Better opens wider, Tariq wants these students' feedback on the app and their testimonial. The later price beside each one makes the discount a fact rather than a slogan, and says honestly that future cohorts will likely cost more. This is the "founding-member price" weighed on 19 September, made concrete.
+
+**No free trial, anywhere (24 September).** The offer is the cohort with a **14-day money-back guarantee, for any reason** (`guarantee` in `pricing.ts`, read by the panel, the FAQ and `/pricing`), and a page that also says "try the first challenge free" is selling two different things. The trial plan is gone from the product too: someone without a paid tier is sent to the tiers, and a stored `"trial"` reads as no plan. **Upgrading from Starter to Complete costs the difference, $199, within the first 14 days.** After the six weeks, staying on is optional and month to month: Starter $14.99, Complete and VIP Ultimate $29.99. Nine folded questions under the tiers answer the rest, and every figure in them is read from the file that owns it, so an answer can never quote a price the checkout does not charge.
+
+**Starter is Coach in writing.** He watches every take and writes the full review card; there is no spoken review and no asking him questions. Opening his page on Starter says so in Tariq's words, *"Written and visual feedback only. To have Coach talk to you and have Coach talk back to you, please upgrade"*, with a button charging **$199**: the difference between what they paid and Complete, never a second full price. Their written reviews keep working the whole time, because taking something away to make an offer look better is the wrong trade.
 
 **Checkout is Stripe Checkout.** One press opens a session on our own server and the browser goes to Stripe; no card field is ever rendered by this app, which is the point - the least designed part of a payment should be the part that touches the card. The webhook is the only thing that may grant a plan on the server and it verifies the signature before reading a single field. The return page confirms the session **with Stripe** rather than trusting a query string, then lets the device in immediately so nobody waits on a spinner after paying.
 
 Prices live as cents in `data/pricing.ts` and the session is built with `price_data`, so changing the code changes the charge and there is no second catalogue to keep in step; `STRIPE_PRICE_*` is the hook for moving to dashboard Price ids when the offer grows past three one-off tiers. And with no `STRIPE_SECRET_KEY` the buy buttons do exactly what they did before checkout existed, so previews and the landing page's demo keep working with no keys at all.
 
-What remains before money can actually be taken: the secret key and the webhook signing secret in Vercel, `NEXT_PUBLIC_SITE_URL`, and - for the plan to land on an account rather than only on a device - the Supabase service-role key.
+What remains before money can actually be taken: the secret key and the webhook signing secret in Vercel, `NEXT_PUBLIC_SITE_URL`, and - for the plan to land on an account rather than only on a device - the Supabase service-role key. And the paywall itself: `PAYWALL_ON` in `lib/plan.ts` is **false** until Tariq says the first students are coming. While it is off the app is open to everyone, and a tier somebody does pick is honoured, so each tier's experience can be tried exactly as it will be sold (§21).
 
-### Social proof — to come
+**Consent under the prices.** Before anyone pays, the pricing chapter carries the consent line, *What does that mean?*, and *By joining you agree to the Terms and Privacy Policy* (§13). Somebody should learn what they are agreeing to before the card, not after it.
 
-The page's largest gap is proof from other people. The plan: the teacher's real testimonials, gathered from past Speak Better and cohort students (screenshots to be provided), rendered as a section where the words are exactly theirs and the faces are generated in the page's own painted style (Higgsfield, the origin-story palette) — never a real photo used without asking, never an invented quote. Built once the words are in hand.
+### Social proof — live (24–26 September)
+
+The teacher's real testimonials, from past students, are on the page: **25 live, 2 held back** while an attribution is unsettled. They were captured verbatim, with nothing tightened, brightened or merged, because a testimonial that has been improved is not a testimonial. Every name was confirmed by Tariq, and none was guessed from a misheard spelling. Putting one person's words in another's mouth is the one mistake a testimonial cannot survive, so a quote with two names attached stays held.
+
+The faces are **not** generated portraits, reversing the earlier plan. An invented face beside a real name is a picture of somebody who does not exist presented as them, on the page where a stranger decides whether to trust this. Each quote carries the app's own initial-avatar instead, and real photographs with permission will drop into the same slot. The quotes are dark navy on white cards, because on an all-dark page a white card reads as words lifted from somewhere else, which is what a quotation is. They rise continuously in two walls, one after Meet Coach and one in the pricing chapter, and **no quote appears twice** on the page.
 
 ## 16 · A three-part system: course, book, and card deck
 
@@ -712,6 +840,8 @@ The transcript library serves a second purpose beyond powering the AI coach: it'
 It isn't the transcripts republished as-is. Personal stories are interspersed throughout alongside the skill explanations — roughly half story, half skill content, woven together rather than kept in separate halves — turning the reference material into a full, robust, narrative book: *How To Be a Powerful Unforgettable Speaker.*
 
 The book is sold as its own standalone product, not bundled by default, with the course and the card deck offered as an upsell from it.
+
+It has a cover now, and a title on it: *Speak Better: Unleash Your True Colors and Roar on Screen and Stage*, the navy, lion-branded copy Tariq holds up in the Storybook lessons (`public/book/speak-better-book.webp`). *How To Be a Powerful Unforgettable Speaker* above was the working description. The first place it is sold is inside **VIP Ultimate** (§15), with the printed deck. Both are the student's to keep. Whether it is also sold standalone at launch is still open (§18).
 
 ### The card deck
 
@@ -765,6 +895,7 @@ Where the course scores a talk after it's given and the book teaches the reasoni
 - A student who was one-note — always informative, never vivid, say — starts naturally reaching for story, gesture, or humor, because the spectrum makes the gap visible rather than abstract.
 - Growth is something the student can see, not just feel — a widening spectrum and a rising score become their own motivation, replacing "remember to use what you learned" with a structured habit of practice.
 - By the end of the STORY journey, a student can produce a genuinely dynamic, full-spectrum talk on demand — not because they remembered a lecture, but because they've done it, with feedback, dozens of times.
+- **And it can be shown, not only claimed (26 September).** Each student is measured against their own first take, so a student who leaves can't lift the average. Their self-rated confidence on camera is asked on day one and again at the end. Coach's scores converge on Tariq's own. These are the numbers `/admin` and the data room are built to show (§20), and the first cohort is the first time they will be real.
 
 ## 18 · Open questions
 
@@ -774,11 +905,12 @@ Most of the questions raised during this plan's development have been resolved a
 - The exact form of the first-attempt-vs-latest-attempt comparison in Community — the student's own then-and-now (§13) is side-by-side video with score, spectrum and the colors lit since; whether Community shows the same or only the spectrum chart is still open.
 - Whether the printed deck ships all 77 cards or a curated subset. The digital deck carries every skill lesson; a physical run may be cut for cost, and that cut is a separate decision from the one made here.
 - Whether IMAGE is the right short code for Figurative language — it names what the section teaches (imagery) but could be misread as photography.
-- Which promotional video the landing page centers on, and whether the book and card deck get their own cross-sell moment there too, or stay upsells inside the course and the book itself.
-- Where the three unplaced challenge videos land in the STORY curriculum — Set & Scene, Foreshadowing & Fulfilment, and Mic Drop Moment — as additions to the O or Y phases, or as bonus challenges.
+- Whether the book and card deck get their own cross-sell moment on the landing page, or are sold only inside VIP Ultimate (§15) and as standalone products later. (The landing page's lead video is settled: Tariq's *"You can't rely on AI in person"* in the hero.)
 - How a cohort is let in (§13). A code on the invitation link that sets the plan when the account is made is the cheapest version and the one assumed above; a list of emails admitted by hand is the safest for a first cohort of a known size. Not decided.
 - Whether a Starter student — written feedback, no spoken review — appears on the community boards. They earn real scores on real takes, so the case for including them is strong; the case against is that the boards then mix two levels of feedback. Leaning towards including them.
-- The testimonials (§15). Blocked on the words themselves, not on the build.
+- The testimonials (§15). 25 are live; two are held until it is known which of two people said them, and three sets of initials still have no quote to go with them. Real photographs, with permission, would replace the initial-avatars.
+- **Where the rendered trophies replace the round medallions** that remain (the list is kept in `docs/requests.md`). The renders are tall objects and the old slots crop to a circle, so each surface needs a design decision; it is not a swap.
+- **The landing page's middle.** Nine chapters made it navigable, but *What's in the app*, *Skill Lessons* and *The challenges* still answer overlapping questions. The Speaking Spectrum claim now leads *Why it's different* rather than having its own chapter; whether more should merge is open.
 
 ## 19 · The stack
 
@@ -789,7 +921,7 @@ Speak Better is being built on Light Brands' standard stack — the same foundat
 | Layer | Choice |
 |---|---|
 | Frontend | Next.js (App Router), React, TypeScript, Tailwind CSS; shadcn/Radix components; Lucide icons |
-| Motion & animation | Framer Motion and GSAP, with Three.js available for anything more dimensional — carries the badge and streak celebrations from §11 |
+| Motion & animation | Framer Motion and GSAP for the celebrations in §11; Three.js for the 3D road on `/challenges` and the landing page (§14) |
 | Backend | Next.js route handlers for API endpoints, webhooks, and agent calls; middleware for auth gates |
 | Database & auth | Supabase (Postgres with Row Level Security), Supabase Auth, cookie-based server sessions |
 | Hosting | Vercel — a preview deployment for every branch, production on merge |
@@ -805,7 +937,7 @@ Speak Better is being built on Light Brands' standard stack — the same foundat
 
 | Layer | Choice |
 |---|---|
-| Payments | Stripe — powers the landing page's pay-to-unlock flow (§15) |
+| Payments | Stripe Checkout — one-off cohort payments and the Starter-to-Complete upgrade (§15); built, awaiting keys (§21) |
 | Email | Resend, for transactional messages |
 | Forms & validation | React Hook Form with Zod |
 
@@ -827,3 +959,54 @@ A few deliberate exclusions keep the studio's products consistent with each othe
 **Two non-negotiables carry over from the studio's wider practice: observability wired in from day one, and Supabase as the default unless a deviation is explicitly documented.**
 
 The studio's creative doctrine — seven laws governing user-facing surfaces: breath, tension, presence, honesty, memory, weight, silence — sits alongside, not in place of, the design principles (§14) already set out for Speak Better specifically. The doctrine is the studio-wide baseline; this plan's design section is how it's expressed for this product.
+
+## 20 · Cohort insights and the data room (26 September)
+
+Two private pages for the people who run the course and the people who might fund it. Both are built now so the first cohort's data has somewhere to land on day one, rather than being reconstructed afterwards from memory.
+
+### `/admin` — Cohort insights
+
+For Tariq: is it working, where do students get stuck, and is Coach any good. One tab at a time, and the open tab is kept in the address so a link opens straight onto it.
+
+| Tab | What it answers |
+|---|---|
+| **Overview** | The cohort at a glance. |
+| **Cohort progress** | *Is their speaking getting better?* Each student against their own first take, so leavers can't lift the average; average score by week; all seven colors by week; each color's growth from first to latest. **The cohort's Speaking Spectrum** is drawn as the app draws it, the first take as a faint trace under the latest, with **colors lit challenge by challenge** (lit at 40, as in the app). A button copies the numbers for an investor deck. |
+| **Usage** | A heatmap of where time goes, by area of the app and by day. |
+| **Drop-off** | Where along the road students stop. |
+| **Coach quality** | The 👌/🤏/👎 split by challenge, and the **training queue**: takes to correct, flag as gold, or **score as Tariq**. |
+| **Voice of the student** | What they wrote on 👇 and on Coach's misses, and their check-in stories (only those who agreed to be quoted, never by name). |
+| **AI insights** | Rule-based insights for now, standing in for the agent that will write `insight_reports`. |
+| **Student journeys** | **All students**: every score line over the cohort average (finished, stopped, refunded) and a lane per student across the 42 days, lit by their best score each day. **One student**: by number, with tier, confidence, recommend and their story. |
+
+### `/admin/data-room` — for investors
+
+The evidence an investor asks for, built from the cohort's own records rather than written up afterwards.
+
+| Tab | What it shows |
+|---|---|
+| **One-pager** | A printable summary, with *Download as PDF* for an investor email. |
+| **Does it work?** | Self-rated confidence on day one vs the end; before-and-after students who agreed to be quoted; the cohort spectrum. |
+| **What students love** | 🔥/👇 for every area of the app, most loved first, with what students wrote on 👇; the 👌/🤏/👎 split on Coach's reviews. |
+| **Traction** | Revenue, refunds, tier mix, upgrades, completion, month-to-month take-up after the six weeks, NPS, students practising each week. |
+| **Unit economics** | Per tier, with editable costs. |
+| **Forecast** | Three years, with tier mix, refund and monthly rates taken from the cohort rather than assumed. |
+| **The moat** | Coach's gap from Tariq's own scores narrowing week by week, and the spot-on rate. A method-trained coach that measurably converges on the teacher is the part a competitor can't buy. |
+
+**Two skins**, remembered on the device: *Speak Better*, the app's glow, glass and neon; and *Brass Tacks*, the same panels on white paper in black, greys and one brass accent, for reading numbers and printing. Only the color tokens change (`.skin-plain` in `globals.css`), so the two can't drift apart.
+
+**It runs on a sample cohort until Supabase is on** (`src/data/admin-sample.ts`): a seeded six weeks, 3 October to 13 November, with customers' tiers, refunds, a spectrum on every take, and check-in answers, so every panel can be judged before there is real data. The swap is at the data layer, not in the panels. Neither page has a login yet (§21).
+
+## 21 · Where things stand before the first cohort (26 September)
+
+The founding cohort starts **Saturday 3 October, 11:00 AM** Central (the page says "CST"; on that date it is actually CDT, and "CT" would avoid an hour of confusion). The product is ready to be walked through. What stands between it and taking money from twenty real people:
+
+- **The paywall is off, on purpose.** `PAYWALL_ON = false` in `lib/plan.ts` until Tariq says the first students are coming. Until then the app is open to everyone, which is how each tier can be tried as it will be sold. Turning it on is one line, and it is his call, not a build step.
+- **Stripe keys.** Checkout is built; the secret key, the webhook signing secret and `NEXT_PUBLIC_SITE_URL` are not in Vercel yet.
+- **Supabase.** The project isn't created. Before it is: fix the multi-user gaps (no sign-out, and a sign-in merges device state into the account; `plan` is writable by the client; `profiles.plan` still defaults to `'trial'`), so the schema goes up correct rather than needing a week-one migration. Then apply `schema.sql`, `chat.sql`, `live.sql` and `training.sql`, set the keys, and give Tariq the coach role. Until then accounts, the training data and the admin pages all run on the device or on sample data.
+- **`/admin` has no login.** It shows sample data today, but it must sit behind Tariq's account before a single real record reaches it.
+- **One address.** Three hostnames serve the same build and each remembers a different student. One should be primary and the other two should redirect to it.
+- **The 14-day upgrade window is copy only.** Nothing records when a student joined, so the in-app offer doesn't close on day 14. It needs the purchase date from the server-side plan.
+- **Legal, deliberately unfinished.** The terms leave out the **business name and governing law** on purpose, until they are decided, rather than guessing at them. **Consent as a condition of the course** (§13) should be checked by a lawyer: it is honest and it is refundable, but making agreement a condition of access is the kind of clause that varies by jurisdiction.
+- **Gemini's paid tier.** The privacy policy tells students their take goes to Gemini to be reviewed and is then deleted, and that their speech is used only to improve Speak Better. On Gemini's free tier Google may use what it is sent to improve its own models, so that promise holds only on the paid tier. The account has to be on it before a real student uploads.
+- **Waiting on Tariq:** the two held testimonials, real testimonial photographs with permission, and any further obsidian trophies.
