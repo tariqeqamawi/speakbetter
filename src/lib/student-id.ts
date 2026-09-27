@@ -16,3 +16,14 @@ export function studentId(): string {
     return "00000000-0000-4000-8000-000000000000";
   }
 }
+
+/** Become the student a purchase belongs to - an access link opened on a
+ *  new device makes it the same record as the device that paid, so the
+ *  saved progress and everything from here on stay one student. */
+export function adoptStudentId(id: string): void {
+  try {
+    window.localStorage.setItem(KEY, id);
+  } catch {
+    // No storage: this device stays anonymous.
+  }
+}

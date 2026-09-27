@@ -36,18 +36,18 @@ const WHAT: Record<Purchase, { name: string; blurb: string; cents: number }> = {
     cents: priceCents.founders,
   },
   "credits-small": {
-    name: "Speak Better - 25 coaching credits",
-    blurb: "25 more reviews from Coach: he watches the take, scores the seven colors, and tells you what to change.",
+    name: "Speak Better - 20 coaching credits",
+    blurb: "20 more reviews from Coach: he watches the take, scores the seven colors, and tells you what to change.",
     cents: 500,
   },
   "credits-medium": {
-    name: "Speak Better - 60 coaching credits",
-    blurb: "60 more reviews from Coach, at a better rate per review.",
+    name: "Speak Better - 45 coaching credits",
+    blurb: "45 more reviews from Coach, at a better rate per review.",
     cents: 1000,
   },
   "credits-large": {
-    name: "Speak Better - 150 coaching credits",
-    blurb: "150 more reviews from Coach - enough for the rest of the cohort whatever you do.",
+    name: "Speak Better - 100 coaching credits",
+    blurb: "100 more reviews from Coach - enough for the rest of the cohort whatever you do.",
     cents: 2000,
   },
   upgrade: {
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
   if (!stripeEnabled())
     return NextResponse.json({ error: "Checkout isn't switched on yet." }, { status: 503 });
 
-  const body = (await request.json().catch(() => ({}))) as { buy?: string; email?: string; cohort?: string };
+  const body = (await request.json().catch(() => ({}))) as { buy?: string; email?: string; cohort?: string; studentId?: string };
   const buy = String(body.buy ?? "") as Purchase;
   const item = WHAT[buy];
   if (!item) return NextResponse.json({ error: "Nothing to buy." }, { status: 400 });
@@ -120,6 +120,9 @@ export async function POST(request: Request) {
         credits: String(credits),
         bought: buy,
         cohort: typeof body.cohort === "string" ? body.cohort.slice(0, 40) : "",
+        // The paying device - so the buyer's access link can bring its
+        // saved progress to any other device (components/access-link.tsx).
+        studentId: typeof body.studentId === "string" && /^[0-9a-f-]{36}$/i.test(body.studentId) ? body.studentId : "",
       },
       allow_promotion_codes: true,
       success_url: `${site}/checkout/done?session_id={CHECKOUT_SESSION_ID}`,

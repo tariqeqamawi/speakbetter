@@ -26,7 +26,7 @@ export default async function CheckoutDonePage({
   // without a payment, and without unlocking anything on this device.
   if (preview) {
     const tier = tiers.find((t) => t.id === preview) ?? tiers[tiers.length - 1];
-    return <CheckoutDone plan={tier.id} email={null} preview />;
+    return <CheckoutDone plan={tier.id} email={null} session="" preview />;
   }
 
   let plan: string | null = null;
@@ -60,5 +60,5 @@ export default async function CheckoutDonePage({
       </main>
     );
 
-  return <CheckoutDone plan={plan} email={email} />;
+  return <CheckoutDone plan={plan} email={email} session={id ?? ""} />;
 }

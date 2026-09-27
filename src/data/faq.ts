@@ -41,7 +41,7 @@ export const faq: { q: string; a: string }[] = [
   },
   {
     q: "How many reviews do I get?",
-    a: `${starter.name} includes ${includedReviews.foundations} reviews from Coach, ${complete.name} ${includedReviews.coached} and ${vip.name} ${includedReviews.founders} - comfortably more than a take a day for six weeks. If you want more, coaching credits top you up in packs of ${packs}.`,
+    a: `${starter.name} includes ${includedReviews.foundations} reviews from Coach, ${complete.name} ${includedReviews.coached} and ${vip.name} ${includedReviews.founders} - comfortably more than a take a day for six weeks, and more than enough to get through the challenges. We have a real cost every time Coach watches your video and gives you a review, so if you do a lot of takes and repeats and consult Coach regularly, you can top up to keep going: packs are only ${packs}.`,
   },
   {
     q: "Are the live sessions in every tier?",

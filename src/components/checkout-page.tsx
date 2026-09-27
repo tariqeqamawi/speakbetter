@@ -12,6 +12,8 @@ import { GuaranteeSeal } from "@/components/guarantee-seal";
 import { TierArt } from "@/components/tier-art";
 import { LegalLinks } from "@/components/legal-page";
 import { CheckIcon } from "@/components/icons";
+import { studentId } from "@/lib/student-id";
+import { ReviewAllowance } from "@/components/review-allowance";
 
 // THE CHECKOUT - the one page between choosing a tier and paying.
 //
@@ -54,7 +56,7 @@ export function CheckoutPage({ initial }: { initial: Plan }) {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ buy: plan, email: email.trim() || undefined }),
+        body: JSON.stringify({ buy: plan, email: email.trim() || undefined, studentId: studentId() }),
       });
       if (res.ok) {
         const { url } = (await res.json()) as { url?: string };
@@ -135,6 +137,8 @@ export function CheckoutPage({ initial }: { initial: Plan }) {
               </li>
             ))}
           </ul>
+
+          <ReviewAllowance plan={plan} />
 
           <div className="flex flex-col gap-1 rounded-2xl border border-navy-600 bg-navy-900/70 px-4 py-3 text-sm">
             <span className="font-semibold text-ink">Founding cohort · {cohort.runLabel}</span>

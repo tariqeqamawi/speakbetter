@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
-import { tiers, type Plan } from "@/data/pricing";
+import { features, tiers, type Plan } from "@/data/pricing";
+import { AccessLink } from "@/components/access-link";
+import { ReviewAllowance } from "@/components/review-allowance";
 import { cohort, beforeStart } from "@/data/cohort";
 import { challenges } from "@/data/challenges";
 import { Confetti } from "@/components/confetti";
@@ -31,10 +33,13 @@ const POSTER = "/thanks/thanks-lion-v1.webp";
 export function CheckoutDone({
   plan,
   email,
+  session,
   preview = false,
 }: {
   plan: string;
   email: string | null;
+  /** The Stripe session paid with - the buyer's access link. */
+  session: string;
   preview?: boolean;
 }) {
   const { state, ready, unlock } = useStore();
@@ -135,6 +140,25 @@ export function CheckoutDone({
         )}
       </div>
 
+      {/* Their own way back in, on any device - until accounts exist. */}
+      {(session || preview) && <AccessLink session={session} email={email} preview={preview} />}
+
+      {/* Everything their tier promised, in one list. */}
+      {!returning && tier && (
+        <section className="flex w-full max-w-3xl flex-col items-center gap-4">
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-ink-faint">What&apos;s included in {tier.name}</p>
+          <ReviewAllowance plan={plan as Plan} className="w-full" />
+          <ul className="grid w-full gap-2 rounded-2xl border border-navy-600 bg-navy-800/60 p-5 text-left sm:grid-cols-2">
+            {tier.has.map((id) => (
+              <li key={id} className="flex items-start gap-2 text-sm text-ink-muted">
+                <CheckIcon className="mt-0.5 size-4 shrink-0 text-mindset" />
+                {features.find((f) => f.id === id)?.label}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {!returning && (
         <section className="flex w-full max-w-4xl flex-col items-center gap-5">
           <p className="text-xs font-bold uppercase tracking-[0.22em] text-ink-faint">
@@ -181,8 +205,7 @@ export function CheckoutDone({
           </p>
         )}
         <p className="max-w-xs text-center text-xs text-ink-faint text-balance">
-          Your work is kept on this device. Make an account whenever you want it
-          on your phone as well as here - nothing is lost either way.
+          On another phone or computer? Open your access link there - it brings your progress with it.
         </p>
       </div>
     </main>
