@@ -14,7 +14,8 @@ import { BadgeCollection } from "@/components/badge-collection";
 import { DashboardHeader, DashboardHeaderCompact } from "@/components/dashboard-header";
 import { lessonMinutes } from "@/lib/progress";
 import { listAllVideos, type StoredVideoMeta } from "@/lib/attempt-videos";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { ScrollToPanel } from "@/components/section-menu";
 import { useChallengeComplete } from "@/components/story-progress";
 import { CategoryIcon } from "@/components/category-icons";
 import { JourneyPhases } from "@/components/journey-phases";
@@ -77,7 +78,7 @@ export default function DashboardPage() {
   );
 
   const challengesPanel = (
-    <section className="flex flex-col overflow-hidden rounded-2xl border border-navy-600 bg-navy-800">
+    <section id="dash-challenges" className="flex scroll-mt-24 flex-col overflow-hidden rounded-2xl border border-navy-600 bg-navy-800">
       <SectionBanner
         image="/sections/challenges.jpg"
         title="Challenges"
@@ -184,7 +185,7 @@ export default function DashboardPage() {
   );
 
   const lessonsPanel = (
-    <section className="flex flex-col overflow-hidden rounded-2xl border border-navy-600 bg-navy-800">
+    <section id="dash-lessons" className="flex scroll-mt-24 flex-col overflow-hidden rounded-2xl border border-navy-600 bg-navy-800">
       <SectionBanner
         title="Skills"
         Icon={SkillsIcon}
@@ -282,7 +283,7 @@ export default function DashboardPage() {
 
   const signaturePanel = <SpectrumSignature state={state} />;
   const streakPanel = (
-    <div className="flex flex-col gap-4">
+    <div id="dash-streak" className="flex scroll-mt-24 flex-col gap-4">
       <StreakCalendar state={state} />
       {/* The calendar showed the streak and never said what it was
           for. A reward nobody knows they are earning is a decoration. */}
@@ -343,7 +344,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-6 py-6">
+    <div className="flex flex-col gap-6 pb-6 md:pt-1">
       {/* The one thing on this page that can be missed.
           
           Everything else here is a record of what has already been
@@ -351,11 +352,18 @@ export default function DashboardPage() {
           happens at an hour, on a date, whether or not anybody turned
           up - so it is the only thing that earns a place that follows
           you down the screen. */}
-      <LiveStrip />
+      {/* On a phone it sits under the sections bar instead (below). */}
+      {!phone && <LiveStrip />}
+      {!phone && (
+        <Suspense fallback={null}>
+          <ScrollToPanel />
+        </Suspense>
+      )}
 
       {phone ? (
         <DashboardPanel
           sections={sections}
+          live={<LiveStrip glow sticky={false} />}
           you={{
             compact: (open, toggle) => <DashboardHeaderCompact open={open} onToggle={toggle} />,
             content: headerPanel,
@@ -376,7 +384,7 @@ export default function DashboardPage() {
           {/* Signature + streak. The spectrum is the centrepiece, so it
               takes two thirds of the row once there's width for it. */}
           <div className="grid gap-4 lg:grid-cols-3">
-            <div className="flex lg:col-span-2">{signaturePanel}</div>
+            <div id="dash-signature" className="flex scroll-mt-24 lg:col-span-2">{signaturePanel}</div>
             {streakPanel}
           </div>
 

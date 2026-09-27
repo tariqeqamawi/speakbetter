@@ -16,6 +16,8 @@ import {
 import { Soundwave } from "@/components/soundwave";
 import { LionMouth } from "@/components/lion-mouth";
 import { JumpButton } from "@/components/jump";
+import { SectionMenu } from "@/components/section-menu";
+import { Suspense } from "react";
 import { startTour } from "@/components/guided-tour";
 import { sectionOf, startSectionTour } from "@/components/section-tour";
 import { answerCoach, useCoachCalling } from "@/lib/coach-call";
@@ -94,7 +96,7 @@ function JoinNow() {
 
 export function TopBar() {
   return (
-    <header className="pt-safe sticky top-0 z-20 bg-navy-900/92">
+    <header className="pt-safe sticky top-0 z-40 bg-navy-900/92">
       <div className="spectrum-rule h-0.5" />
       {/* The soundwave lives in the band between the two rules */}
       <div className="relative border-b border-navy-700/80">
@@ -133,6 +135,10 @@ export function TopBar() {
             <CompactLinks />
             <AboutLink />
             <JoinNow />
+            {/* The dashboard's sections from anywhere, in the corner. */}
+            <Suspense fallback={null}>
+              <SectionMenu />
+            </Suspense>
           </div>
         </div>
       </div>
@@ -140,8 +146,8 @@ export function TopBar() {
   );
 }
 
-/** Take the full tour on Today; tour this section anywhere that has
- *  one of its own. */
+/** "Full Guided Tour" on Today; "Guided Tour" - of the section you're
+ *  in - anywhere that has one of its own. */
 function TourButton() {
   const pathname = usePathname();
   const { state, ready } = useStore();
@@ -159,7 +165,7 @@ function TourButton() {
     >
       <TapIcon className="size-3.5 shrink-0" />
       <span className="whitespace-nowrap sm:hidden lg:inline">
-        {section ? "Tour this section" : "Take the full tour"}
+        {section ? "Guided Tour" : "Full Guided Tour"}
       </span>
     </button>
   );

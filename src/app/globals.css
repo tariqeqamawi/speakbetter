@@ -3497,3 +3497,23 @@ html.bare .demo-banner {
 .skin-plain :is(.shadow-2xl, .shadow-lg) {
   box-shadow: none;
 }
+
+/* The dashboard's sections bar on a phone: glowing arrows at either end
+   that say "this scrolls sideways" (components/dashboard-sections.tsx). */
+.strip-arrow span {
+  color: var(--color-figurative);
+  text-shadow: 0 0 8px var(--color-figurative), 0 0 16px color-mix(in oklab, var(--color-figurative) 60%, transparent);
+  animation: strip-arrow-glow 2.4s ease-in-out infinite;
+}
+@keyframes strip-arrow-glow {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+/* The live session under it, lit so it can't be missed. */
+.live-glow {
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--color-figurative) 40%, transparent),
+    0 0 18px -2px color-mix(in oklab, var(--color-figurative) 55%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .strip-arrow span { animation: none; opacity: 0.9; }
+}

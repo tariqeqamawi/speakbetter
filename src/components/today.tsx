@@ -87,7 +87,7 @@ export function Today() {
               className="inline-flex items-center gap-1.5 rounded-full border border-navy-500 bg-navy-900/70 px-3 py-1.5 text-xs font-semibold text-ink-muted transition-colors hover:border-ink-faint hover:text-ink"
             >
               <TapIcon className="size-3.5" />
-              Take the tour
+              Full Guided Tour
             </button>
           </div>
         </div>

@@ -132,7 +132,7 @@ export function GuidedTour() {
           }}
           className="coach-pill mt-3 flex min-h-11 w-full items-center justify-center rounded-full text-sm font-bold text-navy-950"
         >
-          <span className="text-navy-950">Take the guided tour</span>
+          <span className="text-navy-950">Take the Full Guided Tour</span>
         </button>
       </div>,
       host,

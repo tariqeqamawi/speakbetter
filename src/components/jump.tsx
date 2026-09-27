@@ -33,7 +33,7 @@ function targets(): Target[] {
     { kind: "place", label: "You", sub: "Your dashboard", href: "/profile" },
     { kind: "place", label: "Community", sub: "Everyone on the road", href: "/community" },
     { kind: "place", label: "Live sessions", sub: "The six calls, and every recording", href: "/live" },
-    { kind: "place", label: "Take the tour", sub: "Shown around the app in a minute", href: "/?tour=1" },
+    { kind: "place", label: "Full Guided Tour", sub: "Shown around the app in a minute", href: "/?tour=1" },
   ];
   const ls: Target[] = lessons.map((l) => {
     const cat = categoryById.get(l.category);

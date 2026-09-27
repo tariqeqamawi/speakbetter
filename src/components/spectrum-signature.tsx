@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { categories, categoryById, type CategoryId } from "@/data/categories";
-import { SpectrumHistory } from "@/components/spectrum-history";
 import { SectionBanner } from "@/components/section-banner";
 import { SpectrumIcon } from "@/components/icons";
 import { spectrumShare } from "@/lib/progress";
@@ -129,7 +128,7 @@ export function SpectrumSignature({ state }: { state: AppState }) {
           </div>
         )}
         {tab === "over time" ? (
-          <SpectrumHistory attempts={state.attempts} />
+          <SpectrumBars first={firstTake} latest={ordered.at(-1)} />
         ) : (
         <div className="relative overflow-hidden rounded-xl bg-navy-950/70 p-4">
           {/* The scope behind the trace. */}
@@ -181,6 +180,49 @@ export function SpectrumSignature({ state }: { state: AppState }) {
             : "Every channel is carrying real weight - that's a full-spectrum speaker."}
         </p>
       </div>
+    </div>
+  );
+}
+
+/** Under the two waves, the same comparison as a plain readout: each
+ *  color's bar with your first take dark and your latest take in full
+ *  color over it, and the numbers - so "how far have I come" reads at a
+ *  glance rather than from the overlap of two traces. */
+function SpectrumBars({ first, latest }: { first?: Attempt; latest?: Attempt }) {
+  if (!first || !latest || first === latest) {
+    return <p className="text-sm text-ink-muted">Record a second take and your before-and-after appears here.</p>;
+  }
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-faint">First take → latest take</p>
+      {categories.map((c) => {
+        const then = Math.round(first.spectrum?.[c.id] ?? 0);
+        const now = Math.round(latest.spectrum?.[c.id] ?? 0);
+        const change = now - then;
+        return (
+          <div key={c.id} className="grid grid-cols-[5.75rem_1fr_auto] items-center gap-2.5 text-xs">
+            <span className={c.textClass}>{c.name}</span>
+            <div className="relative h-3 rounded-full bg-navy-950/70">
+              <div className={`absolute inset-y-0 left-0 rounded-full ${c.bgClass}`} style={{ width: `${now}%` }} />
+              <div
+                className="absolute inset-y-0 left-0 rounded-full bg-navy-950/60"
+                style={{ width: `${Math.min(now, then)}%` }}
+              />
+            </div>
+            <span className="text-right tabular-nums text-ink-muted">
+              {then} → <b className="text-ink">{now}</b>
+              {change !== 0 && (
+                <span className={change > 0 ? " text-mindset" : " text-ink-faint"}>
+                  {" "}
+                  {change > 0 ? "+" : ""}
+                  {change}
+                </span>
+              )}
+            </span>
+          </div>
+        );
+      })}
+      <p className="text-[0.7rem] text-ink-faint">Dark: your first take. Full color: your latest.</p>
     </div>
   );
 }

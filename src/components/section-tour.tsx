@@ -77,7 +77,7 @@ export function SectionTour({ section }: { section: SectionId }) {
 
   if (!ready || !state.unlocked) return null;
 
-  // Nothing of its own on the page: the top bar's "Tour this section"
+  // Nothing of its own on the page: the top bar's "Guided Tour"
   // is the door, and two doors into one room is clutter.
   return running ? <TourRunner stops={tour.stops} onClose={close} /> : null;
 }

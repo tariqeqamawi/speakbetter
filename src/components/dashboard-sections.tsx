@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 
 // The dashboard on a phone.
@@ -19,9 +19,8 @@ import { useSearchParams } from "next/navigation";
 // traveling between them. (A rail down the left side was tried first;
 // it squeezed every panel into two-thirds of a phone.)
 //
-// The strip sticks under the header, so nothing has to be scrolled to
-// reach it - including the profile card, which is a section here rather
-// than a banner above.
+// The strip is the first thing on the page and sticks under the header,
+// with the live session under it and the profile card under that.
 //
 // The desktop layout is untouched - it never had the problem.
 
@@ -57,16 +56,25 @@ export function useIsPhone(): boolean {
 export function DashboardPanel({
   sections,
   you,
+  live,
 }: {
   sections: DashboardSection[];
-  /** The student's own card: a compact line above the strip, and the
+  /** The student's own card: a compact line under the strip, and the
    *  full card as the open panel when that line is tapped. */
   you: { compact: (open: boolean, toggle: () => void) => ReactNode; content: ReactNode };
+  /** The live-session strip, which sits right under the sections bar. */
+  live?: ReactNode;
 }) {
-  // A link can name the tab to open - the landing page's phone frames
-  // show the trophy case this way.
+  // A link can name the tab to open - the header's menu does, and the
+  // landing page's phone frames show the trophy case this way. It is
+  // followed whenever it changes, not only on arrival, so the menu works
+  // from the dashboard itself.
   const asked = useSearchParams().get("tab");
   const [openId, setOpenId] = useState(sections.some((s) => s.id === asked) ? asked! : sections[0]?.id);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- follow the address
+    if (asked && sections.some((s) => s.id === asked)) setOpenId(asked);
+  }, [asked, sections]);
   // A section can come and go - "recent attempts" only exists once
   // there are some - so never hold a tab that isn't there any more.
   const open = sections.find((s) => s.id === openId) ?? sections[0];
@@ -75,42 +83,79 @@ export function DashboardPanel({
   // and answering one should not close the other.
   const [youOpen, setYouOpen] = useState(false);
 
+  // The strip scrolls sideways; glowing arrows at either end say so, and
+  // each goes once there is nothing more that way.
+  const strip = useRef<HTMLElement>(null);
+  const [more, setMore] = useState({ left: false, right: true });
+  useEffect(() => {
+    const el = strip.current;
+    if (!el) return;
+    const sync = () =>
+      setMore({ left: el.scrollLeft > 4, right: el.scrollLeft + el.clientWidth < el.scrollWidth - 4 });
+    sync();
+    el.addEventListener("scroll", sync, { passive: true });
+    window.addEventListener("resize", sync);
+    return () => {
+      el.removeEventListener("scroll", sync);
+      window.removeEventListener("resize", sync);
+    };
+  }, []);
+  const nudge = (dir: 1 | -1) => strip.current?.scrollBy({ left: dir * 160, behavior: "smooth" });
+
   return (
-    <div className="flex flex-col gap-5">
-      {/* The banner folds its own contents - the chevron hides the
-          reason and the tip and leaves the XP line, so the panels
-          below start higher. The full card is a section of its own
-          rather than a second copy of what is already on screen. */}
+    // Pulled up to sit straight under the header: the bar is the first
+    // thing on the page, with no dead space above it.
+    <div className="-mt-8 flex flex-col gap-4">
+      {/* One bar, the same shape as every other "switch the view of
+          this page" control in the app - full width, scrolling sideways
+          rather than wrapping into rows, stuck under the header. */}
+      <div className="sticky-under-header relative -mx-4 border-b border-navy-600 bg-navy-900/95 backdrop-blur">
+        <nav
+          ref={strip}
+          aria-label="Dashboard sections"
+          className="flex gap-1 overflow-x-auto px-9 py-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {sections.map((section) => {
+            const on = section.id === open?.id;
+            return (
+              <button
+                key={section.id}
+                type="button"
+                onClick={() => setOpenId(section.id)}
+                aria-current={on ? "true" : undefined}
+                className={`flex h-10 shrink-0 items-center gap-1.5 rounded-lg px-3 text-[0.75rem] font-semibold transition-colors ${
+                  on ? `bg-navy-700 ${section.accentClass}` : "text-ink-faint hover:text-ink-muted"
+                }`}
+              >
+                <section.Icon className="size-4 shrink-0" />
+                {section.name}
+              </button>
+            );
+          })}
+        </nav>
+        {(["left", "right"] as const).map((side) => (
+          <button
+            key={side}
+            type="button"
+            aria-label={side === "left" ? "More sections to the left" : "More sections to the right"}
+            onClick={() => nudge(side === "left" ? -1 : 1)}
+            className={`strip-arrow absolute inset-y-0 ${side === "left" ? "left-0 bg-gradient-to-r" : "right-0 bg-gradient-to-l"} flex w-9 items-center justify-center from-navy-900 via-navy-900/90 to-transparent transition-opacity ${
+              more[side] ? "opacity-100" : "pointer-events-none opacity-25"
+            }`}
+          >
+            <span aria-hidden className="text-lg font-bold leading-none">
+              {side === "left" ? "‹" : "›"}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {live}
+
+      {/* The student's own card, folded to a line; tap to open it. */}
       <div className="overflow-hidden rounded-2xl border border-navy-600 bg-navy-800">
         {you.compact(youOpen, () => setYouOpen((o) => !o))}
       </div>
-
-      {/* One bar, the same shape as every other "switch the view of
-          this page" control in the app - under the title, full width,
-          scrolling sideways rather than wrapping into rows. A student
-          should learn one place to look. */}
-      <nav
-        aria-label="Dashboard sections"
-        className="sticky-under-header -mx-4 flex gap-1 overflow-x-auto rounded-none border-y border-navy-600 bg-navy-900/95 px-4 py-1.5 backdrop-blur sm:mx-0 sm:rounded-xl sm:border sm:bg-navy-900/60 sm:px-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      >
-        {sections.map((section) => {
-          const on = section.id === open?.id;
-          return (
-            <button
-              key={section.id}
-              type="button"
-              onClick={() => setOpenId(section.id)}
-              aria-current={on ? "true" : undefined}
-              className={`flex h-10 shrink-0 items-center gap-1.5 rounded-lg px-3 text-[0.75rem] font-semibold transition-colors ${
-                on ? `bg-navy-700 ${section.accentClass}` : "text-ink-faint hover:text-ink-muted"
-              }`}
-            >
-              <section.Icon className="size-4 shrink-0" />
-              {section.name}
-            </button>
-          );
-        })}
-      </nav>
 
       {/* min-w-0 so a wide child - a chart, a table of attempts - scrolls
           inside the panel instead of widening the page. Every panel

@@ -32,7 +32,7 @@ function when(iso: string, now: number): string {
   return days === 1 ? "tomorrow" : `in ${days} days`;
 }
 
-export function LiveStrip() {
+export function LiveStrip({ glow = false, sticky = true }: { glow?: boolean; sticky?: boolean } = {}) {
   // The clock is read after mount, never during render.
   //
   // Two reasons, and the second is the one that bites. Reading it in
@@ -67,10 +67,12 @@ export function LiveStrip() {
     <Link
       href="/live"
       data-tour="live"
-      className={`sticky-under-header -mx-1 flex min-h-11 items-center gap-2.5 rounded-full border px-4 transition-colors ${
+      className={`${sticky ? "sticky-under-header" : ""} -mx-1 flex min-h-11 items-center gap-2.5 rounded-full border px-4 transition-colors ${
         soon
           ? "border-acting bg-acting/15 text-acting hover:bg-acting/20"
-          : "border-navy-600 bg-navy-800 text-ink-muted hover:border-ink-faint"
+          : glow
+            ? "live-glow border-figurative/70 bg-navy-800 text-ink-muted"
+            : "border-navy-600 bg-navy-800 text-ink-muted hover:border-ink-faint"
       }`}
     >
       {soon ? (
