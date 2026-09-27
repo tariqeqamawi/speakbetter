@@ -21,6 +21,24 @@ export const LEAD_OUT = 100;
 /** How far ahead of the camera the traveller walks. Everything that
  *  says "where you are" reads the traveller, not the camera. */
 export const AHEAD = 17;
+
+/** Half the road's width - wide, like a racing track, so there is room
+ *  to sweep down it. */
+export const ROAD_HALF = 4.4;
+
+/** How far the road leans into its bend at s, in radians - a little
+ *  everywhere, most in O's sweeps and R's plunge. Positive when the road
+ *  turns right (its left edge lifted). */
+export function tiltAt(road: RoadLayout, s: number): number {
+  const lean = Math.max(-0.22, Math.min(0.22, road.bendAt(s) * 30));
+  return lean * (0.4 + 0.6 * road.bankAt(s));
+}
+
+/** How much higher than the road's middle a point d across it sits, once
+ *  the road leans into its bend (d to the right is positive). */
+export function bankLift(road: RoadLayout, s: number, d: number): number {
+  return -d * tiltAt(road, s);
+}
 /** How far before a phase's first checkpoint its gate stands. */
 export const GATE_BEFORE = 48;
 
@@ -186,6 +204,9 @@ export class Travel {
    *  turns the view left and right, pitch lifts it toward the distance.
    *  Set by the road's tilt listener, eased by the camera. */
   look = { yaw: 0, pitch: 0 };
+  /** How fast it feels, 0 at rest to 1 flat out - eased by the camera,
+   *  read by the motion blur and the wind. */
+  feel = 0;
   constructor(start: number) {
     this.s = start;
   }

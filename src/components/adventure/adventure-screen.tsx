@@ -10,7 +10,7 @@ import { useRoadChrome } from "./road-chrome";
 import { RoadLegendButton } from "./road-legend";
 import { SkyCoach } from "./sky-coach";
 import { ROAD_LINES, ROAD_TALK, roadLineClip, talkClip } from "@/data/greetings";
-import { activated, playApplause, playCoachLine, playGateChime, playRoadWhoosh } from "@/lib/feedback-fx";
+import { activated, playApplause, playCoachLine, playGateChime, playRoadWhoosh, startRoadWind } from "@/lib/feedback-fx";
 import { Confetti } from "@/components/confetti";
 import { useStore } from "@/lib/store";
 import type { PickPortal, WorldPhase, WorldStop } from "./adventure-world";
@@ -311,6 +311,24 @@ export function AdventureScreen({
       // no storage: stays off
     }
   }, []);
+  // THE WIND, rising and falling with how fast the road is moving - only
+  // with sound on, and only once the student has touched the page.
+  useEffect(() => {
+    if (!sound) return;
+    let wind: ReturnType<typeof startRoadWind> = null;
+    let raf = 0;
+    const tick = () => {
+      if (!wind && activated() && travel.feel > 0.05) wind = startRoadWind();
+      wind?.set(document.hidden || travel.portal ? 0 : travel.feel);
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(raf);
+      wind?.stop();
+    };
+  }, [sound, travel]);
+
   const toggleSound = () => {
     setSound((v) => {
       try {

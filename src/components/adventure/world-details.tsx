@@ -243,7 +243,7 @@ export function RoadsideTrophy({
   const at = useMemo(() => {
     const p = pointAt(road, s);
     const dir = sideAt(road, s);
-    return p.add(dir.multiplyScalar(side * 5.6));
+    return p.add(dir.multiplyScalar(side * 6.8));
   }, [road, s, side]);
   useFrame(({ camera, clock }) => {
     const k = nearness(camera, at);
@@ -325,7 +325,7 @@ export function RoadsideComment({
     const p = pointAt(road, s);
     const dir = sideAt(road, s);
     // Close to the road, at eye height, so they can be read in passing.
-    return p.add(dir.multiplyScalar(side * 5.2)).add(new THREE.Vector3(0, 3.1, 0));
+    return p.add(dir.multiplyScalar(side * 6.4)).add(new THREE.Vector3(0, 3.1, 0));
   }, [road, s, side]);
   useFrame(({ camera, clock }) => {
     if (!mat.current) return;

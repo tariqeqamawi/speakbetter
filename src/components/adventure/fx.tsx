@@ -7,6 +7,7 @@ import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { pointAt, seeded, sideAt, type RoadLayout, type Travel, AHEAD } from "./road-geometry";
 
 // The look: Tron rather than arcade. The land is dark glass and every
@@ -17,14 +18,31 @@ import { pointAt, seeded, sideAt, type RoadLayout, type Travel, AHEAD } from "./
 /** Bloom over the whole scene: only what is bright glows, so the dark
  *  glass stays dark and the neon comes alive. Takes over rendering from
  *  the default loop (the priority-1 frame callback). */
-export function Bloom({ strength = 0.6, radius = 0.25, threshold = 0.78 }) {
+export function Bloom({
+  strength = 0.6,
+  radius = 0.25,
+  threshold = 0.78,
+  travel,
+}: {
+  strength?: number;
+  radius?: number;
+  threshold?: number;
+  /** When given, the picture blurs outward from the middle as it goes
+   *  faster (Travel.feel) - sharp at rest. */
+  travel?: Travel;
+}) {
   const { gl, scene, camera, size } = useThree();
-  const composer = useMemo(() => {
+  const { composer, blur } = useMemo(() => {
     const c = new EffectComposer(gl);
     c.addPass(new RenderPass(scene, camera));
     c.addPass(new UnrealBloomPass(new THREE.Vector2(size.width, size.height), strength, radius, threshold));
+    // Fewer samples on a phone, so it stays smooth.
+    const fine = typeof window !== "undefined" && window.matchMedia("(pointer: fine)").matches;
+    const blur = new ShaderPass(speedBlur(fine ? 10 : 6));
+    blur.enabled = false;
+    c.addPass(blur);
     c.addPass(new OutputPass());
-    return c;
+    return { composer: c, blur };
     // Rebuilt only if the renderer or scene change; size is set below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gl, scene, camera, strength, radius, threshold]);
@@ -33,8 +51,49 @@ export function Bloom({ strength = 0.6, radius = 0.25, threshold = 0.78 }) {
     composer.setSize(size.width, size.height);
   }, [composer, gl, size]);
   useEffect(() => () => composer.dispose(), [composer]);
-  useFrame((_, dt) => composer.render(dt), 1);
+  /* eslint-disable react-hooks/immutability -- the pass is three.js's, set every frame */
+  useFrame((_, dt) => {
+    // Nothing blurs until you're really moving, and the pass costs
+    // nothing while it's off.
+    const k = travel ? Math.max(0, (travel.feel - 0.25) / 0.75) : 0;
+    blur.enabled = k > 0.01;
+    blur.uniforms.uAmount.value = k * k * 0.055;
+    composer.render(dt);
+  }, 1);
+  /* eslint-enable react-hooks/immutability */
   return null;
+}
+
+/** MOTION BLUR at speed: each pixel is smeared along the line from the
+ *  middle of the view (a little above centre, where the road runs to),
+ *  more the further out it is - the centre stays sharp, the edges rush. */
+function speedBlur(samples: number) {
+  return {
+    uniforms: {
+      tDiffuse: { value: null },
+      uAmount: { value: 0 },
+      uCentre: { value: new THREE.Vector2(0.5, 0.56) },
+    },
+    vertexShader: /* glsl */ `
+      varying vec2 vUv;
+      void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+    `,
+    fragmentShader: /* glsl */ `
+      uniform sampler2D tDiffuse;
+      uniform float uAmount;
+      uniform vec2 uCentre;
+      varying vec2 vUv;
+      const int N = ${samples};
+      void main() {
+        vec2 dir = vUv - uCentre;
+        float far = smoothstep(0.12, 0.7, length(dir));
+        vec2 step = dir * uAmount * far / float(N);
+        vec4 sum = vec4(0.0);
+        for (int i = 0; i < N; i++) sum += texture2D(tDiffuse, vUv - step * float(i));
+        gl_FragColor = sum / float(N);
+      }
+    `,
+  };
 }
 
 /** The sky: black overhead, falling to a deep glow at the horizon - the

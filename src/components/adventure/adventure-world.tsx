@@ -9,7 +9,7 @@ import { SkyDome } from "./sky-dome";
 import { City } from "./city";
 import { Bloom, GateSparks, Sky } from "./fx";
 import { AHEAD, ColourWall, RoadsideComment, RoadsideTrophy, Traveller } from "./world-details";
-import { GATE_BEFORE, hills, layoutRoad, pointAt, reachedPhase, seeded, sideAt, type RoadLayout, type Travel } from "./road-geometry";
+import { GATE_BEFORE, hills, layoutRoad, pointAt, reachedPhase, seeded, sideAt, type RoadLayout, type Travel, ROAD_HALF, bankLift, tiltAt } from "./road-geometry";
 
 // The S.T.O.R.Y. adventure as a world you travel through.
 //
@@ -383,11 +383,14 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
         const x = p.x + side.x * d;
         const z = p.z + side.z * d;
         // Flat under the road, rising into hills away from it.
-        const away = THREE.MathUtils.smoothstep(Math.abs(d), 5, 70);
+        const away = THREE.MathUtils.smoothstep(Math.abs(d), ROAD_HALF + 1.6, 70);
         const h = hills(x, z);
         const [la, lb, lt] = landAt(spans, s);
         const rise = la === lb ? landform(la, x, z, away, u) : THREE.MathUtils.lerp(landform(la, x, z, away, u), landform(lb, x, z, away, u), lt);
-        const y = p.y - 0.2 + rise;
+        // Near the road the land leans with it, so the banked road never
+        // sinks into the ground on the inside of a bend.
+        const lean = bankLift(road, s, d) * (1 - THREE.MathUtils.smoothstep(Math.abs(d), ROAD_HALF, ROAD_HALF + 8));
+        const y = p.y - 0.2 + rise + lean;
         const v = r * (COLS + 1) + k;
         pos.set([x, y, z], v * 3);
         grid.set([r, k], v * 2);
@@ -496,7 +499,7 @@ function ribbon(
     sideAt(road, s, side);
     colour(colourAt(spans, s, phase), c);
     for (const d of [from, to]) {
-      pos.push(p.x + side.x * d, p.y + lift, p.z + side.z * d);
+      pos.push(p.x + side.x * d, p.y + lift + bankLift(road, s, d), p.z + side.z * d);
       col.push(c.r, c.g, c.b);
     }
     if (r < rows) {
@@ -511,17 +514,105 @@ function ribbon(
   return geo;
 }
 
+/** Short dashes along the road at the given offsets across it. */
+function dashes(road: RoadLayout, spans: Span[], at: number[]) {
+  const EVERY = 7;
+  const LONG = 2.6;
+  const W = 0.09;
+  const pos: number[] = [];
+  const col: number[] = [];
+  const idx: number[] = [];
+  const p = new THREE.Vector3();
+  const q = new THREE.Vector3();
+  const side = new THREE.Vector3();
+  const c = new THREE.Color();
+  for (let s = 4; s + LONG < road.length; s += EVERY) {
+    colourAt(spans, s, c).multiplyScalar(0.8);
+    pointAt(road, s, p);
+    pointAt(road, s + LONG, q);
+    sideAt(road, s, side);
+    for (const d of at) {
+      const base = pos.length / 3;
+      for (const [pt, ss] of [
+        [p, s],
+        [q, s + LONG],
+      ] as const)
+        for (const dd of [d - W, d + W]) {
+          pos.push(pt.x + side.x * dd, pt.y + 0.045 + bankLift(road, ss, dd), pt.z + side.z * dd);
+          col.push(c.r, c.g, c.b);
+        }
+      idx.push(base, base + 2, base + 1, base + 1, base + 2, base + 3);
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+  geo.setIndex(idx);
+  return geo;
+}
+
+/** THE LIGHTS ALONG THE ROAD. Low glowing posts on both edges, close
+ *  together and evenly spaced, in the colour of their section - still,
+ *  they mark the road; moving, they flash past one after another, the
+ *  way the barrier lights did on the tracks of Extreme-G. Most of the
+ *  feeling of speed comes from these. */
+function EdgeLights({ road, spans }: { road: RoadLayout; spans: Span[] }) {
+  const EVERY = 5;
+  const mesh = useMemo(() => {
+    const count = Math.floor((road.length - 4) / EVERY) * 2;
+    const geo = new THREE.BoxGeometry(0.18, 0.42, 0.75);
+    const mat = new THREE.MeshBasicMaterial({ toneMapped: false });
+    const m = new THREE.InstancedMesh(geo, mat, count);
+    const p = new THREE.Vector3();
+    const side = new THREE.Vector3();
+    const ahead = new THREE.Vector3();
+    const c = new THREE.Color();
+    const o = new THREE.Object3D();
+    let i = 0;
+    for (let s = 4; i < count; s += EVERY) {
+      pointAt(road, s, p);
+      sideAt(road, s, side);
+      pointAt(road, s + 1, ahead);
+      colourAt(spans, s, c).multiplyScalar(1.35);
+      for (const d of [-(ROAD_HALF + 0.35), ROAD_HALF + 0.35]) {
+        o.position.set(p.x + side.x * d, p.y + 0.3 + bankLift(road, s, d), p.z + side.z * d);
+        o.lookAt(ahead.x + side.x * d, o.position.y, ahead.z + side.z * d);
+        o.updateMatrix();
+        m.setMatrixAt(i, o.matrix);
+        m.setColorAt(i, c);
+        i++;
+      }
+    }
+    m.instanceMatrix.needsUpdate = true;
+    if (m.instanceColor) m.instanceColor.needsUpdate = true;
+    m.frustumCulled = false;
+    return m;
+  }, [road, spans]);
+  useEffect(
+    () => () => {
+      mesh.geometry.dispose();
+      (mesh.material as THREE.Material).dispose();
+      mesh.dispose();
+    },
+    [mesh],
+  );
+  return <primitive object={mesh} />;
+}
+
 /** The road: dark surface, faint edges, and the lit line down the
  *  middle that the traveller follows. */
 function Road({ road, spans, trail }: { road: RoadLayout; spans: Span[]; trail: THREE.BufferGeometry[] }) {
   const g = useMemo(
     () => ({
-      surface: ribbon(road, spans, -3.2, 3.2, 0, (ph, o) => o.set("#101a33").lerp(ph, 0.12)),
-      glow: ribbon(road, spans, -1.6, 1.6, 0.03, (ph, o) => o.copy(ph).multiplyScalar(0.7)),
+      surface: ribbon(road, spans, -ROAD_HALF, ROAD_HALF, 0, (ph, o) => o.set("#101a33").lerp(ph, 0.12)),
+      glow: ribbon(road, spans, -1.8, 1.8, 0.03, (ph, o) => o.copy(ph).multiplyScalar(0.7)),
       // The road ahead, not yet travelled: a faint guide line.
       line: ribbon(road, spans, -0.12, 0.12, 0.05, (ph, o) => o.copy(ph).multiplyScalar(0.45)),
-      left: ribbon(road, spans, -3.2, -3.0, 0.04, (ph, o) => o.copy(ph).multiplyScalar(0.7)),
-      right: ribbon(road, spans, 3.0, 3.2, 0.04, (ph, o) => o.copy(ph).multiplyScalar(0.7)),
+      left: ribbon(road, spans, -ROAD_HALF, -ROAD_HALF + 0.2, 0.04, (ph, o) => o.copy(ph).multiplyScalar(0.7)),
+      right: ribbon(road, spans, ROAD_HALF - 0.2, ROAD_HALF, 0.04, (ph, o) => o.copy(ph).multiplyScalar(0.7)),
+      // Lane marks: dashes a third of the way out each side, which pour
+      // toward you at speed.
+      lanes: dashes(road, spans, [-ROAD_HALF / 2.2, ROAD_HALF / 2.2]),
     }),
     [road, spans],
   );
@@ -550,6 +641,10 @@ function Road({ road, spans, trail }: { road: RoadLayout; spans: Span[]; trail: 
       <mesh geometry={g.right}>
         <meshBasicMaterial vertexColors toneMapped={false} side={THREE.DoubleSide} />
       </mesh>
+      <mesh geometry={g.lanes}>
+        <meshBasicMaterial vertexColors transparent opacity={0.55} depthWrite={false} toneMapped={false} side={THREE.DoubleSide} />
+      </mesh>
+      <EdgeLights road={road} spans={spans} />
     </group>
   );
 }
@@ -630,10 +725,16 @@ function Rig({
   const pos = useMemo(() => new THREE.Vector3(), []);
   const at = useMemo(() => new THREE.Vector3(), []);
   const last = useRef(-1);
+  const lastAt = useRef(0);
   const roll = useRef(0);
   const yaw = useRef(0);
   const pitch = useRef(0);
   const speed = useRef(0);
+  // For anyone who has asked for less motion: no swoop, no shake.
+  const still = useMemo(
+    () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    [],
+  );
 
   /* eslint-disable react-hooks/immutability -- the camera is three.js's, moved every frame */
   useFrame((_, dt) => {
@@ -651,14 +752,31 @@ function Rig({
       camera.lookAt(look);
       return;
     }
-    pointAt(road, s, pos);
-    // Up above the road and behind the traveller, looking down the road
-    // past them - high enough to see the land run off to the horizon.
-    pointAt(road, s + AHEAD + 22, at);
-    eye.set(pos.x, pos.y + 7.5, pos.z);
-    look.set(at.x, at.y + 1.2, at.z);
+    // How fast it feels, eased so it swells and settles rather than
+    // snapping - it drives the camera's height, the view's width, the
+    // blur, the streaks and the wind.
+    const pace = Math.min(1, Math.abs(travel.v) / 1.6);
+    speed.current += (pace - speed.current) * Math.min(1, dt * 2.5);
+    const f = still ? 0 : speed.current;
+    travel.feel = speed.current;
+    // At rest: up above the road and behind the traveller, looking down
+    // the road past them - high enough to see the land run off to the
+    // horizon and choose a challenge. Flying: down low and in close
+    // behind them, the road pouring toward you, the way the camera rode
+    // behind the bikes in Extreme-G. It rises again as you slow.
+    pointAt(road, s + f * 5, pos);
+    pointAt(road, s + AHEAD + 22 - f * 6, at);
+    eye.set(pos.x, pos.y + 7.5 - f * 4.3, pos.z);
+    look.set(at.x, at.y + 1.2 + f * 0.6, at.z);
     camera.position.lerp(eye, 1 - Math.pow(0.001, dt));
     camera.lookAt(look);
+    // Flat out, the faintest shake - the road under you at speed.
+    if (f > 0.6) {
+      const k = (f - 0.6) / 0.4;
+      const t = performance.now() / 1000;
+      camera.position.y += (Math.sin(t * 37) * 0.6 + Math.sin(t * 23.3) * 0.4) * 0.035 * k;
+      camera.position.x += Math.sin(t * 29.7) * 0.025 * k;
+    }
     // Looking around: the phone's tilt swings the view side to side and
     // lifts it toward the horizon, eased so it glides rather than jitters.
     const ease = Math.min(1, dt * 4);
@@ -666,26 +784,26 @@ function Rig({
     pitch.current += (travel.look.pitch - pitch.current) * ease;
     camera.rotateY(yaw.current);
     camera.rotateX(pitch.current);
-    // THE FEELING OF SPEED: the view widens a little as you go faster
-    // and settles as you slow, and the page draws faint streaks past the
-    // edges from the same number.
-    const pace = Math.min(1, Math.abs(travel.v) / 1.6);
-    speed.current += (pace - speed.current) * Math.min(1, dt * 3);
+    // The view widens as you go faster and settles as you slow; the page
+    // draws faint streaks past the edges from the same number.
     const cam = camera as THREE.PerspectiveCamera;
-    const fov = 62 + speed.current * 12;
+    const fov = 62 + f * 14;
     if (Math.abs(cam.fov - fov) > 0.05) {
       cam.fov = fov;
       cam.updateProjectionMatrix();
     }
-    gl.domElement.parentElement?.style.setProperty("--road-speed", speed.current.toFixed(3));
-    // Bank into the bends, the way a car or a plane leans into a curve.
-    // In the calm opening phases the camera stays level; it leans into
-    // the curves only where the story does - O's sweeps and R's plunge.
-    const target = THREE.MathUtils.clamp(-road.bendAt(s + AHEAD) * 24, -0.3, 0.3) * road.bankAt(s + AHEAD);
+    gl.domElement.parentElement?.style.setProperty("--road-speed", f.toFixed(3));
+    // Lean into the bends with the road - more the faster you go.
+    const target = THREE.MathUtils.clamp(tiltAt(road, s + AHEAD) * (0.9 + f * 0.5), -0.3, 0.3);
     roll.current += (target - roll.current) * Math.min(1, dt * 2.5);
     camera.rotateZ(roll.current);
-    if (Math.abs(s - last.current) > 0.25) {
+    // Tell the page where we are - but at speed only ten times a second,
+    // not every frame: each report redraws the page's controls, and at
+    // full speed that was what slowed the road down.
+    const now = performance.now();
+    if (Math.abs(s - last.current) > 0.25 && (now - lastAt.current > 100 || Math.abs(travel.v) < 0.3)) {
       last.current = s;
+      lastAt.current = now;
       onMove(s);
     }
   });
@@ -845,7 +963,7 @@ export function AdventureWorld({
         gates={spans.slice(1).map((sp, k) => ({ s: sp.from, from: spans[k].color, to: sp.color }))}
       />
       <Sky />
-      <Bloom />
+      <Bloom travel={travel} />
       <Scenery road={road} spans={spans} />
       {spans.find((sp) => sp.id === "Y") && (
         <City road={road} travel={travel} revealFrom={spans.find((sp) => sp.id === "Y")!.from + 120} />
@@ -856,7 +974,7 @@ export function AdventureWorld({
             key={`m-${stop.slug}-${k}`}
             road={road}
             s={road.stops[i] - 2 + k * 1.6}
-            offset={(k % 2 ? 1 : -1) * (4 + k)}
+            offset={(k % 2 ? 1 : -1) * (ROAD_HALF + 1.4 + k)}
             name={name}
             avatar={avatar}
             color={phaseCol.get(stop.phase)?.getStyle() ?? "#fff"}

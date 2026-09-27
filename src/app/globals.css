@@ -3529,7 +3529,7 @@ html.bare .demo-banner {
    invisible at rest and strongest at the dial's top speed. The camera
    sets --road-speed (0-1) on the canvas's box every frame. */
 .road-streaks {
-  opacity: calc(var(--road-speed, 0) * 0.9);
+  opacity: calc(var(--road-speed, 0) * 0.6);
   background: repeating-conic-gradient(
     from 0deg at 50% 42%,
     transparent 0deg 2.6deg,

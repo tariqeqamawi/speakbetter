@@ -385,6 +385,51 @@ export function playCoachLine(src: string, delayMs = 0): () => void {
 // The road's sounds - the adventure plays them only when the student
 // has turned its sound on.
 
+/** WIND - air rushing past as the traveller flies down the road: silent
+ *  at rest, a low rush at cruising speed, a brighter roar flat out.
+ *  Returns a control: set(0-1) each frame, stop() when done. Null when
+ *  the page can't make sound yet (nothing touched). */
+export function startRoadWind(): { set: (pace: number) => void; stop: () => void } | null {
+  const ac = audio();
+  if (!ac || !touched()) return null;
+  void ac.resume().catch(() => {});
+  const len = ac.sampleRate * 2;
+  const buf = ac.createBuffer(1, len, ac.sampleRate);
+  const d = buf.getChannelData(0);
+  // Brown-ish noise: softer and deeper than white, more air than hiss.
+  let last = 0;
+  for (let i = 0; i < len; i++) {
+    last = (last + 0.035 * (Math.random() * 2 - 1)) / 1.035;
+    d[i] = last * 3.2;
+  }
+  const src = ac.createBufferSource();
+  src.buffer = buf;
+  src.loop = true;
+  const band = ac.createBiquadFilter();
+  band.type = "bandpass";
+  band.Q.value = 0.7;
+  band.frequency.value = 300;
+  const gain = ac.createGain();
+  gain.gain.value = 0;
+  src.connect(band);
+  band.connect(gain);
+  gain.connect(ac.destination);
+  src.start();
+  return {
+    set(pace: number) {
+      const t = ac.currentTime;
+      const p = Math.max(0, Math.min(1, pace));
+      gain.gain.setTargetAtTime(0.22 * Math.pow(p, 1.6), t, 0.12);
+      band.frequency.setTargetAtTime(280 + 1500 * p * p, t, 0.15);
+    },
+    stop() {
+      const t = ac.currentTime;
+      gain.gain.setTargetAtTime(0, t, 0.08);
+      src.stop(t + 0.4);
+    },
+  };
+}
+
 /** Air rushing past as the traveller goes through a checkpoint. */
 export function playRoadWhoosh() {
   const ac = audio();
