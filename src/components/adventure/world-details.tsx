@@ -109,12 +109,15 @@ export function Traveller({
             for (int k = 1; k < 5; k++) if (float(k) == i) c = uCols[k];
             return c;
           }
+          // Equal arcs, one per colour, each crisp, with a thin dark gap
+          // between them so every colour reads as its own - one colour
+          // is the whole ring, two are halves, three are thirds.
           void main() {
-            float f = fract(vUv.x - uTime * 0.05) * uN;
+            float f = fract(vUv.x - uTime * 0.03) * uN;
             float i = floor(f);
-            float next = mod(i + 1.0, uN);
-            vec3 c = mix(pick(i), pick(next), smoothstep(0.8, 1.0, fract(f)));
-            gl_FragColor = vec4(c * uGlow, 1.0);
+            float fr = fract(f);
+            float gap = uN > 1.5 ? smoothstep(0.0, 0.025, fr) * smoothstep(1.0, 0.975, fr) : 1.0;
+            gl_FragColor = vec4(pick(i) * uGlow * mix(0.08, 1.0, gap), 1.0);
           }
         `,
       }),

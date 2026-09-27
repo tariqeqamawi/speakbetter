@@ -1052,7 +1052,7 @@ export function AdventureWorld({
       {spans.find((sp) => sp.id === "Y") && (
         <City road={road} travel={travel} revealFrom={spans.find((sp) => sp.id === "Y")!.from + 240} />
       )}
-      <Megastructures road={road} colourAt={colourFixed} />
+      <Megastructures road={road} colourAt={colourFixed} dense={spans.find((sp) => sp.id === "Y")} />
       <Traveller
         road={road}
         travel={travel}

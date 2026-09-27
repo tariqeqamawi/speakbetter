@@ -117,7 +117,7 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLay
     // Drawn out the same way, and gentler for it: the hills a little
     // higher than they were (x1.3), not twice as high.
     const u = s / STRETCH;
-    const k = 1.3 / STRETCH;
+    const k = 1.8 / STRETCH;
     const swell = ((3.2 / 95) * Math.cos(u / 95) + (0.9 / 37) * Math.cos(u / 37)) * k * STRETCH;
     const wT = weight("T", s);
     const wO = weight("O", s);
@@ -131,8 +131,10 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLay
     // then the road falls into a hollow and shoots up the far side to the
     // horizon. They come in runs (the slow envelope), with calm between,
     // and leave R's plunge and Y's peaks to themselves.
-    const run = Math.max(0, Math.sin(s / 420 + 1.2));
-    const dips = 0.13 * Math.sin(s / 38) * run * run * (1 - wR) * (1 - wY);
+    // Deep and often - a rollercoaster: plunges into hollows and climbs
+    // that lift you to the horizon, a short calm between runs.
+    const run = 0.35 + 0.65 * Math.max(0, Math.sin(s / 330 + 1.2));
+    const dips = 0.21 * Math.sin(s / 42) * run * (1 - wR) * (1 - wY);
     return swell * rest * (1 - wO * 0.6) + (0.17 * wT - 0.9 * wR + peaks * wY) * k + dips;
   };
 

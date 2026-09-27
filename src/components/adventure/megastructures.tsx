@@ -14,8 +14,9 @@ import { ROAD_HALF, pointAt, seeded, sideAt, type RoadLayout } from "./road-geom
 //   cantilevers, ringed cylinders - in the app's dark blue glass, lit
 //   only by the sky catching their edges. A few throw a slow searchlight
 //   into the night.
-// - ARCHES and RING GATES standing across the road, glowing in the
-//   section's colour, that you pass under.
+// - GREAT ARCHES: glass walls across the road with a rounded opening
+//   outlined in light, big enough to fill the view as you pass through.
+// - CORRIDORS: rows of lit glass pillars either side, open to the sky.
 // - TUBES: now and then the road runs into a long glass tube, rings and
 //   strips of light around its walls and stars in the glass - flying
 //   through it feels like flying through space.
@@ -70,9 +71,9 @@ const GLASS_FRAG = /* glsl */ `
     float fres = pow(1.0 - abs(dot(N, V)), 3.0);
     float side = 0.5 + 0.5 * dot(N, normalize(vec3(-0.3, 0.6, -0.5)));
     float floors = smoothstep(0.9, 1.0, fract(vH / 3.2)) * 0.22;
-    vec3 col = vec3(0.03, 0.055, 0.12) * (0.55 + 0.8 * side)
-      + vec3(0.22, 0.36, 0.75) * fres * 0.5
-      + vec3(0.18, 0.3, 0.62) * floors * (0.35 + fres);
+    vec3 col = vec3(0.022, 0.04, 0.095) * (0.55 + 0.8 * side)
+      + vec3(0.16, 0.28, 0.62) * fres * 0.3
+      + vec3(0.14, 0.24, 0.55) * floors * (0.3 + fres);
     float fog = 1.0 - exp(-uFogD * uFogD * vDepth * vDepth);
     gl_FragColor = vec4(mix(col, uFog, fog * 0.5), 1.0);
   }
@@ -94,8 +95,15 @@ interface Tower {
   top: number;
 }
 
-/** The city's towers as parts: each part a primitive, positioned. */
-function buildCity(road: RoadLayout, rand: () => number) {
+/** Stretches of road where nothing tall may stand close: the arches,
+ *  corridors and tubes, which need the space round the road. */
+type Keep = { from: number; to: number }[];
+
+/** The city's towers as parts: each part a primitive, positioned. Two
+ *  rows - a near row lining the road, and a far row of taller spires and
+ *  giants along the edges of the land - thickening into a real city
+ *  through Y, where the road heads into the skyline. */
+function buildCity(road: RoadLayout, rand: () => number, dense: { from: number; to: number } | undefined, keep: Keep) {
   const parts: Record<Kind, THREE.Matrix4[]> = { box: [], cyl: [], cyl6: [], cone4: [], cone8: [] };
   const towers: Tower[] = [];
   const p = new THREE.Vector3();
@@ -104,75 +112,99 @@ function buildCity(road: RoadLayout, rand: () => number) {
   const anchor = new THREE.Object3D();
   const local = new THREE.Object3D();
   const m = new THREE.Matrix4();
-  for (const st of openStretches(road)) {
-    for (let s = st.from; s < st.to; s += 55 + rand() * 30) {
-      const sd = rand() < 0.5 ? -1 : 1;
-      const d = sd * (ROAD_HALF + 18 + rand() * 55);
-      pointAt(road, s, p);
-      sideAt(road, s, side);
-      pointAt(road, s + 2, ahead);
-      anchor.position.set(p.x + side.x * d, p.y - 30, p.z + side.z * d);
-      anchor.lookAt(ahead.x + side.x * d, anchor.position.y, ahead.z + side.z * d);
-      anchor.rotateY((rand() - 0.5) * 0.8);
-      anchor.updateMatrix();
-      const w = 6 + rand() * 8;
-      const h = 70 + rand() * 110;
-      /** A part at (x, y, z) in the tower's own frame, sized sx*sy*sz. */
-      const put = (k: Kind, x: number, y: number, z: number, sx: number, sy: number, sz: number, ry = 0) => {
-        local.position.set(x, y, z);
-        local.rotation.set(0, ry, 0);
-        local.scale.set(sx, sy, sz);
-        local.updateMatrix();
-        parts[k].push(m.multiplyMatrices(anchor.matrix, local.matrix).clone());
-      };
-      const type = Math.floor(rand() * 6);
-      let top = h;
-      if (type === 0) {
-        // Stepped skyscraper with a spire.
-        put("box", 0, h * 0.275, 0, w, h * 0.55, w * 0.8);
-        put("box", 0, h * 0.625, 0, w * 0.72, h * 0.15 + h * 0.0, w * 0.6);
-        put("box", 0, h * 0.775, 0, w * 0.48, h * 0.15, w * 0.4);
-        put("cyl", 0, h * 0.95, 0, 0.6, h * 0.2, 0.6);
-        top = h * 1.05;
-      } else if (type === 1) {
-        // Needle: a shaft, a disc near the top, a spire.
-        put("cyl6", 0, h * 0.4, 0, w * 0.45, h * 0.8, w * 0.45);
-        put("cyl", 0, h * 0.8, 0, w * 2, 3, w * 2);
-        put("cyl", 0, h * 0.84, 0, w * 1.4, 2.5, w * 1.4);
-        put("cone8", 0, h * 0.98, 0, w * 0.35, h * 0.3, w * 0.35);
-        top = h * 1.13;
-      } else if (type === 2) {
-        // Obelisk.
-        put("cone4", 0, h * 0.55, 0, w * 1.3, h * 1.1, w * 1.3, Math.PI / 4);
-        top = h * 1.1;
-      } else if (type === 3) {
-        // Twin towers and a skybridge.
-        put("box", -w * 0.65, h * 0.5, 0, w * 0.55, h, w * 0.55);
-        put("box", w * 0.65, h * 0.45, 0, w * 0.55, h * 0.9, w * 0.55);
-        put("box", 0, h * 0.7, 0, w * 1.9, 2.4, 2.2);
-        put("box", 0, h * 0.5, 0, w * 1.9, 1.6, 1.6);
-        put("cone4", -w * 0.65, h * 1.05, 0, w * 0.55, h * 0.1, w * 0.55, Math.PI / 4);
-      } else if (type === 4) {
-        // Stacked cantilevers.
-        put("box", 0, h * 0.35, 0, w, h * 0.7, w);
-        put("box", w * 0.45, h * 0.76, 0, w * 1.9, h * 0.12, w * 1.2);
-        put("box", -w * 0.2, h * 0.9, 0, w * 0.9, h * 0.16, w * 0.9, 0.5);
-        top = h * 0.98;
-      } else {
-        // Ringed cylinder with a cone.
-        put("cyl", 0, h * 0.45, 0, w, h * 0.9, w);
-        for (const k of [0.35, 0.6, 0.82]) put("cyl", 0, h * k, 0, w * 1.45, 1.4, w * 1.45);
-        put("cone8", 0, h * 1.0, 0, w, h * 0.2, w);
-        top = h * 1.1;
-      }
-      towers.push({ s, d, top: top - 30 });
+  const inCity = (s: number) => (dense ? THREE.MathUtils.smoothstep(s, dense.from - 60, dense.from + 120) : 0);
+  const kept = (s: number, d: number) => Math.abs(d) < 44 && keep.some((k) => s > k.from - 20 && s < k.to + 20);
+
+  const tower = (s: number, d: number, w: number, h: number, type: number) => {
+    pointAt(road, s, p);
+    sideAt(road, s, side);
+    pointAt(road, s + 2, ahead);
+    anchor.position.set(p.x + side.x * d, p.y - 30, p.z + side.z * d);
+    anchor.lookAt(ahead.x + side.x * d, anchor.position.y, ahead.z + side.z * d);
+    anchor.rotateY((rand() - 0.5) * 0.8);
+    anchor.updateMatrix();
+    const put = (k: Kind, x: number, y: number, z: number, sx: number, sy: number, sz: number, ry = 0) => {
+      local.position.set(x, y, z);
+      local.rotation.set(0, ry, 0);
+      local.scale.set(sx, sy, sz);
+      local.updateMatrix();
+      parts[k].push(m.multiplyMatrices(anchor.matrix, local.matrix).clone());
+    };
+    let top = h;
+    if (type === 0) {
+      // Stepped skyscraper with a spire.
+      put("box", 0, h * 0.275, 0, w, h * 0.55, w * 0.8);
+      put("box", 0, h * 0.625, 0, w * 0.72, h * 0.15, w * 0.6);
+      put("box", 0, h * 0.775, 0, w * 0.48, h * 0.15, w * 0.4);
+      put("cyl", 0, h * 0.95, 0, 0.6, h * 0.2, 0.6);
+      top = h * 1.05;
+    } else if (type === 1) {
+      // Needle: a shaft, a disc near the top, a spire.
+      put("cyl6", 0, h * 0.4, 0, w * 0.45, h * 0.8, w * 0.45);
+      put("cyl", 0, h * 0.8, 0, w * 2, 3, w * 2);
+      put("cyl", 0, h * 0.84, 0, w * 1.4, 2.5, w * 1.4);
+      put("cone8", 0, h * 0.98, 0, w * 0.35, h * 0.3, w * 0.35);
+      top = h * 1.13;
+    } else if (type === 2) {
+      // Obelisk.
+      put("cone4", 0, h * 0.55, 0, w * 1.3, h * 1.1, w * 1.3, Math.PI / 4);
+      top = h * 1.1;
+    } else if (type === 3) {
+      // Twin towers and a skybridge.
+      put("box", -w * 0.65, h * 0.5, 0, w * 0.55, h, w * 0.55);
+      put("box", w * 0.65, h * 0.45, 0, w * 0.55, h * 0.9, w * 0.55);
+      put("box", 0, h * 0.7, 0, w * 1.9, 2.4, 2.2);
+      put("box", 0, h * 0.5, 0, w * 1.9, 1.6, 1.6);
+      put("cone4", -w * 0.65, h * 1.05, 0, w * 0.55, h * 0.1, w * 0.55, Math.PI / 4);
+    } else if (type === 4) {
+      // Stacked cantilevers.
+      put("box", 0, h * 0.35, 0, w, h * 0.7, w);
+      put("box", w * 0.45, h * 0.76, 0, w * 1.9, h * 0.12, w * 1.2);
+      put("box", -w * 0.2, h * 0.9, 0, w * 0.9, h * 0.16, w * 0.9, 0.5);
+      top = h * 0.98;
+    } else if (type === 5) {
+      // Ringed cylinder with a cone.
+      put("cyl", 0, h * 0.45, 0, w, h * 0.9, w);
+      for (const k of [0.35, 0.6, 0.82]) put("cyl", 0, h * k, 0, w * 1.45, 1.4, w * 1.45);
+      put("cone8", 0, h * 1.0, 0, w, h * 0.2, w);
+      top = h * 1.1;
+    } else {
+      // Spire: a slim hexagonal base rising into a long needle.
+      put("cyl6", 0, h * 0.2, 0, w * 0.8, h * 0.4, w * 0.8);
+      put("cone8", 0, h * 0.7, 0, w * 0.7, h * 0.6, w * 0.7);
+      top = h;
     }
+    towers.push({ s, d, top: top - 30 });
+  };
+
+  const end = road.finish;
+  // THE NEAR ROW, lining the road.
+  for (let s = 60; s < end; ) {
+    const c = inCity(s);
+    for (const sd of c > 0.3 ? [-1, 1] : [rand() < 0.5 ? -1 : 1]) {
+      const d = sd * (ROAD_HALF + 20 + rand() * (c > 0.3 ? 30 : 45));
+      if (kept(s, d)) continue;
+      tower(s, d, 6 + rand() * 9, (70 + rand() * 110) * (1 + c * 0.4), Math.floor(rand() * 7));
+    }
+    s += THREE.MathUtils.lerp(28 + rand() * 24, 9 + rand() * 8, c);
+  }
+  // THE FAR ROW, along the edges of the land: taller, bigger, mostly
+  // spires, needles and obelisks - the skyline you're always heading for.
+  for (let s = 40; s < end; ) {
+    const c = inCity(s);
+    for (const sd of [-1, 1]) {
+      if (rand() < 0.35 - c * 0.3) continue;
+      const d = sd * (80 + rand() * 75);
+      const type = [1, 2, 6, 6, 5, 0, 3][Math.floor(rand() * 7)];
+      tower(s, d, 10 + rand() * 14, 150 + rand() * 190, type);
+    }
+    s += THREE.MathUtils.lerp(40 + rand() * 35, 14 + rand() * 10, c);
   }
   return { parts, towers };
 }
 
-function City({ road }: { road: RoadLayout }) {
-  const { parts, towers } = useMemo(() => buildCity(road, seeded(97)), [road]);
+function City({ road, dense, keep }: { road: RoadLayout; dense?: { from: number; to: number }; keep: Keep }) {
+  const { parts, towers } = useMemo(() => buildCity(road, seeded(97), dense, keep), [road, dense, keep]);
   const material = useMemo(
     () =>
       new THREE.ShaderMaterial({
@@ -233,34 +265,118 @@ function useInstanced(count: number, geo: THREE.BufferGeometry, mat: THREE.Mater
   return mesh;
 }
 
-function Gates({ road, colourAt, arches }: { road: RoadLayout; colourAt: ColourAt; arches: { s: number; ring: boolean }[] }) {
-  const squares = arches.filter((a) => !a.ring);
-  const circles = arches.filter((a) => a.ring);
-  const archDark = useInstanced(
-    squares.length * 3,
+/** The shape of an arched opening: straight sides and a round top. */
+function archPath<T extends THREE.Path>(path: T, halfW: number, rise: number, base: number): T {
+  path.moveTo(-halfW, base);
+  path.lineTo(-halfW, rise);
+  path.absarc(0, rise, halfW, Math.PI, 0, true);
+  path.lineTo(halfW, base);
+  path.lineTo(-halfW, base);
+  return path;
+}
+
+/** GREAT ARCHES: monumental walls of dark glass standing across the
+ *  road, a rounded opening through them outlined in light. Big enough
+ *  that as you come close the arch fills the view and hides everything
+ *  else - and then you're through and the land opens up again. */
+function Arches({ road, colourAt, at }: { road: RoadLayout; colourAt: ColourAt; at: number[] }) {
+  const OPEN = ROAD_HALF + 3.2; // half the opening's width
+  const RISE = 13; // where the round top begins
+  const DEPTH = 9;
+  const { wall, trim } = useMemo(() => {
+    const outer = new THREE.Shape();
+    const W = 42;
+    const H = 58;
+    outer.moveTo(-W, -8);
+    outer.lineTo(W, -8);
+    outer.lineTo(W, H - 10);
+    // A rounded crown on the wall itself, not a flat top.
+    outer.absarc(0, H - 10, W, 0, Math.PI, false);
+    outer.lineTo(-W, -8);
+    outer.holes.push(archPath(new THREE.Path(), OPEN, RISE, -8));
+    const wall = new THREE.ExtrudeGeometry(outer, { depth: DEPTH, bevelEnabled: false, curveSegments: 40 });
+    wall.translate(0, 0, -DEPTH / 2);
+    // The light round the opening: a band just inside it, a little
+    // deeper than the wall so it shows from both faces.
+    const band = archPath(new THREE.Shape(), OPEN + 0.6, RISE, -0.2);
+    band.holes.push(archPath(new THREE.Path(), OPEN, RISE, -0.2));
+    const trim = new THREE.ExtrudeGeometry(band, { depth: DEPTH + 0.4, bevelEnabled: false, curveSegments: 40 });
+    trim.translate(0, 0, -(DEPTH + 0.4) / 2);
+    return { wall, trim };
+  }, [OPEN]);
+  const glass = useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        vertexShader: GLASS_VERT,
+        fragmentShader: GLASS_FRAG,
+        side: THREE.DoubleSide,
+        uniforms: { uFog: { value: new THREE.Color("#060b1c") }, uFogD: { value: 0.0024 } },
+      }),
+    [],
+  );
+  const lit = useMemo(() => new THREE.MeshBasicMaterial({ toneMapped: false }), []);
+  const walls = useInstanced(at.length, wall, glass);
+  const trims = useInstanced(at.length, trim, lit);
+  useEffect(() => {
+    const p = new THREE.Vector3();
+    const ahead = new THREE.Vector3();
+    const o = new THREE.Object3D();
+    const c = new THREE.Color();
+    at.forEach((s, i) => {
+      pointAt(road, s, p);
+      pointAt(road, s + 2, ahead);
+      o.position.copy(p);
+      o.lookAt(ahead.x, p.y, ahead.z);
+      o.updateMatrix();
+      walls.setMatrixAt(i, o.matrix);
+      trims.setMatrixAt(i, o.matrix);
+      trims.setColorAt(i, c.copy(colourAt(s)).multiplyScalar(1.6));
+    });
+    for (const m of [walls, trims]) {
+      m.instanceMatrix.needsUpdate = true;
+      if (m.instanceColor) m.instanceColor.needsUpdate = true;
+    }
+  }, [road, colourAt, at, walls, trims]);
+  return (
+    <group>
+      <primitive object={walls} />
+      <primitive object={trims} />
+    </group>
+  );
+}
+
+/** CORRIDORS: two long rows of glass pillars either side of the road,
+ *  open to the sky, each lit down its face and capped with a lamp - at
+ *  speed they strobe past on both sides. */
+function Corridors({ road, colourAt, runs }: { road: RoadLayout; colourAt: ColourAt; runs: { from: number; to: number }[] }) {
+  const EVERY = 4.5;
+  const count = runs.reduce((n, r) => n + (Math.floor((r.to - r.from) / EVERY) + 1) * 2, 0);
+  const pillars = useInstanced(
+    count,
     useMemo(() => new THREE.BoxGeometry(1, 1, 1), []),
     useMemo(
       () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color("#060b1c") }, uFogD: { value: 0.0024 } } }),
       [],
     ),
   );
-  const archLight = useInstanced(
-    squares.length * 3,
+  const strips = useInstanced(
+    count,
     useMemo(() => new THREE.BoxGeometry(1, 1, 1), []),
     useMemo(() => new THREE.MeshBasicMaterial({ toneMapped: false }), []),
   );
-  const rings = useInstanced(
-    circles.length * 2,
-    useMemo(() => new THREE.TorusGeometry(1, 0.035, 8, 64), []),
+  const lamps = useInstanced(
+    count,
+    useMemo(() => new THREE.SphereGeometry(1, 10, 8), []),
     useMemo(() => new THREE.MeshBasicMaterial({ toneMapped: false }), []),
   );
-
   useEffect(() => {
     const p = new THREE.Vector3();
     const side = new THREE.Vector3();
     const ahead = new THREE.Vector3();
     const o = new THREE.Object3D();
     const c = new THREE.Color();
+    const white = new THREE.Color("#ffffff");
+    let i = 0;
     const at = (s: number, d: number, y: number) => {
       pointAt(road, s, p);
       sideAt(road, s, side);
@@ -270,56 +386,40 @@ function Gates({ road, colourAt, arches }: { road: RoadLayout; colourAt: ColourA
       o.scale.set(1, 1, 1);
       o.lookAt(ahead.x + side.x * d, o.position.y, ahead.z + side.z * d);
     };
-    const put = (m: THREE.InstancedMesh, i: number, colour?: THREE.Color) => {
-      o.updateMatrix();
-      m.setMatrixAt(i, o.matrix);
-      if (colour) m.setColorAt(i, colour);
-    };
-    let r = 0;
-    circles.forEach((ar) => {
-      c.copy(colourAt(ar.s)).multiplyScalar(1.5);
-      for (const [k, radius] of [
-        [0, 15],
-        [1, 12.5],
-      ] as const) {
-        at(ar.s + k * 3, 0, radius - 3);
-        o.scale.set(radius, radius, radius * 3);
-        put(rings, r++, k === 0 ? c : c.clone().multiplyScalar(0.75));
+    for (const r of runs) {
+      for (let s = r.from; s <= r.to; s += EVERY) {
+        c.copy(colourAt(s)).multiplyScalar(1.5);
+        for (const d of [-(ROAD_HALF + 3), ROAD_HALF + 3]) {
+          const H = 8;
+          at(s, d, H / 2 - 0.6);
+          o.scale.set(1.3, H, 1.3);
+          o.updateMatrix();
+          pillars.setMatrixAt(i, o.matrix);
+          // The lit face, turned to the road.
+          at(s, d - Math.sign(d) * 0.7, H / 2 - 0.6);
+          o.scale.set(0.12, H - 1.5, 0.5);
+          o.updateMatrix();
+          strips.setMatrixAt(i, o.matrix);
+          strips.setColorAt(i, c);
+          at(s, d, H + 0.1);
+          o.scale.setScalar(0.45);
+          o.updateMatrix();
+          lamps.setMatrixAt(i, o.matrix);
+          lamps.setColorAt(i, c.clone().lerp(white, 0.5).multiplyScalar(1.3));
+          i++;
+        }
       }
-    });
-    let a = 0;
-    squares.forEach((ar) => {
-      c.copy(colourAt(ar.s)).multiplyScalar(1.5);
-      const W = ROAD_HALF + 5;
-      const H = 20;
-      for (const d of [-W, W]) {
-        at(ar.s, d, H / 2 - 4);
-        o.scale.set(3, H + 8, 3);
-        put(archDark, a);
-        at(ar.s, d - Math.sign(d) * 1.55, H / 2 - 4);
-        o.scale.set(0.25, H + 8, 3.1);
-        put(archLight, a, c);
-        a++;
-      }
-      at(ar.s, 0, H + 1.5);
-      o.scale.set(W * 2 + 3, 3, 3);
-      put(archDark, a);
-      at(ar.s, 0, H - 0.05);
-      o.scale.set(W * 2, 0.25, 3.1);
-      put(archLight, a, c);
-      a++;
-    });
-    for (const m of [archDark, archLight, rings]) {
+    }
+    for (const m of [pillars, strips, lamps]) {
       m.instanceMatrix.needsUpdate = true;
       if (m.instanceColor) m.instanceColor.needsUpdate = true;
     }
-  }, [road, colourAt, circles, squares, archDark, archLight, rings]);
-
+  }, [road, colourAt, runs, pillars, strips, lamps]);
   return (
     <group>
-      <primitive object={archDark} />
-      <primitive object={archLight} />
-      <primitive object={rings} />
+      <primitive object={pillars} />
+      <primitive object={strips} />
+      <primitive object={lamps} />
     </group>
   );
 }
@@ -348,17 +448,21 @@ const TUBE_FRAG = /* glsl */ `
   void main() {
     float along = vUv.x * uLen;
     float around = vUv.y;
-    float ringD = (fract(along / 7.0) - 0.5) * 7.0;
-    float ring = exp(-ringD * ringD * 6.0);
-    float stripD = (fract(around * 8.0) - 0.5) / 8.0 * 50.0;
-    float strip = exp(-stripD * stripD * 8.0) * 0.55;
+    // A ring of light now and then - sparse.
+    float ringD = (fract(along / 21.0) - 0.5) * 21.0;
+    float ring = exp(-ringD * ringD * 3.0);
+    // LAMPS in rows round the walls, like the lights along the road -
+    // at speed they strobe past.
+    vec2 q = vec2(along / 4.5, around * 12.0);
+    vec2 fq = fract(q) - 0.5;
+    float lamp = exp(-(fq.x * fq.x * 70.0 + fq.y * fq.y * 160.0));
+    // And a few stars in the glass.
     vec2 cell = floor(vec2(along * 1.2, around * 90.0));
     float h = fract(sin(dot(cell, vec2(12.9898, 78.233))) * 43758.5453);
     vec2 f = fract(vec2(along * 1.2, around * 90.0)) - 0.5;
-    float star = step(0.93, h) * exp(-dot(f, f) * 30.0) * (0.5 + 0.5 * sin(uTime * (1.0 + h * 3.0) + h * 50.0));
+    float star = step(0.95, h) * exp(-dot(f, f) * 30.0) * (0.5 + 0.5 * sin(uTime * (1.0 + h * 3.0) + h * 50.0));
     vec3 base = vec3(0.015, 0.025, 0.06);
-    vec3 col = base + uColor * (ring * 1.4 + strip) + vec3(0.8, 0.85, 1.0) * star * 0.9;
-    // Ends fade in, so the mouth is a glow rather than a hard edge.
+    vec3 col = base + uColor * (ring * 1.3 + lamp * 1.8) + vec3(0.8, 0.85, 1.0) * star * 0.8;
     float ends = smoothstep(0.0, 6.0, along) * smoothstep(uLen, uLen - 6.0, along);
     gl_FragColor = vec4(col * (0.35 + 0.65 * ends), 1.0);
   }
@@ -482,24 +586,37 @@ function Searchlights({ road, towers }: { road: RoadLayout; towers: Tower[] }) {
 
 // ------------------------------------------------------------------- all
 
-export function Megastructures({ road, colourAt }: { road: RoadLayout; colourAt: ColourAt }) {
+export function Megastructures({
+  road,
+  colourAt,
+  dense,
+}: {
+  road: RoadLayout;
+  colourAt: ColourAt;
+  /** Where the city is thickest: Y, heading into the skyline. */
+  dense?: { from: number; to: number };
+}) {
   const plan = useMemo(() => {
-    const arches: { s: number; ring: boolean }[] = [];
+    const arches: number[] = [];
+    const corridors: { from: number; to: number }[] = [];
     const tunnels: { from: number; to: number }[] = [];
     openStretches(road).forEach((st, i) => {
       const mid = (st.from + st.to) / 2;
-      // Every third stretch a tube, the others an arch or a ring gate.
-      if (i % 3 === 2 && st.to - st.from > 100) {
-        const half = Math.min(70, (st.to - st.from) / 2 - 5);
-        tunnels.push({ from: mid - half, to: mid + half });
-      } else arches.push({ s: mid, ring: i % 3 === 1 });
+      const half = Math.min(60, (st.to - st.from) / 2 - 5);
+      // In turn: a great arch, a corridor of lights, a tube.
+      if (i % 3 === 0) arches.push(mid);
+      else if (i % 3 === 1) corridors.push({ from: mid - half, to: mid + half });
+      else tunnels.push({ from: mid - half, to: mid + half });
     });
-    return { arches, tunnels };
+    const keep = [...arches.map((s) => ({ from: s - 12, to: s + 12 })), ...corridors, ...tunnels];
+    return { arches, corridors, tunnels, keep };
   }, [road]);
+  const denseSpan = useMemo(() => (dense ? { from: dense.from, to: dense.to } : undefined), [dense]);
   return (
     <group>
-      <City road={road} />
-      <Gates road={road} colourAt={colourAt} arches={plan.arches} />
+      <City road={road} dense={denseSpan} keep={plan.keep} />
+      <Arches road={road} colourAt={colourAt} at={plan.arches} />
+      <Corridors road={road} colourAt={colourAt} runs={plan.corridors} />
       <Tubes road={road} colourAt={colourAt} tunnels={plan.tunnels} />
     </group>
   );
