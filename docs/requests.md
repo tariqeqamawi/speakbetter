@@ -208,6 +208,7 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **26 September**
+- Landing: short opening, testimonials after Coach with no repeats, three Join buttons, road shown once, 83 skill lessons, collage before pricing — `22d3950`
 - Landing: How it works merged into Inside the app (quick guide removed); practise-don't-watch cut to concert line + comparison — `a2f5c88`
 - Landing: nine numbered chapters, right-edge section navigator (phone: Sections button), Read more on long copy and quotes — `f3f1aae`
 - Origin story moved to /about, "About" in the landing header — `62a91b7`
