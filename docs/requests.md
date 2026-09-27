@@ -400,3 +400,4 @@ what.
 - Checkout page /checkout?plan= (tier switch, everything included, dates, email, the agreement, secure payment button, guarantee); consent no longer asked on website pages; realistic book photo on the oak desk (book page, shelf, VIP tile); deck heading 'Your whole speaking toolkit, in seven colors' — `9b053cf`
 - Road: monumental rounded arches that fill the view, corridors of lit pillars, tubes with sparse rings and strobing lamps, near + far rows of towers (spires/giants at the edges), densest through Y, deeper rollercoaster dips, ring arcs split evenly with gaps — `cca629b`
 - Road: giant speaking landmarks among the towers (stage mics, podcast mics, headphones, speaker stacks) pulsing in section colour; out of a tube onto a stage with truss and spotlights, then past raked auditorium seating lit along each row — `6ab7401`
+- Road: spotlight runs - lighting gantries over the road, beams swaying down into pools of light you drive through — `2eaf0c5`
