@@ -406,3 +406,4 @@ what.
 - Coach costs in /admin (new tab) and the data room's Unit economics: per-review cost, worst case per tier, pack margins, the cohort's bill — `885eec7`
 - Thank-you page: personal access link (email to myself, copy, bookmark) -> /access/<session> verifies with Stripe, unlocks any device, offers saved progress; 'What's included'; included-reviews and top-up note (thank-you, checkout, FAQ); packs now $5/20, $10/45, $20/100 — `b9a0423`
 - Link preview card (1200x630) for shared links to speakbetter.app — `a882adc`
+- Road: great banked sweeps at each colour change (avatar rides up the high side), flat auditorium at ground level with curved rows, white glow on the giant mics/headphones/speakers, spotlights halved, sparks stream down the screen, ring preview automatic on speakbetterlive.vercel.app — `d1a614f`
