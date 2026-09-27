@@ -19,6 +19,7 @@ import { SpectrumDemo } from "@/components/spectrum-demo";
 import { SelfieTake } from "@/components/selfie-take";
 import { SELFIE_TAKES } from "@/data/selfie-takes";
 import { HeroBeat } from "@/components/hero-beat";
+import { TheReality } from "@/components/the-reality";
 import { JoinCta } from "@/components/join-cta";
 import { LazyVimeoPlayer } from "@/components/lazy-vimeo-player";
 import { foundingCohort } from "@/data/pricing";
@@ -31,8 +32,7 @@ import { delay } from "@/lib/reveal-delay";
 import { LionPitch } from "@/components/lion-pitch";
 import { LANDING_PITCH, LANDING_PITCH_AUDIO, HEADLINE_AUDIO } from "@/data/welcome-speech";
 import { SpeakLine } from "@/components/speak-line";
-import { splitForPage } from "@/data/testimonials";
-import { WhatItIs } from "@/components/what-it-is";
+import { proofOf, splitForPage, type Proof } from "@/data/testimonials";
 import { LionArtWhenNear, LionMouth } from "@/components/lion-mouth";
 import { FirstChallenge } from "@/components/first-challenge";
 import { CoachDemo } from "@/components/coach-demo";
@@ -49,7 +49,10 @@ import { ReadMore } from "@/components/read-more";
 // split by a rule that keeps a person who is quoted twice out of the
 // same column twice. The flagged ones join them the moment their names
 // are checked; see data/testimonials.ts for both.
-const [earlyProof, lateProof] = splitForPage();
+// The single quotes between sections are taken out first, so every
+// quote on the page appears exactly once.
+const PROOF_LINES: Proof[] = ["teacher", "lessons", "storytelling", "results"];
+const [earlyProof, lateProof] = splitForPage(PROOF_LINES.map((tag) => proofOf(tag)[0]).filter(Boolean));
 
 export function Landing() {
   // Every lion on this page is a few screens down, so none of them
@@ -113,8 +116,7 @@ function LandingBody() {
             Master public speaking in minutes a day, not months, and step into your true power on any platform.
           </p>
           <p className="text-lg text-ink text-balance sm:text-xl">
-            Join a small private cohort for 6 weeks - the full Speak Better experience, at a special founding price, in
-            return for your feedback on the app and a testimonial.
+            20 founding spots - a special price, in return for your feedback.
           </p>
         </div>
         <div className="w-full">
@@ -163,30 +165,12 @@ function LandingBody() {
           </Reveal>
         </div>
 
-        {/* The premise and its punchline, each with its picture: the
-            concert you watch from your seat, the lecture that ticks by. */}
-        <HeroBeat />
 
-        {/* Other people, early.
-            
-            The single most sceptical moment on this page is right
-            after the promise - an AI lion that watches your videos is
-            a claim, and a claim is the point at which somebody wants
-            to know whether anyone else believed it. Half the
-            testimonials go here; the other half sit above the price,
-            where the decision is actually made. Split rather than
-            repeated: the same quote twice reads as the only quote. */}
-        <TestimonialStream items={earlyProof} columns={2} />
-
-
-        {/* What it is, and what is in it. The second paragraph here used
-            to say "master public speaking, overcome fear and shyness in
-            minutes rather than months" for the third time on one screen;
-            by then the reader has either believed it or stopped
-            reading, and repeating it spends trust rather than building
-            it. What they have not been told yet is HOW - so that is
-            what this says now. */}
-        <WhatItIs />
+        {/* The opening is only the promise, the video, the dates and
+            what you do - then the door. The testimonials sit after Coach
+            has been shown (proof after the claim), the concert line opens
+            "Why it's different", and what's in the box moved to "Inside
+            the app". */}
         <JoinCta label="Join Speak Better Now" seal />
       </section>
 
@@ -230,9 +214,19 @@ function LandingBody() {
         <JoinCta label="Start My Speaking Journey" price />
       </section>
 
+      {/* Other people, once Coach has been seen working: the moment a
+          reader wants to know whether anyone else believed it. Half the
+          quotes here, the other half above the prices - never the same
+          one twice. */}
+      <TestimonialStream items={earlyProof} columns={2} />
+
       <ProofLine tag="teacher" />
 
       <SectionMark id="different" />
+
+      {/* The premise and its punchline, each with its picture: the
+          concert you watch from your seat, the lecture that ticks by. */}
+      <HeroBeat />
 
       {/* The method, as a side-by-side: every other course vs this one.
           The left card is deliberately drained of color - the palette
@@ -314,7 +308,7 @@ function LandingBody() {
             <ul className="flex flex-col gap-3 text-sm text-ink">
               <li className="flex items-start gap-3">
                 <CheckIcon className="mt-0.5 size-4 shrink-0 text-storytelling" />
-                80+ lessons of one to two minutes each
+                83 skill lessons of one to two minutes each
               </li>
               <li className="flex items-start gap-3">
                 <CheckIcon className="mt-0.5 size-4 shrink-0 text-structure" />
@@ -392,14 +386,13 @@ function LandingBody() {
       {/* The library, in full */}
       <section className="flex flex-col items-center gap-4">
         <h2 className="text-2xl font-semibold tracking-tight">
-          Preview all 83 skill videos
+          Preview all 83 skill lessons
         </h2>
         <p className="max-w-lg text-center text-ink-muted">
           Nothing hidden behind the checkout - here is the whole library,
           color by color, exactly as you&apos;ll find it inside.
         </p>
         <LessonGallery />
-        <JoinCta label="I'm Ready" price />
       </section>
 
       <ProofLine tag="storytelling" />
@@ -414,6 +407,8 @@ function LandingBody() {
           24 challenges across 5 levels, experienced as an adventure. Unlock trophies, see which challenges
           other students are on, and complete them together.
         </p>
+        {/* The road, live, with its own 2D/3D switch - the one place on
+            the page it's shown. */}
         <div className="w-full max-w-2xl">
           <StoryPreview />
         </div>
@@ -497,6 +492,10 @@ function LandingBody() {
           </p>
         </div>
       </Reveal>
+
+      {/* The collage - the reality waiting on the other side - as the
+          last thing read before the door and the prices. */}
+      <TheReality />
 
       <JoinCta label="Sign Me Up" seal sealSize={176} />
 

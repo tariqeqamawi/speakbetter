@@ -331,10 +331,12 @@ export const publishable = testimonials.filter((t) => t.quote && (t.initials || 
  * instead: a person's first quote goes in one half, their second in
  * the other, and everything else fills up evenly around them.
  */
-export function splitForPage(): [Testimonial[], Testimonial[]] {
+export function splitForPage(exclude: Testimonial[] = []): [Testimonial[], Testimonial[]] {
   const halves: [Testimonial[], Testimonial[]] = [[], []];
   const seen = new Map<string, number>();
-  for (const t of publishable) {
+  // Quotes already standing on their own elsewhere on the page (the
+  // proof lines) stay out of the walls, so no quote is read twice.
+  for (const t of publishable.filter((t) => !exclude.includes(t))) {
     const who = credit(t);
     const before = seen.get(who);
     // Somebody already quoted goes in the half they are not in.

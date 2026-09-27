@@ -1,8 +1,8 @@
 import { PhoneFilm } from "@/components/phone-film";
 import { HowItWorks } from "@/components/how-it-works";
+import { WhatItIs } from "@/components/what-it-is";
 import { WhatsInside } from "@/components/whats-inside";
 import { ListenIcon, TrophyIcon } from "@/components/icons";
-import { ReadMore } from "@/components/read-more";
 
 // The app, shown rather than described (master plan §15): a lesson as
 // it plays inside, with the words and symbols that land on the sentence
@@ -46,6 +46,11 @@ export function LandingShowcase() {
         </ul>
       </section>
 
+      {/* The numbers - what's in the box. */}
+      <div className="flex justify-center">
+        <WhatItIs />
+      </div>
+
       {/* The standalone lesson player is gone.
           
           "A lesson, exactly as you'll see it" sat between the coach
@@ -59,21 +64,12 @@ export function LandingShowcase() {
       {/* A preview of the app - short films of the real pages */}
       <section className="flex flex-col items-center gap-4">
         <h2 className="text-2xl font-semibold tracking-tight">See the app in action</h2>
-        <ReadMore lines={2} className="max-w-lg text-center text-ink-muted" buttonClassName="self-center">
-          Your interactive challenges in the S.T.O.R.Y. framework - travelled as a 3D adventure, or taken as a
-          map in 2D; color-coded skills that you can dial into
-          and watch; and your gamified dashboard - trophies, streak, speaking spectrum, leaderboards and the
-          community, all in one place.
-        </ReadMore>
+        <p className="max-w-lg text-center text-ink-muted">
+          Color-coded skills you can dial into and watch, and your gamified dashboard - trophies, streak, speaking
+          spectrum, leaderboards and the community, all in one place.
+        </p>
         <div className="-mx-4 flex w-[calc(100%+2rem)] gap-6 overflow-x-auto px-4 pb-2 sm:mx-0 sm:w-full sm:justify-center sm:overflow-visible sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {/* The challenges both ways a student can take them: travelling
-              the S.T.O.R.Y. road in 3D, or scrolling it as a map. */}
-          <Phone label="The challenges, in 3D">
-            <PhoneFilm src="/film/tour-road3d.mp4" poster="/film/tour-road3d.jpg" label="Travelling the S.T.O.R.Y. road in 3D" />
-          </Phone>
-          <Phone label="Or as a map, in 2D">
-            <PhoneFilm src="/film/tour-road2d.mp4" poster="/film/tour-road2d.jpg" label="The same road as a map, scrolled" />
-          </Phone>
+          {/* The road (3D and 2D) is shown once, in "The challenges". */}
           <Phone label="Skills, into a color">
             <PhoneFilm src="/film/tour-skills.mp4" poster="/film/tour-skills.jpg" label="The skills dial, then a color's lessons" />
           </Phone>

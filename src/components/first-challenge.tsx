@@ -189,10 +189,6 @@ export function FirstChallenge() {
             <p className="text-sm text-ink-muted text-balance">
               Coach reviews this one the day you join - your baseline, and the first mark on the road.
             </p>
-            <a href="#pricing" className="cta-neon-wrap rounded-xl">
-              <span className="cta-neon-glow rounded-xl" aria-hidden />
-              <span className="cta-neon block rounded-xl px-7 py-3.5 text-sm">Start with this challenge</span>
-            </a>
           </div>
         </div>
       </div>
