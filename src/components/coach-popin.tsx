@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { soundOn } from "@/lib/sound";
 
 import { LionMouth } from "@/components/lion-mouth";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -179,7 +180,8 @@ export function CoachPopIn() {
     if (url && audioRef.current === el) {
       el.pause();
       el.src = url;
-      el.muted = false;
+      // Silent with the app's sound off - the words are on the card.
+      el.muted = !soundOn();
       el.onended = () => {
         settle();
         URL.revokeObjectURL(url);
@@ -199,7 +201,7 @@ export function CoachPopIn() {
     if (audioRef.current !== el) return; // stopped while fetching
 
     // ... and the browser's own where it isn't available.
-    if (!("speechSynthesis" in window)) return settle();
+    if (!("speechSynthesis" in window) || !soundOn()) return settle();
     window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(message);
     utter.rate = 0.98;

@@ -7,6 +7,7 @@ import { TalkingLion, type Phrase } from "@/components/talking-lion";
 import { Caption } from "@/components/caption";
 import { ChevronDownIcon, XIcon } from "@/components/icons";
 import { hapticTap } from "@/lib/feedback-fx";
+import { toggleSound, useSound } from "@/lib/sound";
 import { stopAudio, type TourStop } from "@/data/tour-script";
 
 // One tour machine, two uses: the whole app (guided-tour.tsx) and a
@@ -57,16 +58,9 @@ export function TourRunner({
   const [step, setStep] = useState(0);
   const [box, setBox] = useState<DOMRect | null>(null);
   const [host, setHost] = useState<HTMLElement | null>(null);
-  const [muted, setMuted] = useState(() => {
-    // The student's own choice about sound, kept between tours. Read
-    // as the starting value rather than in an effect: it is where the
-    // switch begins, not a thing to keep in step with.
-    try {
-      return window.localStorage.getItem("speak-better-tour-muted") === "1";
-    } catch {
-      return false;
-    }
-  });
+  // The app's one sound switch (lib/sound.ts). Off, Coach still talks
+  // the tour through - silently, his captions running.
+  const muted = !useSound();
   const [blocked, setBlocked] = useState(false);
   // Wide enough that the card leaves the app visible around it.
   const [wide, setWide] = useState(() => {
@@ -88,14 +82,7 @@ export function TourRunner({
     return () => window.clearTimeout(t);
   }, []);
 
-  const toggleMute = () => {
-    setMuted((m) => {
-      try {
-        window.localStorage.setItem("speak-better-tour-muted", m ? "0" : "1");
-      } catch {}
-      return !m;
-    });
-  };
+  const toggleMute = toggleSound;
 
   const stop = stops[step];
   // Whether this stop is Coach introducing himself, rather than
@@ -303,10 +290,10 @@ export function TourRunner({
                   key={clip}
                   bare
                   controls={false}
-                  audioSrc={muted ? undefined : stopAudio(clip!)}
-                  text={muted ? undefined : line}
+                  audioSrc={stopAudio(clip!)}
+                  text={line}
                   onSay={say}
-                  autoPlay={!muted}
+                  autoPlay
                   onBlocked={() => setBlocked(true)}
                 />
               </span>
@@ -415,10 +402,10 @@ export function TourRunner({
               key={clip}
               bare
               controls={false}
-              audioSrc={muted ? undefined : stopAudio(clip!)}
-              text={muted ? undefined : line}
+              audioSrc={stopAudio(clip!)}
+              text={line}
               onSay={say}
-              autoPlay={!muted}
+              autoPlay
               onBlocked={() => setBlocked(true)}
             />
           </span>

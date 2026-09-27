@@ -10,6 +10,7 @@ import { CaptionLine } from "@/components/caption-line";
 import { cueIcons } from "./cue-icons";
 import { ZapIcon } from "@/components/icons";
 import { hapticTap, playXpChime } from "@/lib/feedback-fx";
+import { onSoundChange, soundOn } from "@/lib/sound";
 import {
   CaptionsIcon,
   ExitFullscreenIcon,
@@ -211,6 +212,16 @@ export function VimeoPlayer({
   // screen, and Vimeo's own captions are cropped away with it - so we
   // take the cues and draw them ourselves, one line at a time.
   const [caption, setCaption] = useState("");
+  // Captions on, if the video has them - for watching with the sound off.
+  const showCaptions = useRef(() => {});
+  useEffect(() => {
+    showCaptions.current = () => {
+      const p = playerRef.current;
+      if (!p || !captionLang || captionsOn) return;
+      p.enableTextTrack(captionLang).catch(() => {});
+      setCaptionsOn(true);
+    };
+  }, [captionLang, captionsOn]);
 
   // ── Floating key ideas ─────────────────────────────────────────────
   // A key phrase drifts through the margins around the teacher while the
@@ -338,6 +349,14 @@ export function VimeoPlayer({
     const onPlay = () => {
       setPlaying(true);
       setEnded(false);
+      // The app's sound is off (lib/sound.ts): play silently, captions
+      // on, and don't ask for sound.
+      if (!soundOn()) {
+        setSilenced(false);
+        player.setMuted(true).catch(() => {});
+        showCaptions.current();
+        return;
+      }
       // There's no mute control on this player, so a muted player is
       // never the student's doing: it's the browser refusing sound
       // to a start it didn't see a gesture for. Try once to turn it
@@ -399,7 +418,23 @@ export function VimeoPlayer({
     };
     player.on("cuechange", onCue);
 
+    // The switch flipped mid-video: follow it.
+    const offSound = onSoundChange((on) => {
+      if (on) {
+        player
+          .setMuted(false)
+          .then(() => player.setVolume(1))
+          .then(async () => setSilenced(await player.getMuted()))
+          .catch(() => {});
+      } else {
+        setSilenced(false);
+        player.setMuted(true).catch(() => {});
+        showCaptions.current();
+      }
+    });
+
     return () => {
+      offSound();
       player.off("play", onPlay);
       player.off("pause", onPause);
       player.off("ended", onEnd);

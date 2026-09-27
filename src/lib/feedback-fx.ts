@@ -1,4 +1,5 @@
 import { requestFloor } from "@/lib/voice-floor";
+import { onSoundChange, soundOn } from "@/lib/sound";
 // A speaking course that stays silent when you achieve something is
 // missing a beat. The chime is synthesised with the Web Audio API rather
 // than shipped as a file - no asset, no download, and it can be tuned in
@@ -8,13 +9,22 @@ let ctx: AudioContext | null = null;
 
 function audio(): AudioContext | null {
   if (typeof window === "undefined") return null;
+  // The app's sound switch (lib/sound.ts): off, nothing new starts.
+  if (!soundOn()) return null;
   if (!ctx) {
     const Ctor =
       window.AudioContext ||
       (window as unknown as { webkitAudioContext?: typeof AudioContext })
         .webkitAudioContext;
     if (!Ctor) return null;
-    ctx = new Ctor();
+    const made = new Ctor();
+    ctx = made;
+    // ...and whatever is already playing - a line of Coach's, the
+    // road's wind - falls silent the moment it's turned off, and picks
+    // up again when it's turned back on.
+    onSoundChange((on) => {
+      void (on ? made.resume() : made.suspend()).catch(() => {});
+    });
   }
   return ctx;
 }
@@ -276,7 +286,7 @@ function touched(): boolean {
   const ua = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation;
   // Every browser the app supports has userActivation; one that does
   // not gets no applause rather than a guess.
-  return !!ua?.hasBeenActive;
+  return !!ua?.hasBeenActive && soundOn();
 }
 
 /** Whether the page may make sound yet - it has been clicked, tapped or

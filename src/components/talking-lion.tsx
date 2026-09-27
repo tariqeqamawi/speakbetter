@@ -1,6 +1,7 @@
 "use client";
 
 import { LionMouth } from "@/components/lion-mouth";
+import { onSoundChange, soundOn } from "@/lib/sound";
 import { requestFloor } from "@/lib/voice-floor";
 import { CoachPill } from "@/components/coach-pill";
 import {
@@ -355,6 +356,54 @@ export const TalkingLion = forwardRef<
     [graph],
   );
 
+  /** Speaking without sound: the clip's length (or a reading pace, if
+   *  it won't say) drives the captions and a gentle flap of the mouth,
+   *  exactly as the voice would have. */
+  const silentRef = useRef(false);
+  const runSilent = useCallback(
+    async (el: HTMLAudioElement, done: () => void) => {
+      const len = await new Promise<number>((got) => {
+        const guess = Math.max(3, (text?.length ?? 60) * 0.068);
+        if (Number.isFinite(el.duration) && el.duration > 0) return got(el.duration);
+        const t = window.setTimeout(() => got(guess), 1500);
+        el.preload = "metadata";
+        el.addEventListener(
+          "loadedmetadata",
+          () => {
+            window.clearTimeout(t);
+            got(Number.isFinite(el.duration) && el.duration > 0 ? el.duration : guess);
+          },
+          { once: true },
+        );
+        el.load();
+      });
+      silentRef.current = true;
+      setSpeaking(true);
+      const start = performance.now();
+      const tick = () => {
+        const frac = (performance.now() - start) / (len * 1000);
+        if (frac >= 1) {
+          silentRef.current = false;
+          done();
+          return;
+        }
+        const found = phrasesRef.current.findIndex((p) => frac >= p.from && frac < p.to);
+        setCaptionIndex((prev) => (prev === found ? prev : found));
+        const phrase = found >= 0 ? phrasesRef.current[found] : undefined;
+        if (phrase) {
+          const within = (frac - phrase.from) / Math.max(1e-6, phrase.to - phrase.from);
+          const w = phrase.words.findIndex((x) => within >= x.from && within < x.to);
+          setWordIndex((prev) => (prev === w ? prev : w));
+        }
+        mouthRef.current = 0.25 + 0.25 * Math.abs(Math.sin(performance.now() / 110));
+        setMouth(mouthRef.current);
+        rafRef.current = requestAnimationFrame(tick);
+      };
+      tick();
+    },
+    [text],
+  );
+
   const speak = useCallback(async () => {
     if (speaking) return;
 
@@ -366,30 +415,39 @@ export const TalkingLion = forwardRef<
 
     if (audioSrc) {
       const el = audioRef.current;
-      const ctx = graph();
-      if (!el || !ctx) return releaseFloor.current();
-      await ctx.resume().catch(() => {});
+      if (!el) return releaseFloor.current();
       if (el.src !== audioSrc) el.src = audioSrc;
-      el.muted = false;
-      el.currentTime = 0;
       setFinished(false); // a replay clears the summary until it's earned
       setPaused(false);
-      el.onended = () => {
+      const finish = () => {
         releaseFloor.current();
         setSpeaking(false);
         stopLoop();
         setFinished(true);
         onEnded?.();
       };
+      // The app's sound is off (lib/sound.ts): he says it silently, on
+      // a clock of his own, so the captions still run a line at a time.
+      if (!soundOn()) return runSilent(el, finish);
+      const ctx = graph();
+      if (!ctx) return releaseFloor.current();
+      // Not awaited to the end: with no tap on the page yet, Chrome
+      // leaves resume() pending rather than refusing it - and waiting on
+      // it left him frozen before his first word, with no captions and
+      // no offer of a tap. (That was the paragraph on a laptop.)
+      await Promise.race([ctx.resume().catch(() => {}), new Promise((r) => setTimeout(r, 200))]);
+      el.muted = false;
+      el.currentTime = 0;
+      el.onended = finish;
       try {
         await el.play();
       } catch {
-        // The browser wants a tap for this one. Say so; the button is
-        // the tap.
-        releaseFloor.current();
+        // The browser wants a tap before it will make sound. Say so; the
+        // button is the tap. Meanwhile he says it silently, captions and
+        // all, rather than the whole paragraph landing at once.
         setBlocked(true);
         onBlocked?.();
-        return;
+        return runSilent(el, finish);
       }
       setBlocked(false);
       setSpeaking(true);
@@ -397,7 +455,7 @@ export const TalkingLion = forwardRef<
       return;
     }
 
-    if (!text || !("speechSynthesis" in window)) return releaseFloor.current();
+    if (!text || !("speechSynthesis" in window) || !soundOn()) return releaseFloor.current();
     window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(text);
     utter.rate = 0.98;
@@ -419,7 +477,7 @@ export const TalkingLion = forwardRef<
     envelopeRef.current = 1;
     runEnvelopeLoop();
     window.speechSynthesis.speak(utter);
-  }, [speaking, audioSrc, text, graph, runAmplitudeLoop, runEnvelopeLoop, stopLoop, onEnded]);
+  }, [speaking, audioSrc, text, graph, runAmplitudeLoop, runEnvelopeLoop, runSilent, stopLoop, onEnded, onBlocked]);
 
   // A new clip on a page that asked for it to play: play it. The
   // element's src has to have caught up first, hence the frame.
@@ -434,6 +492,17 @@ export const TalkingLion = forwardRef<
     });
     return () => cancelAnimationFrame(id);
   }, [autoPlay, audioSrc]);
+
+  // The sound switch flipped while he talks: he carries on, heard or not.
+  useEffect(
+    () =>
+      onSoundChange((on) => {
+        const el = audioRef.current;
+        if (el) el.muted = !on;
+        if (!on && typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
+      }),
+    [],
+  );
 
   // Gone from the page mid-sentence: the floor goes with him.
   useEffect(() => () => releaseFloor.current(), []);
@@ -460,6 +529,7 @@ export const TalkingLion = forwardRef<
   // Tap the lion: talking, he stops where he is; stopped mid-line, he
   // carries on. So a message already heard need not be sat through.
   const togglePause = () => {
+    if (silentRef.current) return;
     if (speaking) {
       if (audioSrc) audioRef.current?.pause();
       else if ("speechSynthesis" in window) window.speechSynthesis.pause();
@@ -622,7 +692,7 @@ export const TalkingLion = forwardRef<
         {speaking ? "Stop" : blocked ? "Tap to hear Coach’s review" : "Coach’s review"}
       </CoachPill>
       )}
-      {blocked && (
+      {blocked && controls && (
         <p className="text-xs text-ink-faint">
           Your browser wanted a tap before playing sound - it&apos;s ready now.
         </p>

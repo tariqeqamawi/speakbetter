@@ -1,5 +1,6 @@
 "use client";
 
+import { SITE_NAV, SITE_PATHS } from "@/data/site";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -17,6 +18,7 @@ import { Soundwave } from "@/components/soundwave";
 import { LionMouth } from "@/components/lion-mouth";
 import { JumpButton } from "@/components/jump";
 import { SectionMenu } from "@/components/section-menu";
+import { SoundToggle } from "@/components/sound-toggle";
 import { Suspense } from "react";
 import { startTour } from "@/components/guided-tour";
 import { sectionOf, startSectionTour } from "@/components/section-tour";
@@ -57,24 +59,40 @@ function isOn(pathname: string, href: string): boolean {
 /** Pages a visitor reads before joining: the sales page and the story
  *  behind it. "/" counts only for a visitor - a student gets Today. */
 function onSalesPage(pathname: string, unlocked: boolean): boolean {
-  return pathname === "/landing" || pathname === "/about" || (pathname === "/" && !unlocked);
+  return SITE_PATHS.includes(pathname) || (pathname === "/" && !unlocked);
 }
 
-/** The origin story lives on its own page, a tap from the sales page. */
-function AboutLink() {
+/** The website's pages - About, the book, the deck, teams, contact - on
+ *  the sales page and the pages around it. Inline on a laptop; folded
+ *  into a small "More" menu on a phone, where the header has no room. */
+function SiteLinks() {
   const { state, ready } = useStore();
   const pathname = usePathname();
   if (!ready || !onSalesPage(pathname, state.unlocked)) return null;
-  return (
+  const link = (p: { href: string; label: string }, cls: string) => (
     <Link
-      href="/about"
-      aria-current={pathname === "/about" ? "page" : undefined}
-      className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold transition-colors hover:text-ink ${
-        pathname === "/about" ? "text-ink" : "text-ink-muted"
-      }`}
+      key={p.href}
+      href={p.href}
+      aria-current={pathname === p.href ? "page" : undefined}
+      className={`${cls} ${pathname === p.href ? "text-ink" : "text-ink-muted"}`}
     >
-      About
+      {p.label}
     </Link>
+  );
+  return (
+    <>
+      <nav aria-label="Site" className="hidden items-center md:flex">
+        {SITE_NAV.map((p) => link(p, "shrink-0 rounded-full px-2.5 py-1.5 text-sm font-semibold transition-colors hover:text-ink"))}
+      </nav>
+      <details className="relative md:hidden">
+        <summary className="cursor-pointer list-none rounded-full px-3 py-1.5 text-sm font-semibold text-ink-muted hover:text-ink [&::-webkit-details-marker]:hidden">
+          More
+        </summary>
+        <div className="absolute right-0 top-full z-50 mt-2 flex min-w-40 flex-col rounded-2xl border border-navy-600 bg-navy-900 p-2 shadow-2xl">
+          {SITE_NAV.map((p) => link(p, "rounded-xl px-3 py-2 text-sm font-semibold hover:bg-navy-800 hover:text-ink"))}
+        </div>
+      </details>
+    </>
   );
 }
 
@@ -82,7 +100,7 @@ function JoinNow() {
   const { state, ready } = useStore();
   const pathname = usePathname();
   if (!ready || !onSalesPage(pathname, state.unlocked)) return null;
-  const href = pathname === "/about" ? "/landing#pricing" : "#pricing";
+  const href = pathname === "/landing" || pathname === "/" ? "#pricing" : "/landing#pricing";
   return (
     // Wrapped, because the button's own class sets its display and would
     // override "hidden" on it.
@@ -132,8 +150,10 @@ export function TopBar() {
           <TourButton />
           <div className="ml-auto flex items-center gap-2">
             <JumpButton />
-            <AboutLink />
+            <SiteLinks />
             <JoinNow />
+            {/* The app's one sound switch (lib/sound.ts). */}
+            <SoundToggle />
             {/* The dashboard's sections from anywhere, in the corner. */}
             <Suspense fallback={null}>
               <SectionMenu />
@@ -163,7 +183,10 @@ function TourButton() {
       className="-ml-1 flex shrink-0 items-center gap-1.5 rounded-full border border-navy-600/80 px-2.5 py-1 text-[0.7rem] font-semibold text-ink-faint transition-colors hover:border-ink-faint hover:text-ink"
     >
       <TapIcon className="size-3.5 shrink-0" />
-      <span className="whitespace-nowrap sm:hidden lg:inline">
+      {/* A narrow phone: one word, so the sound switch and the menu
+          still fit in the corner. */}
+      <span className="whitespace-nowrap min-[420px]:hidden">Tour</span>
+      <span className="hidden whitespace-nowrap min-[420px]:inline sm:hidden lg:inline">
         {section ? "Guided Tour" : "Full Guided Tour"}
       </span>
     </button>

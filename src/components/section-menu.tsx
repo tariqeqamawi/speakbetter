@@ -28,6 +28,14 @@ export function SectionMenu() {
   const tab = useSearchParams().get("tab");
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
+  // Nothing until mounted. It sits in a Suspense boundary that can
+  // hydrate late - after the store is ready - and the server drew nothing
+  // here, so drawing the menu on that first pass was a hydration error.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- once, after hydration
+    setMounted(true);
+  }, []);
 
   // Closes on a tap anywhere else, and whenever the page changes.
   useEffect(() => {
@@ -43,7 +51,7 @@ export function SectionMenu() {
     setOpen(false);
   }, [pathname, tab]);
 
-  if (!ready || !state.unlocked) return null;
+  if (!mounted || !ready || !state.unlocked) return null;
 
   return (
     <div ref={box} className="relative">

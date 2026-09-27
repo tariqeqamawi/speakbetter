@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CoachPill } from "@/components/coach-pill";
-import { TalkingLion, type Phrase, type TalkingLionHandle } from "@/components/talking-lion";
+import { TalkingLion, phrasesOf, type Phrase, type TalkingLionHandle } from "@/components/talking-lion";
 import { Caption } from "@/components/caption";
 
 // Coach saying a fixed line, at the top of a page.
@@ -52,9 +52,17 @@ export function CoachSays({
   const [attempt, setAttempt] = useState(0);
   /** The line he is on, and the word within it. */
   const [said, setSaid] = useState<{ phrase?: Phrase; word: number }>({ word: -1 });
+  // Between lines, and once he has finished, the last line stays up
+  // (all lit) rather than the whole paragraph coming back.
   const say = useCallback((phrase: Phrase | undefined, word: number) => {
-    setSaid((was) => (was.phrase === phrase && was.word === word ? was : { phrase, word }));
+    setSaid((was) => {
+      if (!phrase) return was.phrase ? { phrase: was.phrase, word: 999 } : was;
+      return was.phrase === phrase && was.word === word ? was : { phrase, word };
+    });
   }, []);
+  // Before he starts: his first line, waiting.
+  const first = useMemo(() => phrasesOf(text)[0], [text]);
+  const [more, setMore] = useState(false);
 
   // Only hand the lion an audio source once the file is known to
   // exist. Otherwise a missing clip means a 404 in the console and a
@@ -92,7 +100,21 @@ export function CoachSays({
           level picker would mean the button somebody was reaching for
           moving out from under their thumb. */}
       <div className="flex min-h-24 max-w-xl items-center justify-center text-center">
-        <Caption phrase={said.phrase} word={said.word} line={text} big />
+        <Caption phrase={said.phrase ?? first} word={said.phrase ? said.word : -1} line={text} big />
+      </div>
+
+      {/* Everything he says, in full - folded away, for anyone who'd
+          rather read it at their own pace. */}
+      <div className="flex max-w-xl flex-col items-center gap-2 text-center">
+        <button
+          type="button"
+          onClick={() => setMore((m) => !m)}
+          aria-expanded={more}
+          className="text-xs font-semibold text-ink-faint underline-offset-4 transition-colors hover:text-ink hover:underline"
+        >
+          {more ? "View less" : "View more"}
+        </button>
+        {more && <p className="text-sm leading-relaxed text-ink-muted text-balance">{text}</p>}
       </div>
 
       {/* The browser refused to start the sound. Say so with a button

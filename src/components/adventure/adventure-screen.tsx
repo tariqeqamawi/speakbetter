@@ -8,6 +8,8 @@ import { AHEAD, GATE_BEFORE, Travel, layoutRoad, reachedPhase } from "./road-geo
 import { RoadDial } from "./road-dial";
 import { useRoadChrome } from "./road-chrome";
 import { RoadLegendButton } from "./road-legend";
+import { SoundToggle } from "@/components/sound-toggle";
+import { soundOn, useSound } from "@/lib/sound";
 import { SkyCoach } from "./sky-coach";
 import { ROAD_LINES, ROAD_TALK, roadLineClip, talkClip } from "@/data/greetings";
 import { activated, playApplause, playCoachLine, playGateChime, playRoadWhoosh, startRoadWind } from "@/lib/feedback-fx";
@@ -311,18 +313,8 @@ export function AdventureScreen({
   // SOUND - on unless the student has turned it off, and remembered.
   // Nothing plays until they have touched the road, so it never starts
   // at somebody out of a silent page.
-  const [soundOn, setSound] = useState(true);
-  const sound = soundOn && !demo;
-  useEffect(() => {
-    try {
-      // Read after mounting, so the server's render and the first client
-      // render agree.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setSound(localStorage.getItem("road-sound") !== "off");
-    } catch {
-      // no storage: stays off
-    }
-  }, []);
+  // The app's one sound switch (lib/sound.ts).
+  const sound = useSound() && !demo;
   // THE WIND, rising and falling with how fast the road is moving - only
   // with sound on, and only once the student has touched the page.
   useEffect(() => {
@@ -341,16 +333,6 @@ export function AdventureScreen({
     };
   }, [sound, travel]);
 
-  const toggleSound = () => {
-    setSound((v) => {
-      try {
-        localStorage.setItem("road-sound", v ? "off" : "on");
-      } catch {
-        // fine
-      }
-      return !v;
-    });
-  };
 
   // COACH, in the sky. Everything he says goes through one queue, so a
   // line never talks over another: it is captioned, spoken if sound is
@@ -367,16 +349,9 @@ export function AdventureScreen({
       busy.current = true;
       setCaption(line);
       setTalking(true);
-      // The saved choice as well as the state: on the very first render
-      // the state has not read it yet, and a student who turned sound off
-      // would be asked to click to hear him.
-      let off = false;
-      try {
-        off = localStorage.getItem("road-sound") === "off";
-      } catch {
-        // no storage: go by the state
-      }
-      if (!sound || off) return;
+      // The switch itself as well as the state: on the very first render
+      // the state may not have caught up.
+      if (!sound || !soundOn()) return;
       // A browser lets a page make sound only once it has been clicked,
       // tapped or typed on - scrolling does not count. Travelled here by
       // scrolling alone, his line waits for the first click, and a chip
@@ -638,24 +613,16 @@ export function AdventureScreen({
         </div>
       )}
 
-      {/* Sound, off by default - not in full screen, which keeps to the
-          essentials. */}
-      {!demo && !chrome.full && (
-      <button
-        type="button"
-        onClick={toggleSound}
-        aria-pressed={sound}
-        className="absolute right-3 top-3 z-20 grid size-10 place-items-center rounded-full border border-navy-600 bg-navy-900/80 text-sm text-ink-muted"
-        aria-label={sound ? "Turn road sound off" : "Turn road sound on"}
-      >
-        {sound ? "🔊" : "🔈"}
-      </button>
+      {/* The app's sound switch - the same one as in the header, which
+          full screen hides, so here it is on the road itself. */}
+      {!demo && chrome.full && (
+        <SoundToggle className="absolute right-3 top-3 z-20 bg-navy-900/80 backdrop-blur" />
       )}
 
       {/* How the road works - under the sound button, on the right, where
           the switch row on the left leaves room. Not in full screen. */}
       {!demo && !chrome.full && (
-        <div className="absolute right-3 top-[3.75rem] z-20">
+        <div className="absolute right-3 top-3 z-20">
           <RoadLegendButton />
         </div>
       )}
