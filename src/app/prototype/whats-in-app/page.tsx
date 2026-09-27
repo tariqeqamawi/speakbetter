@@ -3,6 +3,8 @@ import Image from "next/image";
 import { COUNTS } from "@/components/what-it-is";
 import { FEATURES } from "@/components/whats-inside";
 import { badgeDefs } from "@/data/badges";
+import { LionArtWhenNear } from "@/components/lion-mouth";
+import { ChallengesRoad, CoachTalking, DeckFan, LessonsCollage, SpectrumMorph } from "@/components/what-tiles";
 
 // A design bench for merging "What you get" (the five numbers) and
 // "Features at a glance" (the eleven cards) into one block - two layouts
@@ -16,11 +18,11 @@ export const metadata: Metadata = {
 
 // The five headline items and the feature card each one duplicates.
 const HEADLINE = [
-  { count: COUNTS[0], feature: "83 skill lessons", label: "skill lessons" },
-  { count: COUNTS[1], feature: "24 challenges", label: "interactive challenges" },
-  { count: COUNTS[2], feature: "Digital card deck", label: "cards in the digital deck" },
-  { count: COUNTS[3], feature: "Interactive Coach", label: "AI coach, trained on the method" },
-  { count: COUNTS[4], feature: "Speaking Spectrum", label: "colors of speaking to light up" },
+  { count: COUNTS[0], feature: "83 skill lessons", label: "skill lessons", Live: LessonsCollage },
+  { count: COUNTS[1], feature: "24 challenges", label: "interactive challenges", Live: ChallengesRoad },
+  { count: COUNTS[2], feature: "Digital card deck", label: "cards in the digital deck", Live: DeckFan },
+  { count: COUNTS[3], feature: "Interactive Coach", label: "AI coach, trained on the method", Live: CoachTalking },
+  { count: COUNTS[4], feature: "Speaking Spectrum", label: "colors of speaking to light up", Live: SpectrumMorph },
 ];
 const lineOf = (name: string) => FEATURES.find((f) => f.name === name)?.line ?? "";
 const REST = FEATURES.filter((f) => !HEADLINE.some((h) => h.feature === f.name));
@@ -38,6 +40,7 @@ function Icon({ f }: { f: (typeof FEATURES)[number] }) {
 
 export default function WhatsInAppBench() {
   return (
+    <LionArtWhenNear>
     <div className="flex flex-col gap-16 py-10">
       <header className="flex max-w-3xl flex-col gap-2">
         <p className="text-xs font-semibold uppercase tracking-widest text-ink-faint">Layout options</p>
@@ -55,7 +58,9 @@ export default function WhatsInAppBench() {
           <p className="text-xs font-bold uppercase tracking-[0.25em] text-figurative">Option A</p>
           <h2 className="text-xl font-semibold">The big five, then everything else in a strip</h2>
           <p className="text-sm text-ink-muted">
-            The five pictured numbers stay the stars, each now carrying its one-line explanation. The other six
+            The five numbers stay the stars - each shown as the thing itself, moving: the lessons as a shuffling
+            collage, the road scrolling, the deck fanned through its colors, Coach talking, the spectrum turning from
+            wave to bars. Each carries its one-line explanation. The other six
             features sit underneath as a compact row, numbers leading where they have one.
           </p>
         </div>
@@ -63,10 +68,11 @@ export default function WhatsInAppBench() {
         <div className="rounded-3xl border border-navy-600 bg-navy-800 p-6 sm:p-8">
           <h3 className="mb-6 text-center text-2xl font-semibold tracking-tight sm:text-3xl">What&apos;s in the app</h3>
           <ul className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-5">
-            {HEADLINE.map(({ count, feature, label }) => (
+            {HEADLINE.map(({ count, feature, label, Live }) => (
               <li key={label} className="flex flex-col items-center gap-2 text-center">
-                <span className="relative aspect-square w-full max-w-36 overflow-hidden rounded-2xl border border-navy-600 bg-navy-950">
-                  <Image src={count.image} alt="" fill sizes="144px" className="object-cover" />
+                {/* Each number shown as the thing itself, moving. */}
+                <span className="relative aspect-square w-full max-w-52 overflow-hidden rounded-2xl border border-navy-600 bg-navy-950">
+                  <Live />
                 </span>
                 <b className={`text-4xl font-extrabold tabular-nums ${count.color}`}>{count.n}</b>
                 <span className="text-sm font-semibold text-ink">{label}</span>
@@ -146,5 +152,6 @@ export default function WhatsInAppBench() {
         </div>
       </section>
     </div>
+    </LionArtWhenNear>
   );
 }
