@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { Fireflies, Scenery } from "./world-extras";
-import { Megastructures } from "./megastructures";
+import { Megastructures, structurePlan } from "./megastructures";
 import { Portal } from "./portal";
 import { SkyDome } from "./sky-dome";
 import { City } from "./city";
@@ -753,6 +753,7 @@ function Rig({
   const yaw = useRef(0);
   const pitch = useRef(0);
   const speed = useRef(0);
+  const tubes = useMemo(() => structurePlan(road).tunnels, [road]);
   const topFor = useRef(0);
   const prevS = useRef(travel.s);
   const prevPos = useMemo(() => new THREE.Vector3(), []);
@@ -804,7 +805,10 @@ function Rig({
     // STANDING STILL for a moment: the camera floats slowly up, to look
     // down on more of the road; it comes back down as soon as you move.
     stillFor.current = Math.abs(travel.v) < 0.02 && travel.target === null ? stillFor.current + dt : 0;
-    const idleTo = stillFor.current > 1.2 ? 1 : 0;
+    // (Not in or beside a tube: floating up there would put the camera
+    // through its roof.)
+    const tubeNear = tubes.some((t) => s + AHEAD > t.from - 25 && s < t.to + 5);
+    const idleTo = stillFor.current > 1.2 && !tubeNear ? 1 : 0;
     idle.current += (idleTo - idle.current) * Math.min(1, dt * (idleTo ? 0.45 : 3));
     const up = idle.current;
     // At rest: up above the road and behind the traveller, looking down

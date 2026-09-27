@@ -79,9 +79,39 @@ const GLASS_FRAG = /* glsl */ `
   }
 `;
 
-type Kind = "box" | "cyl" | "cyl6" | "cone4" | "cone8";
-const KINDS: Kind[] = ["box", "cyl", "cyl6", "cone4", "cone8"];
+// THE PULSE: the glowing parts of the speaking landmarks - a mic's
+// grille rings, a speaker's cones, the headphones' pads - beat with
+// light in the colour of their section, each slightly out of step.
+const PULSE_VERT = /* glsl */ `
+  varying vec3 vCol;
+  varying float vPhase;
+  void main() {
+    vec4 wp = modelMatrix * instanceMatrix * vec4(position, 1.0);
+    vCol = instanceColor;
+    vPhase = (instanceMatrix[3].x + instanceMatrix[3].z) * 0.013;
+    gl_Position = projectionMatrix * viewMatrix * wp;
+  }
+`;
+const PULSE_FRAG = /* glsl */ `
+  uniform float uTime;
+  varying vec3 vCol;
+  varying float vPhase;
+  void main() {
+    float beat = pow(0.5 + 0.5 * sin(uTime * 4.2 + vPhase), 3.0);
+    gl_FragColor = vec4(vCol * (0.35 + 1.4 * beat), 1.0);
+  }
+`;
+
+type Kind = "box" | "cyl" | "cyl6" | "cone4" | "cone8" | "sphere" | "arc" | "gRing" | "gDisc" | "gSphere";
+const KINDS: Kind[] = ["box", "cyl", "cyl6", "cone4", "cone8", "sphere", "arc", "gRing", "gDisc", "gSphere"];
+/** The kinds that glow and pulse (the rest are glass). */
+const GLOWS = new Set<Kind>(["gRing", "gDisc", "gSphere"]);
 function unitGeo(k: Kind): THREE.BufferGeometry {
+  if (k === "sphere") return new THREE.SphereGeometry(0.5, 20, 14);
+  if (k === "arc") return new THREE.TorusGeometry(0.5, 0.06, 10, 40, Math.PI);
+  if (k === "gRing") return new THREE.TorusGeometry(0.5, 0.05, 8, 48);
+  if (k === "gDisc") return new THREE.CylinderGeometry(0.5, 0.5, 1, 32);
+  if (k === "gSphere") return new THREE.SphereGeometry(0.5, 16, 12);
   if (k === "box") return new THREE.BoxGeometry(1, 1, 1);
   if (k === "cyl") return new THREE.CylinderGeometry(0.5, 0.5, 1, 16);
   if (k === "cyl6") return new THREE.CylinderGeometry(0.5, 0.5, 1, 6);
@@ -103,8 +133,16 @@ type Keep = { from: number; to: number }[];
  *  rows - a near row lining the road, and a far row of taller spires and
  *  giants along the edges of the land - thickening into a real city
  *  through Y, where the road heads into the skyline. */
-function buildCity(road: RoadLayout, rand: () => number, dense: { from: number; to: number } | undefined, keep: Keep) {
-  const parts: Record<Kind, THREE.Matrix4[]> = { box: [], cyl: [], cyl6: [], cone4: [], cone8: [] };
+function buildCity(
+  road: RoadLayout,
+  rand: () => number,
+  dense: { from: number; to: number } | undefined,
+  keep: Keep,
+  colourAt: ColourAt,
+) {
+  const parts = Object.fromEntries(KINDS.map((k) => [k, [] as THREE.Matrix4[]])) as Record<Kind, THREE.Matrix4[]>;
+  /** Each glowing part's colour, in the same order as its matrices. */
+  const tints = Object.fromEntries(KINDS.map((k) => [k, [] as THREE.Color[]])) as Record<Kind, THREE.Color[]>;
   const towers: Tower[] = [];
   const p = new THREE.Vector3();
   const side = new THREE.Vector3();
@@ -123,13 +161,18 @@ function buildCity(road: RoadLayout, rand: () => number, dense: { from: number; 
     anchor.lookAt(ahead.x + side.x * d, anchor.position.y, ahead.z + side.z * d);
     anchor.rotateY((rand() - 0.5) * 0.8);
     anchor.updateMatrix();
-    const put = (k: Kind, x: number, y: number, z: number, sx: number, sy: number, sz: number, ry = 0) => {
+    const glow = colourAt(s).clone();
+    const put = (k: Kind, x: number, y: number, z: number, sx: number, sy: number, sz: number, ry = 0, rx = 0, rz = 0) => {
       local.position.set(x, y, z);
-      local.rotation.set(0, ry, 0);
+      local.rotation.set(rx, ry, rz);
       local.scale.set(sx, sy, sz);
       local.updateMatrix();
       parts[k].push(m.multiplyMatrices(anchor.matrix, local.matrix).clone());
+      if (GLOWS.has(k)) tints[k].push(glow);
     };
+    // Which way the road is, in this object's own frame - so a speaker's
+    // front, or a mic's face, turns to the traveller.
+    const face = d > 0 ? -Math.PI / 2 : Math.PI / 2;
     let top = h;
     if (type === 0) {
       // Stepped skyscraper with a spire.
@@ -168,6 +211,58 @@ function buildCity(road: RoadLayout, rand: () => number, dense: { from: number; 
       for (const k of [0.35, 0.6, 0.82]) put("cyl", 0, h * k, 0, w * 1.45, 1.4, w * 1.45);
       put("cone8", 0, h * 1.0, 0, w, h * 0.2, w);
       top = h * 1.1;
+    } else if (type === 7) {
+      // A GIANT STAGE MICROPHONE on its stand: a tall pole, a tapering
+      // handle, a ball grille ringed with pulsing light.
+      put("cyl", 0, h * 0.3, 0, w * 0.12, h * 0.6, w * 0.12);
+      put("cyl", 0, 1, 0, w * 1.6, 2, w * 1.6);
+      put("cone8", 0, h * 0.69, 0, w * 0.5, h * 0.22, w * 0.5, 0, Math.PI);
+      put("sphere", 0, h * 0.86, 0, w * 0.95, w * 0.95, w * 0.95);
+      for (const k of [-0.18, 0, 0.18]) put("gRing", 0, h * 0.86 + k * w, 0, w * 0.97, w * 0.97, w * 0.97, 0, Math.PI / 2);
+      top = h * 0.86 + w * 0.5;
+    } else if (type === 8) {
+      // A GIANT PODCAST MIC: a fat capsule held in a yoke on a stand,
+      // its grille banded with light.
+      put("cyl", 0, h * 0.25, 0, w * 0.2, h * 0.5, w * 0.2);
+      put("box", 0, h * 0.5, 0, w * 1.5, w * 0.2, w * 0.3);
+      put("box", -w * 0.7, h * 0.62, 0, w * 0.15, h * 0.26, w * 0.3);
+      put("box", w * 0.7, h * 0.62, 0, w * 0.15, h * 0.26, w * 0.3);
+      put("cyl", 0, h * 0.68, 0, w * 1.1, h * 0.3, w * 1.1, face, 0, 0.18);
+      put("sphere", 0, h * 0.83, 0, w * 1.1, w * 1.1, w * 1.1);
+      for (const k of [0.6, 0.66, 0.72, 0.78]) put("gRing", 0, h * k, 0, w * 1.12, w * 1.12, w * 1.12, 0, Math.PI / 2);
+      top = h * 0.83 + w * 0.55;
+    } else if (type === 9) {
+      // GIANT HEADPHONES standing on end: the band an arch across the
+      // sky, the cups either side glowing on their inner faces.
+      const R = w * 2.4;
+      put("box", 0, h * 0.25, 0, w * 0.5, h * 0.5, w * 0.5);
+      put("arc", 0, h * 0.62, 0, R * 2, R * 2, R * 2, face);
+      for (const sx of [-1, 1]) {
+        // (Local x along the band, turned with it.)
+        const cx = Math.cos(face) * sx * R;
+        const cz = -Math.sin(face) * sx * R;
+        put("cyl", cx, h * 0.62, cz, w * 1.5, w * 0.8, w * 1.5, face, 0, Math.PI / 2);
+        put("gDisc", cx * 0.9, h * 0.62, cz * 0.9, w * 1.2, w * 0.08, w * 1.2, face, 0, Math.PI / 2);
+      }
+      top = h * 0.62 + R;
+    } else if (type === 10) {
+      // A GIANT SPEAKER STACK: two cabinets, one on the other, their
+      // woofers and tweeters facing the road and pulsing to the beat.
+      const cab = h * 0.45;
+      for (const [y0, big] of [
+        [0, true],
+        [cab, false],
+      ] as const) {
+        put("box", 0, y0 + cab / 2, 0, w * 1.4, cab, w * 1.4, face);
+        const cones = big ? [[0.3, 0.42]] : [[0.25, 0.28], [0.62, 0.2], [0.85, 0.1]];
+        for (const [at, r] of cones) {
+          const fx = Math.sin(face) * w * 0.72;
+          const fz = Math.cos(face) * w * 0.72;
+          put("gRing", fx, y0 + cab * at, fz, cab * r * 2, cab * r * 2, cab * r * 2, face);
+          put("gDisc", fx * 0.99, y0 + cab * at, fz * 0.99, cab * r * 1.2, w * 0.04, cab * r * 1.2, face, Math.PI / 2);
+        }
+      }
+      top = cab * 2;
     } else {
       // Spire: a slim hexagonal base rising into a long needle.
       put("cyl6", 0, h * 0.2, 0, w * 0.8, h * 0.4, w * 0.8);
@@ -184,7 +279,10 @@ function buildCity(road: RoadLayout, rand: () => number, dense: { from: number; 
     for (const sd of c > 0.3 ? [-1, 1] : [rand() < 0.5 ? -1 : 1]) {
       const d = sd * (ROAD_HALF + 20 + rand() * (c > 0.3 ? 30 : 45));
       if (kept(s, d)) continue;
-      tower(s, d, 6 + rand() * 9, (70 + rand() * 110) * (1 + c * 0.4), Math.floor(rand() * 7));
+      // One in six is a nod to speaking - a mic, headphones, a speaker
+      // stack - that reads as a tower until you look again.
+      const speaking = rand() < 0.17;
+      tower(s, d, 6 + rand() * 9, (70 + rand() * 110) * (1 + c * 0.4), speaking ? 7 + Math.floor(rand() * 4) : Math.floor(rand() * 7));
     }
     s += THREE.MathUtils.lerp(28 + rand() * 24, 9 + rand() * 8, c);
   }
@@ -195,16 +293,25 @@ function buildCity(road: RoadLayout, rand: () => number, dense: { from: number; 
     for (const sd of [-1, 1]) {
       if (rand() < 0.35 - c * 0.3) continue;
       const d = sd * (80 + rand() * 75);
-      const type = [1, 2, 6, 6, 5, 0, 3][Math.floor(rand() * 7)];
+      const type = rand() < 0.22 ? 7 + Math.floor(rand() * 4) : [1, 2, 6, 6, 5, 0, 3][Math.floor(rand() * 7)];
       tower(s, d, 10 + rand() * 14, 150 + rand() * 190, type);
     }
     s += THREE.MathUtils.lerp(40 + rand() * 35, 14 + rand() * 10, c);
   }
-  return { parts, towers };
+  return { parts, tints, towers };
 }
 
-function City({ road, dense, keep }: { road: RoadLayout; dense?: { from: number; to: number }; keep: Keep }) {
-  const { parts, towers } = useMemo(() => buildCity(road, seeded(97), dense, keep), [road, dense, keep]);
+function City({ road, dense, keep, colourAt }: { road: RoadLayout; dense?: { from: number; to: number }; keep: Keep; colourAt: ColourAt }) {
+  const { parts, tints, towers } = useMemo(() => buildCity(road, seeded(97), dense, keep, colourAt), [road, dense, keep, colourAt]);
+  const pulse = useMemo(
+    () => new THREE.ShaderMaterial({ vertexShader: PULSE_VERT, fragmentShader: PULSE_FRAG, uniforms: { uTime: { value: 0 } } }),
+    [],
+  );
+  /* eslint-disable react-hooks/immutability -- a shader uniform, set every frame */
+  useFrame(({ clock }) => {
+    pulse.uniforms.uTime.value = clock.elapsedTime;
+  });
+  /* eslint-enable react-hooks/immutability */
   const material = useMemo(
     () =>
       new THREE.ShaderMaterial({
@@ -217,13 +324,17 @@ function City({ road, dense, keep }: { road: RoadLayout; dense?: { from: number;
   const meshes = useMemo(
     () =>
       KINDS.filter((k) => parts[k].length).map((k) => {
-        const mesh = new THREE.InstancedMesh(unitGeo(k), material, parts[k].length);
+        const mesh = new THREE.InstancedMesh(unitGeo(k), GLOWS.has(k) ? pulse : material, parts[k].length);
         parts[k].forEach((mx, i) => mesh.setMatrixAt(i, mx));
+        if (GLOWS.has(k)) {
+          tints[k].forEach((c, i) => mesh.setColorAt(i, c));
+          if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+        }
         mesh.instanceMatrix.needsUpdate = true;
         mesh.frustumCulled = false;
         return mesh;
       }),
-    [parts, material],
+    [parts, tints, material, pulse],
   );
   useEffect(
     () => () => {
@@ -232,8 +343,9 @@ function City({ road, dense, keep }: { road: RoadLayout; dense?: { from: number;
         m.dispose();
       });
       material.dispose();
+      pulse.dispose();
     },
-    [meshes, material],
+    [meshes, material, pulse],
   );
   return (
     <group>
@@ -424,6 +536,131 @@ function Corridors({ road, colourAt, runs }: { road: RoadLayout; colourAt: Colou
   );
 }
 
+// ------------------------------------------------- stage and auditorium
+
+/** THE VENUE: out of a tube and onto a STAGE - a wide glowing floor under
+ *  a lighting truss, speaker stacks either side - and then out past the
+ *  AUDIENCE: rows and rows of glowing seats either side of the road,
+ *  raked up and away and turned back toward the stage, flashing past. */
+function Venue({ road, colourAt, venues }: { road: RoadLayout; colourAt: ColourAt; venues: { stage: number; seatsTo: number }[] }) {
+  const ROW = 2.6; // between rows of seats
+  const SEAT = 1.35; // between seats in a row
+  const FROM = ROAD_HALF + 2.5;
+  const PER_ROW = 16;
+  const rows = venues.reduce((n, v) => n + Math.max(0, Math.floor((v.seatsTo - v.stage - 14) / ROW)), 0);
+  const seatCount = rows * PER_ROW * 2;
+  const glass = useMemo(
+    () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color("#060b1c") }, uFogD: { value: 0.0024 } } }),
+    [],
+  );
+  const seats = useInstanced(seatCount, useMemo(() => new THREE.BoxGeometry(1, 1, 1), []), useMemo(() => glass.clone(), [glass]));
+  const backs = useInstanced(seatCount, useMemo(() => new THREE.BoxGeometry(1, 1, 1), []), useMemo(() => glass.clone(), [glass]));
+  // A thin line of light along the top of each seat back - row after row
+  // of them flashing past.
+  const rims = useInstanced(rows * 2, useMemo(() => new THREE.BoxGeometry(1, 1, 1), []), useMemo(() => new THREE.MeshBasicMaterial({ toneMapped: false }), []));
+  const floor = useInstanced(venues.length, useMemo(() => new THREE.BoxGeometry(1, 1, 1), []), useMemo(() => glass.clone(), [glass]));
+  const edges = useInstanced(venues.length * 3, useMemo(() => new THREE.BoxGeometry(1, 1, 1), []), useMemo(() => new THREE.MeshBasicMaterial({ toneMapped: false }), []));
+  const truss = useInstanced(venues.length * 3, useMemo(() => new THREE.BoxGeometry(1, 1, 1), []), useMemo(() => glass.clone(), [glass]));
+  const spots = useInstanced(venues.length * 6, useMemo(() => new THREE.SphereGeometry(1, 12, 10), []), useMemo(() => new THREE.MeshBasicMaterial({ toneMapped: false }), []));
+  useEffect(() => () => glass.dispose(), [glass]);
+
+  useEffect(() => {
+    const p = new THREE.Vector3();
+    const side = new THREE.Vector3();
+    const ahead = new THREE.Vector3();
+    const o = new THREE.Object3D();
+    const c = new THREE.Color();
+    const white = new THREE.Color("#ffffff");
+    const at = (s: number, d: number, y: number, back = false) => {
+      pointAt(road, s, p);
+      sideAt(road, s, side);
+      pointAt(road, s + (back ? -2 : 2), ahead);
+      o.position.set(p.x + side.x * d, p.y + y, p.z + side.z * d);
+      o.rotation.set(0, 0, 0);
+      o.scale.set(1, 1, 1);
+      o.lookAt(ahead.x + side.x * d, o.position.y, ahead.z + side.z * d);
+    };
+    const put = (mesh: THREE.InstancedMesh, i: number, colour?: THREE.Color) => {
+      o.updateMatrix();
+      mesh.setMatrixAt(i, o.matrix);
+      if (colour) mesh.setColorAt(i, colour);
+    };
+    let si = 0;
+    let ri = 0;
+    venues.forEach((v, vi) => {
+      c.copy(colourAt(v.stage)).multiplyScalar(1.5);
+      // The stage floor, just under the road, wide and deep.
+      const W = ROAD_HALF + 22;
+      at(v.stage, 0, -0.35);
+      o.scale.set(W * 2, 0.6, 16);
+      put(floor, vi);
+      // Its lit front edge and sides.
+      at(v.stage + 8, 0, -0.02);
+      o.scale.set(W * 2, 0.12, 0.3);
+      put(edges, vi * 3, c);
+      for (const [k, d] of [
+        [1, -W],
+        [2, W],
+      ] as const) {
+        at(v.stage, d, -0.02);
+        o.scale.set(0.3, 0.12, 16);
+        put(edges, vi * 3 + k, c);
+      }
+      // The lighting truss overhead, and its spotlights.
+      for (const [k, d] of [
+        [0, -W + 2],
+        [1, W - 2],
+      ] as const) {
+        at(v.stage, d, 9);
+        o.scale.set(0.8, 18, 0.8);
+        put(truss, vi * 3 + k);
+      }
+      at(v.stage, 0, 18);
+      o.scale.set(W * 2 - 2, 1, 1);
+      put(truss, vi * 3 + 2);
+      for (let k = 0; k < 6; k++) {
+        at(v.stage, -W + 6 + k * ((W * 2 - 12) / 5), 17.2);
+        o.scale.setScalar(0.7);
+        put(spots, vi * 6 + k, c.clone().lerp(white, 0.5).multiplyScalar(1.05));
+      }
+      // THE AUDIENCE: rows of seats either side, raked upward away from
+      // the stage and turned back to face it.
+      for (let s = v.stage + 14; s + ROW <= v.seatsTo; s += ROW) {
+        const rake = (s - v.stage - 14) * 0.18;
+        for (const sd of [-1, 1]) {
+          for (let k = 0; k < PER_ROW; k++) {
+            const d = sd * (FROM + k * SEAT);
+            at(s, d, rake + 0.35, true);
+            o.scale.set(1.05, 0.25, 0.9);
+            put(seats, si);
+            at(s + 0.45, d, rake + 0.95, true);
+            o.scale.set(1.05, 1.0, 0.14);
+            put(backs, si);
+            si++;
+          }
+          // One light along the whole row's top edge.
+          const mid = sd * (FROM + ((PER_ROW - 1) * SEAT) / 2);
+          at(s + 0.45, mid, rake + 1.47, true);
+          o.scale.set(PER_ROW * SEAT, 0.07, 0.07);
+          put(rims, ri++, c.clone().multiplyScalar(0.8));
+        }
+      }
+    });
+    for (const m of [seats, backs, rims, floor, edges, truss, spots]) {
+      m.instanceMatrix.needsUpdate = true;
+      if (m.instanceColor) m.instanceColor.needsUpdate = true;
+    }
+  }, [road, colourAt, venues, seats, backs, rims, floor, edges, truss, spots, FROM]);
+
+  return (
+    <group>
+      {[seats, backs, rims, floor, edges, truss, spots].map((m) => (
+        <primitive key={m.uuid} object={m} />
+      ))}
+    </group>
+  );
+}
+
 // ------------------------------------------------------------------ tubes
 
 const TUBE_VERT = /* glsl */ `
@@ -586,6 +823,36 @@ function Searchlights({ road, towers }: { road: RoadLayout; towers: Tower[] }) {
 
 // ------------------------------------------------------------------- all
 
+/** Where along the road each great structure stands - shared with the
+ *  camera, which mustn't float up through a tube's roof. */
+export function structurePlan(road: RoadLayout) {
+  const arches: number[] = [];
+  const corridors: { from: number; to: number }[] = [];
+  const tunnels: { from: number; to: number }[] = [];
+  const venues: { stage: number; seatsTo: number }[] = [];
+  openStretches(road).forEach((st, i) => {
+    const mid = (st.from + st.to) / 2;
+    const half = Math.min(60, (st.to - st.from) / 2 - 5);
+    // In turn: a great arch, a corridor of lights, a tube.
+    if (i % 3 === 0) arches.push(mid);
+    else if (i % 3 === 1) corridors.push({ from: mid - half, to: mid + half });
+    else if (i % 6 === 2) tunnels.push({ from: mid - half, to: mid + half });
+    else {
+      // Out of a tube, onto a stage, and past the audience.
+      const tubeTo = mid - 18;
+      tunnels.push({ from: st.from + 2, to: tubeTo });
+      venues.push({ stage: tubeTo + 10, seatsTo: st.to + 20 });
+    }
+  });
+  const keep = [
+    ...arches.map((s) => ({ from: s - 12, to: s + 12 })),
+    ...corridors,
+    ...tunnels,
+    ...venues.map((v) => ({ from: v.stage - 10, to: v.seatsTo })),
+  ];
+  return { arches, corridors, tunnels, venues, keep };
+}
+
 export function Megastructures({
   road,
   colourAt,
@@ -596,25 +863,12 @@ export function Megastructures({
   /** Where the city is thickest: Y, heading into the skyline. */
   dense?: { from: number; to: number };
 }) {
-  const plan = useMemo(() => {
-    const arches: number[] = [];
-    const corridors: { from: number; to: number }[] = [];
-    const tunnels: { from: number; to: number }[] = [];
-    openStretches(road).forEach((st, i) => {
-      const mid = (st.from + st.to) / 2;
-      const half = Math.min(60, (st.to - st.from) / 2 - 5);
-      // In turn: a great arch, a corridor of lights, a tube.
-      if (i % 3 === 0) arches.push(mid);
-      else if (i % 3 === 1) corridors.push({ from: mid - half, to: mid + half });
-      else tunnels.push({ from: mid - half, to: mid + half });
-    });
-    const keep = [...arches.map((s) => ({ from: s - 12, to: s + 12 })), ...corridors, ...tunnels];
-    return { arches, corridors, tunnels, keep };
-  }, [road]);
+  const plan = useMemo(() => structurePlan(road), [road]);
   const denseSpan = useMemo(() => (dense ? { from: dense.from, to: dense.to } : undefined), [dense]);
   return (
     <group>
-      <City road={road} dense={denseSpan} keep={plan.keep} />
+      <City road={road} dense={denseSpan} keep={plan.keep} colourAt={colourAt} />
+      <Venue road={road} colourAt={colourAt} venues={plan.venues} />
       <Arches road={road} colourAt={colourAt} at={plan.arches} />
       <Corridors road={road} colourAt={colourAt} runs={plan.corridors} />
       <Tubes road={road} colourAt={colourAt} tunnels={plan.tunnels} />
