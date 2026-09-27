@@ -207,6 +207,9 @@ Tariq topped up the account, so the cap is gone.
 Newest first. Each links the commit that did it; every commit message says why, not just
 what.
 
+**27 September**
+- Challenges: Orientation/Challenges tabs, full-screen road (immersive in landscape), road dial, less on-screen text, portal names solid near, sound/Coach only on real progress, fewer stars and none on the planet; bottom tab bar through tablet width; printed deck + book renders — `ec76011`
+
 **26 September**
 - Tiers: the rendered Speak Better book in the book tile, full title in the feature line — `710da83`
 - Landing: What you get merged and animated (option A); testimonials rise continuously, no hover pause — `74acf2f`
