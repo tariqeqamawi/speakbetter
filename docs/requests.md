@@ -396,3 +396,4 @@ what.
 - Road: city of glass towers (stepped, needles, obelisks, twin towers, cantilevers, ringed), glowing arches and rings, tube tunnels with lights and stars, all sections as luminous as O plus shimmer, camera drops back at full speed with stronger blur, streaks and shake, sparks low off the road, ring always glowing; deck Random card button; 77 cards — `ae14e9f`
 - Thank-you page at /checkout/done: looping neon lion animation (Higgsfield), confetti, welcome copy, what happens next; /checkout/done?preview=founders to view — `5d58b03`
 - Landing opening in two full-screen folds: lion + headline | video with Join under it; then cohort | checklist; 'Starts October 3' in the hero — `75d2fa1`
+- Deck page copy: hero line and How it works paragraph in Tariq's words — `c2a2f65`
