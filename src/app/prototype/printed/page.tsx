@@ -11,6 +11,20 @@ export const metadata: Metadata = {
 
 const PIECES = [
   {
+    src: "/book/cover-a4-author-bottom.webp",
+    title: "Book cover A4 - author at the bottom",
+    note: "A4 with the small line under the top lion removed (the lion emblem stays) and TARIQ EQ AMAWI at the foot of the cover.",
+    w: 761,
+    h: 1200,
+  },
+  {
+    src: "/book/cover-a4-author-top.webp",
+    title: "Book cover A4 - author at the top",
+    note: "A4 with the small lion and line at the top removed entirely, TARIQ EQ AMAWI in their place above the title.",
+    w: 770,
+    h: 1200,
+  },
+  {
     src: "/book/cover-dark-glass.webp",
     title: "Book cover A2 - dark glass",
     note: "Cover A on the app's own darkness: near-black with faint purple, green and blue glass glows, so the neon lion stands out.",
