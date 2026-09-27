@@ -63,7 +63,14 @@ export function ChallengesTabs({
     setFullState(on);
     const el = box.current;
     try {
-      if (on && el?.requestFullscreen && !document.fullscreenElement) el.requestFullscreen().catch(() => {});
+      // The browser's own full screen too, hiding its bars - where it
+      // allows a page to (and on the whole page, which is what phones
+      // that allow it at all accept).
+      const target = (el ?? document.documentElement) as HTMLElement & { webkitRequestFullscreen?: () => void };
+      if (on && !document.fullscreenElement) {
+        if (target.requestFullscreen) target.requestFullscreen().catch(() => {});
+        else target.webkitRequestFullscreen?.();
+      }
       if (!on && document.fullscreenElement) document.exitFullscreen().catch(() => {});
     } catch {
       // no Fullscreen API (iPhone Safari): the fixed layer is full screen enough
@@ -114,9 +121,9 @@ export function ChallengesTabs({
     const fit = () => {
       const el = box.current;
       if (!el) return;
-      const side = window.innerWidth > window.innerHeight && window.innerHeight < 520;
-      if (side && !chose.current) setFullState(true);
-      if (full || (side && !chose.current)) {
+      // (Turning the phone no longer drops into full screen by itself:
+      // the full-screen button at the top does it, and undoes it.)
+      if (full) {
         setHeight(window.innerHeight);
         return;
       }

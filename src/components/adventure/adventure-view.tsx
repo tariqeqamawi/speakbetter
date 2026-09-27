@@ -45,14 +45,6 @@ export function AdventureView({
       // no storage: 3D
     }
   }, []);
-  // Whether the browser would hide its own bars for us, and hasn't yet.
-  const [canHideBars, setCanHideBars] = useState(false);
-  useEffect(() => {
-    const check = () => setCanHideBars(Boolean(document.documentElement.requestFullscreen) && !document.fullscreenElement);
-    check();
-    document.addEventListener("fullscreenchange", check);
-    return () => document.removeEventListener("fullscreenchange", check);
-  }, []);
   const choose = (m: Mode) => {
     setMode(m);
     try {
@@ -102,19 +94,6 @@ export function AdventureView({
                 <circle cx="12" cy="12" r="9" />
                 <path d="M15.5 8.5l-2 5-5 2 2-5z" />
               </svg>
-            </button>
-          )}
-          {/* On its side the road is already full screen here, but the
-              browser's own bars may still show: where the browser lets a
-              page hide them, a button to do it. */}
-          {chrome.full && canHideBars && (
-            <button
-              type="button"
-              onClick={() => document.documentElement.requestFullscreen?.().catch(() => {})}
-              aria-label="Hide the browser bars"
-              className="grid size-9 place-items-center rounded-full border border-navy-600 bg-navy-950/80 text-ink-muted backdrop-blur hover:text-ink"
-            >
-              <FullScreenIcon full={false} />
             </button>
           )}
           {/* In and out of full screen - where the page offers it. */}
