@@ -398,3 +398,4 @@ what.
 - Landing opening in two full-screen folds: lion + headline | video with Join under it; then cohort | checklist; 'Starts October 3' in the hero — `75d2fa1`
 - Deck page copy: hero line and How it works paragraph in Tariq's words — `c2a2f65`
 - Checkout page /checkout?plan= (tier switch, everything included, dates, email, the agreement, secure payment button, guarantee); consent no longer asked on website pages; realistic book photo on the oak desk (book page, shelf, VIP tile); deck heading 'Your whole speaking toolkit, in seven colors' — `9b053cf`
+- Road: monumental rounded arches that fill the view, corridors of lit pillars, tubes with sparse rings and strobing lamps, near + far rows of towers (spires/giants at the edges), densest through Y, deeper rollercoaster dips, ring arcs split evenly with gaps — `cca629b`
