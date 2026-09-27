@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { AHEAD, GATE_BEFORE, Travel, layoutRoad, reachedPhase } from "./road-geometry";
 import { RoadDial } from "./road-dial";
 import { useRoadChrome } from "./road-chrome";
+import { RoadLegendButton } from "./road-legend";
 import { SkyCoach } from "./sky-coach";
 import { ROAD_LINES, ROAD_TALK, roadLineClip, talkClip } from "@/data/greetings";
 import { activated, playApplause, playCoachLine, playGateChime, playRoadWhoosh } from "@/lib/feedback-fx";
@@ -571,6 +572,14 @@ export function AdventureScreen({
       >
         {sound ? "🔊" : "🔈"}
       </button>
+      )}
+
+      {/* How the road works - under the sound button, on the right, where
+          the switch row on the left leaves room. Not in full screen. */}
+      {!demo && !chrome.full && (
+        <div className="absolute right-3 top-[3.75rem] z-20">
+          <RoadLegendButton />
+        </div>
       )}
 
       <SkyCoach talking={talking} />
