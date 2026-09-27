@@ -55,7 +55,7 @@ export interface TourStop {
   act?: { after: number; press: string };
 }
 
-const ROAD = { src: "/film/tour-road3d.mp4", poster: "/film/tour-road3d.jpg" };
+const ROAD = { src: "/film/tour-road3d-v2.mp4", poster: "/film/tour-road3d-v2.jpg" };
 const SKILLS = { src: "/film/tour-skills.mp4", poster: "/film/tour-skills.jpg" };
 const DASHBOARD = { src: "/film/tour-dashboard.mp4", poster: "/film/tour-dashboard.jpg" };
 const DECK = { src: "/film/tour-deck.mp4", poster: "/film/tour-deck.jpg" };

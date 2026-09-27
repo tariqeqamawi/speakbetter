@@ -81,9 +81,8 @@ export function FirstChallenge() {
           Challenge Preview
         </h2>
         <p className="text-lg text-ink-muted text-balance">
-          Here is the first challenge, exactly as it looks inside: record yourself speaking for two minutes with no
-          preparation, and Coach tells you what he saw. It is the &ldquo;before&rdquo; everything else gets measured
-          against.
+          When you click on a challenge, here&apos;s a preview of what opens up: watch the video brief, see what
+          points are being looked for, then record yourself - and Coach tells you what he saw.
         </p>
       </div>
 

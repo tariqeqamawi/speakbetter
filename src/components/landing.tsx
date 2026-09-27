@@ -14,10 +14,8 @@ import {
   ZoomPortraitIcon,
 } from "@/components/player-icons";
 import { Pricing } from "@/components/pricing";
-import { LandingShowcase } from "@/components/landing-showcase";
+import { HowItWorksSection, WhatsInTheApp } from "@/components/landing-showcase";
 import { SpectrumDemo } from "@/components/spectrum-demo";
-import { SelfieTake } from "@/components/selfie-take";
-import { SELFIE_TAKES } from "@/data/selfie-takes";
 import { HeroBeat } from "@/components/hero-beat";
 import { TheReality } from "@/components/the-reality";
 import { JoinCta } from "@/components/join-cta";
@@ -197,6 +195,10 @@ function LandingBody() {
 
       <SectionMark id="different" />
 
+      {/* The inspiration first: the reality waiting on the other side -
+          then why the way there is different. */}
+      <TheReality />
+
       {/* The premise and its punchline, each with its picture: the
           concert you watch from your seat, the lecture that ticks by. */}
       <HeroBeat />
@@ -325,30 +327,11 @@ function LandingBody() {
           comparison - not beside a wall of other quotes. */}
       <ProofLine tag="results" />
 
-      {/* How a take is actually made - people recording themselves on
-          their own phones, the app's recording screen over them. The
-          difference just claimed, shown. */}
-      <section className="flex flex-col items-center gap-6">
-        <div className="flex max-w-2xl flex-col items-center gap-2 text-center">
-          <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
-            This is how you actually record yourself
-          </h2>
-          <p className="text-ink-muted text-balance">
-            No studio, no crew, no fancy equipment. Simply prop up your phone and press record through the Speak
-            Better Selfie feature. Talk for a minute or two - then Coach watches it and gives you expert feedback.
-          </p>
-        </div>
-        <div className="-mx-4 flex w-[calc(100%+2rem)] gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:w-full sm:max-w-4xl sm:grid-cols-4 sm:overflow-visible sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {SELFIE_TAKES.map((t) => (
-            <div key={t.src} className="w-60 shrink-0 rounded-[2.2rem] border-4 border-navy-600 bg-navy-950 p-1.5 shadow-2xl shadow-navy-950 sm:w-auto">
-              <SelfieTake take={t} />
-            </div>
-          ))}
-        </div>
-      </section>
+      <SectionMark id="how" />
+      <HowItWorksSection />
 
       <SectionMark id="app" />
-      <LandingShowcase />
+      <WhatsInTheApp />
 
       <ProofLine tag="lessons" />
 
@@ -359,8 +342,8 @@ function LandingBody() {
           Preview all 83 skill lessons
         </h2>
         <p className="max-w-lg text-center text-ink-muted">
-          Nothing hidden behind the checkout - here is the whole library,
-          color by color, exactly as you&apos;ll find it inside.
+          Here is a preview of the full library of skills you are about to unlock, color-coded and waiting for
+          you.
         </p>
         <LessonGallery />
       </section>
@@ -371,12 +354,25 @@ function LandingBody() {
       {/* The journey */}
       <section className="flex flex-col items-center gap-4">
         <h2 className="max-w-2xl text-center text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
-          Introducing true interactive challenges and the Speak Better S.T.O.R.Y. framework
+          Introducing true interactive challenges
         </h2>
-        <p className="max-w-lg text-center text-ink-muted">
-          24 challenges across 5 levels, experienced as an adventure. Unlock trophies, see which challenges
-          other students are on, and complete them together.
-        </p>
+        <ul className="flex max-w-xl flex-col gap-2 text-left">
+          {[
+            <>
+              <b className="font-semibold text-ink">The Speak Better S.T.O.R.Y. framework:</b> 24 challenges across 5
+              levels, experienced as an adventure.
+            </>,
+            <>Unlock trophies.</>,
+            <>See which challenges other students are on, and complete them together.</>,
+          ].map((line, i) => (
+            <li key={i} className="flex items-start gap-3 text-ink-muted">
+              <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-structure/15 text-structure">
+                <CheckIcon className="size-3.5" />
+              </span>
+              <span>{line}</span>
+            </li>
+          ))}
+        </ul>
         {/* The road, live, with its own 2D/3D switch - the one place on
             the page it's shown. */}
         <div className="w-full max-w-2xl">
@@ -449,9 +445,11 @@ function LandingBody() {
             Two mentors in your pocket
           </h2>
           <p className="text-sm leading-relaxed text-ink-muted">
-            <b className="font-semibold text-ink">Tariq</b> delivers every lesson and introduces every challenge.{" "}
-            <b className="font-semibold text-ink">Coach, the lion</b>, gives you all of your feedback and guides you
-            through the app.
+            Speak Better embraces the best of both human and AI capability. All 24 challenges and 83 skill lessons
+            have been studio-recorded by <b className="font-semibold text-ink">Tariq</b>, a real human.{" "}
+            <b className="font-semibold text-ink">Coach, the lion</b>, reviews all of your challenges, pops up along the
+            way with encouragement or words of wisdom, guides you through each section, and is there whenever you need
+            him.
           </p>
           <ReadMore lines={2} className="text-sm leading-relaxed text-ink-muted" buttonClassName="self-center lg:self-start">
             Every lesson is recorded in the studio in landscape, so you get the full picture on a monitor, a TV or a
@@ -464,10 +462,6 @@ function LandingBody() {
           </p>
         </div>
       </Reveal>
-
-      {/* The collage - the reality waiting on the other side - as the
-          last thing read before the door and the prices. */}
-      <TheReality />
 
       <JoinCta label="Sign Me Up" seal sealSize={176} />
 

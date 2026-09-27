@@ -103,7 +103,7 @@ const FEATURES = [
 export function WhatsInside() {
   return (
     <section className="flex w-full flex-col items-center gap-6">
-      <h2 className="text-2xl font-semibold tracking-tight">What&apos;s in the app</h2>
+      <h2 className="text-2xl font-semibold tracking-tight">Features at a glance</h2>
 
       <ul className="grid w-full max-w-4xl grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {FEATURES.map(({ Icon, name, line, color }) => (
