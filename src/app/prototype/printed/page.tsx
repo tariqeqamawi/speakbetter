@@ -11,9 +11,16 @@ export const metadata: Metadata = {
 
 const PIECES = [
   {
-    src: "/book/speak-better-book-v3.webp",
+    src: "/book/speak-better-book-v4.webp",
     title: "The book - in the VIP tier now",
-    note: "SPEAK BETTER / The 7 Colors of Fearless, Unforgettable Speaking / Find your true colors. Overcome your nerves. Roar on screen and stage. By Tariq EQ Amawi - TEDx Speaker, Slam Poetry Winner & Creator of the Mic Drop Method.",
+    note: "SPEAK BETTER / The 7 Colors of Fearless, Unforgettable Speaking / Find your true colors. Unleash your confidence. Roar on screen and stage. By Tariq EQ Amawi - TEDx Speaker, Slam Poetry Winner & Creator of the Mic Drop Method.",
+    w: 761,
+    h: 1200,
+  },
+  {
+    src: "/book/speak-better-book-v3.webp",
+    title: "The same, with \"Overcome your nerves\"",
+    note: "The previous strapline, for comparison.",
     w: 764,
     h: 1200,
   },
