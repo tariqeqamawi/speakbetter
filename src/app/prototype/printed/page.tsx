@@ -11,6 +11,27 @@ export const metadata: Metadata = {
 
 const PIECES = [
   {
+    src: "/book/cover-blend-mic-drop.webp",
+    title: "The blend - \"Creator of the Mic Drop Method\"",
+    note: "SPEAK BETTER / The 7 Colors of Unforgettable Speaking / Express Your True Colors, Overcome Your Fears, and Roar on Screen and Stage. Under the name: TEDx Speaker, Slam Poet & Creator of the Mic Drop Method.",
+    w: 756,
+    h: 1200,
+  },
+  {
+    src: "/book/cover-blend-slam-poet.webp",
+    title: "The blend - \"Award-Winning Writer\"",
+    note: "The same, with: TEDx Speaker, Slam Poet & Award-Winning Writer.",
+    w: 758,
+    h: 1200,
+  },
+  {
+    src: "/book/cover-blend-standing-ovation.webp",
+    title: "The blend - \"Standing-Ovation Storyteller\"",
+    note: "The same, with: TEDx Speaker & Standing-Ovation Storyteller.",
+    w: 759,
+    h: 1200,
+  },
+  {
     src: "/book/speak-better-book-v2.webp",
     title: "The book - in the VIP tier now",
     note: "Cover A4 with TARIQ EQ AMAWI at the top and the strapline \"The Secret Speaking Skills You Need to Overcome Your Fears and Deliver Unforgettable Talks.\"",
