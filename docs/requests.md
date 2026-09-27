@@ -391,3 +391,4 @@ what.
 - The app's choppiness fixed (one keyframe, 13× main-thread work) and real glass — `728c360`
 - The road twice as long and ~2× faster at the top of the dial; haze takes each section's colour, the view widens and streaks at speed, portals light the road, a shooting star, the nebula drifts — `ea232c8`
 - The road flies like Extreme-G 3: lights along both edges, wider road leaning into bends, camera drops low at speed, motion blur, wind, slight shake flat out; smoother at speed — `4d5ec5e`
+- Road doubled again with dips; monoliths, arches, ring gates, tunnels, searchlights; sparks after 1.5s flat out; camera drops in at top speed and floats up at rest; power ring (earned colours; ?ring-preview to see it); light haze; classmates moved to an 'On it now' button on each challenge; iPhone tilt fixed; tap for real full screen; compass icon for Orientation — `6fbc832`
