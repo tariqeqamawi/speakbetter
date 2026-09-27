@@ -12,8 +12,8 @@ import Image from "next/image";
 
 const BEATS = [
   {
-    image: "/hero/concert.jpg",
-    alt: "Seen from a seat in the crowd: a singer on a lit stage, far away",
+    image: "/hero/concert-v2.jpg",
+    alt: "At a concert, a woman standing at her seat belting along with the singer on stage, the people around her looking up, amused",
     line: "You don't learn to sing by going to concerts.",
   },
   {
@@ -22,8 +22,8 @@ const BEATS = [
     line: "You didn't learn to drive by buying a course.",
   },
   {
-    image: "/hero/lecture.jpg",
-    alt: "Slumped at a laptop at night, a lecture playing, the clock going round",
+    image: "/hero/lecture-v2.jpg",
+    alt: "Lying on the sofa under a blanket with a bowl of popcorn, watching a speaker hold a huge crowd on the big TV",
     line: "You won't learn to speak just by watching videos.",
     punch: "You have to actually practice.",
   },
