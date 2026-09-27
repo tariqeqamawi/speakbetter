@@ -52,7 +52,7 @@ export function roadStops(state: AppState, ready: boolean, crowd: ChallengePrese
   });
 }
 
-export function LiveAdventure() {
+export function LiveAdventure({ heightClass = "h-[calc(100dvh-11rem)] sm:h-[calc(100dvh-7rem)]", stickyTop }: { heightClass?: string; stickyTop?: string } = {}) {
   const { state, ready } = useStore();
   const crowd = useMemo(() => presence(), []);
 
@@ -68,7 +68,8 @@ export function LiveAdventure() {
         key={ready ? "ready" : "loading"}
         stops={stops}
         phases={worldPhases}
-        heightClass="h-[calc(100dvh-11rem)] sm:h-[calc(100dvh-7rem)]"
+        heightClass={heightClass}
+        stickyTop={stickyTop}
       />
     </div>
   );

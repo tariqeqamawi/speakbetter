@@ -132,7 +132,6 @@ export function TopBar() {
           <TourButton />
           <div className="ml-auto flex items-center gap-2">
             <JumpButton />
-            <CompactLinks />
             <AboutLink />
             <JoinNow />
             {/* The dashboard's sections from anywhere, in the corner. */}
@@ -202,50 +201,6 @@ function CoachFace({ className = "size-9" }: { className?: string }) {
     <span className={`grid place-items-center overflow-hidden rounded-full bg-navy-950/25 ${className}`}>
       <LionMouth level={0} className="w-full translate-y-0.5" />
     </span>
-  );
-}
-
-/**
- * Tablet width only: the phone's bar is gone and the laptop's rail
- * hasn't arrived, so the destinations ride in the header.
- */
-function CompactLinks() {
-  const pathname = usePathname();
-  const { state, ready } = useStore();
-  const coach = useCoachRing();
-  if (!ready || !state.unlocked) return null;
-  return (
-    <nav className="hidden gap-1 sm:flex lg:hidden" aria-label="Primary">
-      {destinations.map(({ href, label, tour, Icon }) => {
-        const active = isOn(pathname, href);
-        return (
-          <Link
-            key={href}
-            href={href}
-            data-tour={tour}
-            className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-              active ? "bg-navy-800 text-ink" : "text-ink-faint hover:text-ink-muted"
-            }`}
-            aria-current={active ? "page" : undefined}
-          >
-            <Icon className="size-4.5" />
-            <span className="hidden md:inline">{label}</span>
-          </Link>
-        );
-      })}
-      <Link
-        href="/coach"
-        data-tour="coach"
-        aria-label={coach.calling ? "Coach has something to say" : "Coach"}
-        onClick={coach.onClick}
-        className={`coach-pill flex min-h-11 items-center gap-2 rounded-full py-1 pl-1 pr-3.5 ${coach.ring} ${
-          pathname.startsWith("/coach") ? "ring-2 ring-ink/70" : ""
-        }`}
-      >
-        <CoachFace />
-        <span className="hidden text-xs font-bold tracking-wide text-navy-950 md:inline">Coach</span>
-      </Link>
-    </nav>
   );
 }
 
@@ -360,7 +315,7 @@ export function BottomTabs() {
     // preview header sits at z-40) and below the z-50 overlays, which
     // are full-screen and SHOULD cover it.
     <nav
-      className="app-bar no-glass fixed inset-x-0 bottom-0 z-40 border-t border-navy-600 sm:hidden"
+      className="app-bar no-glass fixed inset-x-0 bottom-0 z-40 border-t border-navy-600 lg:hidden"
       aria-label="Primary"
     >
       <div className="pb-nav mx-auto flex max-w-md items-end justify-around">

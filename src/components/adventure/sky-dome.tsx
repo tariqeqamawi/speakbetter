@@ -34,6 +34,9 @@ const FRAG = /* glsl */ `
   uniform vec2 uRepeat;
   uniform vec2 uOffset;
   uniform float uTime;
+  // The big planet in the picture, as an ellipse in texture space
+  // (centre u, v; radius u, v) - no star is drawn over its disc.
+  uniform vec4 uPlanet;
   varying vec2 vUv;
   varying vec3 vDir;
 
@@ -48,14 +51,14 @@ const FRAG = /* glsl */ `
     uv.x = m < 1.0 ? m : 2.0 - m;
     vec3 sky = texture2D(uMap, uv).rgb;
 
-    // Stars (a sparse sky - the picture behind is the point): one per
-    // many cells of a grid on the direction, placed at
+    // Stars (a sparse sky - the picture behind is the point, and half as
+    // many again since): one per many cells of a grid on the direction, placed at
     // random inside its cell, drawn a pixel or two wide at any distance.
     vec3 p = normalize(vDir) * 420.0;
     vec3 cell = floor(p);
     float h = hash(cell);
     float star = 0.0;
-    if (h > 0.977) {
+    if (h > 0.9885) {
       vec3 at = cell + vec3(hash(cell + 1.3), hash(cell + 2.7), hash(cell + 4.1));
       float px = length(p - at) / max(length(fwidth(p)), 1e-4);
       float size = mix(0.6, 1.6, fract(h * 37.0));
@@ -66,6 +69,10 @@ const FRAG = /* glsl */ `
     // bright heart of the nebula.
     float lum = dot(sky, vec3(0.299, 0.587, 0.114));
     star *= 1.0 - smoothstep(0.06, 0.2, lum);
+    // Nor anywhere on the planet - its dark side included, which the
+    // brightness test alone let stars sprinkle across.
+    float onPlanet = 1.0 - smoothstep(1.0, 1.12, length((uv - uPlanet.xy) / uPlanet.zw));
+    star *= 1.0 - onPlanet;
     gl_FragColor = vec4(sky + vec3(0.8, 0.85, 1.0) * star, 1.0);
   }
 `;
@@ -87,6 +94,7 @@ export function SkyDome({ image }: { image: string }) {
         uRepeat: { value: new THREE.Vector2(4, 1) },
         uOffset: { value: new THREE.Vector2(0.5, 0) },
         uTime: { value: 0 },
+        uPlanet: { value: new THREE.Vector4(0.579, 0.25, 0.185, 0.43) },
       },
     });
   }, [image]);

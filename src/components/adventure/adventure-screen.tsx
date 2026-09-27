@@ -4,7 +4,8 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AHEAD, GATE_BEFORE, Travel, coachSpots, layoutRoad, phaseRanges, reachedPhase } from "./road-geometry";
+import { AHEAD, GATE_BEFORE, Travel, layoutRoad, reachedPhase } from "./road-geometry";
+import { RoadDial } from "./road-dial";
 import { SkyCoach } from "./sky-coach";
 import { ROAD_LINES, ROAD_TALK, roadLineClip, talkClip } from "@/data/greetings";
 import { activated, playApplause, playCoachLine, playGateChime, playRoadWhoosh } from "@/lib/feedback-fx";
@@ -123,7 +124,7 @@ export function AdventureScreen({
     let from: { x: number; y: number; t: number; far: number } | null = null;
     const down = (e: PointerEvent) => {
       // The letters and buttons over the road are buttons, not road.
-      if ((e.target as HTMLElement).closest("button, a")) return;
+      if ((e.target as HTMLElement).closest("button, a, [data-road-control]")) return;
       lastY = e.clientY;
       from = { x: e.clientX, y: e.clientY, t: performance.now(), far: 0 };
       travel.push(0, 0);
@@ -232,13 +233,6 @@ export function AdventureScreen({
     });
   };
 
-  // A whoosh through each checkpoint, a chime under each gate.
-  const lastStop = useRef(nearest);
-  useEffect(() => {
-    if (nearest === lastStop.current) return;
-    lastStop.current = nearest;
-    if (sound) playRoadWhoosh();
-  }, [nearest, sound]);
   // COACH, in the sky. Everything he says goes through one queue, so a
   // line never talks over another: it is captioned, spoken if sound is
   // on, and the next waits until it is done.
@@ -315,110 +309,48 @@ export function AdventureScreen({
     };
   }, [caption, startLine]);
 
-  // Only on road the student has really travelled - up to the challenge
-  // they are on - never on stretches they are only previewing.
-  // (Any challenge in an open section can be taken, in any order, so
-  // "travelled" reaches the last open one, not just the first.)
-  const reachIndex = stops.reduce((m, st, i) => (st.state === "here" || st.state === "done" ? i : m), 0);
-  const realTo = allDone ? Infinity : road.stops[reachIndex] + 12;
-
-  // CROSSING INTO A NEW SECTION for real - forward, into one the student
-  // has reached: the fanfare, and Coach names where they have arrived.
+  // COACH AND THE FANFARE ONLY FOR REAL PROGRESS. Scrolling the road -
+  // touring the landscape, looking ahead, going back - is silent: no
+  // whoosh, no chime, no lion. He appears, and the fanfare plays, only
+  // when the student has actually moved through the challenges since the
+  // road last saw them: a section newly opened (the fanfare, and he names
+  // where they have arrived), a challenge newly passed (a word of
+  // encouragement), or the very first time the road opens (his welcome).
   const reached = reachedPhase(stops, phases);
-  const lastPhase = useRef(phase?.id);
+  const passedCount = stops.filter((st) => st.state === "done").length;
+  const progressSeen = useRef(false);
   useEffect(() => {
-    if (phase?.id === lastPhase.current) return;
-    const from = phases.findIndex((p) => p.id === lastPhase.current);
-    const to = phases.findIndex((p) => p.id === phase?.id);
-    lastPhase.current = phase?.id;
-    if (!(to > from && to <= reached)) return;
+    if (demo || progressSeen.current) return;
     if (document.body.dataset.touring) return;
-    if (sound) playGateChime();
-    const k = TALK.arrive[to - 1];
-    if (k !== undefined) say({ text: ROAD_TALK[k], src: talkClip(k) });
-  }, [phase, phases, reached, sound, say]);
-
-  // HIS PLACES ON THE ROAD, each said once per visit as the traveller
-  // comes to it: the welcome and his first three lines, the encouragements
-  // spread between challenges, and the lines for the plunge and the city.
-  const spots = useMemo(() => {
-    const ranges = phaseRanges(road.stops, stops.map((st) => st.phase), road.finish);
-    const span = (id: string) => ranges.find((r) => r.id === id);
-    const between = (i: number) => (road.stops[i] + road.stops[Math.min(i + 1, road.stops.length - 1)]) / 2;
-    const out: { s: number; line: Line }[] = coachSpots(road)
-      .slice(0, 3)
-      .map((cs, i) => ({ s: cs, line: { text: ROAD_LINES[i], src: roadLineClip(i) } }));
-    const talk = (s: number | undefined, k: number) => {
-      if (s !== undefined && Number.isFinite(s)) out.push({ s, line: { text: ROAD_TALK[k], src: talkClip(k) } });
-    };
-    TALK.along.forEach(([after, k]) => after < road.stops.length && talk(between(after), k));
-    const r = span("R");
-    const y = span("Y");
-    talk(r && r.from - 22, TALK.beforePlunge);
-    talk(r && r.to - 30, TALK.bottom);
-    talk(y && y.from + 110, TALK.city);
-    return out.sort((a, b) => a.s - b.s);
-  }, [road, stops]);
-  // What he has already said today, by the words - kept on the device, so
-  // coming back to the road later the same day does not have him say his
-  // welcome (or anything else) again. A new day, and he greets you afresh.
-  const spokenToday = useRef<Set<string>>(new Set());
-  useEffect(() => {
+    progressSeen.current = true;
+    let before: { passed: number; reached: number } | null = null;
     try {
-      const saved = JSON.parse(localStorage.getItem("coach-road-said") ?? "{}") as { day?: string; lines?: string[] };
-      if (saved.day === new Date().toDateString()) spokenToday.current = new Set(saved.lines ?? []);
+      before = JSON.parse(localStorage.getItem("road-progress") ?? "null");
     } catch {
-      // nothing saved: a fresh day
+      // nothing saved: treat as a first visit
     }
-  }, []);
-  const rememberSaid = (text: string) => {
-    spokenToday.current.add(text);
     try {
-      localStorage.setItem("coach-road-said", JSON.stringify({ day: new Date().toDateString(), lines: [...spokenToday.current] }));
+      localStorage.setItem("road-progress", JSON.stringify({ passed: passedCount, reached }));
     } catch {
-      // no storage: he may repeat himself tomorrow-style
+      // no storage: he may greet again next time
     }
-  };
-  const spoken = useRef(new Set<number>());
-  useEffect(() => {
-    // Anywhere round his place will do - he is in the sky - including just
-    // past it, where a jump to the start of a section lands.
-    // Not while a guided tour is showing the road: only the guide speaks.
-    if (document.body.dataset.touring) return;
-    const i = spots.findIndex(
-      (sp, k) =>
-        !spoken.current.has(k) && !spokenToday.current.has(sp.line.text) && sp.s <= realTo && at > sp.s - 30 && at < sp.s + 14,
-    );
-    if (i < 0) return;
-    spoken.current.add(i);
-    if (!demo) rememberSaid(spots[i].line.text);
-    say(spots[i].line);
-  }, [at, spots, realTo, say, demo]);
-
-  // Back for another session: once a day, as the road opens.
-  useEffect(() => {
-    if (hereIndex === 0) return;
-    if (document.body.dataset.touring) return;
-    try {
-      const today = new Date().toDateString();
-      if (localStorage.getItem("coach-welcome-back") === today) return;
-      localStorage.setItem("coach-welcome-back", today);
-    } catch {
-      // no storage: say it
+    if (!before) {
+      say({ text: ROAD_LINES[0], src: roadLineClip(0) });
+      return;
     }
-    const k = TALK.back;
-    say({ text: ROAD_TALK[k], src: talkClip(k) });
-  }, [hereIndex, say]);
-
-  // Other students at a checkpoint on real road: once a visit.
-  const greetedMates = useRef(false);
-  useEffect(() => {
-    if (greetedMates.current || !stop?.classmates?.length) return;
-    if (Math.abs(road.stops[nearest] - at) > 12 || road.stops[nearest] > realTo) return;
-    greetedMates.current = true;
-    const k = TALK.classmates;
-    say({ text: ROAD_TALK[k], src: talkClip(k) });
-  }, [stop, nearest, at, road, realTo, say]);
+    if (reached > before.reached) {
+      if (sound) playGateChime();
+      const k = TALK.arrive[reached - 1];
+      if (k !== undefined) say({ text: ROAD_TALK[k], src: talkClip(k) });
+      return;
+    }
+    if (passedCount > before.passed) {
+      // The encouragement for this stretch of road: the last of his
+      // "along the way" lines at or before the challenge just passed.
+      const along = [...TALK.along].reverse().find(([after]) => after <= passedCount - 1) ?? TALK.along[0];
+      say({ text: ROAD_TALK[along[1]], src: talkClip(along[1]) });
+    }
+  }, [demo, passedCount, reached, sound, say]);
 
   // THE CHECKPOINT UNDER THE TRAVELLER: what can be done here.
   const level = stop && Math.abs(road.stops[nearest] - at) < 7;
@@ -602,6 +534,7 @@ export function AdventureScreen({
 
       <SkyCoach talking={talking} />
 
+
       {/* What Coach said, as he said it. */}
       {/* A subtitle in the sky, just under his head and above the land,
           where it reads against the dark - no box. */}
@@ -685,18 +618,6 @@ export function AdventureScreen({
         </div>
       )}
 
-      {/* Where you are. */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 flex flex-col items-center gap-1 bg-gradient-to-b from-[#070c18]/90 to-transparent px-4 pb-10 pt-14 text-center sm:pt-4">
-        {phase && (
-          <>
-            <span className="text-[0.65rem] font-bold uppercase tracking-[0.3em]" style={{ color: phase.color }}>
-              Phase {phase.id}
-            </span>
-            <span className="text-lg font-bold tracking-tight text-ink">{phase.name}</span>
-          </>
-        )}
-      </div>
-
       <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-1 bg-gradient-to-t from-[#070c18]/95 to-transparent px-4 pb-6 pt-16 text-center">
         {hereIndex > 0 && at < road.stops[0] - 4 && (
           <button
@@ -743,18 +664,7 @@ export function AdventureScreen({
             🔒 Complete every challenge to cross the finish line
           </span>
         )}
-        {atFinish ? (
-          <span className="text-lg font-bold text-ink">The finish line</span>
-        ) : (
-          stop && (
-            <>
-              <span className="text-xs tabular-nums text-ink-faint">
-                Challenge {nearest + 1} of {stops.length}
-              </span>
-              <span className="max-w-sm text-base font-semibold text-ink text-balance">{stop.title}</span>
-            </>
-          )
-        )}
+        {atFinish && <span className="text-lg font-bold text-ink">The finish line</span>}
         {/* S.T.O.R.Y. - tap a letter to fly to that stretch of road. */}
         <div className="pointer-events-auto mt-3 flex gap-2">
           {phases.map((p) => {
@@ -780,7 +690,19 @@ export function AdventureScreen({
             );
           })}
         </div>
-        <span className="mt-2 text-[0.7rem] text-ink-faint">Drag down to travel forward</span>
+        {/* The dial: hold and push up to go forward, down to go back -
+            the other way to travel, beside the letters. */}
+        {!demo && (
+          <div className="pointer-events-auto absolute bottom-5 right-3">
+            <RoadDial travel={travel} color={phase?.color} />
+          </div>
+        )}
+        {/* The section you're in, named under its letter. */}
+        {phase && (
+          <span className="mt-2 text-sm font-bold tracking-tight" style={{ color: phase.color }}>
+            {phase.name}
+          </span>
+        )}
       </div>
     </div>
   );

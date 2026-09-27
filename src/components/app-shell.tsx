@@ -22,7 +22,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {railed && <div className="app-glow" aria-hidden />}
       <ConsentGate />
       <main
-        className={`mx-auto w-full max-w-5xl flex-1 px-4 pb-28 pt-8 sm:pb-12 xl:max-w-[96rem] xl:px-8 ${
+        className={`mx-auto w-full max-w-5xl flex-1 px-4 pb-28 pt-8 lg:pb-12 xl:max-w-[96rem] xl:px-8 ${
           railed ? "app-glass lg:pl-[15.5rem] xl:pl-[16rem]" : ""
         }`}
       >

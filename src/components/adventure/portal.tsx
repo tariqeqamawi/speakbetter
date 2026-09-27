@@ -89,7 +89,7 @@ function bannerTex(title: string, hex: string, state: PortalState, score?: numbe
     const dim = state === "locked" && !dormant;
     g.beginPath();
     g.roundRect(6, 6, 1012, 188, 40);
-    g.fillStyle = "rgba(4,8,18,0.88)";
+    g.fillStyle = "rgb(4,8,18)";
     g.fill();
     g.lineWidth = 6;
     g.strokeStyle = dim ? "#3a4260" : dormant ? `${hex}80` : hex;
@@ -183,7 +183,10 @@ export function Portal({
     const near = THREE.MathUtils.smoothstep(d, 3, 10);
     material.uniforms.uFade.value = near;
     if (numMat.current) numMat.current.opacity = dormant ? 0 : near;
-    if (bannerMat.current) bannerMat.current.opacity = THREE.MathUtils.smoothstep(d, 9, 16);
+    // The name: faint far off, fully solid as you come up to the portal
+    // so it reads clearly beside you, and gone as you pass through.
+    if (bannerMat.current)
+      bannerMat.current.opacity = (1 - THREE.MathUtils.smoothstep(d, 16, 34)) * THREE.MathUtils.smoothstep(d, 2.5, 5);
     if (ring.current && state === "here") {
       const k = 0.6 + Math.sin(clock.elapsedTime * 2.4) * 0.4;
       ring.current.color.copy(colour).lerp(new THREE.Color("#ffffff"), k);

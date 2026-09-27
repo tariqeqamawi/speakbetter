@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { challengesIntro } from "@/data/challenges";
 import { LiveAdventure } from "@/components/adventure/live-adventure";
 import { StreakFlame } from "@/components/celebrations";
-import { ChallengesIcon, ChevronDownIcon } from "@/components/icons";
+import { ChallengesIcon } from "@/components/icons";
+import { ChallengesTabs } from "@/components/challenges-tabs";
 import { IntroTabs } from "@/components/intro-tabs";
 import { ThenAndNow } from "@/components/then-and-now";
 import { SectionTour } from "@/components/section-tour";
@@ -14,43 +15,37 @@ export const metadata: Metadata = {
 
 export default function ChallengesPage() {
   return (
-    // No padding below: the road is the last thing on the page, sized to
-    // fill the screen between the header and the tab bar once scrolled to.
-    <div className="flex flex-col gap-6 pt-4">
-      <header>
-        <details className="group">
-          <summary className="flex cursor-pointer list-none items-center gap-2.5 [&::-webkit-details-marker]:hidden">
-            {/* The section's own icon travels with its name, the way it
-                does in the navigation and on the dashboard. */}
-            <ChallengesIcon className="size-7 shrink-0 text-structure" />
-            <h1 className="text-3xl font-semibold tracking-tight">Challenges</h1>
-            <ChevronDownIcon className="size-5 shrink-0 text-ink-faint transition-transform group-open:rotate-180" />
-            <span className="ml-auto flex items-center gap-2">
-              <SectionTour section="challenges" />
-              <StreakFlame />
-            </span>
-          </summary>
-          <p className="max-w-lg pt-2 text-sm text-ink-muted">
-            The STORY adventure: five phases, from your first baseline recording to your impact in the world. Watch the
-            challenge, warm up with its skills, then record yourself completing it.
-          </p>
-        </details>
-      </header>
-
-
-      {/* The two orientation videos play here rather than on Vimeo -
-          a student should never have to leave the course to start it.
-          One frame, two tabs: the second is a tap away, not a scroll. */}
-      <IntroTabs videos={challengesIntro} />
-
-      {/* The baseline beside the latest attempt, once there's a road
-          between them - see then-and-now.tsx. */}
-      <ThenAndNow />
-
-      {/* The S.T.O.R.Y. road: a 3D world to travel, or a 2D map to scroll
-          - the student's choice, remembered on the device. */}
-      <LiveAdventure />
-      <FeatureReaction feature="road" label="the road" />
-    </div>
+    <ChallengesTabs
+      heading={
+        <header className="flex items-center gap-2.5">
+          <ChallengesIcon className="size-7 shrink-0 text-structure" />
+          <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+            Welcome to your interactive challenges
+          </h1>
+        </header>
+      }
+      actions={
+        <>
+          <SectionTour section="challenges" />
+          <StreakFlame />
+        </>
+      }
+      orientation={
+        <>
+          {/* The two orientation videos play here rather than on Vimeo -
+              a student should never have to leave the course to start it. */}
+          <IntroTabs videos={challengesIntro} />
+          {/* The baseline beside the latest attempt, once there's a road
+              between them - see then-and-now.tsx. */}
+          <ThenAndNow />
+          <FeatureReaction feature="road" label="the road" />
+        </>
+      }
+      road={
+        // The S.T.O.R.Y. road, filling the screen: a 3D world to travel, or
+        // a 2D map to scroll inside the box - the student's choice.
+        <LiveAdventure heightClass="h-[var(--road-h)]" stickyTop="top-0" />
+      }
+    />
   );
 }

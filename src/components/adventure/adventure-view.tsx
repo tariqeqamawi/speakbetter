@@ -20,6 +20,7 @@ export function AdventureView({
   fallbackAvatar,
   skyImage = ROAD_SKY,
   heightClass,
+  stickyTop = "top-16",
 }: {
   stops: WorldStop[];
   phases: WorldPhase[];
@@ -27,6 +28,9 @@ export function AdventureView({
   /** A painted sky for the 3D road (see SkyDome); null for stars alone. */
   skyImage?: string | null;
   heightClass?: string;
+  /** Where the 3D/2D switch sticks - under the page header, or at the top
+   *  of a box the road scrolls inside. */
+  stickyTop?: string;
 }) {
   const [mode, setMode] = useState<Mode>("3d");
   useEffect(() => {
@@ -51,7 +55,7 @@ export function AdventureView({
   return (
     <div className="relative">
       {/* The switch and the level, stuck to the top whichever view is showing. */}
-      <div className="sticky top-16 z-40 flex">
+      <div className={`sticky ${stickyTop} z-40 flex`}>
         <div className="absolute left-3 top-3 flex items-center gap-2">
           <div
             role="radiogroup"

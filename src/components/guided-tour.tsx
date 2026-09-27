@@ -105,7 +105,7 @@ export function GuidedTour() {
   // The offer, once: a small card rather than a wall.
   if (offer)
     return createPortal(
-      <div className="fixed inset-x-3 bottom-[max(5.5rem,env(safe-area-inset-bottom))] z-40 mx-auto max-w-sm rounded-2xl border border-navy-500 bg-navy-850/98 p-4 shadow-2xl shadow-navy-950/80 backdrop-blur sm:bottom-6">
+      <div className="fixed inset-x-3 bottom-[max(5.5rem,env(safe-area-inset-bottom))] z-40 mx-auto max-w-sm rounded-2xl border border-navy-500 bg-navy-850/98 p-4 shadow-2xl shadow-navy-950/80 backdrop-blur lg:bottom-6">
         <div className="flex items-start gap-3">
           <LionMouth level={0} className="w-12 shrink-0" />
           <div className="flex min-w-0 flex-1 flex-col gap-1">

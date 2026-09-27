@@ -395,7 +395,7 @@ export function TourRunner({
         className={`absolute inset-x-2 mx-auto flex flex-col gap-2 transition-all duration-500 ease-out ${
           opening
             ? "top-1/2 max-w-md -translate-y-1/2 items-center"
-            : "bottom-[max(4.75rem,env(safe-area-inset-bottom))] max-w-xl rounded-xl border border-navy-600 bg-navy-950/92 px-3 py-2 backdrop-blur sm:bottom-6"
+            : "bottom-[max(4.75rem,env(safe-area-inset-bottom))] max-w-xl rounded-xl border border-navy-600 bg-navy-950/92 px-3 py-2 backdrop-blur lg:bottom-6"
         }`}
       >
         <div className={`flex gap-3 ${opening ? "flex-col items-center text-center" : "items-start"}`}>
