@@ -82,8 +82,20 @@ export function TierArt({ has }: { has: string[] }) {
         )}
       </Tile>
       <Tile on={h("coach")} label="The coach watches">
-        <span className="w-14 overflow-hidden">
-          <LionMouth level={0} className="w-full" />
+        {/* The lion over what he writes: a snapshot of a real review's
+            report - the spectrum wave and the colour bars - behind him. */}
+        <span className="relative grid size-full place-items-center">
+          <Image
+            src="/tiers/coach-report.webp"
+            alt=""
+            fill
+            sizes="120px"
+            className="object-cover object-top opacity-60"
+          />
+          <span className="absolute inset-0 bg-gradient-to-t from-navy-950/70 via-navy-950/20 to-transparent" />
+          <span className="relative w-12 overflow-hidden drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+            <LionMouth level={0} className="w-full" />
+          </span>
         </span>
       </Tile>
       <Tile on={h("loop")} label="Trophies & ranks">
@@ -103,13 +115,13 @@ export function TierArt({ has }: { has: string[] }) {
           on Screen and Stage - rendered from the copy Tariq holds up in
           the storybook lesson (public/book). */}
       <Tile on={h("book")} label="The book">
-        <span className="relative h-[3.6rem] w-11">
+        <span className="relative block size-full">
           <Image
-            src="/book/speak-better-book-v4.webp"
+            src="/book/book-mockup-neon.webp"
             alt="The Speak Better book: The 7 Colors of Fearless, Unforgettable Speaking, by Tariq EQ Amawi"
             fill
-            sizes="44px"
-            className="object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)]"
+            sizes="120px"
+            className="object-cover"
           />
         </span>
       </Tile>

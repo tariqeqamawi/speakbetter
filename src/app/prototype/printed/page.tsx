@@ -11,6 +11,20 @@ export const metadata: Metadata = {
 
 const PIECES = [
   {
+    src: "/book/book-mockup-neon.webp",
+    title: "Book mockup - black desk, neon rim light (in the VIP tier)",
+    note: "The final cover propped on a matte black desk, magenta and cyan light behind it.",
+    w: 1600,
+    h: 1062,
+  },
+  {
+    src: "/book/book-mockup-walnut.webp",
+    title: "Book mockup - dark walnut desk",
+    note: "Warm and moody, with a vintage microphone. The copy lying flat has garbled lettering on its cover - needs a re-render before use.",
+    w: 1600,
+    h: 1062,
+  },
+  {
     src: "/book/speak-better-book-v4.webp",
     title: "The book - in the VIP tier now",
     note: "SPEAK BETTER / The 7 Colors of Fearless, Unforgettable Speaking / Find your true colors. Unleash your confidence. Roar on screen and stage. By Tariq EQ Amawi - TEDx Speaker, Slam Poetry Winner & Creator of the Mic Drop Method.",
