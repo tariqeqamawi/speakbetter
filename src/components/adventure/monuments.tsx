@@ -24,7 +24,8 @@ import { ROAD_HALF, groundAt, sideAt, type RoadLayout } from "./road-geometry";
 export interface MonumentPlan {
   mic?: { s: number; side: number };
   speakers?: { s: number };
-  headphones?: { s: number };
+  /** Every great arch of the road is a pair of headphones. */
+  headphones?: number[];
 }
 
 type ColourAt = (s: number) => THREE.Color;
@@ -149,28 +150,46 @@ export function Monuments({ road, colourAt, plan }: { road: RoadLayout; colourAt
       }
     }
 
-    if (plan.headphones) {
-      const { s } = plan.headphones;
-      const c = colourAt(s).clone().lerp(new THREE.Color("#ffffff"), 0.2).multiplyScalar(1.6);
+    // HEADPHONES ARCHES - the road's great gateways. The band a dark
+    // blue translucent glass, the ear cups black, the inside of the
+    // band edged in light in the section's colour, the cushions glowing.
+    const bandMat = new THREE.MeshPhysicalMaterial({
+      color: "#10204a",
+      transparent: true,
+      opacity: 0.72,
+      roughness: 0.15,
+      metalness: 0.2,
+      clearcoat: 1,
+      emissive: "#0a1636",
+      emissiveIntensity: 0.6,
+    });
+    const cupMat = new THREE.MeshStandardMaterial({ color: "#07080c", roughness: 0.35, metalness: 0.5 });
+    for (const s of plan.headphones ?? []) {
+      const c = colourAt(s).clone().lerp(new THREE.Color("#ffffff"), 0.15).multiplyScalar(1.7);
       const g = new THREE.Group();
-      const SPAN = ROAD_HALF + 22; // cups' centre from the road's middle
-      const CUP_Y = 22;
-      // The headband: a great arch over the road, standing across it.
-      g.add(mesh(new THREE.TorusGeometry(SPAN, 3.2, 16, 96, Math.PI), glass, 0, CUP_Y + 14, 0));
-      // Its glowing inner strip.
-      g.add(mesh(new THREE.TorusGeometry(SPAN - 3, 0.9, 8, 96, Math.PI), glow(c), 0, CUP_Y + 14, 0));
+      const SPAN = ROAD_HALF + 20; // cups' centre from the road's middle
+      const CUP_Y = 19;
+      const BAND_Y = CUP_Y + 12;
+      const T = 3.6; // band thickness
+      // The band, arching over the road.
+      g.add(mesh(new THREE.TorusGeometry(SPAN, T, 20, 120, Math.PI), bandMat, 0, BAND_Y, 0));
+      // Light along both edges of its inside.
+      for (const z of [-T * 0.8, T * 0.8])
+        g.add(mesh(new THREE.TorusGeometry(SPAN - T * 0.75, 0.35, 8, 120, Math.PI), glow(c), 0, BAND_Y, z));
+      // And a soft strip down the middle of the inside.
+      g.add(mesh(new THREE.TorusGeometry(SPAN - T * 0.95, 0.9, 8, 120, Math.PI), glow(c.clone().multiplyScalar(0.35)), 0, BAND_Y, 0));
       for (const x of [-SPAN, SPAN]) {
         const inward = -Math.sign(x);
-        // The yoke down to the cup.
-        g.add(mesh(new THREE.BoxGeometry(2.2, 16, 5), glass, x, CUP_Y + 7, 0));
-        // The cup, facing in across the road.
-        g.add(mesh(new THREE.CylinderGeometry(15, 15, 10, 40), glass, x, CUP_Y, 0, 0, 0, Math.PI / 2));
-        // The cushion - glowing, on its inner face.
-        g.add(mesh(new THREE.TorusGeometry(11, 3, 12, 40), glow(c), x + inward * 5.5, CUP_Y, 0, 0, Math.PI / 2));
-        g.add(mesh(new THREE.CircleGeometry(8.5, 32), glow(c.clone().multiplyScalar(0.4)), x + inward * 5.4, CUP_Y, 0, 0, inward * (Math.PI / 2)));
+        // The slider from band to cup, black.
+        g.add(mesh(new THREE.BoxGeometry(2.4, 14, 5), cupMat, x, CUP_Y + 7, 0));
+        // The cup, black, facing in across the road.
+        g.add(mesh(new THREE.CylinderGeometry(14, 14, 11, 48), cupMat, x, CUP_Y, 0, 0, 0, Math.PI / 2));
+        // Its rim of light, and the cushion glowing on the inner face.
+        g.add(mesh(new THREE.TorusGeometry(14, 0.5, 8, 64), glow(c), x - inward * 5.5, CUP_Y, 0, 0, Math.PI / 2));
+        g.add(mesh(new THREE.TorusGeometry(10.5, 3, 14, 48), glow(c.clone().multiplyScalar(0.8)), x + inward * 6, CUP_Y, 0, 0, Math.PI / 2));
+        g.add(mesh(new THREE.CircleGeometry(8, 36), glow(c.clone().multiplyScalar(0.3)), x + inward * 5.9, CUP_Y, 0, 0, inward * (Math.PI / 2)));
       }
       placeAt(g, road, s, 0);
-      // (Ground level at the arch, so it sits on the land.)
       root.add(g);
     }
 

@@ -46,7 +46,11 @@ const GLASS_VERT = /* glsl */ `
   varying vec3 vV;
   varying float vH;
   varying float vDepth;
+  varying vec3 vTint;
   void main() {
+    // Each building its own tint of dark glass: blue, purple or green.
+    float hh = fract(sin(dot(instanceMatrix[3].xz, vec2(12.9898, 78.233))) * 43758.5453);
+    vTint = hh < 0.4 ? vec3(0.16, 0.30, 0.78) : hh < 0.7 ? vec3(0.42, 0.20, 0.72) : vec3(0.12, 0.52, 0.50);
     vec4 wp = modelMatrix * instanceMatrix * vec4(position, 1.0);
     vN = normalize(mat3(modelMatrix) * mat3(instanceMatrix) * normal);
     vV = cameraPosition - wp.xyz;
@@ -66,15 +70,16 @@ const GLASS_FRAG = /* glsl */ `
   varying vec3 vV;
   varying float vH;
   varying float vDepth;
+  varying vec3 vTint;
   void main() {
     vec3 N = normalize(vN);
     vec3 V = normalize(vV);
     float fres = pow(1.0 - abs(dot(N, V)), 3.0);
     float side = 0.5 + 0.5 * dot(N, normalize(vec3(-0.3, 0.6, -0.5)));
     float floors = smoothstep(0.9, 1.0, fract(vH / 3.2)) * 0.22;
-    vec3 col = vec3(0.022, 0.04, 0.095) * (0.55 + 0.8 * side)
-      + vec3(0.16, 0.28, 0.62) * fres * 0.3
-      + vec3(0.14, 0.24, 0.55) * floors * (0.3 + fres);
+    vec3 col = vTint * 0.12 * (0.55 + 0.8 * side)
+      + vTint * fres * 0.42
+      + vTint * floors * (0.3 + fres) * 0.9;
     float fog = 1.0 - exp(-uFogD * uFogD * vDepth * vDepth);
     gl_FragColor = vec4(mix(col, uFog, fog * 0.5), 1.0);
   }
@@ -406,86 +411,6 @@ function useInstanced(count: number, geo: THREE.BufferGeometry, mat: THREE.Mater
     [geo, mat, mesh],
   );
   return mesh;
-}
-
-/** The shape of an arched opening: straight sides and a round top. */
-function archPath<T extends THREE.Path>(path: T, halfW: number, rise: number, base: number): T {
-  path.moveTo(-halfW, base);
-  path.lineTo(-halfW, rise);
-  path.absarc(0, rise, halfW, Math.PI, 0, true);
-  path.lineTo(halfW, base);
-  path.lineTo(-halfW, base);
-  return path;
-}
-
-/** GREAT ARCHES: monumental walls of dark glass standing across the
- *  road, a rounded opening through them outlined in light. Big enough
- *  that as you come close the arch fills the view and hides everything
- *  else - and then you're through and the land opens up again. */
-function Arches({ road, colourAt, at }: { road: RoadLayout; colourAt: ColourAt; at: number[] }) {
-  const OPEN = ROAD_HALF + 3.2; // half the opening's width
-  const RISE = 13; // where the round top begins
-  const DEPTH = 9;
-  const { wall, trim } = useMemo(() => {
-    const outer = new THREE.Shape();
-    const W = 42;
-    const H = 58;
-    outer.moveTo(-W, -8);
-    outer.lineTo(W, -8);
-    outer.lineTo(W, H - 10);
-    // A rounded crown on the wall itself, not a flat top.
-    outer.absarc(0, H - 10, W, 0, Math.PI, false);
-    outer.lineTo(-W, -8);
-    outer.holes.push(archPath(new THREE.Path(), OPEN, RISE, -8));
-    const wall = new THREE.ExtrudeGeometry(outer, { depth: DEPTH, bevelEnabled: false, curveSegments: 40 });
-    wall.translate(0, 0, -DEPTH / 2);
-    // The light round the opening: a band just inside it, a little
-    // deeper than the wall so it shows from both faces.
-    const band = archPath(new THREE.Shape(), OPEN + 0.6, RISE, -0.2);
-    band.holes.push(archPath(new THREE.Path(), OPEN, RISE, -0.2));
-    const trim = new THREE.ExtrudeGeometry(band, { depth: DEPTH + 0.4, bevelEnabled: false, curveSegments: 40 });
-    trim.translate(0, 0, -(DEPTH + 0.4) / 2);
-    return { wall, trim };
-  }, [OPEN]);
-  const glass = useMemo(
-    () =>
-      new THREE.ShaderMaterial({
-        vertexShader: GLASS_VERT,
-        fragmentShader: GLASS_FRAG,
-        side: THREE.DoubleSide,
-        uniforms: { uFog: { value: new THREE.Color("#060b1c") }, uFogD: { value: 0.0024 } },
-      }),
-    [],
-  );
-  const lit = useMemo(() => new THREE.MeshBasicMaterial({ toneMapped: false }), []);
-  const walls = useInstanced(at.length, wall, glass);
-  const trims = useInstanced(at.length, trim, lit);
-  useEffect(() => {
-    const p = new THREE.Vector3();
-    const ahead = new THREE.Vector3();
-    const o = new THREE.Object3D();
-    const c = new THREE.Color();
-    at.forEach((s, i) => {
-      pointAt(road, s, p);
-      pointAt(road, s + 2, ahead);
-      o.position.copy(p);
-      o.lookAt(ahead.x, p.y, ahead.z);
-      o.updateMatrix();
-      walls.setMatrixAt(i, o.matrix);
-      trims.setMatrixAt(i, o.matrix);
-      trims.setColorAt(i, c.copy(colourAt(s)).multiplyScalar(1.6));
-    });
-    for (const m of [walls, trims]) {
-      m.instanceMatrix.needsUpdate = true;
-      if (m.instanceColor) m.instanceColor.needsUpdate = true;
-    }
-  }, [road, colourAt, at, walls, trims]);
-  return (
-    <group>
-      <primitive object={walls} />
-      <primitive object={trims} />
-    </group>
-  );
 }
 
 /** CORRIDORS: two long rows of glass pillars either side of the road,
@@ -1151,11 +1076,13 @@ export function structurePlan(road: RoadLayout) {
   if (tallest) monuments.mic = { s: (tallest.a + tallest.b) / 2, side: 1 };
   const mid = road.skyways.find((w) => w.h > 30 && w.h < 45);
   if (mid) monuments.speakers = { s: (mid.a + mid.b) / 2 };
-  if (arches.length > 1) monuments.headphones = { s: arches.splice(1, 1)[0] };
+  // Every great arch is now a giant pair of headphones.
+  monuments.headphones = arches.splice(0, arches.length);
   /** Where the towers keep well clear, to let the monuments stand alone. */
-  const clear = [monuments.mic, monuments.speakers, monuments.headphones]
-    .filter((m): m is { s: number } => Boolean(m))
-    .map((m) => ({ from: m.s - 70, to: m.s + 70 }));
+  const clear = [monuments.mic, monuments.speakers]
+    .filter((m): m is { s: number; side?: number } => Boolean(m))
+    .map((m) => ({ from: m.s - 70, to: m.s + 70 }))
+    .concat(monuments.headphones.map((s) => ({ from: s - 25, to: s + 25 })));
   return { arches, corridors, tunnels, venues, spotRuns, keep, monuments, clear };
 }
 
@@ -1176,7 +1103,6 @@ export function Megastructures({
       <City road={road} dense={denseSpan} keep={plan.keep} colourAt={colourAt} clear={plan.clear} />
       <Monuments road={road} colourAt={colourAt} plan={plan.monuments} />
       <Venue road={road} colourAt={colourAt} venues={plan.venues} />
-      <Arches road={road} colourAt={colourAt} at={plan.arches} />
       <Corridors road={road} colourAt={colourAt} runs={plan.corridors} />
       <Tubes road={road} colourAt={colourAt} tunnels={plan.tunnels} />
       <Pylons road={road} colourAt={colourAt} />
