@@ -11,6 +11,27 @@ export const metadata: Metadata = {
 
 const PIECES = [
   {
+    src: "/book/cover-dark-glass.webp",
+    title: "Book cover A2 - dark glass",
+    note: "Cover A on the app's own darkness: near-black with faint purple, green and blue glass glows, so the neon lion stands out.",
+    w: 769,
+    h: 1200,
+  },
+  {
+    src: "/book/cover-dark-wave.webp",
+    title: "Book cover A3 - dark, with a subtle spectrum wave",
+    note: "The same, the neon kept to one thin speaking-spectrum waveform along the bottom edge.",
+    w: 766,
+    h: 1200,
+  },
+  {
+    src: "/book/cover-dark-wave-bold.webp",
+    title: "Book cover A4 - dark, with a bolder wave",
+    note: "The spectrum wave bigger and brighter across the lower cover, running under the microphone.",
+    w: 782,
+    h: 1200,
+  },
+  {
     src: "/book/cover-neon-glass.webp",
     title: "Book cover A - neon through glass",
     note: "New title and line. The lion enlarged and cropped, neon gradients like light through glass, a small lion emblem above the title.",
