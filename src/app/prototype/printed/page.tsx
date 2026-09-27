@@ -11,6 +11,20 @@ export const metadata: Metadata = {
 
 const PIECES = [
   {
+    src: "/book/speak-better-book-v2.webp",
+    title: "The book - in the VIP tier now",
+    note: "Cover A4 with TARIQ EQ AMAWI at the top and the strapline \"The Secret Speaking Skills You Need to Overcome Your Fears and Deliver Unforgettable Talks.\"",
+    w: 764,
+    h: 1200,
+  },
+  {
+    src: "/book/cover-a4-author-bottom-v2.webp",
+    title: "The book - author at the bottom, new strapline",
+    note: "The same with the small lion kept at the top and the name at the foot.",
+    w: 753,
+    h: 1200,
+  },
+  {
     src: "/book/cover-a4-author-bottom.webp",
     title: "Book cover A4 - author at the bottom",
     note: "A4 with the small line under the top lion removed (the lion emblem stays) and TARIQ EQ AMAWI at the foot of the cover.",
@@ -75,7 +89,7 @@ const PIECES = [
   },
   {
     src: "/book/speak-better-book.webp",
-    title: "The book - as it is in the tier today (old wording)",
+    title: "The book - the first render (old wording)",
     note: "Speak Better: Unleash Your True Colors and Roar on Screen and Stage. Re-rendered from the copy in \"How To Create Your Story Book - Step 2\". In use: VIP tier, \"The book\" tile.",
     w: 572,
     h: 900,

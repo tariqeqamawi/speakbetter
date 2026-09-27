@@ -105,7 +105,7 @@ export function TierArt({ has }: { has: string[] }) {
       <Tile on={h("book")} label="The book">
         <span className="relative h-[3.6rem] w-11">
           <Image
-            src="/book/speak-better-book.webp"
+            src="/book/speak-better-book-v2.webp"
             alt="The Speak Better book: Express Your True Colors and Roar on Screen and Stage"
             fill
             sizes="44px"
