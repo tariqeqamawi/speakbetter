@@ -140,6 +140,8 @@ function LandingBody() {
           <div className="mt-6">
             <JoinCta label="Join Speak Better Now" seal sealSize={96} />
           </div>
+          {/* On a phone, what you do comes straight after the first door. */}
+          <WhatYouDo className="mt-10 flex lg:hidden" />
         </div>
         </div>
 
@@ -155,29 +157,9 @@ function LandingBody() {
           <CohortDates stacked />
           {/* The ticks arrive one after another once the visitor starts to
               scroll. */}
-          <Reveal as="ul" afterScroll className="mx-auto flex max-w-xl flex-col gap-4 text-left">
-            {[
-              <>Overcome fears, nerves and shyness in a fully gamified, interactive app.</>,
-              <>
-                Watch short <strong className="font-semibold text-ink">1-2 minute</strong> skills videos.
-              </>,
-              <>
-                Upload <strong className="font-semibold text-ink">1-2 minute</strong> challenges.
-              </>,
-              <>Receive detailed feedback on your spoken delivery and physical expression.</>,
-              <>
-                Now you don&apos;t only get to learn; you get to{" "}
-                <strong className="font-semibold text-ink">practice</strong>, from the comfort of your phone.
-              </>,
-            ].map((line, i) => (
-              <li key={i} className="rv flex items-start gap-3" style={delay(i * 160)}>
-                <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-mindset/15 text-mindset">
-                  <CheckIcon className="size-3.5" />
-                </span>
-                <span className="text-lg text-ink-muted text-balance">{line}</span>
-              </li>
-            ))}
-          </Reveal>
+          {/* On a laptop, what you do sits beside the cohort; on a phone it
+              is already up under the first Join button. */}
+          <WhatYouDo className="hidden lg:flex" />
         </div>
 
 
@@ -515,5 +497,35 @@ function LandingBody() {
 
       <SiteFooter />
     </div>
+  );
+}
+
+/** What you actually do - the ticks, arriving one after another once the
+ *  visitor starts to scroll. */
+function WhatYouDo({ className = "" }: { className?: string }) {
+  return (
+    <Reveal as="ul" afterScroll className={`mx-auto max-w-xl flex-col gap-4 text-left ${className}`}>
+      {[
+        <>Overcome fears, nerves and shyness in a fully gamified, interactive app.</>,
+        <>
+          Watch short <strong className="font-semibold text-ink">1-2 minute</strong> skills videos.
+        </>,
+        <>
+          Upload <strong className="font-semibold text-ink">1-2 minute</strong> challenges.
+        </>,
+        <>Receive detailed feedback on your spoken delivery and physical expression.</>,
+        <>
+          Now you don&apos;t only get to learn; you get to{" "}
+          <strong className="font-semibold text-ink">practice</strong>, from the comfort of your phone.
+        </>,
+      ].map((line, i) => (
+        <li key={i} className="rv flex items-start gap-3" style={delay(i * 160)}>
+          <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-mindset/15 text-mindset">
+            <CheckIcon className="size-3.5" />
+          </span>
+          <span className="text-lg text-ink-muted text-balance">{line}</span>
+        </li>
+      ))}
+    </Reveal>
   );
 }

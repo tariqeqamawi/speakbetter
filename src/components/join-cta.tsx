@@ -43,8 +43,21 @@ export function JoinCta({
         )}
       </span>
       {/* The guarantee beside the ask, where the question it answers is
-          being asked (guarantee-seal.tsx). */}
-      {seal && <GuaranteeSeal size={sealSize} />}
+          being asked (guarantee-seal.tsx). On a phone, where a small seal
+          beside the button was too small to read, it goes under the
+          button instead: a bigger seal on the left, Tariq's promise
+          beside it. */}
+      {seal && (
+        <>
+          <span className="hidden sm:block">
+            <GuaranteeSeal size={sealSize} />
+          </span>
+          <span className="flex w-full max-w-md items-center gap-3 text-left sm:hidden">
+            <GuaranteeSeal size={112} className="shrink-0" />
+            <span className="text-sm leading-snug text-ink-muted">{guarantee.promise}</span>
+          </span>
+        </>
+      )}
     </div>
   );
 }

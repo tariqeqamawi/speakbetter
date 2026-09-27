@@ -181,6 +181,9 @@ export const guarantee = {
   days: 14,
   title: "14-day money-back guarantee",
   line: "Try it for 14 days. If it's not for you - for any reason whatsoever - ask, and you get every cent back.",
+  /** Tariq's words, beside the seal under the Join button on a phone. */
+  promise:
+    "Speak Better comes with a full 14-day money-back guarantee. We're so confident you'll love it, and if for whatever reason you don't, we'll happily give you your money back.",
 } as const;
 
 /** After the six weeks: staying on, month to month. Optional - the
