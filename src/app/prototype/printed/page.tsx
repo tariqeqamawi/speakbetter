@@ -11,8 +11,36 @@ export const metadata: Metadata = {
 
 const PIECES = [
   {
+    src: "/book/cover-neon-glass.webp",
+    title: "Book cover A - neon through glass",
+    note: "New title and line. The lion enlarged and cropped, neon gradients like light through glass, a small lion emblem above the title.",
+    w: 760,
+    h: 1200,
+  },
+  {
+    src: "/book/cover-light-ribbons.webp",
+    title: "Book cover B - light ribbons",
+    note: "Dark navy crossed by seven neon ribbons, like the app's spectrum wave, the lion rising out of them.",
+    w: 799,
+    h: 1200,
+  },
+  {
+    src: "/book/cover-holographic.webp",
+    title: "Book cover C - holographic",
+    note: "An iridescent cover, the lion huge and wrapping onto the spine, the title on the spine too.",
+    w: 775,
+    h: 1200,
+  },
+  {
+    src: "/book/cover-navy-v2.webp",
+    title: "Book cover D - navy, new wording",
+    note: "The original navy linen with the new title and line, for comparison.",
+    w: 771,
+    h: 1200,
+  },
+  {
     src: "/book/speak-better-book.webp",
-    title: "The book",
+    title: "The book - as it is in the tier today (old wording)",
     note: "Speak Better: Unleash Your True Colors and Roar on Screen and Stage. Re-rendered from the copy in \"How To Create Your Story Book - Step 2\". In use: VIP tier, \"The book\" tile.",
     w: 572,
     h: 900,
