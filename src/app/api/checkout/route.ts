@@ -31,8 +31,8 @@ const WHAT: Record<Purchase, { name: string; blurb: string; cents: number }> = {
     cents: priceCents.coached,
   },
   founders: {
-    name: "Speak Better - Ultimate",
-    blurb: "Six weeks of Complete, the live cohort, the session with the teacher, and the printed deck and book to keep.",
+    name: "Speak Better - VIP Ultimate",
+    blurb: "Six weeks of everything in Complete, plus personal one-to-one feedback from Tariq, and the printed deck and book to keep.",
     cents: priceCents.founders,
   },
   "credits-small": {
