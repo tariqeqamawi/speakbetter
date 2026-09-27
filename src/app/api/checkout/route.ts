@@ -57,6 +57,28 @@ const WHAT: Record<Purchase, { name: string; blurb: string; cents: number }> = {
   },
 };
 
+/**
+ * The Stripe product for each purchase - one lasting product per tier
+ * (and per pack), found by its tag or made the first time it's bought.
+ * Lasting products are what let a coupon be limited to one of them:
+ * ALUMNI2026 applies to "Speak Better - Starter" and nothing else.
+ */
+const products = new Map<string, string>();
+async function productFor(buy: Purchase, name: string, blurb: string): Promise<string> {
+  const cached = products.get(buy);
+  if (cached) return cached;
+  const s = stripe();
+  for await (const p of s.products.list({ active: true, limit: 100 })) {
+    if (p.metadata?.speak_better === buy) {
+      products.set(buy, p.id);
+      return p.id;
+    }
+  }
+  const made = await s.products.create({ name, description: blurb, metadata: { speak_better: buy } });
+  products.set(buy, made.id);
+  return made.id;
+}
+
 export async function POST(request: Request) {
   if (!stripeEnabled())
     return NextResponse.json({ error: "Checkout isn't switched on yet." }, { status: 503 });
@@ -74,6 +96,7 @@ export async function POST(request: Request) {
   const known = priceId(buy);
 
   try {
+    const product = known ? null : await productFor(buy, item.name, item.blurb);
     const session = await stripe().checkout.sessions.create({
       mode: "payment",
       // Stripe's own page, in the app's clothes as far as it allows.
@@ -85,7 +108,7 @@ export async function POST(request: Request) {
               price_data: {
                 currency: "usd",
                 unit_amount: item.cents,
-                product_data: { name: item.name, description: item.blurb },
+                product: product!,
               },
             },
       ],
@@ -100,7 +123,8 @@ export async function POST(request: Request) {
       },
       allow_promotion_codes: true,
       success_url: `${site}/checkout/done?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${site}/pricing?cancelled=1`,
+      // Back out of Stripe's page, back to our checkout, on the same tier.
+      cancel_url: plan ? `${site}/checkout?plan=${plan}` : `${site}/pricing?cancelled=1`,
     });
     if (!session.url) throw new Error("no session url");
     return NextResponse.json({ url: session.url });
