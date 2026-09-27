@@ -13,7 +13,6 @@ export const LANDING_SECTIONS = [
   { id: "coach", label: "Meet Coach" },
   { id: "different", label: "Why it's different" },
   { id: "app", label: "Inside the app" },
-  { id: "spectrum", label: "Speaking Spectrum" },
   { id: "lessons", label: "The lessons" },
   { id: "challenges", label: "The challenges" },
   { id: "mentors", label: "Two mentors" },

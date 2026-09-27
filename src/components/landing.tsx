@@ -219,6 +219,33 @@ function LandingBody() {
           The only AI coach trained on a complete speaking method - it tells you which skills you used, which you
           missed, and exactly which lesson to watch next.
         </p>
+        {/* The Speaking Spectrum, first - it is the difference. Other
+            speaking apps, even the ones with an AI coach, hand back generic
+            advice; this reads a take across seven color-coded areas and
+            lights each one up as the skill is shown. */}
+        <div className="rv mx-auto flex w-full max-w-3xl flex-col items-center gap-4 rounded-3xl border border-navy-600 bg-navy-800 p-6 sm:p-8" style={delay(120)}>
+          <span className="spectrum-rule h-1 w-16 rounded-full" />
+          <h3 className="text-2xl font-semibold tracking-tight sm:text-3xl">The Speaking Spectrum</h3>
+          <p className="max-w-xl text-center text-ink-muted text-balance">
+            Other speaking apps give you generic advice - even the ones with AI coaching. Speak Better shows your
+            speaking across seven key areas, color-coded, each one lighting up as you demonstrate its skills. It&apos;s
+            unlike anything out there.
+          </p>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ink-faint">Before and after</p>
+          <SpectrumDemo />
+          <ul className="flex max-w-2xl flex-wrap justify-center gap-2">
+            {categories.map((cat) => (
+              <li
+                key={cat.id}
+                className="flex items-center gap-2 rounded-full border border-navy-600 bg-navy-900 px-3 py-1.5 text-sm text-ink-muted"
+              >
+                <span className={`size-2 rounded-full ${cat.bgClass}`} />
+                {cat.name}
+              </li>
+            ))}
+          </ul>
+        </div>
+
         {/* Tariq saying it: this is not just another online course. */}
         <div className="rv mx-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-navy-600 shadow-2xl shadow-navy-950/80" style={delay(150)}>
           <LazyVimeoPlayer
@@ -329,31 +356,6 @@ function LandingBody() {
 
       <SectionMark id="app" />
       <LandingShowcase />
-
-      <SectionMark id="spectrum" />
-      {/* The spectrum */}
-      <section className="flex flex-col items-center gap-4">
-        <h2 className="text-2xl font-semibold tracking-tight">
-          Speaking Spectrum
-        </h2>
-        <p className="max-w-lg text-center text-ink-muted">
-          Every skill belongs to one of seven colors. The more colors your talk lights up, the more dynamic a
-          speaker you&apos;re becoming.
-        </p>
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ink-faint">Before and after</p>
-        <SpectrumDemo />
-        <ul className="flex max-w-2xl flex-wrap justify-center gap-2">
-          {categories.map((cat) => (
-            <li
-              key={cat.id}
-              className="flex items-center gap-2 rounded-full border border-navy-600 bg-navy-800 px-3 py-1.5 text-sm text-ink-muted"
-            >
-              <span className={`size-2 rounded-full ${cat.bgClass}`} />
-              {cat.name}
-            </li>
-          ))}
-        </ul>
-      </section>
 
       <ProofLine tag="lessons" />
 
