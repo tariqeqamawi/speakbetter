@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { stripe, stripeEnabled } from "@/lib/stripe/config";
 import { CheckoutDone } from "@/components/checkout-done";
+import { tiers } from "@/data/pricing";
 
 export const metadata: Metadata = { title: "You're in" };
 
@@ -17,9 +18,16 @@ export const metadata: Metadata = { title: "You're in" };
 export default async function CheckoutDonePage({
   searchParams,
 }: {
-  searchParams: Promise<{ session_id?: string }>;
+  searchParams: Promise<{ session_id?: string; preview?: string }>;
 }) {
-  const { session_id: id } = await searchParams;
+  const { session_id: id, preview } = await searchParams;
+
+  // ?preview=<plan> shows the page as a buyer of that plan would see it -
+  // without a payment, and without unlocking anything on this device.
+  if (preview) {
+    const tier = tiers.find((t) => t.id === preview) ?? tiers[tiers.length - 1];
+    return <CheckoutDone plan={tier.id} email={null} preview />;
+  }
 
   let plan: string | null = null;
   let email: string | null = null;
