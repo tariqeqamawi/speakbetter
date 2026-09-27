@@ -1,6 +1,7 @@
 import { cohort } from "@/data/cohort";
 import { foundingCohort } from "@/data/pricing";
 import { CalendarIcon, CheckIcon } from "@/components/icons";
+import { ReadMore } from "@/components/read-more";
 
 // The two facts a person needs before they can decide: when it starts,
 // and what they get in the meantime.
@@ -32,10 +33,12 @@ export function CohortDates() {
           <span className="text-lg font-bold text-ink sm:text-xl">{cohort.startLabel}</span>
         </span>
         <span className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">{foundingCohort.headline}</span>
-        <span className="text-sm text-ink-muted text-balance">
+        {/* Why it's priced as it is, and what the round is - folded to
+            its first lines, the rest a tap away. */}
+        <ReadMore lines={2} className="text-sm text-ink-muted text-balance" buttonClassName="self-center">
           {foundingCohort.line} This round runs for {cohort.weeks} weeks - {cohort.runLabel} - and
           you keep {cohort.accessLabel} to the app. Founding members win the Founding Cohort trophy, which no later round can.
-        </span>
+        </ReadMore>
         <span className="flex items-start gap-2 rounded-xl bg-mindset/10 px-3.5 py-2 text-left text-sm text-mindset text-balance">
           <CheckIcon className="mt-0.5 size-4 shrink-0" />
           <span>{cohort.doorsLine}</span>

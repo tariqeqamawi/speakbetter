@@ -515,7 +515,11 @@ function LandingBody() {
               <span className="size-2 animate-pulse rounded-full bg-figurative" />
               {foundingCohort.headline}
             </span>
-            <p className="text-sm text-ink-muted text-balance">{foundingCohort.line}</p>
+            {/* Why it's priced as it is - there for whoever asks, folded
+                so the prices below stay in view. */}
+            <ReadMore lines={2} className="text-sm text-ink-muted text-balance" buttonClassName="self-center">
+              {foundingCohort.line}
+            </ReadMore>
           </div>
           <h2 className="text-2xl font-semibold tracking-tight text-balance">
             Three tiers, based on the amount of support you want
