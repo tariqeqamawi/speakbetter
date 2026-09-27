@@ -34,8 +34,8 @@ export default function DeckPage() {
     <div className="flex flex-col gap-20 pb-10">
       <div className="flex flex-col items-center gap-8">
         <SiteHero ghost="The Deck" kicker="The Speak Better deck" title="Every speaking skill, in your hand" accent="text-figurative">
-          {cards} cards, one for every skill in the course, each in its color edge to edge. Pull one of each color and you
-          have the ingredients for a talk that moves.
+          {cards} cards, color-coded to seven areas of public speaking, designed for speakers who desire engaging talks
+          on the fly.
         </SiteHero>
         <div className="relative w-full max-w-4xl overflow-hidden rounded-3xl border border-navy-600">
           <Image
@@ -52,6 +52,12 @@ export default function DeckPage() {
 
       <section className="flex flex-col items-center gap-8">
         <SiteHeading kicker="How it works" title="Seven cards on the table, one of every color" accent="text-structure" />
+        {/* Tariq's words. */}
+        <p className="-mt-4 max-w-2xl text-center text-ink-muted text-balance">
+          Every speaking skill in your hand and ready to use immediately. {cards} cards, one for every skill in the Speak
+          Better system, split up into seven colors. Pull cards from one color to learn skills in that area, or pull a
+          card of every color to have the ingredients for a dynamic talk that lights up the stage.
+        </p>
         <ol className="grid w-full max-w-4xl gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {categories.map((c) => (
             <li key={c.id} className={`flex flex-col gap-2 rounded-2xl border bg-navy-800/60 p-4 ${c.borderClass}`}>
