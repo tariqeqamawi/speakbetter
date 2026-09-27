@@ -1,7 +1,6 @@
 import { PhoneFilm } from "@/components/phone-film";
 import { HowItWorks } from "@/components/how-it-works";
-import { WhatItIs } from "@/components/what-it-is";
-import { WhatsInside } from "@/components/whats-inside";
+import { WhatsInApp } from "@/components/whats-in-app";
 import { SelfieTake } from "@/components/selfie-take";
 import { SELFIE_TAKES } from "@/data/selfie-takes";
 import { ListenIcon, TrophyIcon } from "@/components/icons";
@@ -13,8 +12,8 @@ import { ListenIcon, TrophyIcon } from "@/components/icons";
 // yourself - shown being done, four people on their own phones with the
 // app's recording screen over them.
 //
-// What's in the app: what you get (the numbers), the features at a
-// glance, and the app itself - short films of the real pages, the
+// What's in the app: what you get - the numbers, moving, and every other
+// feature - and the app itself - short films of the real pages, the
 // challenges among them.
 
 /** A phone outline around whatever it's given. */
@@ -88,13 +87,9 @@ export function HowItWorksSection() {
 export function WhatsInTheApp() {
   return (
     <div className="flex flex-col gap-14">
-      {/* What you get - the numbers. */}
-      <div className="flex justify-center">
-        <WhatItIs />
-      </div>
-
-      {/* Features at a glance - the cards. */}
-      <WhatsInside />
+      {/* What you get: the five numbers, each shown moving, and the rest
+          of the features in a strip - said once (whats-in-app.tsx). */}
+      <WhatsInApp />
 
       {/* The app in action - short films of the real pages. */}
       <section className="flex flex-col items-center gap-4">

@@ -2692,8 +2692,7 @@ html.bare .demo-banner {
  * the moment it restarts - a loop with no seam to spot. One transform,
  * composited, costing the main thread nothing.
  *
- * It pauses on hover, because somebody who has stopped to read a
- * sentence should not have it slide out from under them. */
+ * They never pause - slow enough to read on the move instead. */
 .quote-float {
   animation-timing-function: linear;
   animation-iteration-count: infinite;
@@ -2701,10 +2700,9 @@ html.bare .demo-banner {
   will-change: transform, opacity;
 }
 
-/* Hold them still to finish reading one. */
-.quote-field:hover .quote-float {
-  animation-play-state: paused;
-}
+/* No pause on hover: a mouse resting over the field while the page
+ * scrolls froze them mid-air and read as broken. They rise slowly
+ * enough to read instead, and never stop. */
 
 /* Without motion, the same quotes laid out still - every one readable,
  * none of them moving. */

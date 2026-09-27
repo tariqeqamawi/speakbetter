@@ -20,9 +20,10 @@ import { ReadMore } from "@/components/read-more";
 //
 // HOW. Every quote shares one cycle and rises during its own slice of
 // it - staggered by the same gap, so there are always about the same
-// number in the air and they never bunch up. A quote takes twenty
+// number in the air and they never bunch up. A quote takes twenty-six
 // seconds to cross, because these are sentences to be read, not
-// one-word comments. Hover to hold them still. Pure transform and
+// one-word comments - and never pauses, so the motion is always there.
+// Pure transform and
 // opacity, so the compositor carries it and the main thread does
 // nothing - the rule everywhere in this app.
 //
@@ -34,7 +35,7 @@ import { ReadMore } from "@/components/read-more";
 // with permission, would drop straight into the same slot.
 
 /** Seconds for one quote to cross the field. Long enough to read one. */
-const RISE = 20;
+const RISE = 26;
 /** Where each quote sets off from, as a share of the free width - dealt
  *  so that one quote never starts where the last one did. */
 const LANES = [0.08, 0.66, 0.34, 0.92, 0.2, 0.52, 0.8, 0.02, 0.44, 0.72];
