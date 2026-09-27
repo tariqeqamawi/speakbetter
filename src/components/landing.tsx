@@ -334,13 +334,13 @@ function LandingBody() {
             This is how you actually record yourself
           </h2>
           <p className="text-ink-muted text-balance">
-            No studio, no crew. Prop up your phone, press record, and speak for a minute or two - the brief on screen
-            while you do. Then Coach watches it.
+            No studio, no crew, no fancy equipment. Simply prop up your phone and press record through the Speak
+            Better Selfie feature. Talk for a minute or two - then Coach watches it and gives you expert feedback.
           </p>
         </div>
         <div className="-mx-4 flex w-[calc(100%+2rem)] gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:w-full sm:max-w-4xl sm:grid-cols-4 sm:overflow-visible sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {SELFIE_TAKES.map((t) => (
-            <div key={t.src} className="w-44 shrink-0 rounded-[2.2rem] border-4 border-navy-600 bg-navy-950 p-1.5 shadow-2xl shadow-navy-950 sm:w-auto">
+            <div key={t.src} className="w-60 shrink-0 rounded-[2.2rem] border-4 border-navy-600 bg-navy-950 p-1.5 shadow-2xl shadow-navy-950 sm:w-auto">
               <SelfieTake take={t} />
             </div>
           ))}

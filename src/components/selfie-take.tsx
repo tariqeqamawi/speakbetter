@@ -6,7 +6,8 @@ import type { SelfieTakeClip } from "@/data/selfie-takes";
 // Somebody recording a take, the way a student actually does it: the
 // phone's own camera, a ring light, and the app's recording screen over
 // it - the red dot and the running time at the top, the challenge's
-// brief at the foot so they can glance at it while they speak.
+// brief and the lines that complete it at the foot, ticking as the take
+// goes on, so they can glance at them while they speak.
 //
 // The people are rendered (public/selfie, made with Higgsfield); the
 // screen over them is drawn here, so its words are the app's words and
@@ -55,9 +56,36 @@ export function SelfieTake({ take, className = "" }: { take: SelfieTakeClip; cla
           REC {mm}:{ss}
         </span>
       </span>
-      <span className="absolute inset-x-2 bottom-2 rounded-xl bg-black/50 px-2.5 py-2 text-left backdrop-blur">
+      {/* As the app's recorder shows it: the brief, and the lines that
+          complete it - each one ticking as the take goes on. */}
+      <span className="absolute inset-x-2 bottom-2 flex flex-col gap-1 rounded-xl bg-black/55 px-2.5 py-2 text-left backdrop-blur">
         <span className="block text-[0.5rem] font-bold uppercase tracking-wider text-storytelling">The brief</span>
-        <span className="block text-[0.65rem] font-semibold leading-snug text-white">{take.brief}</span>
+        <span className="block text-[0.62rem] font-semibold leading-snug text-white">{take.brief}</span>
+        {take.criteria.length > 0 && (
+          <>
+            <span className="mt-0.5 flex items-center justify-between text-[0.45rem] font-bold uppercase tracking-wider text-white/60">
+              Complete the challenge by
+              <span className="tabular-nums">
+                {take.criteria.filter((_, i) => secs >= (i + 1) * 9).length}/{take.criteria.length}
+              </span>
+            </span>
+            <span className="flex flex-col gap-0.5">
+              {take.criteria.map((c, i) => {
+                const met = secs >= (i + 1) * 9;
+                return (
+                  <span key={c} className="flex items-start gap-1.5 text-[0.55rem] leading-tight text-white/90">
+                    <span
+                      className={`mt-px grid size-2.5 shrink-0 place-items-center rounded-full border transition-colors duration-500 ${
+                        met ? "border-mindset bg-mindset shadow-[0_0_6px_var(--color-mindset)]" : "border-white/40"
+                      }`}
+                    />
+                    {c}
+                  </span>
+                );
+              })}
+            </span>
+          </>
+        )}
       </span>
     </div>
   );
