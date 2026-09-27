@@ -403,3 +403,4 @@ what.
 - Road: spotlight runs - lighting gantries over the road, beams swaying down into pools of light you drive through — `2eaf0c5`
 - speakbetter.app live; checkout on lasting Stripe products (ALUMNI2026 limited to Starter); free 100% orders accepted; /home -> /landing — `1aad0f9`
 - Phone landing: checklist straight under the first Join button; bigger guarantee seal with Tariq's promise beside it — `f8d745b`
+- Coach costs in /admin (new tab) and the data room's Unit economics: per-review cost, worst case per tier, pack margins, the cohort's bill — `885eec7`
