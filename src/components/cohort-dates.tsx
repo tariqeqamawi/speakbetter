@@ -12,12 +12,16 @@ import { ReadMore } from "@/components/read-more";
 // Together they say the true thing - the app is yours tonight, and on
 // the 3rd everyone starts walking at the same time.
 
-export function CohortDates() {
+export function CohortDates({ stacked = false }: { stacked?: boolean } = {}) {
+  // Stacked: trophy above the words at every width - for when it shares
+  // a row with something else and a side-by-side card would be cramped.
+  const row = stacked ? "" : " sm:flex-row sm:items-center sm:gap-8";
+  const left = stacked ? "" : " sm:items-start sm:text-left";
   return (
     // The founding members' cohort - the offer itself, given the room it
     // deserves: its trophy, its dates, its 20 places and why it is priced
     // as it is.
-    <div className="mt-2 flex w-full max-w-3xl flex-col items-center gap-5 rounded-3xl border border-storytelling/50 bg-gradient-to-b from-storytelling/10 to-navy-800 px-5 py-6 shadow-[0_0_60px_-30px_var(--color-storytelling)] sm:flex-row sm:items-center sm:gap-8 sm:px-8 sm:py-7">
+    <div className={`mt-2 flex w-full max-w-3xl flex-col items-center gap-5 rounded-3xl border border-storytelling/50 bg-gradient-to-b from-storytelling/10 to-navy-800 px-5 py-6 shadow-[0_0_60px_-30px_var(--color-storytelling)] sm:px-8 sm:py-7${row}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/trophy/cohort-autumn-2026-2x.webp"
@@ -26,7 +30,7 @@ export function CohortDates() {
         height={220}
         className="h-40 w-auto shrink-0 drop-shadow-[0_0_30px_rgba(255,214,10,0.35)] sm:h-52"
       />
-      <div className="flex flex-col items-center gap-3 text-center sm:items-start sm:text-left">
+      <div className={`flex flex-col items-center gap-3 text-center${left}`}>
         <span className="text-xs font-bold uppercase tracking-[0.25em] text-storytelling">Founding members&apos; cohort</span>
         <span className="flex items-center gap-2.5">
           <CalendarIcon className="size-5 shrink-0 text-figurative" />

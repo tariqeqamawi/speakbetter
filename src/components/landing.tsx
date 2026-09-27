@@ -21,6 +21,7 @@ import { TheReality } from "@/components/the-reality";
 import { JoinCta } from "@/components/join-cta";
 import { LazyVimeoPlayer } from "@/components/lazy-vimeo-player";
 import { foundingCohort } from "@/data/pricing";
+import { cohort } from "@/data/cohort";
 import { StickyJoin } from "@/components/sticky-join";
 import { HeroLion } from "@/components/hero-lion";
 import { TestimonialStream } from "@/components/testimonial-stream";
@@ -71,7 +72,13 @@ function LandingBody() {
       <SectionMark id="overview" />
 
       {/* Hero */}
-      <section className="flex flex-col items-center gap-6 text-center">
+      <section className="flex flex-col items-center text-center">
+        {/* ONE FOLD AT A TIME. The opening is two screens, each held to
+            the height of the window on a laptop with room around it, so
+            a visitor reads the promise and Tariq, then scrolls to the
+            offer - never half of one and half of the other. */}
+        {/* FOLD ONE: the promise on the left, Tariq on the right. */}
+        <div data-fold="1" className="flex w-full flex-col items-center justify-center pb-16 lg:-mt-14 lg:min-h-[calc(100svh-4rem)] lg:pb-6">
         {/* The mark, alive: the lion roars every ten seconds (the brand
             clip, lion and mic only - the wave beneath is the live one),
             and holds still for anyone who asked for less motion. */}
@@ -80,8 +87,8 @@ function LandingBody() {
         <div className="grid w-full max-w-6xl items-center gap-8 lg:grid-cols-2 lg:gap-12">
         <div className="flex flex-col items-center gap-3 lg:items-start lg:text-left">
         <div className="flex w-full max-w-md flex-col items-center">
-          <HeroLion className="h-44 w-auto sm:h-64 lg:h-44" />
-          <Soundwave variant="hero" className="-mt-3 h-16 w-full sm:-mt-4 sm:h-24 lg:h-14" />
+          <HeroLion className="h-44 w-auto sm:h-64 lg:h-32 xl:h-36" />
+          <Soundwave variant="hero" className="-mt-3 h-16 w-full sm:-mt-4 sm:h-24 lg:h-10" />
         </div>
 
         {/* The promise, in one breath - then the rest in one more. */}
@@ -113,7 +120,8 @@ function LandingBody() {
             Master public speaking in minutes a day, not months, and step into your true power on any platform.
           </p>
           <p className="text-lg text-ink text-balance sm:text-xl">
-            20 founding spots - a special price, in return for your feedback.
+            <b className="font-semibold text-storytelling">Starts {cohort.startShort}</b> · 20 founding spots - a special
+            price, in return for your feedback.
           </p>
         </div>
         <div className="w-full">
@@ -127,17 +135,27 @@ function LandingBody() {
             />
           </div>
           <p className="mt-2 text-center text-sm font-medium text-ink-muted">From awkward to awesome in minutes a day.</p>
+          {/* The door, right under Tariq - where somebody who has just
+              watched him decides. */}
+          <div className="mt-6">
+            <JoinCta label="Join Speak Better Now" seal sealSize={96} />
+          </div>
         </div>
         </div>
 
-        <div className="flex max-w-2xl flex-col items-center gap-3">
+        </div>
+
+        {/* FOLD TWO: the offer - the founding cohort on the left, what you
+            actually do on the right - and the door under them. */}
+        <div data-fold="2" className="flex w-full flex-col items-center justify-center gap-12 border-t border-navy-700/60 py-16 lg:min-h-[calc(100svh-4rem)] lg:py-16">
+        <div className="grid w-full max-w-6xl items-center gap-10 lg:grid-cols-2 lg:gap-14">
           {/* The dates, high enough that nobody has to hunt for them.
               Two facts, in the order they are asked: when does it
               start, and what happens if I buy right now. */}
-          <CohortDates />
+          <CohortDates stacked />
           {/* The ticks arrive one after another once the visitor starts to
               scroll. */}
-          <Reveal as="ul" afterScroll className="flex max-w-xl flex-col gap-3 text-left">
+          <Reveal as="ul" afterScroll className="mx-auto flex max-w-xl flex-col gap-4 text-left">
             {[
               <>Overcome fears, nerves and shyness in a fully gamified, interactive app.</>,
               <>
@@ -163,12 +181,8 @@ function LandingBody() {
         </div>
 
 
-        {/* The opening is only the promise, the video, the dates and
-            what you do - then the door. The testimonials sit after Coach
-            has been shown (proof after the claim), the concert line opens
-            "Why it's different", and what's in the box moved to "Inside
-            the app". */}
-        <JoinCta label="Join Speak Better Now" seal />
+
+        </div>
       </section>
 
       <SectionMark id="coach" />
