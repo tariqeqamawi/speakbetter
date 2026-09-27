@@ -466,7 +466,7 @@ function City({ road, dense, keep, colourAt, clear }: { road: RoadLayout; dense?
       {meshes.map((m) => (
         <primitive key={m.uuid} object={m} />
       ))}
-      <Searchlights road={road} towers={towers} />
+      <Searchlights road={road} towers={towers} dense={dense} />
     </group>
   );
 }
@@ -1115,18 +1115,27 @@ function Tubes({ road, colourAt, tunnels }: { road: RoadLayout; colourAt: Colour
 
 /** From a few of the tallest towers, a slow beam of light swinging across
  *  the sky - the glare of the city at night. */
-function Searchlights({ road, towers }: { road: RoadLayout; towers: Tower[] }) {
+function Searchlights({ road, towers, dense }: { road: RoadLayout; towers: Tower[]; dense?: { from: number; to: number } }) {
   const beams = useMemo(() => {
     const p = new THREE.Vector3();
     const side = new THREE.Vector3();
+    // Over the city (Y): six great beams from its tallest towers, spread
+    // along it, sweeping the sky; elsewhere, one tower in five.
+    const inCity = (t: Tower) => Boolean(dense && t.s > dense.from && t.s < dense.to);
+    const city = towers.filter(inCity).sort((a, b) => b.top - a.top);
+    const chosen: Tower[] = [];
+    for (const t of city) {
+      if (chosen.length >= 6) break;
+      if (chosen.every((c) => Math.abs(c.s - t.s) > 60)) chosen.push(t);
+    }
     return towers
-      .filter((_, i) => i % 5 === 0)
+      .filter((t, i) => (inCity(t) ? chosen.includes(t) : i % 5 === 0))
       .map((t, i) => {
         pointAt(road, t.s, p);
         sideAt(road, t.s, side);
         return { pos: new THREE.Vector3(p.x + side.x * t.d, p.y + t.top + 1, p.z + side.z * t.d), phase: i * 1.7 };
       });
-  }, [road, towers]);
+  }, [road, towers, dense]);
   const geo = useMemo(() => {
     const g = new THREE.ConeGeometry(9, 260, 20, 1, true);
     g.translate(0, -130, 0);

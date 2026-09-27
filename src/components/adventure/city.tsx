@@ -59,6 +59,7 @@ const SPIRE_VERT = /* glsl */ `
 const SPIRE_FRAG = /* glsl */ `
   uniform float uTime;
   uniform float uReveal;
+  uniform float uLight;
   varying vec3 vColor;
   varying float vY;
   varying vec3 vN;
@@ -74,6 +75,13 @@ const SPIRE_FRAG = /* glsl */ `
     float under = exp(-vY * 14.0) * 1.3;
     float rim = fres * 0.22 * (1.0 - vY * 0.7);
     vec3 col = glass + vColor * (under + rim);
+    // THE FINISH: as you near the end of the road, the skyline fills with
+    // light, spire after spire, each in its own colour - a bright band
+    // climbing it, the lit glass left behind.
+    float fill = clamp(uLight * 1.6 - vSeed * 0.6, 0.0, 1.0);
+    float litUp = step(vY, fill) * (0.25 + 0.55 * fres);
+    float front = exp(-pow((vY - fill) * 30.0, 2.0)) * step(0.001, fill) * step(fill, 0.995);
+    col += vColor * (litUp * 0.7 + front * 2.2);
     gl_FragColor = vec4(col * uReveal, 1.0);
   }
 `;
@@ -149,7 +157,7 @@ export function City({ road, travel, revealFrom }: { road: RoadLayout; travel: T
       new THREE.ShaderMaterial({
         vertexShader: SPIRE_VERT,
         fragmentShader: SPIRE_FRAG,
-        uniforms: { uTime: { value: 0 }, uReveal: { value: 0 } },
+        uniforms: { uTime: { value: 0 }, uReveal: { value: 0 }, uLight: { value: 0 } },
       }),
     [],
   );
@@ -272,6 +280,7 @@ export function City({ road, travel, revealFrom }: { road: RoadLayout; travel: T
     const k = THREE.MathUtils.smoothstep(travel.s + AHEAD, revealFrom, revealFrom + 90);
     spireMat.uniforms.uTime.value = t;
     spireMat.uniforms.uReveal.value = k;
+    spireMat.uniforms.uLight.value = THREE.MathUtils.smoothstep(travel.s + AHEAD, road.finish - 520, road.finish - 20);
     if (root.current) root.current.visible = k > 0.001;
     for (const m of fades.current) if (m) m.opacity = k * (m.userData.base ?? 1);
     const tp = (trails.attributes.position as THREE.BufferAttribute).array as Float32Array;

@@ -5,6 +5,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { Fireflies, Scenery } from "./world-extras";
 import { Megastructures, structurePlan } from "./megastructures";
+import { SectionWeather } from "./weather";
 import { Portal } from "./portal";
 import { SkyDome } from "./sky-dome";
 import { City } from "./city";
@@ -144,8 +145,15 @@ function landform(id: string, x: number, z: number, away: number, u = 0.5): numb
       return away * (dune * 18 + h * 8 - 3) + away * away * 4;
     }
     case "R": {
+      // THE SOUND-WAVE CANYON: walls either side of the road, standing
+      // back from it, their height rising and falling along the way like
+      // the bars of a giant waveform - peaks and troughs you drive
+      // between, down into Reveal Deeper Truths.
       const ridge = 1 - Math.abs(2 * h - 1);
-      return away * (Math.pow(ridge, 1.6) * 58 - 6) + away * away * 12;
+      const bar = Math.abs(Math.sin(u * Math.PI * 16));
+      const env = (0.35 + 0.65 * (0.5 + 0.5 * Math.sin(u * Math.PI * 5.3 + 1))) * (0.6 + 0.4 * Math.sin(u * Math.PI * 11.7));
+      const wall = THREE.MathUtils.smoothstep(away, 0.12, 0.42);
+      return away * (Math.pow(ridge, 1.6) * 14 - 5) + wall * (10 + bar * env * 62) + away * away * 10;
     }
     case "Y": {
       // A pass first - the last mountains standing either side of the
@@ -204,6 +212,8 @@ const TERRAIN_FRAG = /* glsl */ `
   uniform float uFogDensity;
   uniform vec3 uHorizon;
   uniform float uTarget;
+  uniform vec3 uMe;
+  uniform float uFeel;
   varying float vLift;
   varying vec3 vPattern;
   varying vec2 vGrid;
@@ -314,6 +324,21 @@ const TERRAIN_FRAG = /* glsl */ `
     float wave = exp(-d * d / 60.0) * (1.0 - smoothstep(180.0, 220.0, front - uFrom));
     // A faint afterglow behind it, fading as it goes.
     float wake = (d < 0.0 ? exp(d / 18.0) : 0.0) * 0.35 * (1.0 - smoothstep(180.0, 220.0, front - uFrom));
+    // (Quieter while you're moving - then the ripples below are the show.)
+    wave *= 1.0 - 0.6 * uFeel;
+    wake *= 1.0 - 0.6 * uFeel;
+
+    // THE GROUND REACTS TO YOU: rings of light spreading out across the
+    // land from the traveller, one after another, stronger the faster you
+    // go and gone when you stop.
+    float dm = length(vWorld.xz - uMe.xz);
+    float rip = 0.0;
+    for (int k = 0; k < 3; k++) {
+      float r = mod(uTime * 34.0 + float(k) * 30.0, 90.0);
+      float dd = dm - r;
+      rip += exp(-dd * dd / 26.0) * (1.0 - r / 90.0);
+    }
+    rip *= uFeel;
 
     // THE SURFACE, lit the way a renderer with global illumination
     // would light it - approximated, because a phone cannot trace rays:
@@ -341,7 +366,7 @@ const TERRAIN_FRAG = /* glsl */ `
     // The light itself.
     // A dot is a point, not a line: it needs more light to read.
     float rest = (0.02 * halo + 0.16 * core) * mix(1.0, 3.2 * gTwinkle, dotsK);
-    float lit = (wave + wake) * (1.2 * core + 0.5 * halo + 0.25 * haloWide);
+    float lit = (wave + wake) * (1.2 * core + 0.5 * halo + 0.25 * haloWide) + rip * (1.6 * core + 0.7 * halo + 0.3 * haloWide);
     col += vNeon * (rest + lit * 1.6) * crowd;
 
     // SHIMMER, in every land - what made O's dots the best thing on the
@@ -472,6 +497,8 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
           uHorizon: { value: new THREE.Color("#3a3f8f") },
           // Where Your Impact's rays converge: the city, far past the road.
           uTarget: { value: road.length + 330 },
+          uMe: { value: new THREE.Vector3() },
+          uFeel: { value: 0 },
         },
       }),
     [road.length],
@@ -498,6 +525,9 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
     }
     const t = clock.elapsedTime;
     material.uniforms.uTime.value = t;
+    // Where the ripples start from, and how strong they are.
+    pointAt(road, travel.s + AHEAD, material.uniforms.uMe.value as THREE.Vector3);
+    material.uniforms.uFeel.value = Math.min(1, travel.feel * 1.3);
 
     const loop = Math.floor(t / 8);
     if (loop !== lastLoop.current) {
@@ -661,8 +691,11 @@ function Road({ road, spans, trail }: { road: RoadLayout; spans: Span[]; trail: 
       </mesh>
       {/* The neon the traveller leaves behind - drawn only as far as
           they have gone (world-details.tsx, Traveller). */}
+      <mesh geometry={trail[2]}>
+        <meshBasicMaterial vertexColors transparent opacity={0.16} blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} side={THREE.DoubleSide} />
+      </mesh>
       <mesh geometry={trail[0]}>
-        <meshBasicMaterial vertexColors transparent opacity={0.28} blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} side={THREE.DoubleSide} />
+        <meshBasicMaterial vertexColors transparent opacity={0.42} blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} side={THREE.DoubleSide} />
       </mesh>
       <mesh geometry={trail[1]}>
         <meshBasicMaterial vertexColors toneMapped={false} side={THREE.DoubleSide} />
@@ -1034,8 +1067,11 @@ export function AdventureWorld({
   const reached = reachedPhase(stops, phases);
   const trail = useMemo(
     () => [
-      ribbon(road, spans, -1.3, 1.3, 0.06, (ph, o) => o.copy(ph).multiplyScalar(0.9)),
-      ribbon(road, spans, -0.3, 0.3, 0.08, (ph, o) => o.copy(ph).lerp(new THREE.Color("#ffffff"), 0.35).multiplyScalar(1.6)),
+      ribbon(road, spans, -1.5, 1.5, 0.06, (ph, o) => o.copy(ph).multiplyScalar(1.0)),
+      ribbon(road, spans, -0.3, 0.3, 0.08, (ph, o) => o.copy(ph).lerp(new THREE.Color("#ffffff"), 0.35).multiplyScalar(1.7)),
+      // A wide soft glow round the trail, so the road you've driven reads
+      // from high up on the skyways, looking back.
+      ribbon(road, spans, -3.4, 3.4, 0.055, (ph, o) => o.copy(ph).multiplyScalar(0.9)),
     ],
     [road, spans],
   );
@@ -1147,6 +1183,7 @@ export function AdventureWorld({
         powerCount={powerCount}
       />
       <SpeedSparks road={road} travel={travel} colourAt={colourAlong} />
+      <SectionWeather road={road} travel={travel} spans={spans} />
       {stops.map((stop, i) => (
         <Portal
           key={stop.slug}
