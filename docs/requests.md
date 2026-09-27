@@ -208,6 +208,7 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **26 September**
+- Landing: sing / drive / speak beats full width (phone carousel); Speaking Spectrum at the top of "different" — `7e1ac09`
 - Landing: founding reason behind Read more; Coach pitch and "What Coach looks for" cut, "Tariq teaches. I review." kept in Meet Coach — `dd8eb15`
 - Landing: short opening, testimonials after Coach with no repeats, three Join buttons, road shown once, 83 skill lessons, collage before pricing — `22d3950`
 - Landing: How it works merged into Inside the app (quick guide removed); practise-don't-watch cut to concert line + comparison — `a2f5c88`
