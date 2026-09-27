@@ -132,11 +132,12 @@ export function TierTabs() {
                 );
               })}
             </ul>
-            <div className="flex flex-col items-start gap-2">
+            {/* The buy button, centred in its card. */}
+            <div className="flex flex-col items-center gap-2 text-center">
               <UnlockButton plan={tier.id} quiet={!tier.featured}>
                 {tier.cta}
               </UnlockButton>
-              {tier.note && <p className="text-xs text-ink-faint">{tier.note}</p>}
+              {tier.note && <p className="text-xs text-ink-faint text-balance">{tier.note}</p>}
             </div>
           </section>
         ))}
