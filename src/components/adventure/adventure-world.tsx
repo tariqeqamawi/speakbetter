@@ -769,6 +769,7 @@ function Rig({
   const prevPos = useMemo(() => new THREE.Vector3(), []);
   const moved = useMemo(() => new THREE.Vector3(), []);
   const carried = useRef(false);
+  const held = useRef<{ pos: THREE.Vector3; quat: THREE.Quaternion } | null>(null);
   const stillFor = useRef(0);
   const idle = useRef(0);
   // For anyone who has asked for less motion: no swoop, no shake.
@@ -835,13 +836,38 @@ function Rig({
     // Flat out, the camera stays low but drops back - the chase camera
     // straining to keep up - while the view widens and the blur and
     // streaks come on hard.
-    pointAt(road, s + f * 2 - b * 4 - up * 5, pos);
-    pointAt(road, s + AHEAD + 26 - f * 2 - up * 9, at);
-    // "Up" is the road's up - round the loop and over in the corkscrew,
-    // the camera goes with it.
-    eye.copy(pos).addScaledVector(upAt(road, s + f * 2 - b * 4 - up * 5, across), 7.5 - f * 3 - b * 0.4 + up * 6.5);
-    look.copy(at).addScaledVector(upAt(road, s + AHEAD + 26 - f * 2 - up * 9, across), 1.2 + f * 0.6);
-    upAt(road, s + AHEAD, camera.up);
+    // THE LOOP: the camera holds where it is - same place, same view -
+    // and watches the traveller go up and round and come back down,
+    // picking up again once they're through.
+    const loop = road.stunts.find((z) => z.kind === "loop");
+    const inLoop = loop && s + AHEAD > loop.a - 2 && s < loop.a + loop.len + 4;
+    if (inLoop) {
+      if (!held.current) held.current = { pos: camera.position.clone(), quat: camera.quaternion.clone() };
+      camera.position.copy(held.current.pos);
+      camera.quaternion.copy(held.current.quat);
+      prevPos.copy(pointAt(road, s + f * 2 - b * 4 - up * 5, pos));
+      if (Math.abs(s - last.current) > 0.25) {
+        last.current = s;
+        onMove(s);
+      }
+      return;
+    }
+    // Out of the loop: straight back behind the traveller, in one cut,
+    // rather than gliding there through the loop itself.
+    const cut = held.current !== null;
+    held.current = null;
+    // Elsewhere "up" stays up - the camera never rolls over. Where the
+    // road leaves the land (the corkscrew), it follows the line of the
+    // ground beneath instead of the rolling road.
+    const posS = s + f * 2 - b * 4 - up * 5;
+    const atS = s + AHEAD + 26 - f * 2 - up * 9;
+    if (road.stuntAt(posS) > 0) groundAt(road, posS, pos);
+    else pointAt(road, posS, pos);
+    if (road.stuntAt(atS) > 0) groundAt(road, atS, at);
+    else pointAt(road, atS, at);
+    eye.copy(pos).setY(pos.y + 7.5 - f * 3 - b * 0.4 + up * 6.5);
+    look.copy(at).setY(at.y + 1.2 + f * 0.6);
+    camera.up.set(0, 1, 0);
     // Through a banked sweep, the camera follows the traveller up the
     // side of it.
     const ride = road.rideAt(s + AHEAD);
@@ -858,7 +884,8 @@ function Rig({
     if (carried.current) camera.position.add(moved.copy(pos).sub(prevPos));
     prevPos.copy(pos);
     carried.current = true;
-    camera.position.lerp(eye, 1 - Math.pow(0.001, dt));
+    if (cut) camera.position.copy(eye);
+    else camera.position.lerp(eye, 1 - Math.pow(0.001, dt));
     camera.lookAt(look);
     // At speed the road shakes the camera - harder flat out.
     if (f > 0.55 && !still) {

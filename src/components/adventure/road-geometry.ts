@@ -120,10 +120,10 @@ function stuntShape(kind: Stunt["kind"]) {
     } else {
       // A barrel roll around a line above the road: out over the gap,
       // all the way round, and down onto the far side.
-      // Two full rolls, long and slow, over a wide gap.
-      const B = 250;
+      // One full roll, long and slow, over a wide gap.
+      const B = 170;
       const Rc = 11;
-      const ph = Math.PI * 4 * THREE.MathUtils.smootherstep(v, 0, 1);
+      const ph = Math.PI * 2 * THREE.MathUtils.smootherstep(v, 0, 1);
       pos.push([B * v, Rc * Math.sin(ph), Rc * (1 - Math.cos(ph))]);
       ground.push([B * v, 0]);
       upRaw.push([0, -Math.sin(ph), Math.cos(ph)]);
@@ -206,6 +206,10 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLay
   const EXTRA: Record<number, number> = {};
   if (yFirstI > 0) EXTRA[yFirstI] = 200;
   if (loopI > 0) EXTRA[loopI] = 170;
+  // The wave skyway through the city: the first stretch of Y after its
+  // first challenge, made longer so it's a ride of its own.
+  const waveI = yFirstI > 0 && phaseOf[yFirstI + 1] === "Y" ? yFirstI + 1 : -1;
+  if (waveI > 0) EXTRA[waveI] = 220;
   const stops: number[] = [];
   for (let i = 0, at = LEAD_IN; i < checkpoints; i++) {
     at += i > 0 ? SPACING + (EXTRA[i] ?? 0) : 0;
@@ -273,18 +277,21 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLay
   // high on pylons, running between the towers, the land far below - and
   // comes back down before the next challenge. Through T, and above all
   // through Y, into the city.
-  const skyways: { a: number; b: number; h: number }[] = [];
+  const skyways: { a: number; b: number; h: number; wave?: boolean }[] = [];
   for (let i = 1; i < stops.length; i++) {
     const ph = phaseOf[i];
     if (ph !== phaseOf[i - 1] || venueStretch(i) || i === yFirstI || i === loopI) continue;
     if ((ph === "T" && i % 2 === 1) || ph === "Y" || (ph === "S" && i === 2))
-      skyways.push({ a: stops[i - 1] + 30, b: stops[i] - 30, h: ph === "Y" ? 52 : ph === "T" ? 36 : 26 });
+      skyways.push({ a: stops[i - 1] + 30, b: stops[i] - 30, h: ph === "Y" ? 52 : ph === "T" ? 36 : 26, wave: i === waveI });
   }
   const liftAt = (s: number) =>
     skyways.reduce((m, w) => {
       if (s <= w.a || s >= w.b) return m;
       const ramp = Math.min(70, (w.b - w.a) / 2.5);
-      return Math.max(m, w.h * THREE.MathUtils.smootherstep(s, w.a, w.a + ramp) * (1 - THREE.MathUtils.smootherstep(s, w.b - ramp, w.b)));
+      const env = THREE.MathUtils.smootherstep(s, w.a, w.a + ramp) * (1 - THREE.MathUtils.smootherstep(s, w.b - ramp, w.b));
+      // The wave skyway rolls up and down between the towers as it goes.
+      const wave = w.wave ? 16 * Math.sin(((s - w.a) / 58) * Math.PI) : 0;
+      return Math.max(m, (w.h + wave) * env);
     }, 0);
 
   // (No banked sweep where the corkscrew is.)

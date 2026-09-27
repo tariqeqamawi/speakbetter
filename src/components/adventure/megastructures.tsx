@@ -324,7 +324,7 @@ function City({ road, dense, keep, colourAt, clear }: { road: RoadLayout; dense?
         vertexShader: GLASS_VERT,
         fragmentShader: GLASS_FRAG.replace(
           "gl_FragColor = vec4(mix(col, uFog, fog * 0.5), 1.0);",
-          "col += vec3(0.85, 0.92, 1.0) * (pow(1.0 - abs(dot(N, V)), 2.2) * 1.1 + 0.05);\n    gl_FragColor = vec4(mix(col, uFog, fog * 0.5), 1.0);",
+          "col = vec3(0.012, 0.013, 0.018) * (0.6 + 0.8 * side) + vec3(0.55, 0.62, 0.78) * pow(1.0 - abs(dot(N, V)), 2.2) * 0.6;\n    gl_FragColor = vec4(mix(col, uFog, fog * 0.5), 1.0);",
         ),
         uniforms: { uFog: { value: new THREE.Color("#060b1c") }, uFogD: { value: 0.0024 } },
       }),
@@ -801,6 +801,80 @@ function poolTexture() {
   return poolTex;
 }
 
+// ---------------------------------------------------------------- cables
+
+/** THE CABLE TANGLE: over one lifted stretch of road, three giant audio
+ *  cables braid round it - over, under and through - each ending in a
+ *  quarter-inch jack plug: a black grip, a steel shaft and a tip. The
+ *  road weaves through them like a lead through a tangle. */
+function Cables({ road, colourAt, runs }: { road: RoadLayout; colourAt: ColourAt; runs: { from: number; to: number }[] }) {
+  const items = useMemo(() => {
+    const cable = new THREE.MeshStandardMaterial({ color: "#0b0c10", roughness: 0.3, metalness: 0.35 });
+    const steel = new THREE.MeshStandardMaterial({ color: "#c9ced8", roughness: 0.2, metalness: 1 });
+    const meshes: THREE.Mesh[] = [];
+    const p = new THREE.Vector3();
+    const side = new THREE.Vector3();
+    for (const r of runs) {
+      const glow = new THREE.MeshBasicMaterial({ color: colourAt((r.from + r.to) / 2).clone().multiplyScalar(1.6), toneMapped: false });
+      for (let k = 0; k < 3; k++) {
+        const ph = (k * Math.PI * 2) / 3;
+        const f = 1 / (22 + k * 5);
+        const pts: THREE.Vector3[] = [];
+        for (let s = r.from; s <= r.to; s += 3) {
+          pointAt(road, s, p);
+          sideAt(road, s, side);
+          const t = (s - r.from) * f + ph;
+          // A loose helix round the road: across it wide, over it and under.
+          const d = Math.sin(t) * (ROAD_HALF + 5 + k * 1.5);
+          const y = Math.cos(t) * (7 + k) + 1.5;
+          pts.push(new THREE.Vector3(p.x + side.x * d, p.y + y, p.z + side.z * d));
+        }
+        const curve = new THREE.CatmullRomCurve3(pts);
+        meshes.push(new THREE.Mesh(new THREE.TubeGeometry(curve, pts.length * 3, 1.3, 14, false), cable));
+        // A jack plug on each end, pointing away along the cable.
+        for (const [u, dir] of [
+          [0, -1],
+          [1, 1],
+        ] as const) {
+          const at = curve.getPointAt(u);
+          const tan = curve.getTangentAt(u).multiplyScalar(dir);
+          const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), tan);
+          const part = (geo: THREE.BufferGeometry, mat: THREE.Material, along: number) => {
+            const m = new THREE.Mesh(geo, mat);
+            m.quaternion.copy(q);
+            m.position.copy(at).addScaledVector(tan, along);
+            meshes.push(m);
+          };
+          part(new THREE.CylinderGeometry(1.5, 1.8, 3, 20), cable, 1.5); // strain relief
+          part(new THREE.CylinderGeometry(2.3, 2.3, 7, 24), cable, 6.5); // the grip
+          part(new THREE.TorusGeometry(2.3, 0.25, 8, 32).rotateX(Math.PI / 2), glow, 9.8); // a ring of light
+          part(new THREE.CylinderGeometry(0.9, 0.9, 8, 20), steel, 14); // the shaft
+          part(new THREE.CylinderGeometry(0.95, 0.95, 0.5, 20), cable, 16.2); // the insulating ring
+          part(new THREE.SphereGeometry(0.95, 20, 12), steel, 18.4); // the tip
+        }
+      }
+    }
+    return { meshes, mats: [cable, steel] };
+  }, [road, colourAt, runs]);
+  useEffect(
+    () => () => {
+      items.meshes.forEach((m) => {
+        m.geometry.dispose();
+        if (!items.mats.includes(m.material as THREE.MeshStandardMaterial)) (m.material as THREE.Material).dispose();
+      });
+      items.mats.forEach((m) => m.dispose());
+    },
+    [items],
+  );
+  return (
+    <group>
+      {items.meshes.map((m) => (
+        <primitive key={m.uuid} object={m} />
+      ))}
+    </group>
+  );
+}
+
 // ---------------------------------------------------------------- pylons
 
 /** Under a skyway: pairs of tall glass pylons from the land up to the
@@ -1097,6 +1171,7 @@ export function Megastructures({
   dense?: { from: number; to: number };
 }) {
   const plan = useMemo(() => structurePlan(road), [road]);
+  const cableRuns = useMemo(() => road.skyways.filter((w) => w.h < 30).map((w) => ({ from: w.a + 45, to: w.b - 45 })), [road]);
   const denseSpan = useMemo(() => (dense ? { from: dense.from, to: dense.to } : undefined), [dense]);
   return (
     <group>
@@ -1106,6 +1181,12 @@ export function Megastructures({
       <Corridors road={road} colourAt={colourAt} runs={plan.corridors} />
       <Tubes road={road} colourAt={colourAt} tunnels={plan.tunnels} />
       <Pylons road={road} colourAt={colourAt} />
+      {/* The cable tangle over the first skyway (the lowest). */}
+      <Cables
+        road={road}
+        colourAt={colourAt}
+        runs={cableRuns}
+      />
       <SpotlightRuns road={road} colourAt={colourAt} runs={plan.spotRuns} />
     </group>
   );

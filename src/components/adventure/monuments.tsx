@@ -48,7 +48,9 @@ const RIM_FRAG = /* glsl */ `
     vec3 V = normalize(vV);
     float fres = pow(1.0 - abs(dot(N, V)), 2.2);
     float side = 0.5 + 0.5 * dot(N, normalize(vec3(-0.3, 0.6, -0.5)));
-    vec3 col = vec3(0.03, 0.05, 0.11) * (0.6 + 0.8 * side) + vec3(0.85, 0.92, 1.0) * (fres * 1.1 + 0.04);
+    // Black, like the real thing - a glossy black with a cool sheen at
+    // its edges so the shape still reads against the night.
+    vec3 col = vec3(0.012, 0.013, 0.018) * (0.6 + 0.8 * side) + vec3(0.55, 0.62, 0.78) * (fres * 0.55);
     gl_FragColor = vec4(col, 1.0);
   }
 `;
