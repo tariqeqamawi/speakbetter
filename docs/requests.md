@@ -404,3 +404,4 @@ what.
 - speakbetter.app live; checkout on lasting Stripe products (ALUMNI2026 limited to Starter); free 100% orders accepted; /home -> /landing — `1aad0f9`
 - Phone landing: checklist straight under the first Join button; bigger guarantee seal with Tariq's promise beside it — `f8d745b`
 - Coach costs in /admin (new tab) and the data room's Unit economics: per-review cost, worst case per tier, pack margins, the cohort's bill — `885eec7`
+- Thank-you page: personal access link (email to myself, copy, bookmark) -> /access/<session> verifies with Stripe, unlocks any device, offers saved progress; 'What's included'; included-reviews and top-up note (thank-you, checkout, FAQ); packs now $5/20, $10/45, $20/100 — `b9a0423`
