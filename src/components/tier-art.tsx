@@ -64,7 +64,22 @@ export function TierArt({ has }: { has: string[] }) {
         </span>
       </Tile>
       <Tile on={h("deck")} label={h("printed") ? "Deck: app + printed" : "Deck: in the app"}>
-        <DeckFan />
+        {h("printed") ? (
+          // The printed deck, as it arrives: the cards fanned on a desk,
+          // three face up, beside their box (public/deck, rendered from
+          // the real card faces and backs).
+          <span className="relative block size-full">
+            <Image
+              src="/deck/printed-deck-walnut.webp"
+              alt="The printed Speak Better deck fanned on a desk beside its box"
+              fill
+              sizes="120px"
+              className="object-cover"
+            />
+          </span>
+        ) : (
+          <DeckFan />
+        )}
       </Tile>
       <Tile on={h("coach")} label="The coach watches">
         <span className="w-14 overflow-hidden">
