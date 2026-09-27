@@ -661,6 +661,189 @@ function Venue({ road, colourAt, venues }: { road: RoadLayout; colourAt: ColourA
   );
 }
 
+// ------------------------------------------------------------- spotlights
+
+/** UNDER THE SPOTLIGHTS: a line of lighting gantries over the road, each
+ *  throwing beams down onto it that sway slowly - you drive from one pool
+ *  of light into the next, like crossing a stage under the rig. */
+function SpotlightRuns({ road, colourAt, runs }: { road: RoadLayout; colourAt: ColourAt; runs: { from: number; to: number }[] }) {
+  const EVERY = 16;
+  const H = 17;
+  const rigs = useMemo(() => {
+    const out: { s: number; d: number; phase: number }[] = [];
+    runs.forEach((r) => {
+      for (let s = r.from; s <= r.to; s += EVERY) for (const d of [-2.6, 2.6]) out.push({ s, d, phase: out.length * 1.3 });
+    });
+    return out;
+  }, [runs]);
+  const gantries = rigs.length / 2;
+  const glass = useMemo(
+    () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color("#060b1c") }, uFogD: { value: 0.0024 } } }),
+    [],
+  );
+  const beams = useInstanced(gantries * 3, useMemo(() => new THREE.BoxGeometry(1, 1, 1), []), glass);
+  const lamps = useInstanced(
+    rigs.length,
+    useMemo(() => new THREE.CylinderGeometry(0.5, 0.7, 1, 16), []),
+    useMemo(() => new THREE.MeshBasicMaterial({ toneMapped: false }), []),
+  );
+  // The beam: an open cone, brightest at the lamp, fading toward the road.
+  const cones = useInstanced(
+    rigs.length,
+    useMemo(() => {
+      const g = new THREE.ConeGeometry(1, 1, 24, 1, true);
+      g.translate(0, -0.5, 0);
+      return g;
+    }, []),
+    useMemo(
+      () =>
+        new THREE.ShaderMaterial({
+          transparent: true,
+          depthWrite: false,
+          side: THREE.DoubleSide,
+          blending: THREE.AdditiveBlending,
+          vertexShader: /* glsl */ `
+            varying float vDown;
+            varying vec3 vCol;
+            void main() {
+              vDown = -position.y;
+              vCol = instanceColor;
+              gl_Position = projectionMatrix * viewMatrix * modelMatrix * instanceMatrix * vec4(position, 1.0);
+            }
+          `,
+          fragmentShader: /* glsl */ `
+            varying float vDown;
+            varying vec3 vCol;
+            void main() {
+              gl_FragColor = vec4(vCol, 0.1 * (1.0 - vDown) + 0.02);
+            }
+          `,
+        }),
+      [],
+    ),
+  );
+  const pools = useInstanced(
+    rigs.length,
+    useMemo(() => new THREE.CircleGeometry(1, 32).rotateX(-Math.PI / 2), []),
+    useMemo(
+      () => new THREE.MeshBasicMaterial({ map: poolTexture(), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }),
+      [],
+    ),
+  );
+  const colours = useMemo(() => rigs.map((r) => colourAt(r.s).clone().lerp(new THREE.Color("#fff6e0"), 0.6)), [rigs, colourAt]);
+  const base = useMemo(() => {
+    const p = new THREE.Vector3();
+    const side = new THREE.Vector3();
+    const ahead = new THREE.Vector3();
+    return rigs.map((r) => {
+      pointAt(road, r.s, p);
+      sideAt(road, r.s, side);
+      pointAt(road, r.s + 1, ahead);
+      const fwd = ahead.clone().sub(p).setY(0).normalize();
+      return { top: new THREE.Vector3(p.x + side.x * r.d, p.y + H - 0.8, p.z + side.z * r.d), ground: p.y + 0.06, side: side.clone(), fwd };
+    });
+  }, [road, rigs]);
+
+  // The fixed parts: gantry posts and beam, the lamp housings.
+  useEffect(() => {
+    const p = new THREE.Vector3();
+    const side = new THREE.Vector3();
+    const ahead = new THREE.Vector3();
+    const o = new THREE.Object3D();
+    let b = 0;
+    for (let g = 0; g < gantries; g++) {
+      const s = rigs[g * 2].s;
+      pointAt(road, s, p);
+      sideAt(road, s, side);
+      pointAt(road, s + 2, ahead);
+      const W = ROAD_HALF + 4;
+      for (const [d, y, sx, sy] of [
+        [-W, H / 2, 0.9, H],
+        [W, H / 2, 0.9, H],
+        [0, H, W * 2 + 0.9, 0.9],
+      ] as const) {
+        o.position.set(p.x + side.x * d, p.y + y, p.z + side.z * d);
+        o.rotation.set(0, 0, 0);
+        o.scale.set(1, 1, 1);
+        o.lookAt(ahead.x + side.x * d, o.position.y, ahead.z + side.z * d);
+        o.scale.set(sx, sy, 0.9);
+        o.updateMatrix();
+        beams.setMatrixAt(b++, o.matrix);
+      }
+    }
+    rigs.forEach((_, i) => {
+      o.position.copy(base[i].top);
+      o.rotation.set(0, 0, 0);
+      o.scale.set(1.1, 1.2, 1.1);
+      o.updateMatrix();
+      lamps.setMatrixAt(i, o.matrix);
+      lamps.setColorAt(i, colours[i].clone().multiplyScalar(1.6));
+      cones.setColorAt(i, colours[i]);
+      pools.setColorAt(i, colours[i].clone().multiplyScalar(0.65));
+    });
+    for (const m of [beams, lamps, cones, pools]) {
+      m.instanceMatrix.needsUpdate = true;
+      if (m.instanceColor) m.instanceColor.needsUpdate = true;
+    }
+  }, [road, rigs, gantries, base, colours, beams, lamps, cones, pools]);
+
+  // The beams sway, and their pools of light move with them.
+  const o = useMemo(() => new THREE.Object3D(), []);
+  const q = useMemo(() => new THREE.Vector3(), []);
+  const dir = useMemo(() => new THREE.Vector3(), []);
+  const down = useMemo(() => new THREE.Vector3(0, -1, 0), []);
+  useFrame(({ clock }) => {
+    const t = clock.elapsedTime;
+    const len = H - 0.8;
+    rigs.forEach((r, i) => {
+      const b = base[i];
+      // Where the beam lands: swung across the road and a little along it.
+      q.copy(b.top)
+        .addScaledVector(b.side, Math.sin(t * 0.6 + r.phase) * 0.3 * len)
+        .addScaledVector(b.fwd, Math.cos(t * 0.45 + r.phase * 0.7) * 0.12 * len);
+      q.y = b.ground;
+      dir.copy(q).sub(b.top).normalize();
+      o.position.copy(b.top);
+      o.quaternion.setFromUnitVectors(down, dir);
+      const spread = 3.4;
+      o.scale.set(spread, b.top.distanceTo(q), spread);
+      o.updateMatrix();
+      cones.setMatrixAt(i, o.matrix);
+      o.position.copy(q);
+      o.quaternion.identity();
+      o.scale.set(spread * 1.25, 1, spread * 1.25);
+      o.updateMatrix();
+      pools.setMatrixAt(i, o.matrix);
+    });
+    for (const m of [cones, pools]) m.instanceMatrix.needsUpdate = true;
+  });
+
+  return (
+    <group>
+      {[beams, lamps, cones, pools].map((m) => (
+        <primitive key={m.uuid} object={m} />
+      ))}
+    </group>
+  );
+}
+
+/** A soft round pool of light, for the road under a spotlight. */
+let poolTex: THREE.Texture | null = null;
+function poolTexture() {
+  if (poolTex || typeof document === "undefined") return poolTex;
+  const c = document.createElement("canvas");
+  c.width = c.height = 128;
+  const g = c.getContext("2d")!;
+  const grad = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+  grad.addColorStop(0, "rgba(255,255,255,0.9)");
+  grad.addColorStop(0.5, "rgba(255,255,255,0.45)");
+  grad.addColorStop(1, "rgba(255,255,255,0)");
+  g.fillStyle = grad;
+  g.fillRect(0, 0, 128, 128);
+  poolTex = new THREE.CanvasTexture(c);
+  return poolTex;
+}
+
 // ------------------------------------------------------------------ tubes
 
 const TUBE_VERT = /* glsl */ `
@@ -830,11 +1013,14 @@ export function structurePlan(road: RoadLayout) {
   const corridors: { from: number; to: number }[] = [];
   const tunnels: { from: number; to: number }[] = [];
   const venues: { stage: number; seatsTo: number }[] = [];
+  const spotRuns: { from: number; to: number }[] = [];
   openStretches(road).forEach((st, i) => {
     const mid = (st.from + st.to) / 2;
     const half = Math.min(60, (st.to - st.from) / 2 - 5);
     // In turn: a great arch, a corridor of lights, a tube.
-    if (i % 3 === 0) arches.push(mid);
+    // (Every other arch is a run of spotlights instead.)
+    if (i % 6 === 3) spotRuns.push({ from: mid - half, to: mid + half });
+    else if (i % 3 === 0) arches.push(mid);
     else if (i % 3 === 1) corridors.push({ from: mid - half, to: mid + half });
     else if (i % 6 === 2) tunnels.push({ from: mid - half, to: mid + half });
     else {
@@ -849,8 +1035,9 @@ export function structurePlan(road: RoadLayout) {
     ...corridors,
     ...tunnels,
     ...venues.map((v) => ({ from: v.stage - 10, to: v.seatsTo })),
+    ...spotRuns,
   ];
-  return { arches, corridors, tunnels, venues, keep };
+  return { arches, corridors, tunnels, venues, spotRuns, keep };
 }
 
 export function Megastructures({
@@ -872,6 +1059,7 @@ export function Megastructures({
       <Arches road={road} colourAt={colourAt} at={plan.arches} />
       <Corridors road={road} colourAt={colourAt} runs={plan.corridors} />
       <Tubes road={road} colourAt={colourAt} tunnels={plan.tunnels} />
+      <SpotlightRuns road={road} colourAt={colourAt} runs={plan.spotRuns} />
     </group>
   );
 }
