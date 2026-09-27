@@ -841,7 +841,7 @@ It isn't the transcripts republished as-is. Personal stories are interspersed th
 
 The book is sold as its own standalone product, not bundled by default, with the course and the card deck offered as an upsell from it.
 
-It has a title now: *Speak Better: Express Your True Colors and Roar on Screen and Stage*, with the strapline *"The Secret Speaking Skills You Need to Overcome Your Fears and Deliver Unforgettable Talks,"* by Tariq EQ Amawi. The cover is being chosen on /prototype/printed: the lion enlarged on the app's dark glass with the speaking-spectrum wave (A4), the author's name at the top or the foot. The VIP tier shows the book as its tile.
+It has a title now: *Speak Better - The 7 Colors of Fearless, Unforgettable Speaking*, with the strapline *"Find your true colors. Overcome your nerves. Roar on screen and stage."* By Tariq EQ Amawi - TEDx Speaker, Slam Poetry Winner & Creator of the Mic Drop Method. The cover: the lion enlarged on the app's dark glass with a bold speaking-spectrum wave (public/book/speak-better-book-v3.webp), shown in the VIP tier; alternatives on /prototype/printed.
 
 ### The card deck
 

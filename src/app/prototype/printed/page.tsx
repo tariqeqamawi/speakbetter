@@ -11,6 +11,20 @@ export const metadata: Metadata = {
 
 const PIECES = [
   {
+    src: "/book/speak-better-book-v3.webp",
+    title: "The book - in the VIP tier now",
+    note: "SPEAK BETTER / The 7 Colors of Fearless, Unforgettable Speaking / Find your true colors. Overcome your nerves. Roar on screen and stage. By Tariq EQ Amawi - TEDx Speaker, Slam Poetry Winner & Creator of the Mic Drop Method.",
+    w: 764,
+    h: 1200,
+  },
+  {
+    src: "/book/cover-fearless-writer.webp",
+    title: "The same, with \"Slam Poet & Award-Winning Writer\"",
+    note: "The credential line as the alternative.",
+    w: 754,
+    h: 1200,
+  },
+  {
     src: "/book/cover-blend-mic-drop.webp",
     title: "The blend - \"Creator of the Mic Drop Method\"",
     note: "SPEAK BETTER / The 7 Colors of Unforgettable Speaking / Express Your True Colors, Overcome Your Fears, and Roar on Screen and Stage. Under the name: TEDx Speaker, Slam Poet & Creator of the Mic Drop Method.",
@@ -33,7 +47,7 @@ const PIECES = [
   },
   {
     src: "/book/speak-better-book-v2.webp",
-    title: "The book - in the VIP tier now",
+    title: "The book - previous (Express Your True Colors)",
     note: "Cover A4 with TARIQ EQ AMAWI at the top and the strapline \"The Secret Speaking Skills You Need to Overcome Your Fears and Deliver Unforgettable Talks.\"",
     w: 764,
     h: 1200,
