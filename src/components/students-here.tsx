@@ -18,7 +18,17 @@ import { hapticTap } from "@/lib/feedback-fx";
 // on is a road worth walking, and a challenge that six people finished
 // this afternoon is a challenge you can finish tonight.
 
-export function StudentsHere({ className = "" }: { className?: string }) {
+export function StudentsHere({
+  className = "",
+  slug,
+  label,
+}: {
+  className?: string;
+  /** A particular challenge - its page - rather than the one you're on. */
+  slug?: string;
+  /** Words beside the count, where there's room. */
+  label?: string;
+}) {
   const [open, setOpen] = useState(false);
   const { isChallengeComplete, ready } = useStore();
   const crowd = useMemo(() => presence(), []);
@@ -26,6 +36,7 @@ export function StudentsHere({ className = "" }: { className?: string }) {
 
   // The challenge you're on: the first one you haven't passed.
   const mine =
+    (slug ? challengeBySlug.get(slug) : undefined) ??
     challenges.find((c) => !c.passive && !isChallengeComplete(c.slug)) ??
     challenges.filter((c) => !c.passive).at(-1)!;
   const here = crowd.find((c) => c.slug === mine.slug);
@@ -61,6 +72,7 @@ export function StudentsHere({ className = "" }: { className?: string }) {
         <span className="flex size-6 items-center justify-center rounded-full bg-navy-700 text-ink">
           <GroupIcon className="size-4" />
         </span>
+        {label && <span>{label}</span>}
         <span className="tabular-nums">{here?.count ?? 0}</span>
         <span className="relative flex size-2">
           <span className="absolute inline-flex size-full animate-ping rounded-full bg-mindset opacity-60" />
@@ -104,7 +116,7 @@ export function StudentsHere({ className = "" }: { className?: string }) {
               {/* Your challenge: the count, and the recent uploads. */}
               <section className="flex flex-col gap-2">
                 <p className="text-xs font-medium uppercase tracking-wider text-ink-faint">
-                  Your challenge
+                  {slug ? "This challenge" : "Your challenge"}
                 </p>
                 <div className="rounded-xl border border-navy-600 bg-navy-800 p-3">
                   <p className="text-sm font-semibold text-ink">{mine.title}</p>
@@ -133,13 +145,15 @@ export function StudentsHere({ className = "" }: { className?: string }) {
                       ))}
                     </ul>
                   )}
-                  <Link
-                    href={`/challenges/${mine.slug}`}
-                    onClick={() => setOpen(false)}
-                    className="mt-3 inline-block text-xs font-semibold text-ink-muted underline-offset-4 hover:text-ink hover:underline"
-                  >
-                    Go to your challenge →
-                  </Link>
+                  {!slug && (
+                    <Link
+                      href={`/challenges/${mine.slug}`}
+                      onClick={() => setOpen(false)}
+                      className="mt-3 inline-block text-xs font-semibold text-ink-muted underline-offset-4 hover:text-ink hover:underline"
+                    >
+                      Go to your challenge →
+                    </Link>
+                  )}
                 </div>
               </section>
 

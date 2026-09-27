@@ -64,6 +64,123 @@ export function Bloom({
   return null;
 }
 
+/** SPARKS off the back of the traveller, flat out: once you've held top
+ *  speed for a second and a half (Travel.boost), a spray of hot sparks
+ *  flies out behind the disc and bounces off the road, falling behind
+ *  you as you pull away. */
+export function SpeedSparks({
+  road,
+  travel,
+  colourAt,
+}: {
+  road: RoadLayout;
+  travel: Travel;
+  colourAt: (s: number) => THREE.Color;
+}) {
+  const N = 420;
+  const LIFE = 0.6;
+  const { geo, vel, age, ground } = useMemo(() => {
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(N * 3), 3));
+    geo.setAttribute("color", new THREE.BufferAttribute(new Float32Array(N * 3), 3));
+    const age = new Float32Array(N).fill(LIFE);
+    return { geo, vel: new Float32Array(N * 3), age, ground: new Float32Array(N) };
+  }, []);
+  const next = useRef(0);
+  const debt = useRef(0);
+  const lastS = useRef(travel.s);
+  const p = useMemo(() => new THREE.Vector3(), []);
+  const q = useMemo(() => new THREE.Vector3(), []);
+  const side = useMemo(() => new THREE.Vector3(), []);
+  const hot = useMemo(() => new THREE.Color(), []);
+  // Round, soft-edged points - not squares.
+  const dot = useMemo(() => {
+    const c = document.createElement("canvas");
+    c.width = c.height = 32;
+    const g = c.getContext("2d")!;
+    const grad = g.createRadialGradient(16, 16, 0, 16, 16, 16);
+    grad.addColorStop(0, "rgba(255,255,255,1)");
+    grad.addColorStop(0.4, "rgba(255,255,255,0.6)");
+    grad.addColorStop(1, "rgba(255,255,255,0)");
+    g.fillStyle = grad;
+    g.fillRect(0, 0, 32, 32);
+    return new THREE.CanvasTexture(c);
+  }, []);
+  useEffect(() => () => dot.dispose(), [dot]);
+  useEffect(() => () => geo.dispose(), [geo]);
+
+  /* eslint-disable react-hooks/immutability -- particles, moved every frame */
+  useFrame((_, dtRaw) => {
+    const dt = Math.min(dtRaw, 0.05);
+    const pos = (geo.attributes.position as THREE.BufferAttribute).array as Float32Array;
+    const col = (geo.attributes.color as THREE.BufferAttribute).array as Float32Array;
+    const s = travel.s + AHEAD;
+    // New sparks, as many as the boost asks for.
+    debt.current += travel.portal ? 0 : travel.boost * 340 * dt;
+    if (debt.current >= 1) {
+      pointAt(road, s, p);
+      pointAt(road, s + 1, q);
+      sideAt(road, s, side);
+      const fwd = q.sub(p).normalize();
+      // The road's real speed under the traveller, per second.
+      const worldV = dt > 0 ? (travel.s - lastS.current) / dt : 0;
+      hot.copy(colourAt(s)).lerp(new THREE.Color("#fff3c4"), 0.6).multiplyScalar(2);
+      while (debt.current >= 1) {
+        debt.current -= 1;
+        const i = next.current;
+        next.current = (i + 1) % N;
+        const across = (Math.random() - 0.5) * 1.4;
+        pos[i * 3] = p.x + side.x * across;
+        pos[i * 3 + 1] = p.y + 0.15;
+        pos[i * 3 + 2] = p.z + side.z * across;
+        // Carried forward at most of your speed, so they fall behind you
+        // slowly enough to see - streaming past either side of the
+        // camera; thrown out sideways and up.
+        const keep = 0.9 + Math.random() * 0.07;
+        const out = (Math.random() < 0.5 ? -1 : 1) * (1.5 + Math.random() * 3.5);
+        vel[i * 3] = fwd.x * worldV * keep + side.x * out;
+        vel[i * 3 + 1] = 1 + Math.random() * 2.5;
+        vel[i * 3 + 2] = fwd.z * worldV * keep + side.z * out;
+        ground[i] = p.y + 0.05;
+        age[i] = 0;
+        col[i * 3] = hot.r;
+        col[i * 3 + 1] = hot.g;
+        col[i * 3 + 2] = hot.b;
+      }
+    }
+    for (let i = 0; i < N; i++) {
+      if (age[i] >= LIFE) {
+        col[i * 3] = col[i * 3 + 1] = col[i * 3 + 2] = 0;
+        continue;
+      }
+      age[i] += dt;
+      vel[i * 3 + 1] -= 22 * dt;
+      pos[i * 3] += vel[i * 3] * dt;
+      pos[i * 3 + 1] += vel[i * 3 + 1] * dt;
+      pos[i * 3 + 2] += vel[i * 3 + 2] * dt;
+      // A bounce off the road.
+      if (pos[i * 3 + 1] < ground[i]) {
+        pos[i * 3 + 1] = ground[i];
+        vel[i * 3 + 1] *= -0.35;
+      }
+      const fade = 0.96;
+      col[i * 3] *= fade;
+      col[i * 3 + 1] *= fade;
+      col[i * 3 + 2] *= fade;
+    }
+    lastS.current = travel.s;
+    (geo.attributes.position as THREE.BufferAttribute).needsUpdate = true;
+    (geo.attributes.color as THREE.BufferAttribute).needsUpdate = true;
+  });
+  /* eslint-enable react-hooks/immutability */
+
+  return (
+    <points geometry={geo} frustumCulled={false}>
+      <pointsMaterial map={dot} alphaTest={0.01} size={0.13} vertexColors transparent depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} />
+    </points>
+  );
+}
+
 /** MOTION BLUR at speed: each pixel is smeared along the line from the
  *  middle of the view (a little above centre, where the road runs to),
  *  more the further out it is - the centre stays sharp, the edges rush. */

@@ -3,11 +3,12 @@
 import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import { Classmate, Fireflies, Scenery } from "./world-extras";
+import { Fireflies, Scenery } from "./world-extras";
+import { Megastructures } from "./megastructures";
 import { Portal } from "./portal";
 import { SkyDome } from "./sky-dome";
 import { City } from "./city";
-import { Bloom, GateSparks, Sky } from "./fx";
+import { Bloom, GateSparks, Sky, SpeedSparks } from "./fx";
 import { AHEAD, ColourWall, RoadsideComment, RoadsideTrophy, Traveller } from "./world-details";
 import { GATE_BEFORE, hills, layoutRoad, pointAt, reachedPhase, seeded, sideAt, type RoadLayout, type Travel, ROAD_HALF, bankLift, tiltAt } from "./road-geometry";
 
@@ -335,7 +336,9 @@ const TERRAIN_FRAG = /* glsl */ `
     col += vNeon * (rest + lit * 1.6) * crowd;
 
     float fog = 1.0 - exp(-uFogDensity * uFogDensity * vDepth * vDepth);
-    gl_FragColor = vec4(mix(col, uFog, fog), 1.0);
+    // A light haze, never a wall: however far off, the land keeps its
+    // lines rather than dissolving into one flat colour against the sky.
+    gl_FragColor = vec4(mix(col, uFog, fog * 0.5), 1.0);
   }
 `;
 
@@ -433,7 +436,7 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
           uTime: { value: 0 },
           uFrom: { value: 0 },
           uFog: { value: new THREE.Color("#060b1c") },
-          uFogDensity: { value: 0.0055 },
+          uFogDensity: { value: 0.003 },
           uHorizon: { value: new THREE.Color("#3a3f8f") },
           // Where Your Impact's rays converge: the city, far past the road.
           uTarget: { value: road.length + 330 },
@@ -730,6 +733,13 @@ function Rig({
   const yaw = useRef(0);
   const pitch = useRef(0);
   const speed = useRef(0);
+  const topFor = useRef(0);
+  const prevS = useRef(travel.s);
+  const prevPos = useMemo(() => new THREE.Vector3(), []);
+  const moved = useMemo(() => new THREE.Vector3(), []);
+  const carried = useRef(false);
+  const stillFor = useRef(0);
+  const idle = useRef(0);
   // For anyone who has asked for less motion: no swoop, no shake.
   const still = useMemo(
     () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -750,24 +760,48 @@ function Rig({
       look.set(at.x, at.y + 3.3, at.z);
       camera.position.lerp(eye, 1 - Math.pow(0.0005, dt));
       camera.lookAt(look);
+      carried.current = false;
       return;
     }
     // How fast it feels, eased so it swells and settles rather than
     // snapping - it drives the camera's height, the view's width, the
     // blur, the streaks and the wind.
-    const pace = Math.min(1, Math.abs(travel.v) / 1.6);
+    // Measured from how far the road actually moved this frame, not the
+    // speed asked for - held at the end of the open road, nothing rushes.
+    const rate = dt > 0 ? Math.abs(s - prevS.current) / (dt * 60) : 0;
+    prevS.current = s;
+    const moving = Math.abs(travel.v) > 0.01 || travel.target !== null ? Math.min(rate, 4) : 0;
+    const pace = Math.min(1, moving / 1.6);
     speed.current += (pace - speed.current) * Math.min(1, dt * 2.5);
     const f = still ? 0 : speed.current;
     travel.feel = speed.current;
+    // FLAT OUT for a second and a half: the sparks fly, and the camera
+    // drops in tight and low behind the traveller.
+    topFor.current = moving > 2.3 ? topFor.current + dt : 0;
+    const boostTo = topFor.current > 1.5 ? 1 : 0;
+    travel.boost += (boostTo - travel.boost) * Math.min(1, dt * (boostTo ? 1.6 : 3));
+    const b = still ? 0 : travel.boost;
+    // STANDING STILL for a moment: the camera floats slowly up, to look
+    // down on more of the road; it comes back down as soon as you move.
+    stillFor.current = Math.abs(travel.v) < 0.02 && travel.target === null ? stillFor.current + dt : 0;
+    const idleTo = stillFor.current > 1.2 ? 1 : 0;
+    idle.current += (idleTo - idle.current) * Math.min(1, dt * (idleTo ? 0.45 : 3));
+    const up = idle.current;
     // At rest: up above the road and behind the traveller, looking down
-    // the road past them - high enough to see the land run off to the
-    // horizon and choose a challenge. Flying: down low and in close
-    // behind them, the road pouring toward you, the way the camera rode
-    // behind the bikes in Extreme-G. It rises again as you slow.
-    pointAt(road, s + f * 5, pos);
-    pointAt(road, s + AHEAD + 22 - f * 6, at);
-    eye.set(pos.x, pos.y + 7.5 - f * 4.3, pos.z);
+    // the road past them. Flying: down low and in close behind them, the
+    // road pouring toward you, the way the camera rode behind the bikes
+    // in Extreme-G - lower and closer still once the sparks fly.
+    pointAt(road, s + f * 5 + b * 4 - up * 5, pos);
+    pointAt(road, s + AHEAD + 22 - f * 6 - up * 9, at);
+    eye.set(pos.x, pos.y + 7.5 - f * 4.3 - b * 1.6 + up * 6.5, pos.z);
     look.set(at.x, at.y + 1.2 + f * 0.6, at.z);
+    // Carried along with the road as it moves, then eased toward the
+    // spot - so at speed the camera keeps its place behind the traveller
+    // rather than trailing far behind, and only the changes of height
+    // and distance glide.
+    if (carried.current) camera.position.add(moved.copy(pos).sub(prevPos));
+    prevPos.copy(pos);
+    carried.current = true;
     camera.position.lerp(eye, 1 - Math.pow(0.001, dt));
     camera.lookAt(look);
     // Flat out, the faintest shake - the road under you at speed.
@@ -787,7 +821,7 @@ function Rig({
     // The view widens as you go faster and settles as you slow; the page
     // draws faint streaks past the edges from the same number.
     const cam = camera as THREE.PerspectiveCamera;
-    const fov = 62 + f * 14;
+    const fov = 62 + f * 12 + b * 6;
     if (Math.abs(cam.fov - fov) > 0.05) {
       cam.fov = fov;
       cam.updateProjectionMatrix();
@@ -902,6 +936,29 @@ export function AdventureWorld({
     const c = new THREE.Color();
     return (s: number) => colourAt(spans, s, c);
   }, [spans]);
+  // A fresh colour each call, for things built once and kept.
+  const colourFixed = useMemo(() => (s: number) => colourAt(spans, s, new THREE.Color()), [spans]);
+
+  // THE POWER RING round the traveller: one colour for every section the
+  // student has opened by passing challenges - green, then green and
+  // cyan, and so on to all five, which glow. Earned, never driven into:
+  // travelling ahead to look adds nothing. (?ring-preview on the URL
+  // shows it following the road instead, to see what it will look like.)
+  const powerColours = useMemo(() => phases.map((p) => new THREE.Color(p.color)), [phases]);
+  const preview = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("ring-preview");
+  const powerCount = useMemo(
+    () =>
+      preview
+        ? (s: number) => {
+            let n = 1;
+            spans.forEach((sp, i) => {
+              if (s >= sp.from) n = i + 1;
+            });
+            return n;
+          }
+        : () => Math.max(1, reached + 1),
+    [preview, spans, reached],
+  );
 
   return (
     <Canvas
@@ -914,7 +971,7 @@ export function AdventureWorld({
       gl={{ antialias: true, powerPreference: "high-performance" }}
       camera={{ fov: 62, near: 0.1, far: 1400, position: [0, 3, 6] }}
       onCreated={({ scene }) => {
-        scene.fog = new THREE.FogExp2("#060b1c", 0.0055);
+        scene.fog = new THREE.FogExp2("#060b1c", 0.0024);
       }}
     >
       <hemisphereLight args={["#8090d0", "#0a0f20", 2.2]} />
@@ -966,22 +1023,19 @@ export function AdventureWorld({
       <Bloom travel={travel} />
       <Scenery road={road} spans={spans} />
       {spans.find((sp) => sp.id === "Y") && (
-        <City road={road} travel={travel} revealFrom={spans.find((sp) => sp.id === "Y")!.from + 120} />
+        <City road={road} travel={travel} revealFrom={spans.find((sp) => sp.id === "Y")!.from + 240} />
       )}
-      {stops.flatMap((stop, i) =>
-        (stop.classmates ?? []).map(({ name, avatar }, k) => (
-          <Classmate
-            key={`m-${stop.slug}-${k}`}
-            road={road}
-            s={road.stops[i] - 2 + k * 1.6}
-            offset={(k % 2 ? 1 : -1) * (ROAD_HALF + 1.4 + k)}
-            name={name}
-            avatar={avatar}
-            color={phaseCol.get(stop.phase)?.getStyle() ?? "#fff"}
-          />
-        )),
-      )}
-      <Traveller road={road} travel={travel} image={avatar} trail={trail} colourAt={colourAlong} />
+      <Megastructures road={road} colourAt={colourFixed} />
+      <Traveller
+        road={road}
+        travel={travel}
+        image={avatar}
+        trail={trail}
+        colourAt={colourAlong}
+        powers={powerColours}
+        powerCount={powerCount}
+      />
+      <SpeedSparks road={road} travel={travel} colourAt={colourAlong} />
       {stops.map((stop, i) => (
         <Portal
           key={stop.slug}

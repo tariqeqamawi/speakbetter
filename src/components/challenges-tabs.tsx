@@ -86,6 +86,25 @@ export function ChallengesTabs({
     };
   }, []);
 
+  // A phone turned sideways drops into our full screen by itself, but a
+  // browser only hides its own bars (the address bar) for a tap - so the
+  // first tap on the road, while ours is on and theirs isn't, asks for
+  // theirs too. (iPhone Safari has no such thing for a page; there the
+  // app added to the home screen is the full-screen way.)
+  useEffect(() => {
+    const el = box.current;
+    if (!full || !el || !el.requestFullscreen) return;
+    const go = () => {
+      if (!document.fullscreenElement) el.requestFullscreen().catch(() => {});
+    };
+    el.addEventListener("touchend", go, { once: true });
+    el.addEventListener("click", go, { once: true });
+    return () => {
+      el.removeEventListener("touchend", go);
+      el.removeEventListener("click", go);
+    };
+  }, [full]);
+
   useLayoutEffect(() => {
     if (current !== "challenges") return;
     const html = document.documentElement;

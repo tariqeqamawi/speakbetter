@@ -82,9 +82,15 @@ export function AdventureView({
             <button
               type="button"
               onClick={chrome.toOrientation}
-              className="rounded-full border border-navy-600 bg-navy-950/80 px-3 py-1.5 text-xs font-bold text-ink-muted backdrop-blur hover:text-ink"
+              aria-label="Orientation"
+              title="Orientation"
+              className="grid size-9 place-items-center rounded-full border border-navy-600 bg-navy-950/80 text-ink-muted backdrop-blur hover:text-ink"
             >
-              Orientation
+              {/* A compass: the welcome and the intro videos. */}
+              <svg viewBox="0 0 24 24" className="size-[1.1rem]" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <circle cx="12" cy="12" r="9" />
+                <path d="M15.5 8.5l-2 5-5 2 2-5z" />
+              </svg>
             </button>
           )}
           {/* In and out of full screen - where the page offers it. */}

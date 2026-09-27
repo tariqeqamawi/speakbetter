@@ -67,7 +67,8 @@ export function Traveller({
   travel,
   image,
   trail,
-  colourAt,
+  powers,
+  powerCount,
 }: {
   road: RoadLayout;
   travel: Travel;
@@ -75,9 +76,51 @@ export function Traveller({
   /** The road-hugging ribbons to reveal up to the traveller. */
   trail: THREE.BufferGeometry[];
   colourAt: (s: number) => THREE.Color;
+  /** Every section's colour, in order. */
+  powers: THREE.Color[];
+  /** How many of them the ring carries, where the traveller is. */
+  powerCount: (s: number) => number;
 }) {
   const disc = useRef<THREE.Group>(null);
-  const ring = useRef<THREE.MeshBasicMaterial>(null);
+  const ring = useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        toneMapped: false,
+        uniforms: {
+          uCols: { value: [0, 1, 2, 3, 4].map((i) => (powers[i] ?? powers[0] ?? new THREE.Color("#ffffff")).clone()) },
+          uN: { value: 1 },
+          uTime: { value: 0 },
+          uGlow: { value: 0.6 },
+        },
+        vertexShader: /* glsl */ `
+          varying vec2 vUv;
+          void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+        `,
+        // The ring in bands, one per colour earned, turning slowly, each
+        // band shading into the next.
+        fragmentShader: /* glsl */ `
+          uniform vec3 uCols[5];
+          uniform float uN;
+          uniform float uTime;
+          uniform float uGlow;
+          varying vec2 vUv;
+          vec3 pick(float i) {
+            vec3 c = uCols[0];
+            for (int k = 1; k < 5; k++) if (float(k) == i) c = uCols[k];
+            return c;
+          }
+          void main() {
+            float f = fract(vUv.x - uTime * 0.05) * uN;
+            float i = floor(f);
+            float next = mod(i + 1.0, uN);
+            vec3 c = mix(pick(i), pick(next), smoothstep(0.8, 1.0, fract(f)));
+            gl_FragColor = vec4(c * uGlow, 1.0);
+          }
+        `,
+      }),
+    [powers],
+  );
+  useEffect(() => () => ring.dispose(), [ring]);
   const map = useMemo(() => {
     const t = new THREE.TextureLoader().load(image);
     t.colorSpace = THREE.SRGBColorSpace;
@@ -85,6 +128,7 @@ export function Traveller({
   }, [image]);
   const p = useMemo(() => new THREE.Vector3(), []);
 
+  /* eslint-disable react-hooks/immutability -- the ring's material is three.js's, set every frame */
   useFrame(({ clock, camera }) => {
     const s = Math.min(travel.s + AHEAD, road.finish);
     pointAt(road, s, p);
@@ -103,15 +147,19 @@ export function Traveller({
     disc.current?.scale.setScalar(1);
     disc.current?.position.set(p.x, p.y + 1.3 + bob, p.z);
     disc.current?.lookAt(camera.position);
-    const c = colourAt(s);
-    // A solid rim in the phase's colour, kept below the glow's threshold
-    // so nothing blooms over the photo.
-    ring.current?.color.copy(c).multiplyScalar(0.6);
+    // The power ring: a solid rim, kept below the glow's threshold so
+    // nothing blooms over the photo - until all five colours are earned,
+    // when it lights up and pulses.
+    const n = Math.max(1, Math.min(5, powerCount(s)));
+    ring.uniforms.uN.value = n;
+    ring.uniforms.uTime.value = clock.elapsedTime;
+    ring.uniforms.uGlow.value = n >= 5 ? 1.35 + Math.sin(clock.elapsedTime * 3) * 0.3 : 0.6 + (n - 1) * 0.04;
     // Reveal the trail up to the traveller: the ribbons are built in
     // equal steps along the road, six indices a step.
     const upTo = Math.floor(s / TRAIL_STEP) * 6;
     for (const geo of trail) geo.setDrawRange(0, upTo);
   });
+  /* eslint-enable react-hooks/immutability */
 
   return (
     <group ref={disc}>
@@ -122,8 +170,8 @@ export function Traveller({
         <meshBasicMaterial map={map} toneMapped={false} />
       </mesh>
       <mesh position={[0, 0, 0.02]}>
-        <torusGeometry args={[1.02, 0.1, 12, 48]} />
-        <meshBasicMaterial ref={ring} toneMapped={false} />
+        <torusGeometry args={[1.02, 0.1, 12, 96]} />
+        <primitive object={ring} attach="material" />
       </mesh>
     </group>
   );

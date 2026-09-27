@@ -12,12 +12,12 @@ import * as THREE from "three";
 
 /** World units between one checkpoint and the next. Long enough that
  *  reaching the next one is a short journey, not a flick. */
-export const SPACING = 112;
+export const SPACING = 224;
 /** Road before the first checkpoint - open land to travel before the
  *  first challenge, so you set off into the world rather than arriving
  *  at a door - and after the last before the gate. */
-export const LEAD_IN = 135;
-export const LEAD_OUT = 100;
+export const LEAD_IN = 220;
+export const LEAD_OUT = 160;
 /** How far ahead of the camera the traveller walks. Everything that
  *  says "where you are" reads the traveller, not the camera. */
 export const AHEAD = 17;
@@ -40,7 +40,7 @@ export function bankLift(road: RoadLayout, s: number, d: number): number {
   return -d * tiltAt(road, s);
 }
 /** How far before a phase's first checkpoint its gate stands. */
-export const GATE_BEFORE = 48;
+export const GATE_BEFORE = 80;
 
 export interface RoadLayout {
   curve: THREE.CatmullRomCurve3;
@@ -88,7 +88,7 @@ export function phaseRanges(stops: number[], phaseOf: string[], finish: number) 
 /** How much longer the road is than its first design: the land between
  *  challenges doubled, because travelling it is a pleasure - the bends,
  *  swells and the plunge stretched to match rather than repeated. */
-const STRETCH = 2;
+const STRETCH = 4;
 
 export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLayout {
   const stops = Array.from({ length: checkpoints }, (_, i) => LEAD_IN + i * SPACING);
@@ -127,7 +127,13 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLay
     // Y: over the mountains - up one and down it, up the next and down
     // it - before the plain.
     const peaks = 0.5 * Math.sin(((s - from("Y")) / (100 * STRETCH)) * Math.PI * 2);
-    return swell * rest * (1 - wO * 0.6) + (0.17 * wT - 0.9 * wR + peaks * wY) * k;
+    // DIPS, the way Extreme-G's tracks dropped away and climbed: now and
+    // then the road falls into a hollow and shoots up the far side to the
+    // horizon. They come in runs (the slow envelope), with calm between,
+    // and leave R's plunge and Y's peaks to themselves.
+    const run = Math.max(0, Math.sin(s / 420 + 1.2));
+    const dips = 0.13 * Math.sin(s / 38) * run * run * (1 - wR) * (1 - wY);
+    return swell * rest * (1 - wO * 0.6) + (0.17 * wT - 0.9 * wR + peaks * wY) * k + dips;
   };
 
   const pts: THREE.Vector3[] = [];
@@ -207,6 +213,9 @@ export class Travel {
   /** How fast it feels, 0 at rest to 1 flat out - eased by the camera,
    *  read by the motion blur and the wind. */
   feel = 0;
+  /** Flat out for a while (0-1): the sparks fly and the camera drops in
+   *  tight behind the traveller. Set by the camera. */
+  boost = 0;
   constructor(start: number) {
     this.s = start;
   }

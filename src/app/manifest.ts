@@ -25,7 +25,8 @@ export default function manifest(): MetadataRoute.Manifest {
     launch_handler: { client_mode: "navigate-existing" },
     background_color: "#060a15",
     theme_color: "#060a15",
-    orientation: "portrait",
+    // Any way up: the challenge road is best on its side.
+    orientation: "any",
     categories: ["education", "productivity"],
     prefer_related_applications: false,
     icons: [

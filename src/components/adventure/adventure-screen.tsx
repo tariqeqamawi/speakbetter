@@ -131,8 +131,8 @@ export function AdventureScreen({
       base.lr += (lr - base.lr) * 0.004;
       base.fb += (fb - base.fb) * 0.004;
       const clamp = (v: number) => Math.max(-1, Math.min(1, v));
-      travel.look.yaw = clamp((lr - base.lr) / 28) * 0.42;
-      travel.look.pitch = clamp((base.fb - fb) / 28) * 0.3;
+      travel.look.yaw = clamp((lr - base.lr) / 25) * 0.62;
+      travel.look.pitch = clamp((base.fb - fb) / 25) * 0.32;
     };
     let listening = false;
     const listen = () => {
@@ -140,18 +140,30 @@ export function AdventureScreen({
       listening = true;
       window.addEventListener("deviceorientation", onTilt);
     };
+    // iPhones ask first. The question must come from a real tap - a
+    // touchend or click; a pointerdown doesn't count - and be put to
+    // DeviceOrientationEvent itself, not a detached copy of the function.
     type Asks = { requestPermission?: () => Promise<"granted" | "denied"> };
-    const ask = (DeviceOrientationEvent as unknown as Asks).requestPermission;
+    const DOE = DeviceOrientationEvent as unknown as Asks;
+    const asks = typeof DOE.requestPermission === "function";
     const firstTouch = () => {
-      el.removeEventListener("pointerdown", firstTouch);
-      ask?.()
-        .then((r) => r === "granted" && listen())
-        .catch(() => {});
+      el.removeEventListener("touchend", firstTouch);
+      el.removeEventListener("click", firstTouch);
+      try {
+        DOE.requestPermission!()
+          .then((r) => r === "granted" && listen())
+          .catch(() => {});
+      } catch {
+        // not allowed here - tilt stays off
+      }
     };
-    if (ask) el.addEventListener("pointerdown", firstTouch);
-    else listen();
+    if (asks) {
+      el.addEventListener("touchend", firstTouch);
+      el.addEventListener("click", firstTouch);
+    } else listen();
     return () => {
-      el.removeEventListener("pointerdown", firstTouch);
+      el.removeEventListener("touchend", firstTouch);
+      el.removeEventListener("click", firstTouch);
       window.removeEventListener("deviceorientation", onTilt);
       travel.look.yaw = 0;
       travel.look.pitch = 0;
@@ -501,7 +513,7 @@ export function AdventureScreen({
       clock.last = now;
       // Easing into the stop: full speed, slowing over the last stretch.
       const left = stopAt - travel.s;
-      const speed = Math.max(6, Math.min(68, left * 1.4));
+      const speed = Math.max(8, Math.min(120, left * 1.4));
       travel.place(Math.min(stopAt, travel.s + speed * dt));
       if (travel.s < stopAt - 0.05) {
         raf = requestAnimationFrame(drive);

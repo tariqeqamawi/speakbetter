@@ -78,8 +78,8 @@ function Legend() {
         }
       >
         Drag the road down or scroll to travel forward, and up to go back. Or hold the <b className="text-ink">dial</b>:
-        push up to go forward - the higher, the faster - and down to go back. On a phone, <b className="text-ink">tilt it</b> to
-        look around.
+        push up to go forward - the higher, the faster - and down to go back. Hold it at the top and the sparks fly. On a
+        phone, <b className="text-ink">tilt it</b> to look around the landscape (an iPhone asks once, on your first tap).
       </Card>
 
       <Card
@@ -158,23 +158,18 @@ function Legend() {
       </Card>
 
       <Card
-        title="Faces and initials"
+        title="Your power ring"
         visual={
-          <span className="flex -space-x-2">
-            {["M", "J", "A", "P"].map((l, i) => (
-              <span
-                key={l}
-                className="grid size-10 place-items-center rounded-full border-2 border-navy-900 text-sm font-bold text-navy-950"
-                style={{ background: ["#f53de0", "#22d9f5", "#ffd60a", "#1fe890"][i] }}
-              >
-                {l}
-              </span>
-            ))}
+          <span
+            className="grid size-14 place-items-center rounded-full p-1"
+            style={{ background: `conic-gradient(${PHASES.map((p, i) => `${p.color} ${i * 20}% ${(i + 1) * 20}%`).join(", ")})`, boxShadow: "0 0 18px 2px rgba(245,61,224,0.45)" }}
+          >
+            <Image src="/logo-mark.png" alt="" width={40} height={32} className="size-full rounded-full bg-navy-950 object-contain p-1" />
           </span>
         }
       >
-        The little faces and initials by a portal are your classmates - people who have been on that challenge recently.
-        The speech cards are what they said about it.
+        The ring round your picture carries a colour for every section you&apos;ve opened by passing its challenges -
+        green, then green and cyan, and on. Earn all five and it lights up. Driving ahead to look doesn&apos;t count.
       </Card>
 
       <Card

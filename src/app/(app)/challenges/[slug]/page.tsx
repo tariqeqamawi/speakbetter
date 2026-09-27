@@ -11,6 +11,7 @@ import { LazyVimeoPlayer } from "@/components/lazy-vimeo-player";
 import { PracticePanel } from "@/components/practice-panel";
 import { ChallengeThread } from "@/components/challenge-thread";
 import { CircleIcon } from "@/components/icons";
+import { StudentsHere } from "@/components/students-here";
 import { PlayFillIcon } from "@/components/player-icons";
 
 export function generateStaticParams() {
@@ -52,6 +53,9 @@ export default async function ChallengePage(props: PageProps<"/challenges/[slug]
             upTo={!challenge.passive}
             className={`border border-navy-600 ${phase.textClass}`}
           />
+          {/* Who else is on this one - the classmates that used to stand
+              by the portal on the road. */}
+          {!challenge.passive && <StudentsHere slug={challenge.slug} label="On it now" />}
         </div>
         <p className="max-w-lg text-ink-muted">{challenge.brief}</p>
         <div className="mt-1 flex flex-col gap-1.5">
