@@ -72,6 +72,9 @@ export interface RoadLayout {
    *  (the heading's), its rolled side and its up (both leaning with the
    *  loop and the corkscrew), and the ground beneath it. */
   frames: { ds: number; side: Float32Array; rside: Float32Array; up: Float32Array; ground: Float32Array };
+  /** Where the road runs high above the land on pylons, and how high. */
+  skyways: { a: number; b: number; h: number }[];
+  liftAt: (s: number) => number;
 }
 
 /** A stretch where the road leaves the ground: a vertical loop, or a
@@ -106,9 +109,9 @@ function stuntShape(kind: Stunt["kind"]) {
       // Up and over, upside down at the top, down and out a road's width
       // to the side - drifting forward a little so it opens like a real
       // coaster loop.
-      const R = 15;
-      const D = 34;
-      const W = 12;
+      const R = 27;
+      const D = 70;
+      const W = 16;
       const th = v * Math.PI * 2;
       const lat = W * THREE.MathUtils.smootherstep(v, 0, 1);
       pos.push([R * Math.sin(th) + D * v, lat, R * (1 - Math.cos(th))]);
@@ -117,9 +120,10 @@ function stuntShape(kind: Stunt["kind"]) {
     } else {
       // A barrel roll around a line above the road: out over the gap,
       // all the way round, and down onto the far side.
-      const B = 96;
-      const Rc = 6.5;
-      const ph = Math.PI * 2 * THREE.MathUtils.smootherstep(v, 0, 1);
+      // Two full rolls, long and slow, over a wide gap.
+      const B = 250;
+      const Rc = 11;
+      const ph = Math.PI * 4 * THREE.MathUtils.smootherstep(v, 0, 1);
       pos.push([B * v, Rc * Math.sin(ph), Rc * (1 - Math.cos(ph))]);
       ground.push([B * v, 0]);
       upRaw.push([0, -Math.sin(ph), Math.cos(ph)]);
@@ -193,8 +197,21 @@ export function phaseRanges(stops: number[], phaseOf: string[], finish: number) 
 const STRETCH = 4;
 
 export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLayout {
-  const stops = Array.from({ length: checkpoints }, (_, i) => LEAD_IN + i * SPACING);
-  const finish = LEAD_IN + (checkpoints - 1) * SPACING + LEAD_OUT;
+  // Room for the stunts: the stretch before the first checkpoint of Y
+  // (the corkscrew, the way into the finale) and one in the middle of O
+  // (the loop) are made longer.
+  const yFirstI = phaseOf.indexOf("Y");
+  const oIdx = phaseOf.map((ph, i) => (ph === "O" && phaseOf[i - 1] === "O" ? i : -1)).filter((i) => i > 0 && !venueStretch(i));
+  const loopI = oIdx.length ? oIdx[Math.floor(oIdx.length / 2)] : -1;
+  const EXTRA: Record<number, number> = {};
+  if (yFirstI > 0) EXTRA[yFirstI] = 200;
+  if (loopI > 0) EXTRA[loopI] = 170;
+  const stops: number[] = [];
+  for (let i = 0, at = LEAD_IN; i < checkpoints; i++) {
+    at += i > 0 ? SPACING + (EXTRA[i] ?? 0) : 0;
+    stops.push(at);
+  }
+  const finish = stops[checkpoints - 1] + LEAD_OUT;
   const reach = finish + 80;
   const ranges = phaseRanges(stops, phaseOf, finish);
   /** How much of phase `id` is under distance s: 1 inside it, easing
@@ -233,22 +250,15 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLay
   // corkscrews over a gap in the land and lands on the red side.
   const DS = 3;
   const stunts: (Stunt & { shape: ReturnType<typeof stuntShape> })[] = [];
-  const oStretches: number[] = [];
-  for (let i = 1; i < stops.length; i++)
-    if (phaseOf[i - 1] === "O" && phaseOf[i] === "O" && !venueStretch(i)) oStretches.push(i);
-  const loopAt = oStretches.find((i) => i % 3 === 0) !== undefined
-    ? oStretches.filter((i) => i % 3 === 0)[Math.floor(oStretches.filter((i) => i % 3 === 0).length / 2)]
-    : oStretches[Math.floor(oStretches.length / 2)];
-  if (loopAt !== undefined) {
+  if (loopI > 0) {
     const shape = stuntShape("loop");
-    const mid = (marks[loopAt] + marks[loopAt + 1]) / 2;
+    const mid = (marks[loopI] + marks[loopI + 1]) / 2;
     stunts.push({ kind: "loop", a: Math.round((mid - shape.L / 2) / DS) * DS, len: shape.L, shape });
   }
-  const rFirst = phaseOf.indexOf("R");
-  const corkGate = rFirst > 0 ? stops[rFirst] - GATE_BEFORE : -1;
-  if (rFirst > 0) {
+  const corkGate = yFirstI > 0 ? stops[yFirstI] - GATE_BEFORE : -1;
+  if (yFirstI > 0) {
     const shape = stuntShape("corkscrew");
-    stunts.push({ kind: "corkscrew", a: Math.round((stops[rFirst] - 44 - shape.L) / DS) * DS, len: shape.L, shape });
+    stunts.push({ kind: "corkscrew", a: Math.round((stops[yFirstI] - GATE_BEFORE - 12 - shape.L) / DS) * DS, len: shape.L, shape });
   }
   stunts.sort((p, q) => p.a - q.a);
   // Level going in and coming out.
@@ -258,6 +268,24 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLay
       (m, z) => Math.max(m, THREE.MathUtils.smoothstep(s, z.a - 15, z.a) * (1 - THREE.MathUtils.smoothstep(s, z.a + z.len, z.a + z.len + 15))),
       0,
     );
+
+  // SKYWAYS: now and then the road leaves the ground altogether - lifted
+  // high on pylons, running between the towers, the land far below - and
+  // comes back down before the next challenge. Through T, and above all
+  // through Y, into the city.
+  const skyways: { a: number; b: number; h: number }[] = [];
+  for (let i = 1; i < stops.length; i++) {
+    const ph = phaseOf[i];
+    if (ph !== phaseOf[i - 1] || venueStretch(i) || i === yFirstI || i === loopI) continue;
+    if ((ph === "T" && i % 2 === 1) || ph === "Y" || (ph === "S" && i === 2))
+      skyways.push({ a: stops[i - 1] + 30, b: stops[i] - 30, h: ph === "Y" ? 52 : ph === "T" ? 36 : 26 });
+  }
+  const liftAt = (s: number) =>
+    skyways.reduce((m, w) => {
+      if (s <= w.a || s >= w.b) return m;
+      const ramp = Math.min(70, (w.b - w.a) / 2.5);
+      return Math.max(m, w.h * THREE.MathUtils.smootherstep(s, w.a, w.a + ramp) * (1 - THREE.MathUtils.smootherstep(s, w.b - ramp, w.b)));
+    }, 0);
 
   // (No banked sweep where the corkscrew is.)
   const sweeps = gates
@@ -362,7 +390,7 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLay
       }
       continue;
     }
-    pts.push(new THREE.Vector3(x, y, z));
+    pts.push(new THREE.Vector3(x, y + liftAt(s), z));
     const h = headingEff(s);
     fSide.set([Math.cos(h), 0, Math.sin(h)], i * 3);
     fRside.set([Math.cos(h), 0, Math.sin(h)], i * 3);
@@ -392,6 +420,8 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLay
     flatAt,
     stunts: stunts.map(({ kind, a, len }) => ({ kind, a, len })),
     stuntAt,
+    skyways,
+    liftAt,
     frames: { ds: DS, side: fSide, rside: fRside, up: fUp, ground: fGround },
   };
 }

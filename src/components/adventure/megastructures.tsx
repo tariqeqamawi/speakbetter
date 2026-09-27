@@ -872,6 +872,74 @@ function poolTexture() {
   return poolTex;
 }
 
+// ---------------------------------------------------------------- pylons
+
+/** Under a skyway: pairs of tall glass pylons from the land up to the
+ *  road, a cross-beam under it, lit in the section's colour where they
+ *  meet it - the road carried high between the towers. */
+function Pylons({ road, colourAt }: { road: RoadLayout; colourAt: ColourAt }) {
+  const EVERY = 22;
+  const spots = useMemo(() => {
+    const out: { s: number; lift: number }[] = [];
+    for (const w of road.skyways)
+      for (let s = w.a + 10; s < w.b - 10; s += EVERY) {
+        const lift = road.liftAt(s);
+        if (lift > 6) out.push({ s, lift });
+      }
+    return out;
+  }, [road]);
+  const glass = useMemo(
+    () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color("#060b1c") }, uFogD: { value: 0.0024 } } }),
+    [],
+  );
+  const posts = useInstanced(spots.length * 3, useMemo(() => new THREE.BoxGeometry(1, 1, 1), []), glass);
+  const lights = useInstanced(spots.length * 2, useMemo(() => new THREE.BoxGeometry(1, 1, 1), []), useMemo(() => new THREE.MeshBasicMaterial({ toneMapped: false }), []));
+  useEffect(() => {
+    const p = new THREE.Vector3();
+    const side = new THREE.Vector3();
+    const ahead = new THREE.Vector3();
+    const o = new THREE.Object3D();
+    const c = new THREE.Color();
+    let i = 0;
+    let l = 0;
+    for (const sp of spots) {
+      pointAt(road, sp.s, p);
+      sideAt(road, sp.s, side);
+      pointAt(road, sp.s + 2, ahead);
+      c.copy(colourAt(sp.s)).multiplyScalar(1.4);
+      const place = (d: number, y: number, sx: number, sy: number, sz: number) => {
+        o.position.set(p.x + side.x * d, y, p.z + side.z * d);
+        o.rotation.set(0, 0, 0);
+        o.scale.set(1, 1, 1);
+        o.lookAt(ahead.x + side.x * d, y, ahead.z + side.z * d);
+        o.scale.set(sx, sy, sz);
+        o.updateMatrix();
+      };
+      const foot = p.y - sp.lift - 30;
+      for (const d of [-(ROAD_HALF - 0.8), ROAD_HALF - 0.8]) {
+        place(d, (foot + p.y - 0.6) / 2, 1.4, p.y - 0.6 - foot, 1.4);
+        posts.setMatrixAt(i++, o.matrix);
+        // A band of light where the pylon meets the road.
+        place(d, p.y - 1.4, 1.5, 0.3, 1.5);
+        lights.setMatrixAt(l, o.matrix);
+        lights.setColorAt(l++, c);
+      }
+      place(0, p.y - 0.9, ROAD_HALF * 2, 0.7, 1.6);
+      posts.setMatrixAt(i++, o.matrix);
+    }
+    for (const m of [posts, lights]) {
+      m.instanceMatrix.needsUpdate = true;
+      if (m.instanceColor) m.instanceColor.needsUpdate = true;
+    }
+  }, [road, colourAt, spots, posts, lights]);
+  return (
+    <group>
+      <primitive object={posts} />
+      <primitive object={lights} />
+    </group>
+  );
+}
+
 // ------------------------------------------------------------------ tubes
 
 const TUBE_VERT = /* glsl */ `
@@ -1045,6 +1113,8 @@ export function structurePlan(road: RoadLayout) {
   openStretches(road).forEach((st, i) => {
     // A stretch with a loop or a corkscrew in it holds nothing else.
     if (road.stunts.some((z) => z.a < st.to + 40 && z.a + z.len > st.from - 40)) return;
+    // Nor one where the road is up on a skyway.
+    if (road.skyways.some((w) => w.a < st.to && w.b > st.from)) return;
     const mid = (st.from + st.to) / 2;
     const half = Math.min(60, (st.to - st.from) / 2 - 5);
     // In turn: a great arch, a corridor of lights, a tube.
@@ -1090,6 +1160,7 @@ export function Megastructures({
       <Arches road={road} colourAt={colourAt} at={plan.arches} />
       <Corridors road={road} colourAt={colourAt} runs={plan.corridors} />
       <Tubes road={road} colourAt={colourAt} tunnels={plan.tunnels} />
+      <Pylons road={road} colourAt={colourAt} />
       <SpotlightRuns road={road} colourAt={colourAt} runs={plan.spotRuns} />
     </group>
   );
