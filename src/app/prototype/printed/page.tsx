@@ -38,6 +38,20 @@ const PIECES = [
     w: 1600,
     h: 1062,
   },
+  {
+    src: "/social/speak-better-deck-9x16.jpg",
+    title: "For socials - 9:16 (Stories, Reels, TikTok)",
+    note: "The light oak desk, portrait. Full resolution, 1520 x 2688.",
+    w: 1520,
+    h: 2688,
+  },
+  {
+    src: "/social/speak-better-deck-4x5.jpg",
+    title: "For socials - 4:5 (Instagram and Facebook feed)",
+    note: "The light oak desk, portrait. Full resolution, 1792 x 2240.",
+    w: 1792,
+    h: 2240,
+  },
 ];
 
 export default function PrintedPreview() {
