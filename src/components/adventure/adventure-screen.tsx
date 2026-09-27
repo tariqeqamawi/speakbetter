@@ -233,7 +233,7 @@ export function AdventureScreen({
     if (!phase || phase.id === shown.current) return;
     shown.current = phase.id;
     setBanner({ key: Date.now(), id: phase.id });
-    const t = setTimeout(() => setBanner(null), 2600);
+    const t = setTimeout(() => setBanner(null), 1300);
     return () => clearTimeout(t);
   }, [phase]);
   const bannerPhase = banner && phases.find((p) => p.id === banner.id);
@@ -545,15 +545,15 @@ export function AdventureScreen({
       {bannerPhase && (
         <div key={banner!.key} className="phase-banner pointer-events-none absolute inset-x-0 top-16 z-20 flex justify-center px-4">
           <div
-            className="flex items-center gap-4 rounded-2xl border-2 bg-[#070c18]/90 px-6 py-3 shadow-2xl backdrop-blur"
+            className="flex items-center gap-3 rounded-xl border-2 bg-[#070c18]/90 px-4 py-2 shadow-2xl backdrop-blur"
             style={{ borderColor: bannerPhase.color, boxShadow: `0 0 40px -6px ${bannerPhase.color}` }}
           >
-            <span className="text-7xl font-extrabold leading-none sm:text-8xl" style={{ color: bannerPhase.color }}>
+            <span className="text-4xl font-extrabold leading-none sm:text-5xl" style={{ color: bannerPhase.color }}>
               {bannerPhase.id}
             </span>
             <span className="flex flex-col text-left">
               <span className="text-[0.6rem] font-bold uppercase tracking-[0.3em] text-ink-faint">Now entering</span>
-              <span className="text-2xl font-bold leading-tight tracking-tight text-ink sm:text-4xl">{bannerPhase.name}</span>
+              <span className="text-lg font-bold leading-tight tracking-tight text-ink sm:text-2xl">{bannerPhase.name}</span>
             </span>
           </div>
         </div>
@@ -734,7 +734,10 @@ export function AdventureScreen({
         {/* The dial: hold and push up to go forward, down to go back -
             the other way to travel, beside the letters. */}
         {!demo && (
-          <div className="pointer-events-auto absolute bottom-5 right-3">
+          <div
+            className="pointer-events-auto absolute bottom-5"
+            style={{ right: "max(0.75rem, env(safe-area-inset-right))" }}
+          >
             <RoadDial travel={travel} color={phase?.color} />
           </div>
         )}

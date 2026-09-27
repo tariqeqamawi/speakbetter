@@ -3195,7 +3195,7 @@ html.bare .demo-banner {
  * the distance, holds, and flies past overhead - the way the gate it
  * names does in the world behind it. */
 .phase-banner {
-  animation: phase-banner 2.6s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  animation: phase-banner 1.3s cubic-bezier(0.2, 0.8, 0.3, 1) both;
 }
 @keyframes phase-banner {
   0% { opacity: 0; transform: scale(0.45) translateY(30px); }

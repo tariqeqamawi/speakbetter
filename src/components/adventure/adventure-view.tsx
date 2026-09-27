@@ -58,7 +58,7 @@ export function AdventureView({
     <div className="relative">
       {/* The switch and the level, stuck to the top whichever view is showing. */}
       <div className={`sticky ${stickyTop} z-40 flex`}>
-        <div className="absolute left-3 top-3 flex items-center gap-2">
+        <div className="absolute top-3 flex items-center gap-2" style={{ left: "max(0.75rem, env(safe-area-inset-left))" }}>
           <div
             role="radiogroup"
             aria-label="View"

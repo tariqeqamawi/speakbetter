@@ -61,22 +61,22 @@ function canvasTex(w: number, h: number, draw: (g: CanvasRenderingContext2D) => 
   return t;
 }
 
+/** The rim of a portal that can't be entered yet. */
+const SHUT_RIM = new THREE.Color("#2b303b");
+
 /** The number, floating at the eye of the vortex. */
 function numberTex(n: number, state: PortalState) {
   return canvasTex(256, 256, (g) => {
-    // A dark eye for the number to sit in, so it reads against the
-    // brightest part of the vortex.
-    const eye = g.createRadialGradient(128, 128, 20, 128, 128, 120);
-    eye.addColorStop(0, "rgba(3,6,14,0.85)");
-    eye.addColorStop(0.7, "rgba(3,6,14,0.6)");
-    eye.addColorStop(1, "rgba(3,6,14,0)");
-    g.fillStyle = eye;
-    g.fillRect(0, 0, 256, 256);
+    // A solid dark disc for the number to sit in - the vortex glows
+    // around it, not through it - and a plain white number, no glow, so
+    // it reads even when you're moving fast.
+    g.beginPath();
+    g.arc(128, 128, 104, 0, Math.PI * 2);
+    g.fillStyle = "rgb(5,8,16)";
+    g.fill();
     g.textAlign = "center";
     g.textBaseline = "middle";
-    g.font = "800 150px system-ui, sans-serif";
-    g.shadowColor = "rgba(0,0,0,0.85)";
-    g.shadowBlur = 24;
+    g.font = "800 132px system-ui, sans-serif";
     g.fillStyle = state === "locked" ? "#5a6282" : "#ffffff";
     g.fillText(String(n), 128, 138);
   });
@@ -149,9 +149,11 @@ export function Portal({
   }, [facing]);
 
   const hex = `#${colour.getHexString()}`;
-  // Not reached yet, but in the section they are in: live, just calmer
-  // than the one they are on. Beyond their section: dormant.
+  // Can't be entered yet - in a section not reached, or locked: near-black
+  // and grey, so the open ones stand out. Open and not yet done: a white
+  // rim and a bright eye - obvious. Done: rimmed in its section's colour.
   const ahead = state === "locked" || state === "ahead";
+  const shut = dormant || ahead;
   const material = useMemo(
     () =>
       new THREE.ShaderMaterial({
@@ -162,15 +164,21 @@ export function Portal({
         side: THREE.DoubleSide,
         uniforms: {
           uTime: { value: 0 },
-          uColor: { value: dormant ? colour.clone().multiplyScalar(0.05) : colour.clone() },
-          uSpeed: { value: dormant ? 0 : state === "here" ? 3.2 : state === "done" ? 1.4 : 0.9 },
-          uPower: { value: dormant ? 0.5 : state === "here" ? 1.05 : state === "done" ? 0.8 : 0.55 },
+          uColor: {
+            value: shut
+              ? new THREE.Color("#0c0f16")
+              : state === "here"
+                ? colour.clone().lerp(new THREE.Color("#ffffff"), 0.55)
+                : colour.clone(),
+          },
+          uSpeed: { value: shut ? 0.15 : state === "here" ? 3.2 : 1.4 },
+          uPower: { value: shut ? 0.45 : state === "here" ? 1.15 : 0.85 },
           uFade: { value: 1 },
-          // A dormant portal has no light at its eye.
-          uCore: { value: dormant ? 0 : 1 },
+          // A shut portal has no light at its eye.
+          uCore: { value: shut ? 0 : 1 },
         },
       }),
-    [colour, dormant, state],
+    [colour, shut, state],
   );
   const numMap = useMemo(() => numberTex(n, ahead ? "locked" : state), [n, ahead, state]);
   const banner = useMemo(() => bannerTex(title, hex, state, score, dormant), [title, hex, state, score, dormant]);
@@ -187,8 +195,9 @@ export function Portal({
     // so it reads clearly beside you, and gone as you pass through.
     if (bannerMat.current)
       bannerMat.current.opacity = (1 - THREE.MathUtils.smoothstep(d, 16, 34)) * THREE.MathUtils.smoothstep(d, 2.5, 5);
-    if (ring.current && state === "here") {
-      const k = 0.6 + Math.sin(clock.elapsedTime * 2.4) * 0.4;
+    // The one to do breathes, white all but a touch.
+    if (ring.current && state === "here" && !dormant) {
+      const k = 0.85 + Math.sin(clock.elapsedTime * 2.4) * 0.15;
       ring.current.color.copy(colour).lerp(new THREE.Color("#ffffff"), k);
     }
   });
@@ -207,7 +216,7 @@ export function Portal({
         <torusGeometry args={[2.5, 0.09, 12, 72]} />
         <meshBasicMaterial
           ref={ring}
-          color={dormant ? colour.clone().multiplyScalar(0.55) : state === "here" ? "#ffffff" : colour}
+          color={shut ? SHUT_RIM : state === "here" ? "#ffffff" : colour}
           toneMapped={false}
         />
       </mesh>

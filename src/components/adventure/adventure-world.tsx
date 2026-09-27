@@ -296,9 +296,10 @@ const TERRAIN_FRAG = /* glsl */ `
     float halo = exp(-px * mix(0.5, 1.4, dotsK));
     float haloWide = exp(-px * mix(0.22, 0.9, dotsK));
 
-    // The wave: rolling out from the traveller along the road, again and
-    // again, a soft band a few squares deep.
-    float front = uFrom + mod(uTime, 4.0) * 55.0;
+    // The wave: rolling out from the traveller along the road every eight
+    // seconds (half as often as it was - less on screen), a soft band a
+    // few squares deep.
+    float front = uFrom + mod(uTime, 8.0) * 55.0;
     float d = vS - front;
     float wave = exp(-d * d / 60.0) * (1.0 - smoothstep(180.0, 220.0, front - uFrom));
     // A faint afterglow behind it, fading as it goes.
@@ -437,7 +438,7 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
     const t = clock.elapsedTime;
     material.uniforms.uTime.value = t;
 
-    const loop = Math.floor(t / 4);
+    const loop = Math.floor(t / 8);
     if (loop !== lastLoop.current) {
       lastLoop.current = loop;
       material.uniforms.uFrom.value = travel.s + 6;
