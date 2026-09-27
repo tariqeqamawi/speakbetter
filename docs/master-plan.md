@@ -841,7 +841,7 @@ It isn't the transcripts republished as-is. Personal stories are interspersed th
 
 The book is sold as its own standalone product, not bundled by default, with the course and the card deck offered as an upsell from it.
 
-It has a cover now, and a title on it: *Speak Better: Unleash Your True Colors and Roar on Screen and Stage*, the navy, lion-branded copy Tariq holds up in the Storybook lessons (`public/book/speak-better-book.webp`). *How To Be a Powerful Unforgettable Speaker* above was the working description. The first place it is sold is inside **VIP Ultimate** (§15), with the printed deck. Both are the student's to keep. Whether it is also sold standalone at launch is still open (§18).
+It has a title now: *Speak Better: Express Your True Colors and Roar on Screen and Stage*, with the strapline *"The Secret Speaking Skills You Need to Overcome Your Fears and Deliver Unforgettable Talks,"* by Tariq EQ Amawi. The cover is being chosen on /prototype/printed: the lion enlarged on the app's dark glass with the speaking-spectrum wave (A4), the author's name at the top or the foot. The VIP tier shows the book as its tile.
 
 ### The card deck
 

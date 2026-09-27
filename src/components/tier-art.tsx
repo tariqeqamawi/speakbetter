@@ -99,14 +99,14 @@ export function TierArt({ has }: { has: string[] }) {
           </span>
         </span>
       </Tile>
-      {/* The book itself - Speak Better: Unleash Your True Colors and Roar
+      {/* The book itself - Speak Better: Express Your True Colors and Roar
           on Screen and Stage - rendered from the copy Tariq holds up in
           the storybook lesson (public/book). */}
       <Tile on={h("book")} label="The book">
         <span className="relative h-[3.6rem] w-11">
           <Image
             src="/book/speak-better-book.webp"
-            alt="The Speak Better book: Unleash Your True Colors and Roar on Screen and Stage"
+            alt="The Speak Better book: Express Your True Colors and Roar on Screen and Stage"
             fill
             sizes="44px"
             className="object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)]"

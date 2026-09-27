@@ -40,7 +40,7 @@ export const features: Feature[] = [
     label: "Personal 1-to-1 feedback from Tariq himself - your takes, watched and reviewed by the teacher",
   },
   { id: "printed", label: "The physical card deck - printed, boxed and posted to you" },
-  { id: "book", label: "The book, when it ships - Speak Better: Unleash Your True Colors and Roar on Screen and Stage" },
+  { id: "book", label: "The book, when it ships - Speak Better: Express Your True Colors and Roar on Screen and Stage" },
   { id: "first", label: "First access to every new lesson and challenge" },
 ];
 
