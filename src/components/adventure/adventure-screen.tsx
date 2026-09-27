@@ -626,13 +626,23 @@ export function AdventureScreen({
       {/* The app's sound switch - the same one as in the header, which
           full screen hides, so here it is on the road itself. */}
       {!demo && chrome.full && (
-        <SoundToggle className="absolute right-3 top-3 z-20 bg-navy-900/80 backdrop-blur" />
+        // Clear of the camera cut-out and rounded corners, whichever way
+        // the phone is turned.
+        <div
+          className="absolute z-20"
+          style={{ right: "max(0.75rem, env(safe-area-inset-right))", top: "max(0.75rem, env(safe-area-inset-top))" }}
+        >
+          <SoundToggle className="bg-navy-900/80 backdrop-blur" />
+        </div>
       )}
 
       {/* How the road works - under the sound button, on the right, where
           the switch row on the left leaves room. Not in full screen. */}
       {!demo && !chrome.full && (
-        <div className="absolute right-3 top-3 z-20">
+        <div
+          className="absolute z-20"
+          style={{ right: "max(0.75rem, env(safe-area-inset-right))", top: "max(0.75rem, env(safe-area-inset-top))" }}
+        >
           <RoadLegendButton />
         </div>
       )}
