@@ -389,3 +389,4 @@ what.
 - Trophies: stem on D, warm spotlight on F, fog, zoom — `c29989e`, `a64d007`, `db937dd`, `8c44e28`
 - Chat: schema, working rooms, per-challenge seeds, live sessions page — `ab43d17`, `24ec4f8`, `07e1c6d`
 - The app's choppiness fixed (one keyframe, 13× main-thread work) and real glass — `728c360`
+- The road twice as long and ~2× faster at the top of the dial; haze takes each section's colour, the view widens and streaks at speed, portals light the road, a shooting star, the nebula drifts — `ea232c8`
