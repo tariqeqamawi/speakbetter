@@ -608,6 +608,8 @@ function Rig({
   const at = useMemo(() => new THREE.Vector3(), []);
   const last = useRef(-1);
   const roll = useRef(0);
+  const yaw = useRef(0);
+  const pitch = useRef(0);
 
   useFrame((_, dt) => {
     travel.step(Math.min(dt, 0.05) * 60, limit);
@@ -632,6 +634,13 @@ function Rig({
     look.set(at.x, at.y + 1.2, at.z);
     camera.position.lerp(eye, 1 - Math.pow(0.001, dt));
     camera.lookAt(look);
+    // Looking around: the phone's tilt swings the view side to side and
+    // lifts it toward the horizon, eased so it glides rather than jitters.
+    const ease = Math.min(1, dt * 4);
+    yaw.current += (travel.look.yaw - yaw.current) * ease;
+    pitch.current += (travel.look.pitch - pitch.current) * ease;
+    camera.rotateY(yaw.current);
+    camera.rotateX(pitch.current);
     // Bank into the bends, the way a car or a plane leans into a curve.
     // In the calm opening phases the camera stays level; it leans into
     // the curves only where the story does - O's sweeps and R's plunge.

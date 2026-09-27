@@ -64,9 +64,10 @@ export function Sky() {
   return null;
 }
 
-/** At every boundary between two phases, a curtain of sparks rising
- *  across the road - the old colour on one side, the new on the other -
- *  that flares as the traveller goes through it. */
+/** Crossing from one phase into the next: a quick burst of sparks in
+ *  the old colour and the new, thrown up and out from the road as the
+ *  traveller goes through - then gone. Nothing stands at the boundary
+ *  otherwise; the solid colour wash (ColourWall) marks it. */
 export function GateSparks({
   road,
   gates,
@@ -77,14 +78,17 @@ export function GateSparks({
   gates: { s: number; from: string; to: string }[];
   travel: Travel;
 }) {
-  const PER = 260;
+  const PER = 160;
   const N = PER * gates.length;
+  const BURST = 1.3; // seconds
   const mat = useRef<THREE.PointsMaterial>(null);
-  const { geo, base, speed, gateOf } = useMemo(() => {
+  const { geo, base, dir, speed, gateOf, tint } = useMemo(() => {
     const rand = seeded(5);
     const pos = new Float32Array(N * 3);
     const col = new Float32Array(N * 3);
+    const tint = new Float32Array(N * 3);
     const base = new Float32Array(N * 3);
+    const dir = new Float32Array(N * 3);
     const speed = new Float32Array(N);
     const gateOf = new Uint8Array(N);
     const p = new THREE.Vector3();
@@ -98,45 +102,63 @@ export function GateSparks({
       b.set(gt.to);
       for (let k = 0; k < PER; k++) {
         const i = gi * PER + k;
-        const across = (rand() - 0.5) * 11;
-        const along = (rand() - 0.5) * 3;
-        base[i * 3] = p.x + side.x * across + side.z * along;
-        base[i * 3 + 1] = p.y + rand() * 0.5;
-        base[i * 3 + 2] = p.z + side.z * across - side.x * along;
-        speed[i] = 0.8 + rand() * 1.6;
+        const across = (rand() - 0.5) * 8;
+        base[i * 3] = p.x + side.x * across;
+        base[i * 3 + 1] = p.y + 0.3;
+        base[i * 3 + 2] = p.z + side.z * across;
+        // Out to the sides and up, in a fan.
+        const out = (rand() - 0.5) * 2;
+        dir[i * 3] = side.x * out;
+        dir[i * 3 + 1] = 1.2 + rand() * 1.6;
+        dir[i * 3 + 2] = side.z * out;
+        speed[i] = 4 + rand() * 6;
         gateOf[i] = gi;
-        const c = (rand() < 0.5 ? a : b).clone().multiplyScalar(1.8);
-        col.set([c.r, c.g, c.b], i * 3);
+        const c = (rand() < 0.5 ? a : b).clone().multiplyScalar(1.9);
+        tint.set([c.r, c.g, c.b], i * 3);
       }
     });
-    pos.set(base);
     const geo = new THREE.BufferGeometry();
     geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
     geo.setAttribute("color", new THREE.BufferAttribute(col, 3));
-    return { geo, base, speed, gateOf };
+    return { geo, base, dir, speed, gateOf, tint };
   }, [road, gates, N]);
+
+  // When each gate was last crossed, and which side the traveller was on.
+  const since = useRef<number[]>([]);
+  const wasPast = useRef<boolean[]>([]);
 
   /* eslint-disable react-hooks/immutability */
   useFrame(({ clock }) => {
     const t = clock.elapsedTime;
     const here = travel.s + AHEAD;
-    const arr = (geo.attributes.position as THREE.BufferAttribute).array as Float32Array;
+    gates.forEach((gt, gi) => {
+      const past = here > gt.s;
+      if (wasPast.current[gi] !== undefined && past !== wasPast.current[gi]) since.current[gi] = t;
+      wasPast.current[gi] = past;
+    });
+    const pos = (geo.attributes.position as THREE.BufferAttribute).array as Float32Array;
+    const col = (geo.attributes.color as THREE.BufferAttribute).array as Float32Array;
     for (let i = 0; i < N; i++) {
-      // Near the traveller the sparks rise faster and higher - a flare
-      // as the boundary is crossed.
-      const flare = 1 + 2.5 * (1 - THREE.MathUtils.smoothstep(Math.abs(here - gates[gateOf[i]].s), 0, 14));
-      const h = ((t * speed[i] * flare + i * 0.37) % 9) * (0.8 + flare * 0.3);
-      arr[i * 3] = base[i * 3] + Math.sin(t * 1.3 + i) * 0.25;
-      arr[i * 3 + 1] = base[i * 3 + 1] + h;
-      arr[i * 3 + 2] = base[i * 3 + 2] + Math.cos(t + i * 0.7) * 0.25;
+      const start = since.current[gateOf[i]];
+      const age = start === undefined ? BURST : t - start;
+      const k = age / BURST;
+      const on = k < 1 ? 1 - k * k : 0;
+      const d = age * speed[i];
+      pos[i * 3] = base[i * 3] + dir[i * 3] * d;
+      pos[i * 3 + 1] = base[i * 3 + 1] + dir[i * 3 + 1] * d - 4 * age * age;
+      pos[i * 3 + 2] = base[i * 3 + 2] + dir[i * 3 + 2] * d;
+      col[i * 3] = tint[i * 3] * on;
+      col[i * 3 + 1] = tint[i * 3 + 1] * on;
+      col[i * 3 + 2] = tint[i * 3 + 2] * on;
     }
     (geo.attributes.position as THREE.BufferAttribute).needsUpdate = true;
+    (geo.attributes.color as THREE.BufferAttribute).needsUpdate = true;
   });
   /* eslint-enable react-hooks/immutability */
 
   return (
     <points geometry={geo}>
-      <pointsMaterial ref={mat} size={0.22} vertexColors transparent opacity={0.9} depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} />
+      <pointsMaterial ref={mat} size={0.26} vertexColors transparent opacity={0.95} depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} />
     </points>
   );
 }

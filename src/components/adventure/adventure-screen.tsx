@@ -110,6 +110,54 @@ export function AdventureScreen({
   const onMove = useCallback((next: number) => setS(next), []);
   const chrome = useRoadChrome();
 
+  // TILT TO LOOK AROUND. Tip the phone left and the view swings to show
+  // more of the land on the right; tip it right, more on the left; tip
+  // the top toward you and it lifts to the distance. It measures from
+  // however the phone is being held, and drifts back to centre when held
+  // still in a new way. The phone's sideways turn is accounted for.
+  useEffect(() => {
+    const el = frame.current;
+    if (!el || demo || typeof window === "undefined" || !("DeviceOrientationEvent" in window)) return;
+    if (!window.matchMedia("(pointer: coarse)").matches) return;
+    let base: { lr: number; fb: number } | null = null;
+    const onTilt = (e: DeviceOrientationEvent) => {
+      if (e.beta === null || e.gamma === null) return;
+      const angle = (screen.orientation?.angle ?? 0) % 360;
+      const [lr, fb] =
+        angle === 90 ? [e.beta, -e.gamma] : angle === 270 || angle === -90 ? [-e.beta, e.gamma] : [e.gamma, e.beta];
+      if (!base) base = { lr, fb };
+      // The rest position follows slowly, so a new way of holding the
+      // phone becomes the new straight-ahead.
+      base.lr += (lr - base.lr) * 0.004;
+      base.fb += (fb - base.fb) * 0.004;
+      const clamp = (v: number) => Math.max(-1, Math.min(1, v));
+      travel.look.yaw = clamp((lr - base.lr) / 28) * 0.42;
+      travel.look.pitch = clamp((base.fb - fb) / 28) * 0.3;
+    };
+    let listening = false;
+    const listen = () => {
+      if (listening) return;
+      listening = true;
+      window.addEventListener("deviceorientation", onTilt);
+    };
+    type Asks = { requestPermission?: () => Promise<"granted" | "denied"> };
+    const ask = (DeviceOrientationEvent as unknown as Asks).requestPermission;
+    const firstTouch = () => {
+      el.removeEventListener("pointerdown", firstTouch);
+      ask?.()
+        .then((r) => r === "granted" && listen())
+        .catch(() => {});
+    };
+    if (ask) el.addEventListener("pointerdown", firstTouch);
+    else listen();
+    return () => {
+      el.removeEventListener("pointerdown", firstTouch);
+      window.removeEventListener("deviceorientation", onTilt);
+      travel.look.yaw = 0;
+      travel.look.pitch = 0;
+    };
+  }, [travel, demo]);
+
   // Two fingers pinching together, in full screen: out of full screen.
   useEffect(() => {
     const el = frame.current;

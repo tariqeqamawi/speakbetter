@@ -23,7 +23,8 @@ const ITEMS: { icon: React.ReactNode; title: string; body: React.ReactNode }[] =
       <>
         Drag the road down (or scroll) to travel forward, up to go back. Or hold the <b>dial</b> in the bottom right:
         push up to go forward - the higher, the faster - and down to go back. Tap a <b>S·T·O·R·Y</b> letter to fly to
-        that section.
+        that section. On a phone, <b>tilt it</b> to look around: left and right to swing the view, toward you to see
+        further ahead.
       </>
     ),
   },

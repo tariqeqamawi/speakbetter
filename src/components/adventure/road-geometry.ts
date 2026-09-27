@@ -171,6 +171,10 @@ export class Travel {
   /** Going through a portal: which one, and since when (ms). While set,
    *  the camera and the traveller dive into it and nothing else moves. */
   portal: { s: number; since: number } | null = null;
+  /** Where the phone's tilt asks the camera to look, in radians: yaw
+   *  turns the view left and right, pitch lifts it toward the distance.
+   *  Set by the road's tilt listener, eased by the camera. */
+  look = { yaw: 0, pitch: 0 };
   constructor(start: number) {
     this.s = start;
   }
