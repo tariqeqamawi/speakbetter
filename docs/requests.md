@@ -208,6 +208,7 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **26 September**
+- Landing: nine numbered chapters, right-edge section navigator (phone: Sections button), Read more on long copy and quotes — `f3f1aae`
 - Origin story moved to /about, "About" in the landing header — `62a91b7`
 - Data room (/admin/data-room): one-pager PDF, outcomes, traction, unit economics, forecast, moat;
   confidence + recommend check-ins on Today; Tariq's own score in the training queue — `0e0f71c`
