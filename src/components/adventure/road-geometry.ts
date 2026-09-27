@@ -80,7 +80,7 @@ export interface RoadLayout {
 /** A stretch where the road leaves the ground: a vertical loop, or a
  *  corkscrew barrel roll over a gap in the land. */
 export interface Stunt {
-  kind: "loop" | "corkscrew";
+  kind: "loop" | "corkscrew" | "climb";
   /** Where it starts, and its length along the road. */
   a: number;
   len: number;
@@ -98,14 +98,47 @@ function cross(a: V3, b: V3): V3 {
 /** A stunt's shape in its own frame - forward, side, up from where it
  *  starts - sampled by distance along it: the road's point, its rolled
  *  side and up, and the ground's point beneath. */
+/** The speaker climb's size: its face height, and how deep its top is. */
+export const CLIMB = { H: 62, FACE: 24, TOP: 36, WOOF_Y: 0.38, WOOF_R: 17 };
+
 function stuntShape(kind: Stunt["kind"]) {
   const N = 2400;
   const pos: V3[] = [];
   const ground: [number, number][] = [];
   const upRaw: V3[] = [];
+  // THE SPEAKER CLIMB: straight up the face of a giant speaker - swinging
+  // round the edge of its woofer on the way - over the top, and down the
+  // back on a long slope. (Forward, side, up.)
+  const climb =
+    kind === "climb"
+      ? (() => {
+          const { H, FACE, TOP } = CLIMB;
+          const pts: THREE.Vector3[] = [];
+          for (let x = 0; x <= FACE - 8; x += 4) pts.push(new THREE.Vector3(x, 0, 0));
+          for (let t = 0.2; t < 1; t += 0.2) pts.push(new THREE.Vector3(FACE - 8 + 8 * Math.sin((t * Math.PI) / 2), 0, 8 - 8 * Math.cos((t * Math.PI) / 2)));
+          for (let z = 8; z <= H - 8; z += 3) pts.push(new THREE.Vector3(FACE, 23 * Math.sin((Math.PI * (z - 8)) / (H - 16)), z));
+          for (let t = 0.2; t < 1; t += 0.2) pts.push(new THREE.Vector3(FACE + 8 - 8 * Math.cos((t * Math.PI) / 2), 0, H - 8 + 8 * Math.sin((t * Math.PI) / 2)));
+          for (let x = FACE + 8; x <= FACE + 8 + TOP; x += 4) pts.push(new THREE.Vector3(x, 0, H));
+          const x0 = FACE + 8 + TOP;
+          for (let t = 4; t <= H; t += 4) {
+            // Down the back: easing in, a long slope, easing out onto the land.
+            const k = t / H;
+            pts.push(new THREE.Vector3(x0 + t * 1.6, 0, H * (1 - THREE.MathUtils.smootherstep(k, 0, 1))));
+          }
+          const xe = x0 + H * 1.6;
+          for (let x = 4; x <= 24; x += 4) pts.push(new THREE.Vector3(xe + x, 0, 0));
+          return new THREE.CatmullRomCurve3(pts, false, "centripetal");
+        })()
+      : null;
   for (let k = 0; k <= N; k++) {
     const v = k / N;
-    if (kind === "loop") {
+    if (climb) {
+      const p = climb.getPoint(v);
+      const t = climb.getTangent(v);
+      pos.push([p.x, p.y, p.z]);
+      ground.push([p.x, 0]);
+      upRaw.push([-t.z, 0, t.x]);
+    } else if (kind === "loop") {
       // Up and over, upside down at the top, down and out a road's width
       // to the side - drifting forward a little so it opens like a real
       // coaster loop.
@@ -206,6 +239,9 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLay
   const EXTRA: Record<number, number> = {};
   if (yFirstI > 0) EXTRA[yFirstI] = 200;
   if (loopI > 0) EXTRA[loopI] = 170;
+  // The speaker climb: the first stretch within T (kept clear for it).
+  const climbI = phaseOf.findIndex((ph, i) => i > 0 && ph === "T" && phaseOf[i - 1] === "T" && i % 2 === 1 && !venueStretch(i));
+  if (climbI > 0) EXTRA[climbI] = 260;
   // The wave skyway through the city: the first stretch of Y after its
   // first challenge, made longer so it's a ride of its own.
   const waveI = yFirstI > 0 && phaseOf[yFirstI + 1] === "Y" ? yFirstI + 1 : -1;
@@ -259,6 +295,11 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLay
     const mid = (marks[loopI] + marks[loopI + 1]) / 2;
     stunts.push({ kind: "loop", a: Math.round((mid - shape.L / 2) / DS) * DS, len: shape.L, shape });
   }
+  if (climbI > 0) {
+    const shape = stuntShape("climb");
+    const mid = (marks[climbI] + marks[climbI + 1]) / 2;
+    stunts.push({ kind: "climb", a: Math.round((mid - shape.L / 2) / DS) * DS, len: shape.L, shape });
+  }
   const corkGate = yFirstI > 0 ? stops[yFirstI] - GATE_BEFORE : -1;
   if (yFirstI > 0) {
     const shape = stuntShape("corkscrew");
@@ -280,7 +321,7 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLay
   const skyways: { a: number; b: number; h: number; wave?: boolean }[] = [];
   for (let i = 1; i < stops.length; i++) {
     const ph = phaseOf[i];
-    if (ph !== phaseOf[i - 1] || venueStretch(i) || i === yFirstI || i === loopI) continue;
+    if (ph !== phaseOf[i - 1] || venueStretch(i) || i === yFirstI || i === loopI || i === climbI) continue;
     if ((ph === "T" && i % 2 === 1) || ph === "Y" || (ph === "S" && i === 2))
       skyways.push({ a: stops[i - 1] + 30, b: stops[i] - 30, h: ph === "Y" ? 52 : ph === "T" ? 36 : 26, wave: i === waveI });
   }
@@ -290,7 +331,7 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLay
       const ramp = Math.min(70, (w.b - w.a) / 2.5);
       const env = THREE.MathUtils.smootherstep(s, w.a, w.a + ramp) * (1 - THREE.MathUtils.smootherstep(s, w.b - ramp, w.b));
       // The wave skyway rolls up and down between the towers as it goes.
-      const wave = w.wave ? 16 * Math.sin(((s - w.a) / 58) * Math.PI) : 0;
+      const wave = 0;
       return Math.max(m, (w.h + wave) * env);
     }, 0);
 
@@ -312,13 +353,20 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLay
     return -Math.sign(k) * Math.pow(Math.abs(k), 1.5) * (ROAD_HALF - 1.2);
   };
 
+  // THE CITY WEAVE: on the long skyway through Y the road swings left and
+  // right between the towers - banking hard into each turn - rather than
+  // going up and down.
+  const weaveSky = skyways.find((w) => w.wave);
+  const weaveAt = (s: number) =>
+    weaveSky ? THREE.MathUtils.smoothstep(s, weaveSky.a + 20, weaveSky.a + 70) * (1 - THREE.MathUtils.smoothstep(s, weaveSky.b - 70, weaveSky.b - 20)) : 0;
+  const weave = (s: number) => (weaveSky ? 0.55 * Math.sin((s - weaveSky.a) / 34) * weaveAt(s) : 0);
   const heading = (s: number) => {
     // The same bends, drawn out over the longer road.
     const u = s / STRETCH;
     const gentle = 0.23 * Math.sin(u / 70) + 0.15 * Math.sin(u / 27);
     const wO = weight("O", s);
     const sweep = 0.62 * Math.sin((s - from("O")) / (58 * STRETCH));
-    return gentle * (1 - wO) + sweep * wO + sweepTurn(s);
+    return gentle * (1 - wO) + sweep * wO + sweepTurn(s) + weave(s);
   };
   const slope = (s: number) => {
     // Drawn out the same way, and gentler for it: the hills a little
@@ -333,7 +381,9 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLay
     const rest = Math.max(0, 1 - wT - wR - wY);
     // Y: over the mountains - up one and down it, up the next and down
     // it - before the plain.
-    const peaks = 0.5 * Math.sin(((s - from("Y")) / (100 * STRETCH)) * Math.PI * 2);
+    // (Y's mountains are gone: the city is flat, and the road weaves
+    // through it on a skyway instead.)
+    const peaks = 0;
     // DIPS, the way Extreme-G's tracks dropped away and climbed: now and
     // then the road falls into a hollow and shoots up the far side to the
     // horizon. They come in runs (the slow envelope), with calm between,
@@ -414,7 +464,7 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLay
   curve.arcLengthDivisions = 6000;
   const length = curve.getLength();
   const bendAt = (s: number) => (headingEff(s + 4) - headingEff(s - 4)) / 8;
-  const bankAt = (s: number) => Math.min(1, weight("O", s) + weight("R", s));
+  const bankAt = (s: number) => Math.min(1, weight("O", s) + weight("R", s) + weaveAt(s));
   return {
     curve,
     length,

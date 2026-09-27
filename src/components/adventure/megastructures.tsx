@@ -108,6 +108,84 @@ const PULSE_FRAG = /* glsl */ `
   }
 `;
 
+// THE TOWERS: the app's own dark navy, lit by glowing details - each
+// building its own kind, so no two streets look alike: tall glowing
+// seams running up it, the edges of windows, a field of lit dots like
+// O's road studs, or bands of light round its floors. The glow is a
+// cool blue, violet or green by building.
+const TOWER_VERT = /* glsl */ `
+  varying vec3 vN;
+  varying vec3 vV;
+  varying vec3 vW;
+  varying float vDepth;
+  varying vec3 vGlow;
+  varying float vKind;
+  varying float vSeed;
+  void main() {
+    float h1 = fract(sin(dot(instanceMatrix[3].xz, vec2(12.9898, 78.233))) * 43758.5453);
+    float h2 = fract(sin(dot(instanceMatrix[3].xz, vec2(39.3468, 11.135))) * 24634.6345);
+    vGlow = h1 < 0.4 ? vec3(0.25, 0.55, 1.0) : h1 < 0.7 ? vec3(0.66, 0.36, 1.0) : vec3(0.2, 0.95, 0.75);
+    vKind = floor(h2 * 4.0);
+    vSeed = h1 * 10.0;
+    vec4 wp = modelMatrix * instanceMatrix * vec4(position, 1.0);
+    vN = normalize(mat3(modelMatrix) * mat3(instanceMatrix) * normal);
+    vV = cameraPosition - wp.xyz;
+    vW = wp.xyz;
+    vec4 mv = viewMatrix * wp;
+    vDepth = -mv.z;
+    gl_Position = projectionMatrix * mv;
+  }
+`;
+const TOWER_FRAG = /* glsl */ `
+  uniform vec3 uFog;
+  uniform float uFogD;
+  varying vec3 vN;
+  varying vec3 vV;
+  varying vec3 vW;
+  varying float vDepth;
+  varying vec3 vGlow;
+  varying float vKind;
+  varying float vSeed;
+  float line(float v, float w) {
+    float d = abs(fract(v) - 0.5) * 2.0;
+    return smoothstep(1.0 - w - fwidth(v) * 2.0, 1.0 - w * 0.2, d);
+  }
+  void main() {
+    vec3 N = normalize(vN);
+    vec3 V = normalize(vV);
+    float fres = pow(1.0 - abs(dot(N, V)), 3.0);
+    float side = 0.5 + 0.5 * dot(N, normalize(vec3(-0.3, 0.6, -0.5)));
+    // Along the face: whichever horizontal axis the face runs along.
+    float u = abs(N.x) > abs(N.z) ? vW.z : vW.x;
+    float y = vW.y;
+    float up = step(abs(N.y), 0.5); // walls only, not roofs
+    float g = 0.0;
+    if (vKind < 1.0) {
+      // Tall seams of light up the building.
+      g = line(u / 6.0 + vSeed, 0.08) * 1.2;
+    } else if (vKind < 2.0) {
+      // The edges of windows: a lit grid, some windows brighter.
+      float gx = line(u / 3.2 + vSeed, 0.07);
+      float gy = line(y / 4.0 + vSeed, 0.07);
+      float cell = fract(sin(dot(floor(vec2(u / 3.2, y / 4.0)), vec2(7.1, 3.7)) + vSeed) * 311.7);
+      g = max(gx, gy) * 0.8 + step(0.93, cell) * 0.35;
+    } else if (vKind < 3.0) {
+      // A field of lit dots, like O's road studs.
+      vec2 q = vec2(u / 2.6, y / 2.6) + vSeed;
+      vec2 f = fract(q) - 0.5;
+      float on = step(0.45, fract(sin(dot(floor(q), vec2(12.9, 78.2))) * 437.5));
+      g = on * (1.0 - smoothstep(0.08, 0.16, length(f))) * 1.3;
+    } else {
+      // Bands of light round its floors.
+      g = line(y / 9.0 + vSeed, 0.05) * 1.1;
+    }
+    vec3 base = vec3(0.022, 0.035, 0.07) * (0.55 + 0.7 * side);
+    vec3 col = base + vec3(0.12, 0.18, 0.35) * fres * 0.35 + vGlow * g * up;
+    float fog = 1.0 - exp(-uFogD * uFogD * vDepth * vDepth);
+    gl_FragColor = vec4(mix(col, uFog, fog * 0.5), 1.0);
+  }
+`;
+
 type Kind = "box" | "cyl" | "cyl6" | "cone4" | "cone8" | "sphere" | "arc" | "gRing" | "gDisc" | "gSphere";
 const KINDS: Kind[] = ["box", "cyl", "cyl6", "cone4", "cone8", "sphere", "arc", "gRing", "gDisc", "gSphere"];
 /** The kinds that glow and pulse (the rest are glass). */
@@ -342,8 +420,8 @@ function City({ road, dense, keep, colourAt, clear }: { road: RoadLayout; dense?
   const material = useMemo(
     () =>
       new THREE.ShaderMaterial({
-        vertexShader: GLASS_VERT,
-        fragmentShader: GLASS_FRAG,
+        vertexShader: TOWER_VERT,
+        fragmentShader: TOWER_FRAG,
         uniforms: { uFog: { value: new THREE.Color("#060b1c") }, uFogD: { value: 0.0024 } },
       }),
     [],
@@ -1148,14 +1226,14 @@ export function structurePlan(road: RoadLayout) {
   const monuments: MonumentPlan = {};
   const tallest = [...road.skyways].sort((p, q) => q.h - p.h)[0];
   if (tallest) monuments.mic = { s: (tallest.a + tallest.b) / 2, side: 1 };
-  const mid = road.skyways.find((w) => w.h > 30 && w.h < 45);
-  if (mid) monuments.speakers = { s: (mid.a + mid.b) / 2 };
+  const climb = road.stunts.find((z) => z.kind === "climb");
+  if (climb) monuments.speakers = { a: climb.a };
   // Every great arch is now a giant pair of headphones.
   monuments.headphones = arches.splice(0, arches.length);
   /** Where the towers keep well clear, to let the monuments stand alone. */
-  const clear = [monuments.mic, monuments.speakers]
+  const clear = [monuments.mic, climb ? { s: climb.a + climb.len / 2 } : undefined]
     .filter((m): m is { s: number; side?: number } => Boolean(m))
-    .map((m) => ({ from: m.s - 70, to: m.s + 70 }))
+    .map((m) => ({ from: m.s - 90, to: m.s + 90 }))
     .concat(monuments.headphones.map((s) => ({ from: s - 25, to: s + 25 })));
   return { arches, corridors, tunnels, venues, spotRuns, keep, monuments, clear };
 }

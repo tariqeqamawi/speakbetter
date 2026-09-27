@@ -97,7 +97,7 @@ export function AdventureScreen({
     if (typeof window !== "undefined") {
       const at = new URLSearchParams(window.location.search).get("road-at") as keyof MonumentPlan | null;
       const m = at ? structurePlan(road).monuments[at] : undefined;
-      const ms = Array.isArray(m) ? m[0] : m?.s;
+      const ms = Array.isArray(m) ? m[0] : m && "s" in m ? m.s : m?.a;
       if (ms !== undefined) return Math.max(0, ms - 150);
     }
     return hereIndex > 0 ? Math.max(0, road.stops[hereIndex] - AHEAD - 2) : 0;

@@ -769,7 +769,6 @@ function Rig({
   const prevPos = useMemo(() => new THREE.Vector3(), []);
   const moved = useMemo(() => new THREE.Vector3(), []);
   const carried = useRef(false);
-  const held = useRef<{ pos: THREE.Vector3; quat: THREE.Quaternion } | null>(null);
   const stillFor = useRef(0);
   const idle = useRef(0);
   // For anyone who has asked for less motion: no swoop, no shake.
@@ -780,10 +779,9 @@ function Rig({
 
   /* eslint-disable react-hooks/immutability -- the camera is three.js's, moved every frame */
   useFrame((_, dt) => {
-    // Committed on a stunt: once the traveller is on the loop or the
-    // corkscrew (or just about to be), they're carried through it.
-    const onStunt = road.stunts.some((z) => travel.s + AHEAD > z.a - 4 && travel.s + AHEAD < z.a + z.len + 2);
-    travel.floor = onStunt ? 1.2 : 0;
+    // The road is magnetic: stop anywhere on the loop or the corkscrew,
+    // upside down if you like, and go back the way you came.
+    travel.floor = 0;
     travel.step(Math.min(dt, 0.05) * 60, limit);
     const s = travel.s;
     if (travel.portal) {
@@ -839,12 +837,38 @@ function Rig({
     // THE LOOP: the camera holds where it is - same place, same view -
     // and watches the traveller go up and round and come back down,
     // picking up again once they're through.
-    const loop = road.stunts.find((z) => z.kind === "loop");
-    const inLoop = loop && s + AHEAD > loop.a - 2 && s < loop.a + loop.len + 4;
-    if (inLoop) {
-      if (!held.current) held.current = { pos: camera.position.clone(), quat: camera.quaternion.clone() };
-      camera.position.copy(held.current.pos);
-      camera.quaternion.copy(held.current.quat);
+    // ON A STUNT: the camera steps out to the side - upright, never
+    // rolling - and watches the traveller go round the loop or through
+    // the corkscrew from there, turning to follow them. Stop halfway and
+    // it waits; go back and it follows back. It glides out and back in.
+    const tS = s + AHEAD;
+    const stunt = road.stunts.find((z) => tS > z.a - 25 && tS < z.a + z.len + 25);
+    if (stunt) {
+      const k = THREE.MathUtils.smoothstep(tS, stunt.a - 25, stunt.a) * (1 - THREE.MathUtils.smoothstep(tS, stunt.a + stunt.len, stunt.a + stunt.len + 25));
+      if (stunt.kind === "climb") {
+        // The speaker: from back down the road, looking up its face as
+        // the traveller climbs it and goes over the top.
+        pointAt(road, stunt.a - 40, pos).setY(pos.y + 14);
+      } else {
+        const along = stunt.kind === "loop" ? stunt.a + stunt.len / 2 : THREE.MathUtils.clamp(tS, stunt.a, stunt.a + stunt.len);
+        const back = stunt.kind === "loop" ? 0 : 38;
+        groundAt(road, along - back, pos);
+        sideAt(road, along - back, across);
+        // Out to the side and up: the loop seen in profile, the corkscrew
+        // from over the shoulder.
+        const outD = stunt.kind === "loop" ? 70 : 34;
+        const outY = stunt.kind === "loop" ? 40 : 24;
+        pos.addScaledVector(across, -outD).setY(pos.y + outY);
+      }
+      // Where the traveller is now.
+      surfaceAt(road, tS, road.rideAt(tS), 1.3, at);
+      pointAt(road, s + f * 2 - b * 4 - up * 5, eye).setY(eye.y + 7.5);
+      // Blend from the usual chase view to the side view as the stunt begins.
+      eye.lerp(pos, k);
+      look.copy(at);
+      camera.up.set(0, 1, 0);
+      camera.position.lerp(eye, 1 - Math.pow(0.02, dt));
+      camera.lookAt(look);
       prevPos.copy(pointAt(road, s + f * 2 - b * 4 - up * 5, pos));
       if (Math.abs(s - last.current) > 0.25) {
         last.current = s;
@@ -852,10 +876,7 @@ function Rig({
       }
       return;
     }
-    // Out of the loop: straight back behind the traveller, in one cut,
-    // rather than gliding there through the loop itself.
-    const cut = held.current !== null;
-    held.current = null;
+    const cut = false;
     // Elsewhere "up" stays up - the camera never rolls over. Where the
     // road leaves the land (the corkscrew), it follows the line of the
     // ground beneath instead of the rolling road.

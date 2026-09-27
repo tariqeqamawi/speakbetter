@@ -57,6 +57,10 @@ export function ChallengesTabs({
   // chooses otherwise. Where the browser allows, it is real full screen,
   // browser bars and all gone.
   const [full, setFullState] = useState(false);
+  // iPhone Safari will not let any page hide its own bars - only a video
+  // can go truly full screen there. So on an iPhone the full-screen tap
+  // says how: hide Safari's toolbar, or add the app to the home screen.
+  const [iosTip, setIosTip] = useState(false);
   const chose = useRef(false);
   const setFull = (on: boolean) => {
     chose.current = true;
@@ -69,8 +73,13 @@ export function ChallengesTabs({
       const target = (el ?? document.documentElement) as HTMLElement & { webkitRequestFullscreen?: () => void };
       if (on && !document.fullscreenElement) {
         if (target.requestFullscreen) target.requestFullscreen().catch(() => {});
-        else target.webkitRequestFullscreen?.();
+        else if (target.webkitRequestFullscreen) target.webkitRequestFullscreen();
+        else if (!window.matchMedia("(display-mode: standalone)").matches) {
+          setIosTip(true);
+          window.setTimeout(() => setIosTip(false), 9000);
+        }
       }
+      if (!on) setIosTip(false);
       if (!on && document.fullscreenElement) document.exitFullscreen().catch(() => {});
     } catch {
       // no Fullscreen API (iPhone Safari): the fixed layer is full screen enough
@@ -201,6 +210,17 @@ export function ChallengesTabs({
               },
             }}
           >{road}</RoadChromeContext.Provider>
+          {full && iosTip && (
+            <button
+              type="button"
+              onClick={() => setIosTip(false)}
+              className="fixed inset-x-0 top-16 z-[60] mx-auto w-fit max-w-[22rem] rounded-2xl border border-navy-600 bg-navy-900/95 px-4 py-3 text-left text-sm text-ink-muted shadow-2xl backdrop-blur"
+            >
+              <b className="block text-ink">Hide Safari&apos;s bars too</b>
+              Tap <b className="text-ink">aA</b> in the address bar, then <b className="text-ink">Hide Toolbar</b>. Or add Speak
+              Better to your Home Screen (Share → Add to Home Screen) - it opens with no bars at all.
+            </button>
+          )}
         </div>
       )}
     </div>

@@ -3,7 +3,7 @@
 import { useEffect, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { ROAD_HALF, groundAt, sideAt, type RoadLayout } from "./road-geometry";
+import { CLIMB, ROAD_HALF, groundAt, pointAt, sideAt, type RoadLayout } from "./road-geometry";
 
 // THE MONUMENTS - three landmarks of speaking, far bigger than anything
 // else in the city, so it takes long enough to pass them for the penny
@@ -23,7 +23,8 @@ import { ROAD_HALF, groundAt, sideAt, type RoadLayout } from "./road-geometry";
 
 export interface MonumentPlan {
   mic?: { s: number; side: number };
-  speakers?: { s: number };
+  /** The speaker the road climbs: where the climb begins. */
+  speakers?: { a: number };
   /** Every great arch of the road is a pair of headphones. */
   headphones?: number[];
 }
@@ -120,36 +121,56 @@ export function Monuments({ road, colourAt, plan }: { road: RoadLayout; colourAt
       root.add(g);
     }
 
+    const cupMat = new THREE.MeshStandardMaterial({ color: "#07080c", roughness: 0.35, metalness: 0.5 });
+    // THE SPEAKER THE ROAD CLIMBS: a giant black cabinet standing across
+    // the road, its face where the road turns straight up. The road runs
+    // up the face, round the edge of the big woofer - glowing, pulsing -
+    // over the top and down the back.
     if (plan.speakers) {
-      const { s } = plan.speakers;
-      const c = colourAt(s).clone().multiplyScalar(1.5);
-      for (const d of [-(ROAD_HALF + 30), ROAD_HALF + 30]) {
-        const g = new THREE.Group();
-        const W = 56;
-        const D = 44;
-        const cab = 100; // each cabinet's height
-        // Faces the road: its front toward the middle.
-        // Turned toward the traveller coming in, and in toward the road.
-        const face = Math.PI + (d < 0 ? -0.75 : 0.75);
-        const unit = new THREE.Group();
-        unit.rotation.set(0, face, 0);
-        for (const [y0, big] of [
-          [0, true],
-          [cab, false],
-        ] as const) {
-          unit.add(mesh(new THREE.BoxGeometry(W, cab - 2, D), glass, 0, y0 + cab / 2, 0));
-          const cones: [number, number, number][] = big
-            ? [[0, 0.3, 17], [0, 0.72, 11]]
-            : [[-11, 0.3, 8], [11, 0.3, 8], [0, 0.62, 6], [0, 0.85, 3.5]];
-          for (const [x, at, r] of cones) {
-            unit.add(mesh(new THREE.TorusGeometry(r, r * 0.08, 8, 48), glow(c), x, y0 + cab * at, D / 2 + 0.6));
-            unit.add(mesh(new THREE.CircleGeometry(r * 0.6, 32), glow(c.clone().multiplyScalar(0.35)), x, y0 + cab * at, D / 2 + 0.4));
-          }
+      const { a } = plan.speakers;
+      const c = colourAt(a).clone().multiplyScalar(1.6);
+      const { H, FACE, TOP, WOOF_Y, WOOF_R } = CLIMB;
+      const W = 64;
+      const D = TOP + 16;
+      const g = new THREE.Group();
+      // Stand at the start of the climb, facing along the road (+z ahead).
+      const p0 = pointAt(road, a);
+      const ahead = pointAt(road, a + 2);
+      g.position.copy(p0);
+      g.lookAt(ahead.x, p0.y, ahead.z);
+      // Just behind the road where it turns up the face - measured from the
+      // road itself, so the cabinet is always exactly under it.
+      const F = ahead.clone().sub(p0).setY(0).normalize();
+      let faceAt = FACE;
+      for (let d = 0; d < 120; d += 0.5) {
+        const q = pointAt(road, a + d);
+        if (q.y - p0.y > 12) {
+          faceAt = q.sub(p0).dot(F);
+          break;
         }
-        g.add(unit);
-        placeAt(g, road, s, d);
-        root.add(g);
       }
+      const front = faceAt + 1.4;
+      // The cabinet.
+      g.add(mesh(new THREE.BoxGeometry(W, H - 0.6, D), cupMat, 0, (H - 0.6) / 2, front + D / 2));
+      const zf = front - 0.4;
+      const cone = (x: number, y: number, r: number) => {
+        g.add(mesh(new THREE.TorusGeometry(r, r * 0.06, 10, 64), glow(c), x, y, zf));
+        g.add(mesh(new THREE.TorusGeometry(r * 0.62, r * 0.035, 8, 48), glow(c.clone().multiplyScalar(0.7)), x, y, zf));
+        g.add(mesh(new THREE.CircleGeometry(r * 0.3, 32), glow(c.clone().multiplyScalar(0.45)), x, y, zf - 0.1, 0, Math.PI));
+      };
+      // The woofer (the road swings round its edge), and the tweeters.
+      cone(0, H * WOOF_Y, WOOF_R);
+      cone(-15, H * 0.8, 6.5);
+      cone(15, H * 0.8, 6.5);
+      cone(0, H * 0.8, 3.5);
+      // A seam of light round the cabinet's front edge.
+      for (const [x, y, sx, sy] of [
+        [0, H - 0.6, W, 0.6],
+        [-W / 2, H / 2, 0.6, H],
+        [W / 2, H / 2, 0.6, H],
+      ] as const)
+        g.add(mesh(new THREE.BoxGeometry(sx, sy, 0.6), glow(c.clone().multiplyScalar(0.8)), x, y, zf));
+      root.add(g);
     }
 
     // HEADPHONES ARCHES - the road's great gateways. The band a dark
@@ -165,7 +186,6 @@ export function Monuments({ road, colourAt, plan }: { road: RoadLayout; colourAt
       emissive: "#0a1636",
       emissiveIntensity: 0.6,
     });
-    const cupMat = new THREE.MeshStandardMaterial({ color: "#07080c", roughness: 0.35, metalness: 0.5 });
     for (const s of plan.headphones ?? []) {
       const c = colourAt(s).clone().lerp(new THREE.Color("#ffffff"), 0.15).multiplyScalar(1.7);
       const g = new THREE.Group();
