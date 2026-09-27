@@ -20,6 +20,26 @@ export function RoadDial({ travel, color = "#ffffff" }: { travel: Travel; color?
   const [pos, setPos] = useState(0); // -1 (back, full) .. 1 (forward, full)
   const held = useRef(0);
 
+  // A finger that lifts anywhere - even off the dial, past the screen's
+  // edge, or while the page is hidden - lets go of it. A dial left "held"
+  // would keep overriding the S.T.O.R.Y. letters' jumps.
+  useEffect(() => {
+    const release = () => {
+      held.current = 0;
+      setPos(0);
+    };
+    window.addEventListener("pointerup", release);
+    window.addEventListener("pointercancel", release);
+    window.addEventListener("blur", release);
+    document.addEventListener("visibilitychange", release);
+    return () => {
+      window.removeEventListener("pointerup", release);
+      window.removeEventListener("pointercancel", release);
+      window.removeEventListener("blur", release);
+      document.removeEventListener("visibilitychange", release);
+    };
+  }, []);
+
   // While held, keep the road moving at the dial's speed.
   useEffect(() => {
     let raf = 0;
@@ -64,6 +84,7 @@ export function RoadDial({ travel, color = "#ffffff" }: { travel: Travel; color?
         }}
         onPointerUp={() => set(0)}
         onPointerCancel={() => set(0)}
+        onLostPointerCapture={() => set(0)}
       >
         <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round">
           <path d="M6 15l6-6 6 6" />
@@ -88,6 +109,7 @@ export function RoadDial({ travel, color = "#ffffff" }: { travel: Travel; color?
         }}
         onPointerUp={() => set(0)}
         onPointerCancel={() => set(0)}
+        onLostPointerCapture={() => set(0)}
       >
         <span className="absolute inset-x-[0.9rem] inset-y-1 rounded-full bg-white/15" />
         <span className="absolute inset-x-2 top-1/2 h-px bg-white/30" />
@@ -112,6 +134,7 @@ export function RoadDial({ travel, color = "#ffffff" }: { travel: Travel; color?
         }}
         onPointerUp={() => set(0)}
         onPointerCancel={() => set(0)}
+        onLostPointerCapture={() => set(0)}
       >
         <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round">
           <path d="M6 9l6 6 6-6" />

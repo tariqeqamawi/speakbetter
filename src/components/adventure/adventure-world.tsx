@@ -10,7 +10,7 @@ import { SkyDome } from "./sky-dome";
 import { City } from "./city";
 import { Bloom, GateSparks, Sky, SpeedSparks } from "./fx";
 import { AHEAD, ColourWall, RoadsideComment, RoadsideTrophy, Traveller } from "./world-details";
-import { GATE_BEFORE, hills, layoutRoad, pointAt, reachedPhase, seeded, sideAt, type RoadLayout, type Travel, ROAD_HALF, bankLift, tiltAt } from "./road-geometry";
+import { GATE_BEFORE, hills, layoutRoad, pointAt, reachedPhase, seeded, sideAt, type RoadLayout, type Travel, ROAD_HALF, bankLift, tiltAt, groundAt, surfaceAt, upAt } from "./road-geometry";
 
 // The S.T.O.R.Y. adventure as a world you travel through.
 //
@@ -390,9 +390,14 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
     const phase = new THREE.Color();
     for (let r = 0; r <= rows; r++) {
       const s = Math.min(r * ROW, road.length);
-      pointAt(road, s, p);
+      groundAt(road, s, p);
       sideAt(road, s, side);
       colourAt(spans, s, phase);
+      // THE GAP: under the corkscrew the land falls away into a chasm the
+      // road crosses in the air.
+      const gap = road.stunts
+        .filter((z) => z.kind === "corkscrew")
+        .reduce((m, z) => Math.max(m, THREE.MathUtils.smoothstep(s, z.a - 10, z.a + 12) * (1 - THREE.MathUtils.smoothstep(s, z.a + z.len - 12, z.a + z.len + 10))), 0);
       // On the inside of a bend the land cannot reach further than the
       // bend's radius, or it folds back over itself.
       const bend = road.bendAt(s);
@@ -415,7 +420,8 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
         const lean = bankLift(road, s, d) * (1 - THREE.MathUtils.smoothstep(Math.abs(d), ROAD_HALF, ROAD_HALF + 8));
         // Level ground round the auditorium, so its seats sit flat.
         const levelled = rise * (1 - road.flatAt(s) * (1 - THREE.MathUtils.smoothstep(Math.abs(d), 40, 75)));
-        const y = p.y - 0.2 + levelled + lean;
+        const chasm = gap * 70 * (1 - THREE.MathUtils.smoothstep(Math.abs(d), 45, 85));
+        const y = p.y - 0.2 + levelled + lean - chasm;
         const v = r * (COLS + 1) + k;
         pos.set([x, y, z], v * 3);
         grid.set([r, k], v * 2);
@@ -516,6 +522,7 @@ function ribbon(
   const idx: number[] = [];
   const p = new THREE.Vector3();
   const side = new THREE.Vector3();
+  const q = new THREE.Vector3();
   const phase = new THREE.Color();
   const c = new THREE.Color();
   for (let r = 0; r <= rows; r++) {
@@ -524,7 +531,8 @@ function ribbon(
     sideAt(road, s, side);
     colour(colourAt(spans, s, phase), c);
     for (const d of [from, to]) {
-      pos.push(p.x + side.x * d, p.y + lift + bankLift(road, s, d), p.z + side.z * d);
+      surfaceAt(road, s, d, lift, q);
+      pos.push(q.x, q.y, q.z);
       col.push(c.r, c.g, c.b);
     }
     if (r < rows) {
@@ -547,23 +555,16 @@ function dashes(road: RoadLayout, spans: Span[], at: number[]) {
   const pos: number[] = [];
   const col: number[] = [];
   const idx: number[] = [];
-  const p = new THREE.Vector3();
   const q = new THREE.Vector3();
-  const side = new THREE.Vector3();
   const c = new THREE.Color();
   for (let s = 4; s + LONG < road.length; s += EVERY) {
     colourAt(spans, s, c).multiplyScalar(0.8);
-    pointAt(road, s, p);
-    pointAt(road, s + LONG, q);
-    sideAt(road, s, side);
     for (const d of at) {
       const base = pos.length / 3;
-      for (const [pt, ss] of [
-        [p, s],
-        [q, s + LONG],
-      ] as const)
+      for (const ss of [s, s + LONG])
         for (const dd of [d - W, d + W]) {
-          pos.push(pt.x + side.x * dd, pt.y + 0.045 + bankLift(road, ss, dd), pt.z + side.z * dd);
+          surfaceAt(road, ss, dd, 0.045, q);
+          pos.push(q.x, q.y, q.z);
           col.push(c.r, c.g, c.b);
         }
       idx.push(base, base + 2, base + 1, base + 1, base + 2, base + 3);
@@ -600,8 +601,10 @@ function EdgeLights({ road, spans }: { road: RoadLayout; spans: Span[] }) {
       pointAt(road, s + 1, ahead);
       colourAt(spans, s, c).multiplyScalar(1.35);
       for (const d of [-(ROAD_HALF + 0.35), ROAD_HALF + 0.35]) {
-        o.position.set(p.x + side.x * d, p.y + 0.3 + bankLift(road, s, d), p.z + side.z * d);
-        o.lookAt(ahead.x + side.x * d, o.position.y, ahead.z + side.z * d);
+        surfaceAt(road, s, d, 0.3, o.position);
+        surfaceAt(road, s + 1, d, 0.3, ahead);
+        upAt(road, s, o.up);
+        o.lookAt(ahead);
         o.updateMatrix();
         m.setMatrixAt(i, o.matrix);
         m.setColorAt(i, c);
@@ -772,6 +775,10 @@ function Rig({
 
   /* eslint-disable react-hooks/immutability -- the camera is three.js's, moved every frame */
   useFrame((_, dt) => {
+    // Committed on a stunt: once the traveller is on the loop or the
+    // corkscrew (or just about to be), they're carried through it.
+    const onStunt = road.stunts.some((z) => travel.s + AHEAD > z.a - 4 && travel.s + AHEAD < z.a + z.len + 2);
+    travel.floor = onStunt ? 1.2 : 0;
     travel.step(Math.min(dt, 0.05) * 60, limit);
     const s = travel.s;
     if (travel.portal) {
@@ -783,6 +790,7 @@ function Rig({
       eye.set(pos.x, pos.y + 3.3 + (1 - k) * 4, pos.z);
       look.set(at.x, at.y + 3.3, at.z);
       camera.position.lerp(eye, 1 - Math.pow(0.0005, dt));
+      camera.up.set(0, 1, 0);
       camera.lookAt(look);
       carried.current = false;
       return;
@@ -811,7 +819,7 @@ function Rig({
     // (Not in or beside a tube: floating up there would put the camera
     // through its roof.)
     const tubeNear = tubes.some((t) => s + AHEAD > t.from - 25 && s < t.to + 5);
-    const idleTo = stillFor.current > 1.2 && !tubeNear ? 1 : 0;
+    const idleTo = stillFor.current > 1.2 && !tubeNear && road.stuntAt(s + AHEAD) === 0 ? 1 : 0;
     idle.current += (idleTo - idle.current) * Math.min(1, dt * (idleTo ? 0.45 : 3));
     const up = idle.current;
     // At rest: up above the road and behind the traveller, looking down
@@ -825,8 +833,11 @@ function Rig({
     // streaks come on hard.
     pointAt(road, s + f * 2 - b * 4 - up * 5, pos);
     pointAt(road, s + AHEAD + 26 - f * 2 - up * 9, at);
-    eye.set(pos.x, pos.y + 7.5 - f * 3 - b * 0.4 + up * 6.5, pos.z);
-    look.set(at.x, at.y + 1.2 + f * 0.6, at.z);
+    // "Up" is the road's up - round the loop and over in the corkscrew,
+    // the camera goes with it.
+    eye.copy(pos).addScaledVector(upAt(road, s + f * 2 - b * 4 - up * 5, across), 7.5 - f * 3 - b * 0.4 + up * 6.5);
+    look.copy(at).addScaledVector(upAt(road, s + AHEAD + 26 - f * 2 - up * 9, across), 1.2 + f * 0.6);
+    upAt(road, s + AHEAD, camera.up);
     // Through a banked sweep, the camera follows the traveller up the
     // side of it.
     const ride = road.rideAt(s + AHEAD);

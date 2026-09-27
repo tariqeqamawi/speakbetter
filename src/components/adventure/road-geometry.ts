@@ -31,7 +31,7 @@ export const ROAD_HALF = 4.4;
  *  turns right (its left edge lifted). */
 export function tiltAt(road: RoadLayout, s: number): number {
   const lean = Math.max(-0.22, Math.min(0.22, road.bendAt(s) * 30));
-  return (lean * (0.4 + 0.6 * road.bankAt(s)) + road.sweepTilt(s)) * (1 - road.flatAt(s));
+  return (lean * (0.4 + 0.6 * road.bankAt(s)) + road.sweepTilt(s)) * (1 - road.flatAt(s)) * (1 - road.stuntAt(s));
 }
 
 /** How much higher than the road's middle a point d across it sits, once
@@ -64,6 +64,92 @@ export interface RoadLayout {
   rideAt: (s: number) => number;
   /** 1 where the road runs flat and level (the auditorium), 0 elsewhere. */
   flatAt: (s: number) => number;
+  /** The loop-the-loop and the corkscrew. */
+  stunts: Stunt[];
+  /** 1 inside a stunt (easing in and out), 0 elsewhere. */
+  stuntAt: (s: number) => number;
+  /** The road's frame at each sample, DS apart along it: its flat side
+   *  (the heading's), its rolled side and its up (both leaning with the
+   *  loop and the corkscrew), and the ground beneath it. */
+  frames: { ds: number; side: Float32Array; rside: Float32Array; up: Float32Array; ground: Float32Array };
+}
+
+/** A stretch where the road leaves the ground: a vertical loop, or a
+ *  corkscrew barrel roll over a gap in the land. */
+export interface Stunt {
+  kind: "loop" | "corkscrew";
+  /** Where it starts, and its length along the road. */
+  a: number;
+  len: number;
+}
+
+type V3 = [number, number, number];
+function norm(v: V3): V3 {
+  const l = Math.hypot(v[0], v[1], v[2]) || 1;
+  return [v[0] / l, v[1] / l, v[2] / l];
+}
+function cross(a: V3, b: V3): V3 {
+  return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+}
+
+/** A stunt's shape in its own frame - forward, side, up from where it
+ *  starts - sampled by distance along it: the road's point, its rolled
+ *  side and up, and the ground's point beneath. */
+function stuntShape(kind: Stunt["kind"]) {
+  const N = 2400;
+  const pos: V3[] = [];
+  const ground: [number, number][] = [];
+  const upRaw: V3[] = [];
+  for (let k = 0; k <= N; k++) {
+    const v = k / N;
+    if (kind === "loop") {
+      // Up and over, upside down at the top, down and out a road's width
+      // to the side - drifting forward a little so it opens like a real
+      // coaster loop.
+      const R = 15;
+      const D = 34;
+      const W = 12;
+      const th = v * Math.PI * 2;
+      const lat = W * THREE.MathUtils.smootherstep(v, 0, 1);
+      pos.push([R * Math.sin(th) + D * v, lat, R * (1 - Math.cos(th))]);
+      ground.push([D * v, lat]);
+      upRaw.push([-Math.sin(th), 0, Math.cos(th)]);
+    } else {
+      // A barrel roll around a line above the road: out over the gap,
+      // all the way round, and down onto the far side.
+      const B = 96;
+      const Rc = 6.5;
+      const ph = Math.PI * 2 * THREE.MathUtils.smootherstep(v, 0, 1);
+      pos.push([B * v, Rc * Math.sin(ph), Rc * (1 - Math.cos(ph))]);
+      ground.push([B * v, 0]);
+      upRaw.push([0, -Math.sin(ph), Math.cos(ph)]);
+    }
+  }
+  const arc = [0];
+  for (let k = 1; k <= N; k++)
+    arc.push(arc[k - 1] + Math.hypot(pos[k][0] - pos[k - 1][0], pos[k][1] - pos[k - 1][1], pos[k][2] - pos[k - 1][2]));
+  const L = arc[N];
+  const at = (d: number) => {
+    let lo = 0;
+    let hi = N;
+    while (hi - lo > 1) {
+      const mid = (lo + hi) >> 1;
+      if (arc[mid] <= d) lo = mid;
+      else hi = mid;
+    }
+    const t = arc[hi] > arc[lo] ? (d - arc[lo]) / (arc[hi] - arc[lo]) : 0;
+    const mix = (a: number[], b: number[]) => a.map((x, i) => x + (b[i] - x) * t);
+    const p = mix(pos[lo], pos[hi]) as V3;
+    const tan = norm([pos[hi][0] - pos[lo][0], pos[hi][1] - pos[lo][1], pos[hi][2] - pos[lo][2]]);
+    const ur = mix(upRaw[lo], upRaw[hi]) as V3;
+    const dot = ur[0] * tan[0] + ur[1] * tan[1] + ur[2] * tan[2];
+    const up = norm([ur[0] - dot * tan[0], ur[1] - dot * tan[1], ur[2] - dot * tan[2]]);
+    // (Forward x up = side, as on the flat.)
+    const side = norm(cross(tan, up));
+    const g = mix(ground[lo], ground[hi]) as [number, number];
+    return { p, side, up, g };
+  };
+  return { L, at };
 }
 
 /** Stretch i of the road: between checkpoint i-1 (or the start) and
@@ -141,7 +227,44 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLay
   const gates: number[] = [];
   for (let i = 1; i < stops.length; i++) if (phaseOf[i] && phaseOf[i] !== phaseOf[i - 1]) gates.push(stops[i] - GATE_BEFORE);
   const SWEEP_A = 1.15; // how far it turns, radians
-  const sweeps = gates.map((g, k) => ({ a: g - 110, b: g + 30, dir: k % 2 ? 1 : -1 }));
+
+  // THE STUNTS. A loop-the-loop in the middle of O's sweeping curves, and
+  // at the way into R - Reveal Deeper Truths - the road runs off a cliff,
+  // corkscrews over a gap in the land and lands on the red side.
+  const DS = 3;
+  const stunts: (Stunt & { shape: ReturnType<typeof stuntShape> })[] = [];
+  const oStretches: number[] = [];
+  for (let i = 1; i < stops.length; i++)
+    if (phaseOf[i - 1] === "O" && phaseOf[i] === "O" && !venueStretch(i)) oStretches.push(i);
+  const loopAt = oStretches.find((i) => i % 3 === 0) !== undefined
+    ? oStretches.filter((i) => i % 3 === 0)[Math.floor(oStretches.filter((i) => i % 3 === 0).length / 2)]
+    : oStretches[Math.floor(oStretches.length / 2)];
+  if (loopAt !== undefined) {
+    const shape = stuntShape("loop");
+    const mid = (marks[loopAt] + marks[loopAt + 1]) / 2;
+    stunts.push({ kind: "loop", a: Math.round((mid - shape.L / 2) / DS) * DS, len: shape.L, shape });
+  }
+  const rFirst = phaseOf.indexOf("R");
+  const corkGate = rFirst > 0 ? stops[rFirst] - GATE_BEFORE : -1;
+  if (rFirst > 0) {
+    const shape = stuntShape("corkscrew");
+    stunts.push({ kind: "corkscrew", a: Math.round((stops[rFirst] - 44 - shape.L) / DS) * DS, len: shape.L, shape });
+  }
+  stunts.sort((p, q) => p.a - q.a);
+  // Level going in and coming out.
+  for (const z of stunts) flats.push({ a: z.a, b: z.a + z.len });
+  const stuntAt = (s: number) =>
+    stunts.reduce(
+      (m, z) => Math.max(m, THREE.MathUtils.smoothstep(s, z.a - 15, z.a) * (1 - THREE.MathUtils.smoothstep(s, z.a + z.len, z.a + z.len + 15))),
+      0,
+    );
+
+  // (No banked sweep where the corkscrew is.)
+  const sweeps = gates
+    .filter((g) => g !== corkGate)
+    // Long - from just past the last checkpoint of one colour to just
+    // short of the first of the next.
+    .map((g, k) => ({ a: g - 135, b: g + 52, dir: k % 2 ? 1 : -1 }));
   /** 0 before a sweep, 1 after it, easing through it. */
   const sweepTurn = (s: number) => sweeps.reduce((h, w) => h + w.dir * SWEEP_A * THREE.MathUtils.smootherstep(s, w.a, w.b), 0);
   /** How deep into its sweep s is: 0 at the ends, 1 at the middle. */
@@ -187,14 +310,64 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLay
     return (swell * rest * (1 - wO * 0.6) + (0.17 * wT - 0.9 * wR + peaks * wY) * k + dips) * (1 - flatAt(s));
   };
 
+  // Through a stunt the heading holds where it went in, and afterwards
+  // carries on from there - no jump where the road comes back down.
+  const deltas = stunts.map((z) => heading(z.a + z.len) - heading(z.a));
+  const headingEff = (s: number) => {
+    let shift = 0;
+    for (let k = 0; k < stunts.length; k++) {
+      const z = stunts[k];
+      if (s >= z.a + z.len) shift += deltas[k];
+      else if (s >= z.a) return heading(z.a) - shift;
+    }
+    return heading(s) - shift;
+  };
+
   const pts: THREE.Vector3[] = [];
-  const DS = 3;
+  const n = Math.floor(reach / DS) + 1;
+  const fSide = new Float32Array(n * 3);
+  const fRside = new Float32Array(n * 3);
+  const fUp = new Float32Array(n * 3);
+  const fGround = new Float32Array(n * 3);
   let x = 0;
   let y = 0;
   let z = 0;
-  for (let s = 0; s <= reach; s += DS) {
+  let entry: { x: number; y: number; z: number; h: number } | null = null;
+  for (let i = 0; i < n; i++) {
+    const s = i * DS;
+    const st = stunts.find((q) => s >= q.a && s < q.a + q.len);
+    if (st) {
+      // In a stunt: placed from where it began, in its own shape.
+      if (!entry) entry = { x, y, z, h: headingEff(st.a) };
+      const F: V3 = [Math.sin(entry.h), 0, -Math.cos(entry.h)];
+      const S: V3 = [Math.cos(entry.h), 0, Math.sin(entry.h)];
+      const w = (l: V3 | number[]): V3 => [F[0] * l[0] + S[0] * l[1], l[2], F[2] * l[0] + S[2] * l[1]];
+      const q = st.shape.at(s - st.a);
+      const off = w(q.p);
+      pts.push(new THREE.Vector3(entry.x + off[0], entry.y + off[1], entry.z + off[2]));
+      fSide.set(S, i * 3);
+      fRside.set(w(q.side), i * 3);
+      fUp.set(w(q.up), i * 3);
+      const g = w([q.g[0], q.g[1], 0]);
+      fGround.set([entry.x + g[0], entry.y, entry.z + g[2]], i * 3);
+      // Leaving it next step: carry on from where it comes out.
+      if (s + DS >= st.a + st.len) {
+        const out = st.shape.at(st.len);
+        const o = w(out.p);
+        const rest = s + DS - (st.a + st.len);
+        x = entry.x + o[0] + F[0] * rest;
+        y = entry.y + o[1];
+        z = entry.z + o[2] + F[2] * rest;
+        entry = null;
+      }
+      continue;
+    }
     pts.push(new THREE.Vector3(x, y, z));
-    const h = heading(s);
+    const h = headingEff(s);
+    fSide.set([Math.cos(h), 0, Math.sin(h)], i * 3);
+    fRside.set([Math.cos(h), 0, Math.sin(h)], i * 3);
+    fUp.set([0, 1, 0], i * 3);
+    fGround.set([x, y, z], i * 3);
     const m = slope(s);
     // A 3D step of DS, so the length along the road is the distance.
     const flat = DS / Math.sqrt(1 + m * m);
@@ -203,25 +376,79 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = []): RoadLay
     y += m * flat;
   }
   const curve = new THREE.CatmullRomCurve3(pts, false, "centripetal");
-  curve.arcLengthDivisions = 3000;
+  curve.arcLengthDivisions = 6000;
   const length = curve.getLength();
-  const bendAt = (s: number) => (heading(s + 4) - heading(s - 4)) / 8;
+  const bendAt = (s: number) => (headingEff(s + 4) - headingEff(s - 4)) / 8;
   const bankAt = (s: number) => Math.min(1, weight("O", s) + weight("R", s));
-  return { curve, length, stops, finish, bendAt, bankAt, sweepTilt, rideAt, flatAt };
+  return {
+    curve,
+    length,
+    stops,
+    finish,
+    bendAt,
+    bankAt,
+    sweepTilt,
+    rideAt,
+    flatAt,
+    stunts: stunts.map(({ kind, a, len }) => ({ kind, a, len })),
+    stuntAt,
+    frames: { ds: DS, side: fSide, rside: fRside, up: fUp, ground: fGround },
+  };
 }
 
-const tmpT = new THREE.Vector3();
 
 /** Point on the road at distance s. */
 export function pointAt(road: RoadLayout, s: number, out = new THREE.Vector3()): THREE.Vector3 {
   return road.curve.getPointAt(THREE.MathUtils.clamp(s / road.length, 0, 1), out);
 }
 
+/** One of the road's per-sample frames, at distance s. */
+function frameAt(road: RoadLayout, arr: Float32Array, s: number, out: THREE.Vector3): THREE.Vector3 {
+  const n = arr.length / 3 - 1;
+  const f = THREE.MathUtils.clamp(s / road.frames.ds, 0, n);
+  const i = Math.min(n - 1, Math.floor(f));
+  const t = f - i;
+  return out.set(
+    arr[i * 3] + (arr[i * 3 + 3] - arr[i * 3]) * t,
+    arr[i * 3 + 1] + (arr[i * 3 + 4] - arr[i * 3 + 1]) * t,
+    arr[i * 3 + 2] + (arr[i * 3 + 5] - arr[i * 3 + 2]) * t,
+  );
+}
+
 /** The road's sideways direction at distance s (flat, unit length) -
- *  "right" for a traveller facing along the road. */
+ *  "right" for a traveller facing along the road. Level even on the
+ *  loop and the corkscrew: the land's side, not the rolling road's. */
 export function sideAt(road: RoadLayout, s: number, out = new THREE.Vector3()): THREE.Vector3 {
-  road.curve.getTangentAt(THREE.MathUtils.clamp(s / road.length, 0, 1), tmpT);
-  return out.set(-tmpT.z, 0, tmpT.x).normalize();
+  return frameAt(road, road.frames.side, s, out).normalize();
+}
+
+/** Which way is up for the road at s - straight up on the land; round
+ *  toward the centre on the loop, rolling over on the corkscrew. */
+export function upAt(road: RoadLayout, s: number, out = new THREE.Vector3()): THREE.Vector3 {
+  return frameAt(road, road.frames.up, s, out).normalize();
+}
+
+/** The ground beneath the road at s - the road itself, except where it
+ *  leaves the land for a stunt. */
+export function groundAt(road: RoadLayout, s: number, out = new THREE.Vector3()): THREE.Vector3 {
+  return frameAt(road, road.frames.ground, s, out);
+}
+
+const tmpS = new THREE.Vector3();
+const tmpU = new THREE.Vector3();
+/** A point on the road's surface: d across it (right positive), h above
+ *  it - following the lean into bends, and the loop and the corkscrew. */
+export function surfaceAt(road: RoadLayout, s: number, d: number, h: number, out = new THREE.Vector3()): THREE.Vector3 {
+  pointAt(road, s, out);
+  frameAt(road, road.frames.rside, s, tmpS).normalize();
+  upAt(road, s, tmpU);
+  const r = tiltAt(road, s);
+  const c = Math.cos(r);
+  const sn = Math.sin(r);
+  // The side and up, rolled by the lean (a small lean: the old lift).
+  return out
+    .addScaledVector(tmpS, d * c + h * sn)
+    .addScaledVector(tmpU, -d * sn + h * c);
 }
 
 /** Small, fast, deterministic value noise - the hills. Not a library:
@@ -296,9 +523,15 @@ export class Travel {
     this.v = 0;
     this.target = null;
   }
+  /** On a loop or a corkscrew: the least speed allowed (0 elsewhere).
+   *  Set by the camera. Nobody stops halfway round a loop, upside down -
+   *  they can go faster, never stop or turn back, until they're through. */
+  floor = 0;
   /** One frame: glide, or coast with friction. */
   step(k: number, max: number) {
     if (this.portal) return;
+    // (A jump by letter glides straight past; this is for travelling.)
+    if (this.floor > 0 && this.target === null) this.v = Math.max(this.v, this.floor);
     if (this.target !== null) {
       this.s += (this.target - this.s) * (1 - Math.pow(0.9, k));
       if (Math.abs(this.target - this.s) < 0.05) this.target = null;

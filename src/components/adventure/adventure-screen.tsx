@@ -719,7 +719,11 @@ export function AdventureScreen({
         </div>
       )}
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-1 bg-gradient-to-t from-[#070c18]/95 to-transparent px-4 pb-6 pt-16 text-center">
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-1 bg-gradient-to-t from-[#070c18]/95 to-transparent px-4 pt-16 text-center"
+        // Clear of a phone's home bar and rounded corners, in full screen.
+        style={{ paddingBottom: "max(1.5rem, calc(env(safe-area-inset-bottom) + 0.75rem))" }}
+      >
         {hereIndex > 0 && at < road.stops[0] - 4 && (
           <button
             type="button"
@@ -774,7 +778,11 @@ export function AdventureScreen({
               <button
                 key={p.id}
                 type="button"
-                onClick={() => travel.goTo(phaseStart(p.id))}
+                onClick={() => {
+                  // A jump always wins: let go of any travel under way.
+                  travel.v = 0;
+                  travel.goTo(phaseStart(p.id));
+                }}
                 aria-label={`Go to ${p.name}`}
                 aria-current={on ? "true" : undefined}
                 className="grid size-11 place-items-center rounded-full border-2 text-lg font-extrabold transition-transform"
@@ -795,8 +803,11 @@ export function AdventureScreen({
             the other way to travel, beside the letters. */}
         {!demo && (
           <div
-            className="pointer-events-auto absolute bottom-5"
-            style={{ right: "max(0.75rem, env(safe-area-inset-right))" }}
+            className="pointer-events-auto absolute"
+            style={{
+              right: "max(0.75rem, env(safe-area-inset-right))",
+              bottom: "max(1.25rem, calc(env(safe-area-inset-bottom) + 0.5rem))",
+            }}
           >
             <RoadDial travel={travel} color={phase?.color} />
           </div>

@@ -8,7 +8,7 @@ import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
-import { pointAt, seeded, sideAt, type RoadLayout, type Travel, AHEAD } from "./road-geometry";
+import { pointAt, seeded, sideAt, surfaceAt, type RoadLayout, type Travel, AHEAD } from "./road-geometry";
 
 // The look: Tron rather than arcade. The land is dark glass and every
 // line of light is bright enough to bloom - to bleed a soft glow into
@@ -93,6 +93,7 @@ export function SpeedSparks({
   const q = useMemo(() => new THREE.Vector3(), []);
   const side = useMemo(() => new THREE.Vector3(), []);
   const hot = useMemo(() => new THREE.Color(), []);
+  const spot = useMemo(() => new THREE.Vector3(), []);
   // Round, soft-edged points - not squares.
   const dot = useMemo(() => {
     const c = document.createElement("canvas");
@@ -130,9 +131,10 @@ export function SpeedSparks({
         const i = next.current;
         next.current = (i + 1) % N;
         const across = (Math.random() - 0.5) * 1.0 + road.rideAt(s);
-        pos[i * 3] = p.x + side.x * across;
-        pos[i * 3 + 1] = p.y + 0.06;
-        pos[i * 3 + 2] = p.z + side.z * across;
+        surfaceAt(road, s, across, 0.06, spot);
+        pos[i * 3] = spot.x;
+        pos[i * 3 + 1] = spot.y;
+        pos[i * 3 + 2] = spot.z;
         // Carried forward at most of your speed, so they fall behind you
         // slowly enough to see - streaming past either side of the
         // camera; thrown out sideways and up.
@@ -143,7 +145,8 @@ export function SpeedSparks({
         vel[i * 3] = fwd.x * worldV * keep + side.x * out;
         vel[i * 3 + 1] = Math.random() * 0.35;
         vel[i * 3 + 2] = fwd.z * worldV * keep + side.z * out;
-        ground[i] = p.y + 0.05;
+        // (In the air on a stunt: nothing to bounce off - they fall.)
+        ground[i] = road.stuntAt(s) > 0 ? -1e9 : spot.y - 0.01;
         age[i] = 0;
         col[i * 3] = hot.r;
         col[i * 3 + 1] = hot.g;

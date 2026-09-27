@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { ROAD_HALF, pointAt, seeded, sideAt, venueStretch, type RoadLayout } from "./road-geometry";
+import { ROAD_HALF, groundAt, pointAt, seeded, sideAt, venueStretch, type RoadLayout } from "./road-geometry";
 
 // SCALE. On the tracks of Extreme-G the road ran between things far
 // bigger than you - towers, gantries, tunnels - and passing them is what
@@ -157,9 +157,9 @@ function buildCity(
   const kept = (s: number, d: number) => Math.abs(d) < 44 && keep.some((k) => s > k.from - 20 && s < k.to + 20);
 
   const tower = (s: number, d: number, w: number, h: number, type: number) => {
-    pointAt(road, s, p);
+    groundAt(road, s, p);
     sideAt(road, s, side);
-    pointAt(road, s + 2, ahead);
+    groundAt(road, s + 2, ahead);
     anchor.position.set(p.x + side.x * d, p.y - 30, p.z + side.z * d);
     anchor.lookAt(ahead.x + side.x * d, anchor.position.y, ahead.z + side.z * d);
     anchor.rotateY((rand() - 0.5) * 0.8);
@@ -1043,6 +1043,8 @@ export function structurePlan(road: RoadLayout) {
   const venues: { stage: number; seatsTo: number }[] = [];
   const spotRuns: { from: number; to: number }[] = [];
   openStretches(road).forEach((st, i) => {
+    // A stretch with a loop or a corkscrew in it holds nothing else.
+    if (road.stunts.some((z) => z.a < st.to + 40 && z.a + z.len > st.from - 40)) return;
     const mid = (st.from + st.to) / 2;
     const half = Math.min(60, (st.to - st.from) / 2 - 5);
     // In turn: a great arch, a corridor of lights, a tube.
@@ -1064,6 +1066,7 @@ export function structurePlan(road: RoadLayout) {
     ...tunnels,
     ...venues.map((v) => ({ from: v.stage - 10, to: v.seatsTo })),
     ...spotRuns,
+    ...road.stunts.map((z) => ({ from: z.a - 20, to: z.a + z.len + 20 })),
   ];
   return { arches, corridors, tunnels, venues, spotRuns, keep };
 }

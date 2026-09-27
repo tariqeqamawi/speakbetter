@@ -174,7 +174,14 @@ export function ChallengesTabs({
               ? "fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-[#070c18]"
               : "-mx-4 overflow-y-auto overscroll-contain sm:mx-0 sm:overflow-hidden sm:rounded-2xl"
           }
-          style={{ height: height ?? "70vh", ["--road-h" as string]: height ? `${height}px` : "70vh" }}
+          // In full screen, the screen that's really there - 100dvh follows
+          // a phone's browser bars as they come and go, so nothing at the
+          // bottom (the dial, the letters) is ever cut off.
+          style={
+            full
+              ? { height: "100dvh", ["--road-h" as string]: "100dvh" }
+              : { height: height ?? "70vh", ["--road-h" as string]: height ? `${height}px` : "70vh" }
+          }
         >
           <RoadChromeContext.Provider
             value={{

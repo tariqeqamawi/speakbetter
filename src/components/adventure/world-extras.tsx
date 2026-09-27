@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { pointAt, seeded, sideAt, type RoadLayout } from "./road-geometry";
+import { groundAt, pointAt, seeded, sideAt, type RoadLayout } from "./road-geometry";
 
 // The life of the road: Coach waiting at the roadside, fireflies in each
 // phase's colour, scenery that makes each stretch a different place,
@@ -49,7 +49,7 @@ export function Fireflies({ road, spans }: { road: RoadLayout; spans: { from: nu
     for (let i = 0; i < N; i++) {
       const sp = spans[i % spans.length];
       const s = sp.from + rand() * (sp.to - sp.from);
-      pointAt(road, s, p);
+      groundAt(road, s, p);
       sideAt(road, s, side);
       const off = (rand() < 0.5 ? -1 : 1) * (5 + rand() * 40);
       base[i * 3] = p.x + side.x * off;
@@ -102,7 +102,7 @@ function placesFor(road: RoadLayout, from: number, to: number, n: number, seed: 
   const side = new THREE.Vector3();
   for (let i = 0; i < n; i++) {
     const s = from + ((i + rand() * 0.8) / n) * (to - from);
-    const p = pointAt(road, s);
+    const p = groundAt(road, s);
     sideAt(road, s, side);
     const d = (i % 2 ? 1 : -1) * (near + rand() * (far - near));
     out.push({ pos: p.add(side.multiplyScalar(d)), rot: rand() * Math.PI * 2, scale: 0.7 + rand() * 0.7 });
