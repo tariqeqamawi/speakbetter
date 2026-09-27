@@ -208,6 +208,7 @@ Newest first. Each links the commit that did it; every commit message says why, 
 what.
 
 **26 September**
+- Dashboard: phone sections bar first + glowing arrows, glowing live strip, ☰ section menu, Over time bars; Guided Tour / Full Guided Tour — `3ec1c6d`
 - Admin: tabs, Speak Better / Brass Tacks skins, all-students journeys, cohort spectrum + colors lit by challenge, What students love; 🔥/👇 on lessons, live, community — `6697d9c`
 - Landing: sing / drive / speak beats full width (phone carousel); Speaking Spectrum at the top of "different" — `7e1ac09`
 - Landing: founding reason behind Read more; Coach pitch and "What Coach looks for" cut, "Tariq teaches. I review." kept in Meet Coach — `dd8eb15`
