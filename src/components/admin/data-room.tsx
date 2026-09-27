@@ -8,6 +8,8 @@ import { priceCents, tiers, type Plan } from "@/data/pricing";
 import { AdminFrame } from "@/components/admin/admin-frame";
 import { CohortSpectrum } from "@/components/admin/cohort-spectrum";
 import { Panel, Stat, pct } from "@/components/admin/insights-dashboard";
+import { CoachCosts } from "@/components/admin/coach-costs";
+import { COACH_RATES, reviewCost } from "@/data/coach-costs";
 
 // The case for backing Speak Better, built from the cohort itself: does
 // it work (outcomes), do people pay and stay (traction), does each
@@ -164,7 +166,13 @@ export function DataRoom() {
           case "traction":
             return <Traction m={m} />;
           case "economics":
-            return <Economics m={m} />;
+            return (
+              <div className="flex flex-col gap-6">
+                <Economics m={m} />
+                {/* The AI coach, costed - the same model the admin uses. */}
+                <CoachCosts data={data} />
+              </div>
+            );
           case "forecast":
             return <Forecast m={m} />;
           case "moat":
@@ -476,8 +484,8 @@ function Num({
 
 function Economics({ m }: { m: M }) {
   const [standard, setStandard] = useState(false);
-  const [ai, setAi] = useState(0.25);
-  const [voice, setVoice] = useState(0.05);
+  const [ai, setAi] = useState(Math.round(reviewCost() * 1000) / 1000);
+  const [voice, setVoice] = useState<number>(COACH_RATES.spokenPerReview);
   const [reviews, setReviews] = useState(Math.round(m.reviewsPerStudent));
   const [hosting, setHosting] = useState(1.5);
   const [hourly, setHourly] = useState(150);
@@ -488,7 +496,7 @@ function Economics({ m }: { m: M }) {
 
   const rows = PLANS.map((p) => {
     const price = (standard ? STANDARD[p] : priceCents[p]) / 100;
-    const coachCost = reviews * (ai + (p === "foundations" ? 0 : voice)) + m.questionsPerStudent * 0.02;
+    const coachCost = reviews * (ai + (p === "foundations" ? 0 : voice)) + m.questionsPerStudent * COACH_RATES.perQuestion;
     const live = (liveHours * hourly) / Math.max(1, cohort);
     const vip = p === "founders" ? vipHours * hourly + print : 0;
     const fees = price * 0.029 + 0.3;

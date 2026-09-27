@@ -1,5 +1,6 @@
 "use client";
 
+import { CoachCosts } from "@/components/admin/coach-costs";
 import { useEffect, useMemo, useState } from "react";
 import { challenges } from "@/data/challenges";
 import { categories } from "@/data/categories";
@@ -24,6 +25,7 @@ const TABS = [
   { id: "usage", label: "Usage" },
   { id: "dropoff", label: "Drop-off" },
   { id: "quality", label: "Coach quality" },
+  { id: "costs", label: "Coach costs" },
   { id: "voice", label: "Voice of the student" },
   { id: "insights", label: "AI insights" },
   { id: "journey", label: "Student journeys" },
@@ -66,6 +68,8 @@ export function InsightsDashboard() {
             return <DropOff data={data} />;
           case "quality":
             return <Quality data={data} />;
+          case "costs":
+            return <CoachCosts data={data} />;
           case "voice":
             return <Voice data={data} />;
           case "insights":
