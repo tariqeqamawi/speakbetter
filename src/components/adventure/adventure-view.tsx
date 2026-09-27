@@ -5,7 +5,7 @@ import { AdventureScreen } from "./adventure-screen";
 import { Adventure2D } from "./adventure-2d";
 import { LevelPicker } from "@/components/level-picker";
 import { ROAD_SKY } from "./world-phases";
-import { FullScreenIcon, useRoadChrome } from "./road-chrome";
+import { FullScreenIcon, PILL_OFF, PILL_ON, useRoadChrome } from "./road-chrome";
 import type { WorldPhase, WorldStop } from "./adventure-world";
 
 // The adventure, as a world or as a page - the student's choice, kept on
@@ -71,12 +71,22 @@ export function AdventureView({
                 role="radio"
                 aria-checked={mode === m}
                 onClick={() => choose(m)}
-                className={`rounded-full px-4 py-1.5 transition-colors ${mode === m ? "bg-ink text-navy-950" : "text-ink-muted hover:text-ink"}`}
+                className={`rounded-full px-4 py-1.5 transition-colors ${mode === m ? PILL_ON : PILL_OFF}`}
               >
                 {m === "3d" ? "3D" : "2D"}
               </button>
             ))}
           </div>
+          {/* Back to the Orientation tab - the road has no tab row above it. */}
+          {chrome.toOrientation && (
+            <button
+              type="button"
+              onClick={chrome.toOrientation}
+              className="rounded-full border border-navy-600 bg-navy-950/80 px-3 py-1.5 text-xs font-bold text-ink-muted backdrop-blur hover:text-ink"
+            >
+              Orientation
+            </button>
+          )}
           {/* In and out of full screen - where the page offers it. */}
           {chrome.canFull && (
             <button

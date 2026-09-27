@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useStore } from "@/lib/store";
-import { RoadChromeContext } from "@/components/adventure/road-chrome";
+import { PILL_OFF, PILL_ON, RoadChromeContext } from "@/components/adventure/road-chrome";
 
 // The Challenges page as two tabs.
 //
@@ -123,24 +123,28 @@ export function ChallengesTabs({
       role="tab"
       aria-selected={current === t}
       onClick={() => setTab(t)}
-      className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
-        current === t ? "bg-ink text-navy-900" : "text-ink-muted hover:text-ink"
-      }`}
+      className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${current === t ? PILL_ON : PILL_OFF}`}
     >
       {label}
     </button>
   );
 
   return (
-    <div className={`flex flex-col ${current === "challenges" ? "-mt-5 gap-2" : "gap-6 pt-4"}`}>
-      {current === "orientation" && heading}
-      <div className="flex items-center gap-2">
-        <div role="tablist" aria-label="Challenges" className="flex rounded-full border border-navy-600 bg-navy-900/70 p-1">
-          {tabButton("orientation", "Orientation")}
-          {tabButton("challenges", "Challenges")}
-        </div>
-        <span className="ml-auto flex items-center gap-2">{actions}</span>
-      </div>
+    // On the road the tab row goes: the road starts straight under the
+    // header, and the way back to Orientation is a pill on the road itself.
+    <div className={`flex flex-col ${current === "challenges" ? "-mt-8 sm:-mt-4" : "gap-6 pt-4"}`}>
+      {current === "orientation" && (
+        <>
+          {heading}
+          <div className="flex items-center justify-center gap-2">
+            <div role="tablist" aria-label="Challenges" className="flex rounded-full border border-navy-600 bg-navy-900/70 p-1">
+              {tabButton("orientation", "Orientation")}
+              {tabButton("challenges", "Challenges")}
+            </div>
+            <span className="flex items-center gap-2">{actions}</span>
+          </div>
+        </>
+      )}
       {current === "orientation" ? (
         <div className="flex flex-col gap-6">{orientation}</div>
       ) : (
@@ -153,7 +157,17 @@ export function ChallengesTabs({
           }
           style={{ height: height ?? "70vh", ["--road-h" as string]: height ? `${height}px` : "70vh" }}
         >
-          <RoadChromeContext.Provider value={{ full, canFull: true, setFull }}>{road}</RoadChromeContext.Provider>
+          <RoadChromeContext.Provider
+            value={{
+              full,
+              canFull: true,
+              setFull,
+              toOrientation: () => {
+                setFull(false);
+                setTab("orientation");
+              },
+            }}
+          >{road}</RoadChromeContext.Provider>
         </div>
       )}
     </div>

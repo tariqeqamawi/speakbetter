@@ -17,7 +17,7 @@ export default function ChallengesPage() {
   return (
     <ChallengesTabs
       heading={
-        <header className="flex items-center gap-2.5">
+        <header className="flex flex-col items-center gap-2 text-center">
           <ChallengesIcon className="size-7 shrink-0 text-structure" />
           <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
             Welcome to your interactive challenges

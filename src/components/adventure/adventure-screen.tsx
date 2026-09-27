@@ -543,7 +543,7 @@ export function AdventureScreen({
       <AdventureWorld stops={stops} phases={phases} travel={travel} onMove={onMove} avatar={avatar} pickRef={pickRef} limit={limit} skyImage={skyImage} active={onScreen} />
 
       {bannerPhase && (
-        <div key={banner!.key} className="phase-banner pointer-events-none absolute inset-x-0 top-[30%] flex justify-center px-4">
+        <div key={banner!.key} className="phase-banner pointer-events-none absolute inset-x-0 top-16 z-20 flex justify-center px-4">
           <div
             className="flex items-center gap-4 rounded-2xl border-2 bg-[#070c18]/90 px-6 py-3 shadow-2xl backdrop-blur"
             style={{ borderColor: bannerPhase.color, boxShadow: `0 0 40px -6px ${bannerPhase.color}` }}

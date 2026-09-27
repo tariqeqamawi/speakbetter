@@ -92,7 +92,7 @@ export function RoadDial({ travel, color = "#ffffff" }: { travel: Travel; color?
         <span className="absolute inset-x-[0.9rem] inset-y-1 rounded-full bg-white/15" />
         <span className="absolute inset-x-2 top-1/2 h-px bg-white/30" />
         <span
-          className={`absolute left-1/2 top-1/2 size-7 -translate-x-1/2 rounded-full border-2 border-white bg-white/25 ${
+          className={`absolute left-1/2 top-1/2 size-7 rounded-full border-2 border-white bg-white/25 ${
             pos === 0 ? "transition-transform duration-300 ease-out" : ""
           }`}
           style={{

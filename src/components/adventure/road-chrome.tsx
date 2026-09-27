@@ -8,12 +8,20 @@ import { createContext, useContext } from "react";
 // and offer the way back out. Outside that page there is no full screen:
 // the default says so.
 
+/** A pill that's chosen: glass with a glowing rim, the app's own look -
+ *  not a slab of white. And one that isn't. */
+export const PILL_ON =
+  "border border-body-language/70 bg-navy-700/70 text-ink shadow-[0_0_12px_-2px_var(--color-body-language)] backdrop-blur";
+export const PILL_OFF = "border border-transparent text-ink-muted hover:text-ink";
+
 export interface RoadChrome {
   /** Full screen: only the exit, the 2D/3D switch and the dial show. */
   full: boolean;
   /** Offered only where full screen exists. */
   canFull: boolean;
   setFull: (full: boolean) => void;
+  /** Back to the Orientation tab, from the road itself. */
+  toOrientation?: () => void;
 }
 
 export const RoadChromeContext = createContext<RoadChrome>({ full: false, canFull: false, setFull: () => {} });
