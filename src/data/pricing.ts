@@ -23,7 +23,7 @@ export interface Feature {
 
 export const features: Feature[] = [
   { id: "lessons", label: "All 83 skill lessons, in the seven colors" },
-  { id: "deck", label: "The digital card deck - all 79 cards, in the app" },
+  { id: "deck", label: "The digital card deck - all 77 cards, in the app" },
   { id: "journey", label: "The STORY adventure - 24 challenges, five phases" },
   { id: "written", label: "Coach watches every take and writes you the full review card" },
   { id: "loop", label: "XP, ranks, trophies, streaks - the whole practice loop" },

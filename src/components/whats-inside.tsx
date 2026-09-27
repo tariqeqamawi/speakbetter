@@ -71,7 +71,7 @@ export const FEATURES = [
   {
     Icon: DeckIcon,
     name: "Digital card deck",
-    line: "79 cards - pull one, or deal a spread of all seven colors.",
+    line: "77 cards - pull one, or deal a spread of all seven colors.",
     color: "text-figurative",
   },
   {

@@ -356,8 +356,8 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
       {/* The two ways in that aren't a color, and the instruction card */}
       <div className="flex flex-col items-center gap-4 pt-7">
         {/* The two ways in that aren't a color, drawn as two things
-            rather than said as two labels: a fan of seven, and a deck
-            being shuffled. They were a pair of gray outlined boxes,
+            rather than said as two labels: a fan of seven, and one card
+            pulled at random. They were a pair of gray outlined boxes,
             which is what a form looks like, not a deck of cards. */}
         <div className="grid w-full max-w-md grid-cols-2 gap-2.5">
           <button
@@ -374,17 +374,21 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
           <button
             type="button"
             data-tour="shuffle"
-            onClick={shakeOn ? pullRandom : enableShake}
+            // One tap, one card: pulled at random from the whole deck and
+            // shown. (The first tap also switches shaking on, where the
+            // phone has to ask - so a shake does the same from then on.)
+            onClick={() => {
+              pullRandom();
+              if (!shakeOn) void enableShake();
+            }}
             className="group relative flex flex-col items-center gap-1.5 overflow-hidden rounded-2xl border border-navy-600 bg-navy-800 px-3 py-4 transition-colors hover:border-ink-faint"
           >
             <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-figurative/70" />
             <span className="deck-shake grid size-10 place-items-center text-figurative">
               <RepeatIcon className="size-7" />
             </span>
-            <span className="text-sm font-bold text-ink">{shakeOn ? "Pull a card" : "Shuffle"}</span>
-            <span className="text-[0.7rem] leading-tight text-ink-faint">
-              {shakeOn ? "Or shake your phone" : "Or shake your phone"}
-            </span>
+            <span className="text-sm font-bold text-ink">Random card</span>
+            <span className="text-[0.7rem] leading-tight text-ink-faint">Any card from the whole deck</span>
           </button>
         </div>
         {hand && (

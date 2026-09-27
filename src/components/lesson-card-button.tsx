@@ -16,7 +16,7 @@ import { hapticTap } from "@/lib/feedback-fx";
 // and it beats a second list written for the same purpose. So the button
 // beside the player opens the card rather than a panel of bullets, which
 // also means a student meets the deck where the deck is useful instead
-// of finding a tab of 79 cards they've never seen before.
+// of finding a tab of 77 cards they've never seen before.
 //
 // It opens lesson-side up - this card is being read, not pulled - and
 // tapping it turns it over to the colored face, because half the point

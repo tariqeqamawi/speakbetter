@@ -95,7 +95,7 @@ export function ChallengesRoad() {
   );
 }
 
-// ── 79 cards: fanning through the deck, color by color ─────────────────
+// ── 77 cards: fanning through the deck, color by color ─────────────────
 export function DeckFan() {
   const n = useTick(1100);
   // Left to right and back: 0..6..0.

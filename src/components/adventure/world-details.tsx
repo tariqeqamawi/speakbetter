@@ -147,13 +147,13 @@ export function Traveller({
     disc.current?.scale.setScalar(1);
     disc.current?.position.set(p.x, p.y + 1.3 + bob, p.z);
     disc.current?.lookAt(camera.position);
-    // The power ring: a solid rim, kept below the glow's threshold so
-    // nothing blooms over the photo - until all five colours are earned,
-    // when it lights up and pulses.
+    // The power ring: one band per colour earned, turning.
     const n = Math.max(1, Math.min(5, powerCount(s)));
     ring.uniforms.uN.value = n;
     ring.uniforms.uTime.value = clock.elapsedTime;
-    ring.uniforms.uGlow.value = n >= 5 ? 1.35 + Math.sin(clock.elapsedTime * 3) * 0.3 : 0.6 + (n - 1) * 0.04;
+    // Always glowing, and brighter with every colour earned; all five
+    // pulse - fully powered up.
+    ring.uniforms.uGlow.value = n >= 5 ? 1.9 + Math.sin(clock.elapsedTime * 3) * 0.3 : 1.15 + (n - 1) * 0.12;
     // Reveal the trail up to the traveller: the ribbons are built in
     // equal steps along the road, six indices a step.
     const upTo = Math.floor(s / TRAIL_STEP) * 6;

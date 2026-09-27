@@ -57,7 +57,7 @@ export function Bloom({
     // nothing while it's off.
     const k = travel ? Math.max(0, (travel.feel - 0.25) / 0.75) : 0;
     blur.enabled = k > 0.01;
-    blur.uniforms.uAmount.value = k * k * 0.055;
+    blur.uniforms.uAmount.value = k * k * 0.06 + (travel?.boost ?? 0) * 0.06;
     composer.render(dt);
   }, 1);
   /* eslint-enable react-hooks/immutability */
@@ -65,9 +65,9 @@ export function Bloom({
 }
 
 /** SPARKS off the back of the traveller, flat out: once you've held top
- *  speed for a second and a half (Travel.boost), a spray of hot sparks
- *  flies out behind the disc and bounces off the road, falling behind
- *  you as you pull away. */
+ *  speed for a second and a half (Travel.boost), hot sparks spray from
+ *  under the disc, low along the lit road, skittering back toward you -
+ *  never up into the sky. */
 export function SpeedSparks({
   road,
   travel,
@@ -129,17 +129,17 @@ export function SpeedSparks({
         debt.current -= 1;
         const i = next.current;
         next.current = (i + 1) % N;
-        const across = (Math.random() - 0.5) * 1.4;
+        const across = (Math.random() - 0.5) * 1.0;
         pos[i * 3] = p.x + side.x * across;
-        pos[i * 3 + 1] = p.y + 0.15;
+        pos[i * 3 + 1] = p.y + 0.06;
         pos[i * 3 + 2] = p.z + side.z * across;
         // Carried forward at most of your speed, so they fall behind you
         // slowly enough to see - streaming past either side of the
         // camera; thrown out sideways and up.
-        const keep = 0.9 + Math.random() * 0.07;
-        const out = (Math.random() < 0.5 ? -1 : 1) * (1.5 + Math.random() * 3.5);
+        const keep = 0.8 + Math.random() * 0.1;
+        const out = (Math.random() < 0.5 ? -1 : 1) * (0.6 + Math.random() * 2.2);
         vel[i * 3] = fwd.x * worldV * keep + side.x * out;
-        vel[i * 3 + 1] = 1 + Math.random() * 2.5;
+        vel[i * 3 + 1] = 0.3 + Math.random() * 1.1;
         vel[i * 3 + 2] = fwd.z * worldV * keep + side.z * out;
         ground[i] = p.y + 0.05;
         age[i] = 0;

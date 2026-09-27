@@ -59,13 +59,22 @@ export interface WorldPhase {
 }
 
 
+/** A section's colour brightened until it's as luminous as O's yellow -
+ *  yellow was the only colour bright enough to bloom, which is why O's
+ *  lights shimmered and the rest sat flat. Hue kept; only the light
+ *  turned up. */
+function glowing(c: THREE.Color): THREE.Color {
+  const lum = 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
+  return c.multiplyScalar(THREE.MathUtils.clamp(0.66 / Math.max(lum, 0.01), 1, 2.4));
+}
+
 /** Where each phase's stretch of road starts and ends, by distance. */
 function phaseSpans(road: RoadLayout, stops: WorldStop[], phases: WorldPhase[]) {
   return phases.map((p) => {
     const idx = stops.map((s, i) => (s.phase === p.id ? i : -1)).filter((i) => i >= 0);
     const first = road.stops[idx[0]] ?? 0;
     const last = road.stops[idx[idx.length - 1]] ?? 0;
-    return { ...p, from: first - GATE_BEFORE, to: last + GATE_BEFORE, col: new THREE.Color(p.color) };
+    return { ...p, from: first - GATE_BEFORE, to: last + GATE_BEFORE, col: glowing(new THREE.Color(p.color)) };
   });
 }
 
@@ -334,6 +343,17 @@ const TERRAIN_FRAG = /* glsl */ `
     float rest = (0.02 * halo + 0.16 * core) * mix(1.0, 3.2 * gTwinkle, dotsK);
     float lit = (wave + wake) * (1.2 * core + 0.5 * halo + 0.25 * haloWide);
     col += vNeon * (rest + lit * 1.6) * crowd;
+
+    // SHIMMER, in every land - what made O's dots the best thing on the
+    // road: at some of the grid's crossings a point of light twinkles at
+    // its own pace, now and then flaring. (O has its own field of dots.)
+    vec2 sc = floor(g + 0.5);
+    float sh = fract(sin(dot(sc, vec2(12.9898, 78.233))) * 43758.5453);
+    float stw = pow(0.5 + 0.5 * sin(uTime * (0.8 + sh * 2.2) + sh * 40.0), 6.0)
+      + pow(max(sin(uTime * 0.35 + sh * 60.0), 0.0), 40.0) * 3.0;
+    vec2 sd = (fract(g + 0.5) - 0.5) / max(fwidth(g), vec2(1e-4));
+    float spark = exp(-max(length(sd) - 1.3, 0.0) * 1.1) * step(0.45, sh);
+    col += vNeon * spark * stw * 1.1 * crowd * (1.0 - dotsK);
 
     float fog = 1.0 - exp(-uFogDensity * uFogDensity * vDepth * vDepth);
     // A light haze, never a wall: however far off, the land keeps its
@@ -791,9 +811,14 @@ function Rig({
     // the road past them. Flying: down low and in close behind them, the
     // road pouring toward you, the way the camera rode behind the bikes
     // in Extreme-G - lower and closer still once the sparks fly.
-    pointAt(road, s + f * 5 + b * 4 - up * 5, pos);
-    pointAt(road, s + AHEAD + 22 - f * 6 - up * 9, at);
-    eye.set(pos.x, pos.y + 7.5 - f * 4.3 - b * 1.6 + up * 6.5, pos.z);
+    // (Pulled in only so far: any closer and, on a phone above all, the
+    // disc fills the view and you can't see where you're going.)
+    // Flat out, the camera stays low but drops back - the chase camera
+    // straining to keep up - while the view widens and the blur and
+    // streaks come on hard.
+    pointAt(road, s + f * 2 - b * 4 - up * 5, pos);
+    pointAt(road, s + AHEAD + 26 - f * 2 - up * 9, at);
+    eye.set(pos.x, pos.y + 7.5 - f * 3 - b * 0.4 + up * 6.5, pos.z);
     look.set(at.x, at.y + 1.2 + f * 0.6, at.z);
     // Carried along with the road as it moves, then eased toward the
     // spot - so at speed the camera keeps its place behind the traveller
@@ -804,12 +829,13 @@ function Rig({
     carried.current = true;
     camera.position.lerp(eye, 1 - Math.pow(0.001, dt));
     camera.lookAt(look);
-    // Flat out, the faintest shake - the road under you at speed.
-    if (f > 0.6) {
-      const k = (f - 0.6) / 0.4;
+    // At speed the road shakes the camera - harder flat out.
+    if (f > 0.55 && !still) {
+      const k = (f - 0.55) / 0.45;
       const t = performance.now() / 1000;
-      camera.position.y += (Math.sin(t * 37) * 0.6 + Math.sin(t * 23.3) * 0.4) * 0.035 * k;
-      camera.position.x += Math.sin(t * 29.7) * 0.025 * k;
+      const amp = 0.05 * k + 0.07 * b;
+      camera.position.y += (Math.sin(t * 37) * 0.6 + Math.sin(t * 23.3) * 0.4) * amp;
+      camera.position.x += (Math.sin(t * 29.7) * 0.6 + Math.sin(t * 51.1) * 0.4) * amp * 0.8;
     }
     // Looking around: the phone's tilt swings the view side to side and
     // lifts it toward the horizon, eased so it glides rather than jitters.
@@ -821,12 +847,13 @@ function Rig({
     // The view widens as you go faster and settles as you slow; the page
     // draws faint streaks past the edges from the same number.
     const cam = camera as THREE.PerspectiveCamera;
-    const fov = 62 + f * 12 + b * 6;
+    const fov = 62 + f * 12 + b * 12;
     if (Math.abs(cam.fov - fov) > 0.05) {
       cam.fov = fov;
       cam.updateProjectionMatrix();
     }
     gl.domElement.parentElement?.style.setProperty("--road-speed", f.toFixed(3));
+    gl.domElement.parentElement?.style.setProperty("--road-boost", b.toFixed(3));
     // Lean into the bends with the road - more the faster you go.
     const target = THREE.MathUtils.clamp(tiltAt(road, s + AHEAD) * (0.9 + f * 0.5), -0.3, 0.3);
     roll.current += (target - roll.current) * Math.min(1, dt * 2.5);
