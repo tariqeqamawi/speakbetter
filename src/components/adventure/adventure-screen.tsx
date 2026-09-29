@@ -754,6 +754,37 @@ export function AdventureScreen({
         </div>
       )}
 
+      {/* NEXT CHALLENGE: fly straight to just before the next portal
+          that's open and not yet done - tap again for the one after,
+          round to the first. Held in one place in the heads-up display,
+          under the 2D / 3D / 4D switch (adventure-view.tsx), portrait
+          and landscape alike - so it never jumps about or covers the
+          Start button. */}
+      {openStops.length > 0 && !demo && !diving && (
+        <button
+          type="button"
+          onClick={() => {
+            const here = travel.s + AHEAD;
+            const next = openStops.find((i) => road.stops[i] > here + 4) ?? openStops[0];
+            travel.goTo(Math.max(0, road.stops[next] - AHEAD - 2));
+          }}
+          aria-label="Next open challenge"
+          className="absolute z-30 flex items-center gap-1.5 rounded-full border-2 bg-navy-950/85 py-1.5 pl-3.5 pr-3 text-xs font-bold text-ink shadow-lg backdrop-blur"
+          style={{
+            left: "max(0.75rem, env(safe-area-inset-left))",
+            top: "calc(max(0.75rem, env(safe-area-inset-top)) + 2.75rem)",
+            borderColor: phase?.color,
+            boxShadow: `0 0 16px -4px ${phase?.color}`,
+          }}
+        >
+          Next challenge
+          <svg viewBox="0 0 24 24" className="size-3.5" fill="currentColor" aria-hidden>
+            <path d="M5 5.5v13a1 1 0 0 0 1.5.86l10-6.5a1 1 0 0 0 0-1.72l-10-6.5A1 1 0 0 0 5 5.5z" />
+            <rect x="17.5" y="5" width="2.5" height="14" rx="1" />
+          </svg>
+        </button>
+      )}
+
       <div
         className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-1 bg-gradient-to-t from-[#070c18]/95 to-transparent px-4 pt-16 text-center"
         // Clear of a phone's home bar and rounded corners, in full screen.
@@ -805,29 +836,6 @@ export function AdventureScreen({
           </span>
         )}
         {atFinish && <span className="text-lg font-bold text-ink">The finish line</span>}
-        {/* NEXT CHALLENGE: fly straight to just before the next portal
-            that's open and not yet done - tap again for the one after,
-            round to the first. Its own pill, above the letters, where it
-            can't be missed; hidden while a Start button is showing. */}
-        {openStops.length > 0 && !demo && !canStart && !diving && !(hereIndex > 0 && at < road.stops[0] - 4) && (
-          <button
-            type="button"
-            onClick={() => {
-              const here = travel.s + AHEAD;
-              const next = openStops.find((i) => road.stops[i] > here + 4) ?? openStops[0];
-              travel.goTo(Math.max(0, road.stops[next] - AHEAD - 2));
-            }}
-            aria-label="Next open challenge"
-            className="pointer-events-auto mb-1 flex items-center gap-2 rounded-full border-2 bg-navy-950/85 py-2 pl-5 pr-4 text-sm font-bold text-ink shadow-lg backdrop-blur"
-            style={{ borderColor: phase?.color, boxShadow: `0 0 20px -4px ${phase?.color}` }}
-          >
-            Next challenge
-            <svg viewBox="0 0 24 24" className="size-4" fill="currentColor" aria-hidden>
-              <path d="M5 5.5v13a1 1 0 0 0 1.5.86l10-6.5a1 1 0 0 0 0-1.72l-10-6.5A1 1 0 0 0 5 5.5z" />
-              <rect x="17.5" y="5" width="2.5" height="14" rx="1" />
-            </svg>
-          </button>
-        )}
         {/* S.T.O.R.Y. - tap a letter to fly to that stretch of road. */}
         <div className="pointer-events-auto mt-3 flex gap-2">
           {phases.map((p) => {
