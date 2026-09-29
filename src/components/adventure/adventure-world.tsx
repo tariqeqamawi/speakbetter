@@ -10,7 +10,7 @@ import { PORTAL_FLAT_SCALE, PORTAL_FLAT_Y, PORTAL_Y, Portal } from "./portal";
 import { SkyDome } from "./sky-dome";
 import { City } from "./city";
 import { Bloom, GateSparks, Sky, SpeedSparks } from "./fx";
-import { FinishGate } from "./finish-gate";
+import { FinishTunnel } from "./finish-gate";
 import { AHEAD, ColourWall, RoadsideComment, RoadsideTrophy, Traveller } from "./world-details";
 import { GATE_BEFORE, victoryStart, hills, layoutRoad, pointAt, reachedPhase, seeded, sideAt, type RoadLayout, type Travel, ROAD_HALF, bankLift, tiltAt, groundAt, surfaceAt, upAt } from "./road-geometry";
 
@@ -986,16 +986,23 @@ function Rig({
     if (stunt) {
       const k = THREE.MathUtils.smoothstep(tS, stunt.a - 25, stunt.a) * (1 - THREE.MathUtils.smoothstep(tS, stunt.a + stunt.len, stunt.a + stunt.len + 25));
       const bs = tS - AHEAD;
-      const rise = stunt.kind === "climb" ? 7.5 : stunt.kind === "tower" ? 7 : 5.5;
+      const rise = stunt.kind === "climb" ? 7.5 : stunt.kind === "tower" ? 9 : 5.5;
       // (Up the skyscraper, looking further on, so over the roof the view
       // is of the sky and the city - not the road filling the screen.)
-      const on = stunt.kind === "tower" ? 24 : 10;
+      const on = 10;
       pointAt(road, bs, sEye).addScaledVector(upAt(road, bs, across), rise);
       pointAt(road, tS + on, sLook).addScaledVector(upAt(road, tS + on, across), 1.2);
       if (stunt.kind !== "climb") {
-        // The camera's up turns with the track's, blended in and out.
+        // The camera's up turns with the track's, blended in and out - the
+        // track's up where the camera is, where the traveller is and where
+        // it's looking, together: so where the road turns sharply (the
+        // foot and the shoulders of the monolith) the view never looks
+        // straight along its own up, and never flips.
         upAt(road, bs, across);
-        camera.up.set(0, 1, 0).lerp(across, k).normalize();
+        offset.copy(across);
+        offset.add(upAt(road, tS, across));
+        offset.add(upAt(road, tS + on, across));
+        camera.up.set(0, 1, 0).lerp(offset.normalize(), k).normalize();
       }
       // Blended in and out over the way in and the way out.
       offset.subVectors(eye, pos);
@@ -1015,7 +1022,10 @@ function Rig({
       camera.up.set(0, 1, 0);
     }
     const sw = settle(dt);
-    if (cut) camera.position.copy(eye);
+    // (Up the monolith, the camera rides exactly its place behind the
+    // traveller: easing toward it would cut the corner, through the slab.)
+    const onTower = road.stunts.some((z) => z.kind === "tower" && tS > z.a - 5 && tS < z.a + z.len + 5);
+    if (cut || (onTower && !still)) camera.position.copy(eye);
     else camera.position.lerp(eye, sw.k);
     if (sw.moving) lookCur.lerp(look, sw.k);
     else lookCur.copy(look);
@@ -1308,7 +1318,7 @@ export function AdventureWorld({
           flat={calm}
         />
       ))}
-      <FinishGate road={road} cols={finishCols} />
+      <FinishTunnel road={road} cols={finishCols} />
       <Rig road={road} travel={travel} onMove={onMove} limit={limit ?? road.finish + 10} calm={calm} arrive={arrive} leaveTo={leaveTo} />
       {pickRef && <Picker road={road} pickRef={pickRef} far={calm ? 240 : 70} flat={calm} />}
     </Canvas>

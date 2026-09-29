@@ -198,3 +198,106 @@ export function FinishGate({ road, cols: given }: { road: RoadLayout; cols: THRE
   );
 }
 
+
+/** How long the ring tunnel into the finish is. */
+export const FINISH_TUNNEL = 240;
+const RING_GAP = 4.5;
+
+const RING_VERT = /* glsl */ `
+  attribute float aK;
+  varying float vK;
+  void main() {
+    vK = aK;
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * instanceMatrix * vec4(position, 1.0);
+  }
+`;
+// Each ring its colour from the palette, the colours chasing down the
+// tunnel toward the finish, a bright pulse racing through them.
+const RING_FRAG = /* glsl */ `
+  uniform float uTime;
+  uniform vec3 uCols[5];
+  varying float vK;
+  void main() {
+    float u = vK * 0.35 - uTime * 2.2;
+    float f = fract(u / 5.0) * 5.0;
+    int i = int(floor(f));
+    vec3 a = uCols[0];
+    vec3 b = uCols[1];
+    for (int k = 0; k < 5; k++) {
+      if (k == i) a = uCols[k];
+      if (k == (i + 1) - (i + 1) / 5 * 5) b = uCols[k];
+    }
+    vec3 c = mix(a, b, smoothstep(0.7, 1.0, fract(f)));
+    float pulse = 0.75 + 0.8 * pow(0.5 + 0.5 * sin(vK * 0.5 - uTime * 9.0), 8.0);
+    gl_FragColor = vec4(c * pulse, 1.0);
+  }
+`;
+
+/** THE WAY INTO THE FINISH: a tunnel of rings, one after another, tight -
+ *  every section's colour chasing down it and a pulse of light racing
+ *  through - that you shoot along like a jump to hyperspace. FINISH hangs
+ *  over its far end. */
+export function FinishTunnel({ road, cols }: { road: RoadLayout; cols: THREE.Color[] }) {
+  const rings = useMemo(() => {
+    const n = Math.floor(FINISH_TUNNEL / RING_GAP);
+    const geo = new THREE.TorusGeometry(11, 0.32, 8, 64);
+    const k = new Float32Array(n);
+    for (let i = 0; i < n; i++) k[i] = i;
+    geo.setAttribute("aK", new THREE.InstancedBufferAttribute(k, 1));
+    const palette = [0, 1, 2, 3, 4].map((i) => (cols[i] ?? cols[0] ?? new THREE.Color("#ffffff")).clone().multiplyScalar(1.3));
+    const mat = new THREE.ShaderMaterial({
+      vertexShader: RING_VERT,
+      fragmentShader: RING_FRAG,
+      uniforms: { uTime: { value: 0 }, uCols: { value: palette } },
+      toneMapped: false,
+    });
+    const mesh = new THREE.InstancedMesh(geo, mat, n);
+    const o = new THREE.Object3D();
+    const p = new THREE.Vector3();
+    const q = new THREE.Vector3();
+    for (let i = 0; i < n; i++) {
+      const s = road.finish - FINISH_TUNNEL + i * RING_GAP;
+      pointAt(road, s, p);
+      pointAt(road, s + 1, q);
+      o.position.set(p.x, p.y + 3.5, p.z);
+      o.lookAt(q.x, q.y + 3.5, q.z);
+      o.updateMatrix();
+      mesh.setMatrixAt(i, o.matrix);
+    }
+    mesh.instanceMatrix.needsUpdate = true;
+    mesh.frustumCulled = false;
+    return mesh;
+  }, [road, cols]);
+  useEffect(
+    () => () => {
+      rings.geometry.dispose();
+      (rings.material as THREE.Material).dispose();
+    },
+    [rings],
+  );
+  /* eslint-disable react-hooks/immutability -- a uniform, set every frame */
+  useFrame(({ clock }) => {
+    (rings.material as THREE.ShaderMaterial).uniforms.uTime.value = clock.elapsedTime;
+  });
+  /* eslint-enable react-hooks/immutability */
+  const label = useMemo(() => (typeof document === "undefined" ? null : finishLabel(cols)), [cols]);
+  useEffect(() => () => label?.dispose(), [label]);
+  const { position, facing } = useMemo(() => ({ position: pointAt(road, road.finish), facing: pointAt(road, road.finish - 1) }), [road]);
+  const group = useRef<THREE.Group>(null);
+  useEffect(() => {
+    group.current?.lookAt(facing.x, position.y, facing.z);
+  }, [facing, position]);
+  return (
+    <>
+      <primitive object={rings} />
+      {label && (
+        <group ref={group} position={position}>
+          <mesh position={[0, 19, 0]}>
+            <planeGeometry args={[26, 6.5]} />
+            <meshBasicMaterial map={label} color="#b4b4b4" transparent toneMapped={false} depthWrite={false} side={THREE.DoubleSide} />
+          </mesh>
+        </group>
+      )}
+    </>
+  );
+}

@@ -82,6 +82,8 @@ export interface RoadLayout {
   /** Where the road runs high above the land on pylons, and how high. */
   skyways: { a: number; b: number; h: number }[];
   liftAt: (s: number) => number;
+  /** Where the two faces stand, on their straight, level stretch. */
+  faces?: number;
 }
 
 /** A stretch where the road leaves the ground: a vertical loop, or a
@@ -283,6 +285,12 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = [], opts: Ro
   // The speaker climb: the first stretch within T (kept clear for it).
   const climbI = calm ? -1 : phaseOf.findIndex((ph, i) => i > 0 && ph === "T" && phaseOf[i - 1] === "T" && i % 2 === 1 && !venueStretch(i));
   if (climbI > 0) EXTRA[climbI] = 260;
+  // THE TWO FACES' STRETCH: one of O's, clear of the loop - made long here,
+  // and straight and level further down.
+  const facesI = calm
+    ? -1
+    : phaseOf.findIndex((ph, i) => i > 1 && ph === "O" && phaseOf[i - 1] === "O" && !venueStretch(i) && Math.abs(i - loopI) > 1);
+  if (facesI > 0) EXTRA[facesI] = 180;
   // The wave skyway through the city: the last stretch of Y, into the
   // last challenge - a long ride of its own, weaving round the giant
   // mics and headphones and through the towers, then sloping gently down
@@ -362,6 +370,10 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = [], opts: Ro
   const towerAt = towerShape ? Math.round((stops[checkpoints - 1] + TOWER_AFTER) / DS) * DS : -1;
   if (towerShape) stunts.push({ kind: "tower", a: towerAt, len: towerShape.L, shape: towerShape });
   stunts.sort((p, q) => p.a - q.a);
+  // (The two faces' stretch, straight and level, so they're in view all
+  // the way up to them and as you pass between.)
+  const facesHold = facesI > 0 ? { a: marks[facesI] + 30, len: marks[facesI + 1] - marks[facesI] - 50 } : null;
+  if (facesHold) flats.push({ a: facesHold.a, b: facesHold.a + facesHold.len });
   // The victory city is level ground.
   if (towerShape) flats.push({ a: towerAt, b: reach + 200 });
   // Level going in and coming out.
@@ -467,11 +479,14 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = [], opts: Ro
 
   // Through a stunt the heading holds where it went in, and afterwards
   // carries on from there - no jump where the road comes back down.
-  const deltas = stunts.map((z) => heading(z.a + z.len) - heading(z.a));
+  // Where the heading holds straight: through each stunt, and along the
+  // stretch where the two faces stand.
+  const holds = [...stunts.map((z) => ({ a: z.a, len: z.len })), ...(facesHold ? [facesHold] : [])].sort((p, q) => p.a - q.a);
+  const deltas = holds.map((z) => heading(z.a + z.len) - heading(z.a));
   const headingEff = (s: number) => {
     let shift = 0;
-    for (let k = 0; k < stunts.length; k++) {
-      const z = stunts[k];
+    for (let k = 0; k < holds.length; k++) {
+      const z = holds[k];
       if (s >= z.a + z.len) shift += deltas[k];
       else if (s >= z.a) return heading(z.a) - shift;
     }
@@ -538,6 +553,7 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = [], opts: Ro
   const bendAt = (s: number) => (headingEff(s + 4) - headingEff(s - 4)) / 8;
   const bankAt = (s: number) => Math.min(1, weight("O", s) + weight("R", s) + weaveAt(s) * 0.6);
   return {
+    faces: facesHold ? facesHold.a + facesHold.len / 2 : undefined,
     curve,
     length,
     stops,

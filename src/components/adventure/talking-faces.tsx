@@ -16,16 +16,20 @@ import { ROAD_HALF, groundAt, pointAt, sideAt, type RoadLayout } from "./road-ge
 // the nose, lips round an open mouth, the chin, a neck down to the ground.
 // (In a head's own frame +x is the way it faces, y up.)
 
-const S = 26; // the head's size
-/** A head in profile (x the way it faces, y up, in head-sizes): the back
- *  of the skull, forehead, brow, the eye's hollow, the nose, lips round
- *  an open mouth, chin, jaw, and the neck down to the ground. */
+const S = 28; // the head's size
+/** A head in profile (x the way it faces, y up, in head-sizes), round
+ *  from the back of the skull: crown, forehead, brow ridge, the eye's
+ *  hollow, the bridge and tip of the nose, nostril, the lips round an open
+ *  mouth, chin, jaw, the throat and neck down to the ground, the nape and
+ *  the back of the head. (Every point further round from the centre than
+ *  the last, so each direction out from the middle meets it once.) */
 const PROFILE: [number, number][] = [
-  [-0.95, 0.1], [-0.9, 0.5], [-0.6, 0.9], [-0.1, 1.05], [0.35, 0.95], [0.62, 0.7], [0.74, 0.46],
-  [0.63, 0.34], [0.7, 0.24], [1.04, -0.02], [0.74, -0.09], [0.84, -0.21], [0.46, -0.25], [0.8, -0.52],
-  [0.76, -0.66], [0.58, -0.82], [0.2, -0.88], [0.16, -1.45], [-0.36, -1.45], [-0.55, -0.62], [-0.86, -0.3],
+  [-0.98, 0.05], [-0.96, 0.38], [-0.82, 0.7], [-0.55, 0.95], [-0.15, 1.08], [0.25, 1.04], [0.55, 0.86],
+  [0.7, 0.62], [0.78, 0.42], [0.7, 0.33], [0.76, 0.25], [1.06, 0.0], [0.98, -0.06], [0.8, -0.1],
+  [0.84, -0.15], [0.9, -0.2], [0.52, -0.21], [0.84, -0.42], [0.78, -0.5], [0.86, -0.62], [0.72, -0.78],
+  [0.3, -0.86], [0.28, -1.0], [0.28, -1.5], [-0.34, -1.5], [-0.42, -0.9], [-0.78, -0.55], [-0.95, -0.25],
 ];
-const NECK = 1.45; // how far the neck runs below the head's centre
+const NECK = 1.5; // how far the neck runs below the head's centre
 const LIFT = NECK * S; // the head's centre above the ground
 
 /** How far the profile reaches from the head's centre at an angle. */
@@ -51,7 +55,7 @@ function reach(theta: number) {
 /** A faceted head: a sphere of facets stretched so that, seen side-on, it
  *  is exactly the profile - and narrower toward the face and the neck. */
 function headGeometry() {
-  const g = new THREE.IcosahedronGeometry(1, 3);
+  const g = new THREE.IcosahedronGeometry(1, 4);
   const p = g.getAttribute("position") as THREE.BufferAttribute;
   const v = new THREE.Vector3();
   for (let i = 0; i < p.count; i++) {
@@ -61,8 +65,15 @@ function headGeometry() {
     const r = reach(theta);
     const x = Math.cos(theta) * r * rho;
     const y = Math.sin(theta) * r * rho;
-    const width = 0.72 * (1 - 0.4 * THREE.MathUtils.smoothstep(x, 0.45, 1.05)) * (y < -0.85 ? 0.62 : 1);
-    p.setXYZ(i, x * S, y * S, v.z * width * S);
+    // Narrower toward the nose and lips, narrower still down the neck; and
+    // an ear on each side, just behind the middle of the head.
+    let width = 0.74 * (1 - 0.55 * THREE.MathUtils.smoothstep(x, 0.6, 1.06)) * (y < -0.85 ? 0.58 : 1);
+    const ear = Math.exp(-((x + 0.14) ** 2) / 0.012 - ((y - 0.08) ** 2) / 0.03) * Math.max(0, Math.abs(v.z) - 0.5) * 2;
+    width *= 1 + 0.35 * ear;
+    // The eyes, set into the face either side of the nose.
+    const eye = Math.exp(-((x - 0.6) ** 2) / 0.01 - ((y - 0.3) ** 2) / 0.004) * Math.exp(-((Math.abs(v.z) - 0.45) ** 2) / 0.02);
+    const inX = 1 - 0.12 * eye;
+    p.setXYZ(i, x * inX * S, y * S, v.z * width * S);
   }
   g.computeVertexNormals();
   return g;
@@ -72,17 +83,19 @@ export function TalkingFaces({ road, s, colourAt }: { road: RoadLayout; s: numbe
   const built = useMemo(() => {
     const colour = colourAt(s).clone().lerp(new THREE.Color("#ffffff"), 0.15);
     const geo = headGeometry();
-    const edges = new THREE.EdgesGeometry(geo, 1);
+    // (Only the edges where the facets really turn, so the lines draw the
+    // form rather than a mesh of noise.)
+    const edges = new THREE.EdgesGeometry(geo, 9);
     const skin = new THREE.MeshStandardMaterial({
       color: "#060912",
-      emissive: colour.clone().multiplyScalar(0.05),
+      emissive: colour.clone().multiplyScalar(0.12),
       roughness: 0.25,
       metalness: 0.6,
       flatShading: true,
       transparent: true,
       opacity: 0.88,
     });
-    const wire = new THREE.LineBasicMaterial({ color: colour.clone().multiplyScalar(1.3), toneMapped: false, transparent: true, opacity: 0.9 });
+    const wire = new THREE.LineBasicMaterial({ color: colour.clone().multiplyScalar(1.8), toneMapped: false });
     // The rings of sound between them.
     const ringGeo = new THREE.TorusGeometry(1, 0.06, 6, 48);
     const ringMats = Array.from({ length: 5 }, () =>
@@ -109,7 +122,7 @@ export function TalkingFaces({ road, s, colourAt }: { road: RoadLayout; s: numbe
       position: g,
       // (The group's +x across the road, to the right.)
       yaw: Math.atan2(-side.z, side.x),
-      gap: ROAD_HALF + 44,
+      gap: ROAD_HALF + 46,
       mouthY: Math.max(LIFT - 0.3 * S, pointAt(road, s).y - g.y + 12),
     };
   }, [road, s]);

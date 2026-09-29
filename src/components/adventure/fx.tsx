@@ -57,9 +57,8 @@ export function Bloom({
     // nothing while it's off.
     const k = travel ? Math.max(0, (travel.feel - 0.25) / 0.75) : 0;
     blur.enabled = k > 0.01;
-    // (Only the faintest blur now: the tracers along the edges carry the
-    // speed.)
-    blur.uniforms.uAmount.value = k * k * 0.012 + (travel?.boost ?? 0) * 0.012;
+    // (The edges of the view blur at speed; the middle stays sharp.)
+    blur.uniforms.uAmount.value = k * k * 0.06 + (travel?.boost ?? 0) * 0.05;
     composer.render(dt);
   }, 1);
   /* eslint-enable react-hooks/immutability */
@@ -210,11 +209,13 @@ function speedBlur(samples: number) {
       const int N = ${samples};
       void main() {
         vec2 dir = vUv - uCentre;
-        float far = smoothstep(0.12, 0.7, length(dir));
+        // Only the edges blur - the middle, where you're looking, stays
+        // sharp - and they darken a touch, as if rushing past.
+        float far = pow(smoothstep(0.26, 0.78, length(dir)), 1.4);
         vec2 step = dir * uAmount * far / float(N);
         vec4 sum = vec4(0.0);
         for (int i = 0; i < N; i++) sum += texture2D(tDiffuse, vUv - step * float(i));
-        gl_FragColor = sum / float(N);
+        gl_FragColor = vec4((sum / float(N)).rgb * (1.0 - far * uAmount * 3.0), 1.0);
       }
     `,
   };

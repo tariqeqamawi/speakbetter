@@ -310,9 +310,9 @@ export function SectionWeather({ road, travel, spans }: { road: RoadLayout; trav
   return (
     <group>
       <Aurora travel={travel} stretch={find("S")} />
-      <Drift road={road} travel={travel} stretch={find("T")} count={280} colours={dust} size={0.7} rise={0} wind={3.2} low={1} high={18} />
+      <Drift road={road} travel={travel} stretch={find("T")} count={140} colours={dust} size={0.7} rise={0} wind={3.2} low={1} high={18} />
       <Drift road={road} travel={travel} stretch={find("O")} count={240} colours={pollen} size={0.8} rise={-1.4} wind={1.2} low={0} high={30} />
-      <Drift road={road} travel={travel} stretch={find("R")} count={260} colours={embers} size={0.9} rise={3.2} wind={0.6} low={0} high={34} />
+      <Drift road={road} travel={travel} stretch={find("R")} count={110} colours={embers} size={0.8} rise={3.2} wind={0.6} low={0} high={34} />
       <Rain road={road} travel={travel} stretch={find("Y")} count={420} colours={neon} />
     </group>
   );

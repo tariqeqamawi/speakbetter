@@ -5,6 +5,7 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { Monuments, type MonumentPlan } from "./monuments";
 import { TalkingFaces } from "./talking-faces";
+import { FINISH_TUNNEL } from "./finish-gate";
 import { ROAD_HALF, WEAVE, victoryStart, groundAt, pointAt, seeded, sideAt, venueStretch, type RoadLayout } from "./road-geometry";
 
 // SCALE. On the tracks of Extreme-G the road ran between things far
@@ -1402,22 +1403,10 @@ export function structurePlan(road: RoadLayout) {
   const spotRuns: { from: number; to: number }[] = [];
   const ringDone = new Set<number>();
   const lastStop = road.stops[road.stops.length - 1] ?? 0;
-  // THE TWO FACES: in the first open stretch after the speaker climb (in
-  // T), and nothing else there.
-  const climbZ = road.stunts.find((z) => z.kind === "climb");
+  // THE TWO FACES: on their own straight, level stretch (road-geometry).
   const stretches = openStretches(road);
-  const facesAt = stretches.findIndex(
-    (st, i) =>
-      climbZ &&
-      st.from > climbZ.a + climbZ.len + 20 &&
-      st.to - st.from > 120 &&
-      !venueStretch(i) &&
-      !road.stunts.some((z) => z.a < st.to + 40 && z.a + z.len > st.from - 40) &&
-      !road.skyways.some((w) => w.a < st.to && w.b > st.from) &&
-      // (Level ground: not in one of the great banked sweeps.)
-      Array.from({ length: 12 }, (_, k) => st.from - 30 + ((st.to - st.from + 60) * k) / 11).every((x) => Math.abs(road.sweepTilt(x)) < 0.02),
-  );
-  const faces = facesAt >= 0 ? (stretches[facesAt].from + stretches[facesAt].to) / 2 : undefined;
+  const faces = road.faces;
+  const facesAt = faces === undefined ? -1 : stretches.findIndex((st) => st.from < faces && st.to > faces);
   stretches.forEach((st, i) => {
     // The victory stretch, after the last challenge, is all towers.
     if (st.from > lastStop) return;
@@ -1534,10 +1523,11 @@ export function structurePlan(road: RoadLayout) {
       features.push({ s: s + (side > 0 ? 22 : 0), d: side * (ROAD_HALF + (type === 10 ? 20 : 24)), w, h, type });
     }
   }
-  for (let s = vFrom + 150; s < vTo - 80; s += 230) monuments.headphones.push(s);
+  // (All before the ring tunnel into the finish.)
+  for (let s = vFrom + 150; s < road.finish - FINISH_TUNNEL - 40; s += 230) monuments.headphones.push(s);
   // And podcast mics on boom arms leaning out over it, from one side then
   // the other.
-  for (let s = vFrom + 60, side = 1; s < vTo - 40; s += 115, side = -side)
+  for (let s = vFrom + 60, side = 1; s < road.finish - FINISH_TUNNEL - 30; s += 115, side = -side)
     if (monuments.headphones.every((h) => Math.abs(h - s) > 30)) monuments.booms.push({ s, side });
   /** Where the towers keep well clear, to let the monuments stand alone. */
   const clear = [...monuments.mic.map((m) => ({ from: m.s - 38, to: m.s + 38 })), climb ? { s: climb.a + climb.len / 2 } : undefined]

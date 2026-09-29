@@ -65,14 +65,16 @@ const TALK = {
 /** The speed tracers: each one's angle out from the vanishing point (hugging
  *  the left and right edges, a few along the top), when it starts, how long
  *  it takes, and its colour. */
-const TRACERS = [
-  -40, -28, -17, -8, 6, 16, 27, 38, 52, 128, 142, 153, 164, 172, 188, 197, 208, 220, -140, -122, -104, -76, -58, -48,
-].map((a, i) => ({
-  a,
-  d: ((i * 0.37) % 1.1).toFixed(2),
-  t: (0.42 + ((i * 0.13) % 0.3)).toFixed(2),
-  c: ["#ffffff", "#9befff", "#ffffff", "#ffd6f6", "#ffffff", "#c9ffe6"][i % 6],
-}));
+const TRACERS = Array.from({ length: 44 }, (_, i) => {
+  // Round the view, but not straight down the road ahead.
+  const a = (i * 137.5) % 360;
+  return {
+    a: a > 70 && a < 110 ? a + 60 : a,
+    d: ((i * 0.29) % 0.9).toFixed(2),
+    t: (0.3 + ((i * 0.11) % 0.25)).toFixed(2),
+    c: ["#ffffff", "#1FE890", "#22D9F5", "#ffffff", "#FFD60A", "#FF4A2B", "#ffffff", "#F53DE0"][i % 8],
+  };
+});
 
 export function AdventureScreen({
   stops,

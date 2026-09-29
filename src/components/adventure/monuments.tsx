@@ -208,45 +208,61 @@ export function Monuments({
       }
     }
 
-    // THE SKYSCRAPER the road climbs: dark glass, far taller than anything
-    // around it, its corners and floors lit in every section's colour -
-    // the road running straight up its near face, over its roof and down
-    // its far face.
+    // THE MONOLITH the road climbs: one sleek black slab, far taller than
+    // anything round it, its shoulders rounded where the road turns over
+    // them - shaped from the road's own path, a little inside it, so the
+    // road runs up its face, over its top and down its back without ever
+    // cutting into it - and lit only by thin seams of light.
     if (plan.tower) {
       const { a } = plan.tower;
-      const { H, NEAR, FAR } = TOWER;
-      const cols = ["#1FE890", "#22D9F5", "#FFD60A", "#FF4A2B", "#F53DE0"].map((h) => new THREE.Color(h).multiplyScalar(1.5));
+      const { H, NEAR, FAR, TOP } = TOWER;
       const g = new THREE.Group();
       const p0 = pointAt(road, a);
       const ahead = pointAt(road, a + 2);
       g.position.copy(p0);
       g.lookAt(ahead.x, p0.y, ahead.z);
-      const W = 44;
-      const D = FAR - NEAR - 1.6;
-      const zc = (NEAR + FAR) / 2;
-      g.add(mesh(new THREE.BoxGeometry(W, H - 0.6, D), glass, 0, (H - 0.6) / 2, zc));
-      // Its foot, down into the ground.
-      g.add(mesh(new THREE.BoxGeometry(W + 6, 40, D + 6), glass, 0, -20, zc));
-      // Lit corners.
-      [
-        [-W / 2, NEAR + 0.8],
-        [W / 2, NEAR + 0.8],
-        [-W / 2, FAR - 0.8],
-        [W / 2, FAR - 0.8],
-      ].forEach(([x, z], i) => g.add(mesh(new THREE.BoxGeometry(0.9, H, 0.9), glow(cols[i % cols.length]), x, H / 2, z)));
-      // Bands of light round its floors, climbing through the colours.
-      for (let y = 14, k = 0; y < H - 4; y += 12, k++) {
-        const c = glow(cols[k % cols.length].clone().multiplyScalar(0.75));
-        for (const x of [-W / 2 - 0.2, W / 2 + 0.2]) g.add(mesh(new THREE.BoxGeometry(0.4, 0.5, D), c, x, y, zc));
-        // (On the faces the road runs up, only out at the edges.)
-        for (const z of [NEAR + 0.6, FAR - 0.6]) for (const x of [-W / 2 + 8, W / 2 - 8]) g.add(mesh(new THREE.BoxGeometry(14, 0.5, 0.4), c, x, y, z));
+      // Its side profile, in (along the road, up): 1.2 inside the road.
+      const inset = 1.2;
+      const r = 16 - inset;
+      const x0 = NEAR + inset;
+      const x1 = FAR - inset;
+      const top = H - inset;
+      const prof = new THREE.Shape();
+      prof.moveTo(x0, -30);
+      prof.lineTo(x0, H - 16);
+      prof.absarc(NEAR + 16, H - 16, r, Math.PI, Math.PI / 2, true);
+      prof.lineTo(NEAR + 16 + TOP, top);
+      prof.absarc(NEAR + 16 + TOP, H - 16, r, Math.PI / 2, 0, true);
+      prof.lineTo(x1, -30);
+      prof.lineTo(x0, -30);
+      const W = 46;
+      const body = new THREE.ExtrudeGeometry(prof, { depth: W, bevelEnabled: true, bevelThickness: 1.2, bevelSize: 1.2, bevelSegments: 2, curveSegments: 10 });
+      // (Profile x along the road, y up; extruded across it.)
+      body.translate(0, 0, -W / 2).rotateY(-Math.PI / 2);
+      // (Now x across the road, y up, z along it, like everything here.)
+      g.add(new THREE.Mesh(body, glass));
+      // Seams of light: along both edges of each broad side, and a few up
+      // the sides, fading from violet at the foot to white at the top.
+      const seam = (pts: THREE.Vector3[], col: THREE.Color) => {
+        const curve = new THREE.CatmullRomCurve3(pts);
+        g.add(mesh(new THREE.TubeGeometry(curve, Math.max(8, pts.length * 4), 0.28, 5, false), glow(col), 0, 0, 0));
+      };
+      const outline = prof.getPoints(10);
+      for (const x of [-W / 2 - 1.25, W / 2 + 1.25]) {
+        const line = outline.filter((q) => q.y > -1).map((q) => new THREE.Vector3(x, q.y, q.x));
+        seam(line, new THREE.Color("#b9a4ff").multiplyScalar(1.3));
       }
-      // Light running up the faces the road climbs and comes down, either
-      // side of it - so, on the way up, you see the height pour past.
-      for (const z of [NEAR + 0.5, FAR - 0.5])
-        [-15, -8.5, 8.5, 15].forEach((x, i) => g.add(mesh(new THREE.BoxGeometry(0.5, H, 0.3), glow(cols[(i + (z > zc ? 2 : 0)) % cols.length].clone().multiplyScalar(0.8)), x, H / 2, z)));
-      // The roof's rim.
-      for (const x of [-W / 2, W / 2]) g.add(mesh(new THREE.BoxGeometry(0.9, 0.9, D), glow(cols[4]), x, H, zc));
+      const cols = ["#22D9F5", "#F53DE0", "#1FE890", "#FFD60A"].map((h) => new THREE.Color(h).multiplyScalar(0.9));
+      [x0 + 10, (x0 + x1) / 2, x1 - 10].forEach((z, i) => {
+        for (const x of [-W / 2 - 1.25, W / 2 + 1.25]) seam([new THREE.Vector3(x, 0, z), new THREE.Vector3(x, top - 18, z)], cols[i % cols.length]);
+      });
+      // Runway lights up the faces the road climbs, either side of it.
+      for (const [z, sign] of [
+        [x0 - 1.3, -1],
+        [x1 + 1.3, 1],
+      ] as const)
+        for (const x of [-9, 9])
+          g.add(mesh(new THREE.BoxGeometry(0.35, H - 20, 0.2), glow(new THREE.Color(sign < 0 ? "#22D9F5" : "#F53DE0").multiplyScalar(0.9)), x, (H - 20) / 2, z));
       root.add(g);
     }
 

@@ -36,7 +36,11 @@ const SPIRE_VERT = /* glsl */ `
   varying vec3 vN;
   varying vec3 vView;
   varying float vSeed;
+  varying float vAround;
   void main() {
+    // Round the spire: 0-6 across its six faces, so its edges fall on the
+    // whole numbers.
+    vAround = (atan(position.z, position.x) / 6.2831853 + 0.5) * 6.0;
     // three declares instanceColor itself, once the colours are set.
     #ifdef USE_INSTANCING_COLOR
       vColor = instanceColor;
@@ -65,23 +69,25 @@ const SPIRE_FRAG = /* glsl */ `
   varying vec3 vN;
   varying vec3 vView;
   varying float vSeed;
+  varying float vAround;
   void main() {
-    // Dark glass: near black, a cool sheen on the edges turned from you.
-    // Colour is used sparingly - only as underlighting, a glow at the
-    // foot of each spire in its colour, the way light pools under a car
-    // or round the base of dark furniture - and a thin rim of it.
+    // Dark glass like the rest of the city - near black, a cool sheen at a
+    // glancing angle - its colour only in the light along its edges: the
+    // six seams up the spire and thin bands round it, and a glow at its
+    // foot.
     float fres = pow(1.0 - abs(dot(normalize(vN), vView)), 3.0);
-    vec3 glass = vec3(0.012, 0.016, 0.03) + vec3(0.05, 0.06, 0.09) * fres;
-    float under = exp(-vY * 14.0) * 1.3;
-    float rim = fres * 0.22 * (1.0 - vY * 0.7);
-    vec3 col = glass + vColor * (under + rim);
-    // THE FINISH: as you near the end of the road, the skyline fills with
-    // light, spire after spire, each in its own colour - a bright band
-    // climbing it, the lit glass left behind.
+    vec3 glass = vec3(0.008, 0.011, 0.022) + vec3(0.04, 0.05, 0.08) * fres;
+    float e = abs(fract(vAround) - 0.5) * 2.0;
+    float seam = smoothstep(1.0 - 0.06 - fwidth(vAround) * 2.0, 1.0, e);
+    float band = smoothstep(0.93, 1.0, abs(fract(vY * 14.0 + vSeed * 5.0) - 0.5) * 2.0) * 0.5;
+    float under = exp(-vY * 14.0) * 0.9;
+    // THE FINISH: as you near the end of the road the edges light up,
+    // spire after spire - a bright front climbing each one, its seams left
+    // blazing behind it.
     float fill = clamp(uLight * 1.6 - vSeed * 0.6, 0.0, 1.0);
-    float litUp = step(vY, fill) * (0.25 + 0.55 * fres);
+    float lit = step(vY, fill);
     float front = exp(-pow((vY - fill) * 30.0, 2.0)) * step(0.001, fill) * step(fill, 0.995);
-    col += vColor * (litUp * 0.7 + front * 2.2);
+    vec3 col = glass + vColor * (under + (seam + band) * (0.55 + 1.3 * lit) + front * 1.6 * seam + front * 0.35);
     gl_FragColor = vec4(col * uReveal, 1.0);
   }
 `;
@@ -314,7 +320,7 @@ export function City({ road, travel, revealFrom }: { road: RoadLayout; travel: T
         <meshBasicMaterial color="#03050c" fog={false} />
       </mesh>
       <instancedMesh ref={bodies} args={[undefined, undefined, towers.length]} frustumCulled={false}>
-        <coneGeometry args={[1, 1, 24]} />
+        <coneGeometry args={[1, 1, 6]} />
         <primitive object={spireMat} attach="material" />
       </instancedMesh>
       {/* The halos, soft: faint rings of light, not drawn outlines. */}
