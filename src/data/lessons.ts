@@ -40,7 +40,6 @@ export const lessons: Lesson[] = [
   { vimeoId: "1081707157", title: "Onomatopoeia: Examples & Uses", category: "figurative" },
   { vimeoId: "1081707642", title: "Analogies Masterclass", category: "figurative" },
   { vimeoId: "1080654991", title: "Alliteration", category: "figurative" },
-  { vimeoId: "1081164442", title: "Using Rhyme", category: "figurative" },
 
   // ── Acting skills for speakers (red) - includes vocal delivery ──────
   { vimeoId: "1081162752", title: "Acting Tip For Speakers: Don't Just Say It, Imagine It", category: "acting" },
@@ -108,6 +107,9 @@ export const lessons: Lesson[] = [
   { vimeoId: "1081200223", title: "Staying Succinct: Pro Tip", category: "advanced" },
   { vimeoId: "1081032074", title: "How To Speak Naturally To a Phone or Camera", category: "mindset" },
   { vimeoId: "1081032253", title: "Keep The Light Source In Front", category: "advanced" },
+  // Moved from Figurative: a rhyme is a finishing tool for a speaker who
+  // already has the basics - Advanced, not a first figure of speech.
+  { vimeoId: "1081164442", title: "Using Rhyme", category: "advanced" },
 ];
 
 export const lessonByVimeoId = new Map(lessons.map((l) => [l.vimeoId, l]));
