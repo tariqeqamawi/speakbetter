@@ -426,3 +426,4 @@ what.
 - Road: speaker climb between twin speaker stacks; loop 1.5x bigger; camera stays behind through loop and corkscrew (coaster-style) — `a60f8a2`
 - Road: weave 2x longer (last Y stretch) round giant mics/headphones and through archway towers, gentle slope down; victory stretch 2.5x, lined with landmarks; neon lion-head finish — `854e26f`
 - Road views: 2D/3D/4D switch glides and crossfades (no blank), keeps your place; 2D map bottom-to-top; calm 3D avatar and flat portals 3x — `ad3542f`
+- Road: 3D view further out + flat challenge names; portals raised; 2D zoom with thumbnails; logo-style profile lion finish (smaller, saturated, neon edges); tilt look only when still, smooth — `a9bf382`
