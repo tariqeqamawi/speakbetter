@@ -40,6 +40,10 @@ export const challengeChatter: Record<string, Chatter[]> = {
     { name: "Ken", body: "You finish this one by watching, not recording. The nerves lesson is the one I keep going back to.", hoursAgo: 39 },
     { name: "Lena", body: "Did all the green ones on two commutes. Watch the pause one twice - it is the shortest and the most useful.", hoursAgo: 11 },
   ],
+  "paint-five": [
+    { name: "Hana", body: "Did the metaphor, simile and analogy ones back to back. Suddenly I hear them everywhere - in adverts, in songs, in my own stories.", hoursAgo: 33 },
+    { name: "Olu", body: "Watch the onomatopoeia one even if it sounds silly. It is the quickest win in the whole colour.", hoursAgo: 7 },
+  ],
   "no-filler-words": [
     { name: "Tomas", body: "Zero ums is brutal. What actually worked was slowing right down and letting silence do the job the um was doing.", hoursAgo: 46 },
     { name: "Sofia", body: "Pick something you genuinely love. It is hard to say um when you are that keen to get to the next bit.", hoursAgo: 22 },

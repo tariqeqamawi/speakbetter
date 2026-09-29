@@ -3,6 +3,7 @@
 import { RateReview } from "@/components/rate-review";
 import { createContext, useContext, useEffect, useId, useRef, useState } from "react";
 import { upload } from "@vercel/blob/client";
+import { watchProgress } from "@/lib/challenge-progress";
 import { useStore, type Attempt, type FeedbackNote } from "@/lib/store";
 import { GRACE_SECONDS, challengeBySlug, maxSecondsFor, storyPhases, type Challenge } from "@/data/challenges";
 import { XP, challengeXp, challengeXpFor, phaseGate, streakBonusXp } from "@/lib/progress";
@@ -1536,35 +1537,50 @@ function FeedbackNoteRow({
 
 function PassiveProgress({ challenge }: { challenge: Challenge }) {
   const { state } = useStore();
-  const watched = challenge.relatedLessonIds.filter((id) =>
-    state.watchedLessons.includes(id),
-  );
-  const done = watched.length === challenge.relatedLessonIds.length;
+  // One rule for every watch-only challenge (lib/challenge-progress.ts).
+  const w = watchProgress(challenge, state);
+  const some = Boolean(challenge.watchCount);
+  const counted = new Set(w.counted);
+  const before = new Set(w.before);
+  const auto = some && w.done && w.needed === 0;
   return (
     <section className="rounded-xl border border-navy-600 bg-navy-800 p-4">
       <h2 className="mb-2 text-sm font-medium uppercase tracking-wider text-ink-faint">
         Your progress
       </h2>
       <p className="text-sm text-ink-muted">
-        {done
-          ? "Toolbox complete - every mindset lesson watched. That foundation carries the whole journey."
-          : `${watched.length} of ${challenge.relatedLessonIds.length} lessons watched. Open each lesson above to complete this challenge.`}
+        {auto
+          ? "Complete - you'd already watched every one of these before you got here."
+          : w.done
+            ? some
+              ? `Complete - ${w.counted.length} watched in this challenge.`
+              : "Toolbox complete - every mindset lesson watched. That foundation carries the whole journey."
+            : some
+              ? `${w.counted.length} of ${w.needed} watched in this challenge. Pick ${w.counted.length === 0 ? "any" : ""} ${w.needed - w.counted.length} ${w.counted.length === 0 ? "" : "more "}from the list below and open ${w.needed - w.counted.length === 1 ? "it" : "them"} above.`.replace(/\s+/g, " ")
+              : `${w.counted.length} of ${w.needed} lessons watched. Open each lesson above to complete this challenge.`}
       </p>
-      {!done && (
+      {some && w.before.length > 0 && !auto && (
+        <p className="mt-1 text-xs text-ink-faint">
+          Lessons you watched before reaching this challenge are marked - they don&apos;t count here, so pick new ones.
+        </p>
+      )}
+      {(!w.done || some) && (
         <ul className="mt-3 flex flex-col gap-1 text-xs text-ink-faint">
           {challenge.relatedLessonIds.map((id) => {
             const lesson = lessonByVimeoId.get(id);
-            const isWatched = state.watchedLessons.includes(id);
+            const isCounted = counted.has(id);
+            const wasBefore = before.has(id);
             return (
-              <li key={id} className="flex items-center gap-2">
-                <span className={isWatched ? "text-mindset" : "text-ink-faint"}>
-                  {isWatched ? (
+              <li key={id} className={`flex items-center gap-2 ${wasBefore ? "opacity-60" : ""}`}>
+                <span className={isCounted ? "text-mindset" : "text-ink-faint"}>
+                  {isCounted ? (
                     <CheckIcon className="size-3.5" />
                   ) : (
                     <CircleIcon className="size-3.5" />
                   )}
                 </span>
-                {lesson?.title ?? id}
+                <span className={wasBefore ? "line-through decoration-ink-faint/50" : ""}>{lesson?.title ?? id}</span>
+                {wasBefore && <span className="text-[0.65rem] italic">watched before</span>}
               </li>
             );
           })}

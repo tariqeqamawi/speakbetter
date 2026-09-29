@@ -22,7 +22,7 @@ import { streakBonusPercent } from "@/lib/progress";
 import { CheckIcon } from "@/components/icons";
 import { CheckIn } from "@/components/check-in";
 
-// The daily home. A library of 24 challenges invites browsing; this
+// The daily home. A library of 25 challenges invites browsing; this
 // screen names the one thing to do today, which is what actually
 // produces the repetition the whole method rests on.
 

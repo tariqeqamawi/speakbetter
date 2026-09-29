@@ -2,6 +2,7 @@
 
 import { useStore } from "@/lib/store";
 import { challenges, storyPhases, type PhaseId } from "@/data/challenges";
+import { watchProgress } from "@/lib/challenge-progress";
 
 // The STORY progress bar (master plan §11): a student should always be
 // able to see, at a glance, how far through the journey they've come.
@@ -11,11 +12,7 @@ export function useChallengeComplete() {
   return (slug: string) => {
     const challenge = challenges.find((c) => c.slug === slug);
     if (!challenge) return false;
-    if (challenge.passive) {
-      return challenge.relatedLessonIds.every((id) =>
-        state.watchedLessons.includes(id),
-      );
-    }
+    if (challenge.passive) return watchProgress(challenge, state).done;
     return isChallengeComplete(slug);
   };
 }

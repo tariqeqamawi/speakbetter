@@ -1,6 +1,7 @@
 import type { CategoryId } from "./categories";
+import { lessons } from "./lessons";
 
-// The STORY curriculum - master plan §04. Five phases, 24 challenges,
+// The STORY curriculum - master plan §04. Five phases, 25 challenges,
 // each matched to its filmed explainer video and the Skills lessons a
 // student warms up with (the STEP cycle's "Tap Into Tools").
 // `criteria` + `targetSkills` are the structured rubric the AI review
@@ -102,6 +103,13 @@ export interface Challenge {
   vimeoId: string | null;
   /** Passive items are watched, not recorded (Presence) */
   passive?: boolean;
+  /**
+   * A passive challenge that asks for only some of its lessons: this
+   * many, watched WITHIN the challenge - lessons watched before the
+   * student reached it don't count (lib/challenge-progress.ts
+   * watchProgress). Absent means every lesson, watched whenever.
+   */
+  watchCount?: number;
   /**
    * A baseline is the "before": the student as they arrived, recorded
    * before a single technique. Its first recording is kept on the
@@ -414,6 +422,21 @@ export const challenges: Challenge[] = [
     relatedLessonIds: ["1081163657", "1081031042", "1081162875"],
   },
   {
+    slug: "paint-five",
+    phase: "R",
+    title: "Watch Any 5 Figurative & Sensory Skills",
+    vimeoId: null,
+    passive: true,
+    watchCount: 5,
+    brief:
+      "Another challenge you complete by watching: pick any five of the orange Paint lessons - metaphor, simile, analogy and the rest - and watch them here. Language that paints instead of describes is what turns a story you tell into one they see.",
+    criteria: ["Watch any 5 of the Figurative & Sensory lessons during this challenge"],
+    targetSkills: ["figurative"],
+    // Every Paint lesson, read from the library so the list follows it
+    // when a lesson moves colour.
+    relatedLessonIds: lessons.filter((l) => l.category === "figurative").map((l) => l.vimeoId),
+  },
+  {
     slug: "someone-elses-story",
     phase: "R",
     title: "Tell Someone Else's Story",
@@ -564,6 +587,10 @@ export const challengeBadges: Record<
   "mindset-toolbox": {
     title: "Head First",
     message: "You went for the mindset before the mechanics. That's the right order.",
+  },
+  "paint-five": {
+    title: "Brush Strokes",
+    message: "Five ways to paint with words, watched. Your stories just got a palette.",
   },
   "no-filler-words": {
     title: "Um-Free",

@@ -15,7 +15,8 @@ import { usePathname } from "next/navigation";
 import type { CategoryId } from "@/data/categories";
 import { currentStreak, evaluateBadges, type EarnedBadge } from "@/data/badges";
 import { isPlan, type Plan } from "@/data/pricing";
-import { standing, streakFreezesEarned } from "@/lib/progress";
+import { openPhaseCount, standing, streakFreezesEarned } from "@/lib/progress";
+import { challenges, storyPhases } from "@/data/challenges";
 import { demoState } from "@/lib/demo-state";
 import { studentId } from "@/lib/student-id";
 import { supabase } from "@/lib/supabase/client";
@@ -157,6 +158,11 @@ export interface AppState {
    *  list predates this, so older entries may be absent - anything that
    *  reads it must treat missing as "not today". */
   watchedOn: Record<string, string>;
+  /** For a challenge that asks for some lessons watched within it (a
+   *  `watchCount`): the lessons already watched when the student
+   *  reached it, which don't count toward it. Taken once, when its
+   *  section opens (withWatchStarts). */
+  watchStarts?: Record<string, string[]>;
   /** Days (yyyy-mm-dd) the daily-quest chest was opened. Each one is a
    *  completed three-quest day, worth bonus XP. */
   questChests: string[];
@@ -444,13 +450,15 @@ function StoreCore({
           // Earn first, then spend: a student who has just crossed a
           // ten-day milestone and missed yesterday should be covered
           // by the freeze that run just earned them.
-          const loaded = applyStreakFreeze(
-            grantStreakFreezes(
-              repair(
-                dropUnsoldPlan({
-                  ...EMPTY,
-                  ...(JSON.parse(raw) as Partial<AppState>),
-                }),
+          const loaded = withWatchStarts(
+            applyStreakFreeze(
+              grantStreakFreezes(
+                repair(
+                  dropUnsoldPlan({
+                    ...EMPTY,
+                    ...(JSON.parse(raw) as Partial<AppState>),
+                  }),
+                ),
               ),
             ),
           );
@@ -568,7 +576,10 @@ function StoreCore({
   // newly earned badges join the celebration queue (master plan §11).
   const applyWithBadges = useCallback(
     (mutate: (prev: AppState) => AppState) => {
-      const next = mutate(stateRef.current);
+      // Snapshots before the change, so a lesson watched in it counts
+      // toward a challenge whose section was already open - and after,
+      // for a section the change itself opened.
+      const next = withWatchStarts(mutate(withWatchStarts(stateRef.current)));
       const newBadges = evaluateBadges({ ...next, xp: standing(next).xp });
       const final = newBadges.length
         ? { ...next, badges: [...next.badges, ...newBadges] }
@@ -688,6 +699,26 @@ function StoreCore({
   }, [state, ready, celebrations, applyWithBadges]);
 
   return <StoreContext.Provider value={api}>{children}</StoreContext.Provider>;
+}
+
+/**
+ * Take the "already watched" snapshot for each watch-some challenge
+ * whose section has just opened (Challenge.watchCount): the lessons
+ * watched before the student reached it, which don't count toward it
+ * (lib/challenge-progress.ts watchProgress). Taken once and never
+ * moved, and returns the same object when there's nothing to take.
+ */
+function withWatchStarts(p: AppState): AppState {
+  const pending = challenges.filter((c) => c.watchCount && !p.watchStarts?.[c.slug]);
+  if (pending.length === 0) return p;
+  const open = openPhaseCount(p);
+  const order = storyPhases.map((ph) => ph.id);
+  let starts = p.watchStarts;
+  for (const c of pending) {
+    if (order.indexOf(c.phase) >= open) continue;
+    starts = { ...starts, [c.slug]: c.relatedLessonIds.filter((id) => p.watchedLessons.includes(id)) };
+  }
+  return starts === p.watchStarts ? p : { ...p, watchStarts: starts };
 }
 
 export function useStore(): StoreApi {

@@ -3,6 +3,7 @@ import { challengeBadges, challenges, storyPhases } from "./challenges";
 import { lessons, lessonsInCategory } from "./lessons";
 import { categoryById } from "./categories";
 import { cohort } from "./cohort";
+import { watchProgress } from "@/lib/challenge-progress";
 
 // Gamification layer - master plan §11. Badges recognize effort as much
 // as achievement, and apply identically at every level (never gated).
@@ -19,6 +20,8 @@ interface BadgeEvalState {
     spectrum: Record<CategoryId, number>;
   }[];
   watchedLessons: string[];
+  /** The watch-some challenges' "already watched" snapshots (store.tsx). */
+  watchStarts?: Record<string, string[]>;
   /** Questions Coach has answered (store.tsx). */
   coachAnswers?: number;
   badges: { id: string }[];
@@ -128,7 +131,7 @@ function phaseComplete(s: BadgeEvalState, phaseId: string): boolean {
   const phaseChallenges = challenges.filter((c) => c.phase === phaseId);
   return phaseChallenges.every((c) =>
     c.passive
-      ? c.relatedLessonIds.every((id) => s.watchedLessons.includes(id))
+      ? watchProgress(c, s).done
       : s.attempts.some((a) => a.challengeSlug === c.slug && a.passed),
   );
 }
@@ -334,13 +337,13 @@ export const badgeDefs: BadgeDef[] = [
       message: meta?.message ?? `${challenge.title} - passed.`,
       icon: "medal",
       how: challenge.passive
-        ? `Watch every lesson in "${challenge.title}".`
+        ? challenge.watchCount
+          ? `Watch any ${challenge.watchCount} of the lessons in "${challenge.title}" during the challenge.`
+          : `Watch every lesson in "${challenge.title}".`
         : `Pass "${challenge.title}" with a score of 75 or higher - a scrape-through pass counts as a pass, not a trophy.`,
       earned: (s: BadgeEvalState) =>
         challenge.passive
-          ? challenge.relatedLessonIds.every((id) =>
-              s.watchedLessons.includes(id),
-            )
+          ? watchProgress(challenge, s).done
           : s.attempts.some((a) => a.challengeSlug === challenge.slug && a.passed && (a.score ?? 0) >= 75),
     };
   }),

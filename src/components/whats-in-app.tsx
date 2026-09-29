@@ -14,7 +14,7 @@ import { ChallengesRoad, CoachTalking, DeckFan, LessonsCollage, SpectrumMorph } 
 
 const HEADLINE = [
   { count: COUNTS[0], feature: "83 skill lessons", label: "skill lessons", Live: LessonsCollage },
-  { count: COUNTS[1], feature: "24 challenges", label: "interactive challenges", Live: ChallengesRoad },
+  { count: COUNTS[1], feature: "25 challenges", label: "interactive challenges", Live: ChallengesRoad },
   { count: COUNTS[2], feature: "Digital card deck", label: "cards in the digital deck", Live: DeckFan },
   { count: COUNTS[3], feature: "Interactive Coach", label: "AI coach, trained on the method", Live: CoachTalking },
   { count: COUNTS[4], feature: "Speaking Spectrum", label: "colors of speaking to light up", Live: SpectrumMorph },

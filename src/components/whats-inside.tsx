@@ -52,7 +52,7 @@ export const FEATURES = [
   },
   {
     Icon: ChallengesIcon,
-    name: "24 challenges",
+    name: "25 challenges",
     line: "The S.T.O.R.Y. adventure: Start With Awareness, Train Your Instrument, Own Your Stories, Reveal Deeper Truths, Your Impact - most of them on camera.",
     color: "text-structure",
   },

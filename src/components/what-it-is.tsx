@@ -18,7 +18,7 @@ import { CountUp } from "@/components/count-up";
 
 export const COUNTS = [
   { n: 83, label: "skill lessons", color: "text-storytelling", image: "/what/lessons.webp" },
-  { n: 24, label: "interactive challenges", color: "text-structure", image: "/what/challenges.webp" },
+  { n: 25, label: "interactive challenges", color: "text-structure", image: "/what/challenges.webp" },
   { n: 77, label: "cards in the digital deck", color: "text-figurative", image: "/what/cards.webp" },
   { n: 1, label: "AI coach trained on the method", color: "text-advanced", image: "/what/coach.webp" },
   // The spectrum's picture and its number move through all seven colours.

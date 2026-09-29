@@ -301,7 +301,7 @@ function LandingBody() {
               </li>
               <li className="flex items-start gap-3">
                 <CheckIcon className="mt-0.5 size-4 shrink-0 text-structure" />
-                24 real challenges, most of them on camera
+                25 real challenges, most of them on camera
               </li>
               <li className="flex items-start gap-3">
                 <CheckIcon className="mt-0.5 size-4 shrink-0 text-body-language" />
@@ -355,7 +355,7 @@ function LandingBody() {
         <ul className="flex max-w-xl flex-col gap-2 text-left">
           {[
             <>
-              <b className="font-semibold text-ink">The Speak Better S.T.O.R.Y. framework:</b> 24 challenges across 5
+              <b className="font-semibold text-ink">The Speak Better S.T.O.R.Y. framework:</b> 25 challenges across 5
               levels, experienced as an adventure.
             </>,
             <>Unlock trophies.</>,
@@ -441,7 +441,7 @@ function LandingBody() {
             Two mentors in your pocket
           </h2>
           <p className="text-sm leading-relaxed text-ink-muted">
-            Speak Better embraces the best of both human and AI capability. All 24 challenges and 83 skill lessons
+            Speak Better embraces the best of both human and AI capability. All 25 challenges and 83 skill lessons
             have been studio-recorded by <b className="font-semibold text-ink">Tariq</b>, a real human.{" "}
             <b className="font-semibold text-ink">Coach, the lion</b>, reviews all of your challenges, pops up along the
             way with encouragement or words of wisdom, guides you through each section, and is there whenever you need

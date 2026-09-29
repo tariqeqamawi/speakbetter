@@ -21,6 +21,50 @@ export interface ChallengeProgress {
   action: "start" | "resume" | "again";
 }
 
+/** Where a watch-only challenge stands. */
+export interface WatchProgress {
+  /** How many lessons finish it. */
+  needed: number;
+  /** Lessons that count: watched within the challenge (or, for one that
+   *  asks for every lesson, watched at all). */
+  counted: string[];
+  /** Lessons watched before the student reached it - no credit here. */
+  before: string[];
+  done: boolean;
+}
+
+/**
+ * The one rule for the challenges completed by watching. Every place
+ * that asks "is it done" or "how far through" comes here, so the rule
+ * can't drift between the road, the badges and the page.
+ *
+ * Asked for every lesson (Presence): each one, watched whenever.
+ * Asked for some (`watchCount`): that many, watched WITHIN the
+ * challenge - the lessons already watched when the student reached it
+ * (the snapshot in `watchStarts`, taken by the store) don't count, so
+ * somebody who had watched three must watch five more. If fewer than
+ * that are left unwatched, the ones left are enough; if none are left,
+ * it's done the moment they arrive.
+ */
+export function watchProgress(
+  challenge: Challenge,
+  state: Pick<AppState, "watchedLessons" | "watchStarts">,
+): WatchProgress {
+  const ids = challenge.relatedLessonIds;
+  const watched = new Set(state.watchedLessons);
+  if (!challenge.watchCount) {
+    const counted = ids.filter((id) => watched.has(id));
+    return { needed: ids.length, counted, before: [], done: ids.length > 0 && counted.length === ids.length };
+  }
+  // Not reached yet: nothing counts until it is, so everything watched
+  // so far is "before".
+  const start = new Set(state.watchStarts?.[challenge.slug] ?? state.watchedLessons);
+  const before = ids.filter((id) => start.has(id));
+  const counted = ids.filter((id) => watched.has(id) && !start.has(id));
+  const needed = Math.min(challenge.watchCount, ids.length - before.length);
+  return { needed, counted, before, done: counted.length >= needed };
+}
+
 export function challengeProgress(
   challenge: Challenge,
   state: AppState,
@@ -34,17 +78,17 @@ export function challengeProgress(
   );
   const passed = attemptsFor.some((a) => a.passed);
 
-  // The one passive challenge - Confidence & Presence - is completed
-  // purely by watching.
+  // The challenges completed purely by watching (watchProgress).
   if (challenge.passive) {
-    const ratio = warmUpTotal === 0 ? 0 : warmUpWatched / warmUpTotal;
+    const w = watchProgress(challenge, state);
+    const ratio = w.done ? 1 : w.needed === 0 ? 0 : w.counted.length / w.needed;
     return {
       ratio,
       attempts: 0,
-      passed: ratio === 1,
-      warmUpWatched,
-      warmUpTotal,
-      action: ratio === 0 ? "start" : ratio === 1 ? "again" : "resume",
+      passed: w.done,
+      warmUpWatched: w.counted.length,
+      warmUpTotal: w.needed,
+      action: w.done ? "again" : w.counted.length === 0 ? "start" : "resume",
     };
   }
 

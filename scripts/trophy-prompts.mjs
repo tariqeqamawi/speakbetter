@@ -176,6 +176,7 @@ export const TROPHIES = [
   { id: "challenge-twist-third-person", color: "storytelling", subject: "a classic film director's megaphone in cream and black painted metal with a dark wooden handle", material: "painted" },
   { id: "challenge-foreshadowing", color: "storytelling", subject: "a classic six-shot revolver, blued steel and a walnut grip, lying level and pointing straight out to the side", material: "painted" },
   { id: "challenge-three-emotions", color: "acting", subject: "a small harp with a carved, polished dark wooden frame and fine gold strings", material: "painted" },
+  { id: "challenge-paint-five", color: "figurative", subject: "a wooden painter's easel holding a small canvas covered in bold, bright orange and gold brushstrokes, a paintbrush resting on the easel ledge", material: "painted" },
   { id: "challenge-someone-elses-story", color: "storytelling", subject: "two overlapping speech bubbles, one white and one soft sky blue, like glossy painted enamel", material: "painted" },
   { id: "challenge-multiple-characters", color: "acting", subject: "three theatre masks side by side, each painted in real colours and with a different expression - a white comedy mask with gold trim, a dark blue tragedy mask, a red surprised mask", material: "painted" },
   { id: "challenge-story-youve-healed", color: "mindset", subject: "a glossy red ceramic heart that was broken and repaired with a shining gold kintsugi seam running through it", material: "painted" },
@@ -190,10 +191,10 @@ export const TROPHIES = [
 // not prompted from scratch: each is its own trophy passed back to the
 // model with "keep this exact trophy, change only the material to
 // polished solid gold", so the pair read as one prize in two grades.
-// The one challenge with no score (the mindset toolbox, passed by
-// watching) has none.
+// The challenges with no score (the mindset toolbox and paint-five,
+// passed by watching) have none.
 export const GOLD = TROPHIES.filter(
-  (t) => t.id.startsWith("challenge-") && t.id !== "challenge-mindset-toolbox",
+  (t) => t.id.startsWith("challenge-") && t.id !== "challenge-mindset-toolbox" && t.id !== "challenge-paint-five",
 ).map((t) => ({ ...t, id: `${t.id}-gold`, material: "gold" }));
 
 // ── The lion ──────────────────────────────────────────────────────────

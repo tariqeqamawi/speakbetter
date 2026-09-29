@@ -77,7 +77,7 @@ export function LessonsCollage() {
   );
 }
 
-// ── 24 challenges: the 2D road, scrolling top to bottom ────────────────
+// ── 25 challenges: the 2D road, scrolling top to bottom ────────────────
 export function ChallengesRoad() {
   return (
     <div className="absolute inset-0 overflow-hidden bg-navy-950">
