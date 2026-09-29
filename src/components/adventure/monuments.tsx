@@ -3,7 +3,7 @@
 import { useEffect, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { CLIMB, ROAD_HALF, TOWER, groundAt, pointAt, sideAt, type RoadLayout } from "./road-geometry";
+import { CLIMB, ROAD_HALF, groundAt, pointAt, sideAt, type RoadLayout } from "./road-geometry";
 
 // THE MONUMENTS - three landmarks of speaking, far bigger than anything
 // else in the city, so it takes long enough to pass them for the penny
@@ -29,8 +29,6 @@ export interface MonumentPlan {
   speakers?: { a: number };
   /** Every great arch of the road is a pair of headphones. */
   headphones?: number[];
-  /** The skyscraper the road climbs at the end of Y: where its stunt starts. */
-  tower?: { a: number };
   /** The two giant faces, either side of the road, talking to each other. */
   faces?: number;
   /** Podcast mics on boom arms, leaning out over the road from one side. */
@@ -206,64 +204,6 @@ export function Monuments({
         g.add(m);
         root.add(outer);
       }
-    }
-
-    // THE MONOLITH the road climbs: one sleek black slab, far taller than
-    // anything round it, its shoulders rounded where the road turns over
-    // them - shaped from the road's own path, a little inside it, so the
-    // road runs up its face, over its top and down its back without ever
-    // cutting into it - and lit only by thin seams of light.
-    if (plan.tower) {
-      const { a } = plan.tower;
-      const { H, NEAR, FAR, TOP } = TOWER;
-      const g = new THREE.Group();
-      const p0 = pointAt(road, a);
-      const ahead = pointAt(road, a + 2);
-      g.position.copy(p0);
-      g.lookAt(ahead.x, p0.y, ahead.z);
-      // Its side profile, in (along the road, up): 1.2 inside the road.
-      const inset = 1.2;
-      const r = 16 - inset;
-      const x0 = NEAR + inset;
-      const x1 = FAR - inset;
-      const top = H - inset;
-      const prof = new THREE.Shape();
-      prof.moveTo(x0, -30);
-      prof.lineTo(x0, H - 16);
-      prof.absarc(NEAR + 16, H - 16, r, Math.PI, Math.PI / 2, true);
-      prof.lineTo(NEAR + 16 + TOP, top);
-      prof.absarc(NEAR + 16 + TOP, H - 16, r, Math.PI / 2, 0, true);
-      prof.lineTo(x1, -30);
-      prof.lineTo(x0, -30);
-      const W = 46;
-      const body = new THREE.ExtrudeGeometry(prof, { depth: W, bevelEnabled: true, bevelThickness: 1.2, bevelSize: 1.2, bevelSegments: 2, curveSegments: 10 });
-      // (Profile x along the road, y up; extruded across it.)
-      body.translate(0, 0, -W / 2).rotateY(-Math.PI / 2);
-      // (Now x across the road, y up, z along it, like everything here.)
-      g.add(new THREE.Mesh(body, glass));
-      // Seams of light: along both edges of each broad side, and a few up
-      // the sides, fading from violet at the foot to white at the top.
-      const seam = (pts: THREE.Vector3[], col: THREE.Color) => {
-        const curve = new THREE.CatmullRomCurve3(pts);
-        g.add(mesh(new THREE.TubeGeometry(curve, Math.max(8, pts.length * 4), 0.28, 5, false), glow(col), 0, 0, 0));
-      };
-      const outline = prof.getPoints(10);
-      for (const x of [-W / 2 - 1.25, W / 2 + 1.25]) {
-        const line = outline.filter((q) => q.y > -1).map((q) => new THREE.Vector3(x, q.y, q.x));
-        seam(line, new THREE.Color("#b9a4ff").multiplyScalar(1.3));
-      }
-      const cols = ["#22D9F5", "#F53DE0", "#1FE890", "#FFD60A"].map((h) => new THREE.Color(h).multiplyScalar(0.9));
-      [x0 + 10, (x0 + x1) / 2, x1 - 10].forEach((z, i) => {
-        for (const x of [-W / 2 - 1.25, W / 2 + 1.25]) seam([new THREE.Vector3(x, 0, z), new THREE.Vector3(x, top - 18, z)], cols[i % cols.length]);
-      });
-      // Runway lights up the faces the road climbs, either side of it.
-      for (const [z, sign] of [
-        [x0 - 1.3, -1],
-        [x1 + 1.3, 1],
-      ] as const)
-        for (const x of [-9, 9])
-          g.add(mesh(new THREE.BoxGeometry(0.35, H - 20, 0.2), glow(new THREE.Color(sign < 0 ? "#22D9F5" : "#F53DE0").multiplyScalar(0.9)), x, (H - 20) / 2, z));
-      root.add(g);
     }
 
     // PODCAST MICS ON BOOM ARMS: from a base beside the road, the arm

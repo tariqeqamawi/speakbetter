@@ -89,7 +89,7 @@ export interface RoadLayout {
 /** A stretch where the road leaves the ground: a vertical loop, or a
  *  corkscrew barrel roll over a gap in the land. */
 export interface Stunt {
-  kind: "loop" | "corkscrew" | "climb" | "tower";
+  kind: "loop" | "corkscrew" | "climb";
   /** Where it starts, and its length along the road. */
   a: number;
   len: number;
@@ -111,10 +111,10 @@ function cross(a: V3, b: V3): V3 {
  *  reaches between the two speaker stacks, the level run across between
  *  them, and the way back down. */
 export const CLIMB = { LEAD: 12, UP: 72, H: 46, TOP: 46, DOWN: 90 };
-/** THE SKYSCRAPER at the end of Y: how tall it is, the length of its roof,
- *  the height the road comes down to on the far side, and how far along
- *  (from where the stunt starts) its near and far faces stand. */
-export const TOWER = { H: 190, TOP: 26, MID: 58, NEAR: 40, FAR: 98 };
+/** The victory stretch runs up in the air, at this height over the city. */
+export const VICTORY_H = 58;
+/** Where it starts rising after the last challenge, and over how long. */
+const VICTORY_RISE = { after: 40, len: 180 };
 /** The city weave: how hard the road swings (radians), and how long each
  *  swing is (a full left-and-right every 2*pi*K along the road). */
 export const WEAVE = { A: 0.72, K: 30 };
@@ -130,31 +130,7 @@ function stuntShape(kind: Stunt["kind"]) {
   // (monuments.tsx), level across between them near their tops, and
   // down a long slope on the far side. (Forward, side, up.)
   const climb =
-    kind === "tower"
-      ? (() => {
-          // Up the near face of the skyscraper, over its roof, straight
-          // down the far face - gathering speed - and out level at
-          // mid-height. (Forward, side, up.)
-          const { H, TOP, MID } = TOWER;
-          const pts: THREE.Vector3[] = [];
-          const arc = (cx: number, cz: number, r: number, a0: number, a1: number) => {
-            for (let k = 1; k <= 8; k++) {
-              const a = a0 + ((a1 - a0) * k) / 8;
-              pts.push(new THREE.Vector3(cx + r * Math.cos(a), 0, cz + r * Math.sin(a)));
-            }
-          };
-          for (let x = 0; x <= 16; x += 4) pts.push(new THREE.Vector3(x, 0, 0));
-          arc(16, 24, 24, -Math.PI / 2, 0);
-          for (let z = 30; z <= H - 22; z += 6) pts.push(new THREE.Vector3(40, 0, z));
-          arc(56, H - 16, 16, Math.PI, Math.PI / 2);
-          for (let x = 60; x <= 56 + TOP - 4; x += 4) pts.push(new THREE.Vector3(x, 0, H));
-          arc(56 + TOP, H - 16, 16, Math.PI / 2, 0);
-          for (let z = H - 22; z >= MID + 30; z -= 6) pts.push(new THREE.Vector3(98, 0, z));
-          arc(122, MID + 24, 24, Math.PI, 1.5 * Math.PI);
-          for (let x = 126; x <= 160; x += 4) pts.push(new THREE.Vector3(x, 0, MID));
-          return new THREE.CatmullRomCurve3(pts, false, "centripetal");
-        })()
-      : kind === "climb"
+    kind === "climb"
       ? (() => {
           const { LEAD, UP, H, TOP, DOWN } = CLIMB;
           const pts: THREE.Vector3[] = [];
@@ -308,12 +284,11 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = [], opts: Ro
     at += i > 0 ? SPACING + (EXTRA[i] ?? 0) : 0;
     stops.push(at);
   }
-  // After the last challenge: the skyscraper, and the long victory run
-  // at mid-height beyond it (not in the calm view, which keeps to the old
-  // stretch of land).
-  const towerShape = calm || checkpoints < 2 ? null : stuntShape("tower");
-  const TOWER_AFTER = 36;
-  const finish = stops[checkpoints - 1] + (towerShape ? TOWER_AFTER + towerShape.L + VICTORY_LEN : LEAD_OUT);
+  // After the last challenge: a gentle rise, and the long victory run up
+  // in the air through the city of every colour, to the finish (not in the
+  // calm view, which keeps to the old stretch of land).
+  const rising = !calm && checkpoints >= 2;
+  const finish = stops[checkpoints - 1] + (rising ? VICTORY_RISE.after + VICTORY_RISE.len + VICTORY_LEN : LEAD_OUT);
   const reach = finish + 80;
   const ranges = phaseRanges(stops, phaseOf, finish);
   /** How much of phase `id` is under distance s: 1 inside it, easing
@@ -367,15 +342,14 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = [], opts: Ro
     const shape = stuntShape("corkscrew");
     stunts.push({ kind: "corkscrew", a: Math.round((stops[yFirstI] - GATE_BEFORE - 12 - shape.L) / DS) * DS, len: shape.L, shape });
   }
-  const towerAt = towerShape ? Math.round((stops[checkpoints - 1] + TOWER_AFTER) / DS) * DS : -1;
-  if (towerShape) stunts.push({ kind: "tower", a: towerAt, len: towerShape.L, shape: towerShape });
   stunts.sort((p, q) => p.a - q.a);
   // (The two faces' stretch, straight and level, so they're in view all
   // the way up to them and as you pass between.)
   const facesHold = facesI > 0 ? { a: marks[facesI] + 30, len: marks[facesI + 1] - marks[facesI] - 50 } : null;
   if (facesHold) flats.push({ a: facesHold.a, b: facesHold.a + facesHold.len });
   // The victory city is level ground.
-  if (towerShape) flats.push({ a: towerAt, b: reach + 200 });
+  const riseAt = stops[checkpoints - 1] + VICTORY_RISE.after;
+  if (rising) flats.push({ a: riseAt, b: reach + 200 });
   // Level going in and coming out.
   for (const z of stunts) flats.push({ a: z.a, b: z.a + z.len });
   const stuntAt = (s: number) =>
@@ -397,12 +371,12 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = [], opts: Ro
   }
   // (The weave comes down slowly: a long, gentle slope, not a drop.)
   const rampOut = (w: { a: number; b: number; wave?: boolean }) => (w.wave ? 170 : Math.min(70, (w.b - w.a) / 2.5));
-  // Off the skyscraper at mid-height, and on at that height all the way
-  // to the finish, floating through the victory city.
-  const victorySky = towerShape ? { a: towerAt + towerShape.L, b: reach + 1, h: TOWER.MID } : null;
+  // Up from the last challenge on a long easy slope, and on at that
+  // height all the way to the finish, floating through the victory city.
+  const victoryLift = (s: number) => (rising ? VICTORY_H * THREE.MathUtils.smootherstep(s, riseAt, riseAt + VICTORY_RISE.len) : 0);
   const liftAt = (s: number) =>
-    victorySky && s >= victorySky.a
-      ? victorySky.h
+    rising && s >= riseAt
+      ? victoryLift(s)
       : skyways.reduce((m, w) => {
       if (s <= w.a || s >= w.b) return m;
       const ramp = Math.min(70, (w.b - w.a) / 2.5);
@@ -528,7 +502,7 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = [], opts: Ro
         x = entry.x + o[0] + F[0] * rest;
         // (Off the skyscraper the ground stays where it was; the road
         // stays up at mid-height on the victory skyway.)
-        y = st.kind === "tower" ? entry.y : entry.y + o[1];
+        y = entry.y + o[1];
         z = entry.z + o[2] + F[2] * rest;
         entry = null;
       }
@@ -770,9 +744,7 @@ export function sAtProgress(road: RoadLayout, p: number): number {
   return marks[i] + (marks[i + 1] - marks[i]) * THREE.MathUtils.clamp(p - i, 0, 1);
 }
 
-/** Where the victory stretch begins: past the skyscraper, where there is
- *  one; else a little after the last challenge. */
+/** Where the victory stretch begins: a little after the last challenge. */
 export function victoryStart(road: RoadLayout): number {
-  const tower = road.stunts.find((z) => z.kind === "tower");
-  return tower ? tower.a + tower.len : road.stops[road.stops.length - 1] + VICTORY_AFTER;
+  return road.stops[road.stops.length - 1] + VICTORY_AFTER;
 }

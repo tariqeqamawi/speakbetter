@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { AHEAD, pointAt, type RoadLayout, type Travel } from "./road-geometry";
+import { AHEAD, pointAt, victoryStart, type RoadLayout, type Travel } from "./road-geometry";
 
 // THE WEATHER OF EACH SECTION - a little air you can see, and only where
 // you are, so it tells you where you are without cluttering the road:
@@ -306,6 +306,8 @@ export function SectionWeather({ road, travel, spans }: { road: RoadLayout; trav
   const dust = useMemo(() => ["#22d9f5", "#9befff"], []);
   const pollen = useMemo(() => ["#ffd60a", "#ffe98a", "#ffb800"], []);
   const neon = useMemo(() => ["#f53de0", "#b04bff", "#ff6ad5"], []);
+  const y = find("Y");
+  const yRain = y ? { ...y, to: Math.min(y.to, victoryStart(road)) } : undefined;
   if (still) return null;
   return (
     <group>
@@ -313,7 +315,8 @@ export function SectionWeather({ road, travel, spans }: { road: RoadLayout; trav
       <Drift road={road} travel={travel} stretch={find("T")} count={140} colours={dust} size={0.7} rise={0} wind={3.2} low={1} high={18} />
       <Drift road={road} travel={travel} stretch={find("O")} count={240} colours={pollen} size={0.8} rise={-1.4} wind={1.2} low={0} high={30} />
       <Drift road={road} travel={travel} stretch={find("R")} count={110} colours={embers} size={0.8} rise={3.2} wind={0.6} low={0} high={34} />
-      <Rain road={road} travel={travel} stretch={find("Y")} count={420} colours={neon} />
+      {/* (Not over the victory stretch: the city there is busy enough.) */}
+      <Rain road={road} travel={travel} stretch={yRain} count={420} colours={neon} />
     </group>
   );
 }

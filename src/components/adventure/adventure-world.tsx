@@ -956,12 +956,9 @@ function Rig({
     // ground beneath instead of the rolling road.
     const posS = s + f * 2 - b * 4 - up * 5;
     const atS = s + AHEAD + 26 - f * 2 - up * 9;
-    // (Not round the skyscraper: the road comes off it up in the air, and
-    // the ground there is far below.)
-    const byTower = (x: number) => road.stunts.some((z) => z.kind === "tower" && x > z.a - 40 && x < z.a + z.len + 40);
-    if (road.stuntAt(posS) > 0 && !byTower(posS)) groundAt(road, posS, pos);
+    if (road.stuntAt(posS) > 0) groundAt(road, posS, pos);
     else pointAt(road, posS, pos);
-    if (road.stuntAt(atS) > 0 && !byTower(atS)) groundAt(road, atS, at);
+    if (road.stuntAt(atS) > 0) groundAt(road, atS, at);
     else pointAt(road, atS, at);
     eye.copy(pos).setY(pos.y + 7.5 - f * 3 - b * 0.4 + up * 6.5);
     look.copy(at).setY(at.y + 1.2 + f * 0.6);
@@ -986,7 +983,7 @@ function Rig({
     if (stunt) {
       const k = THREE.MathUtils.smoothstep(tS, stunt.a - 25, stunt.a) * (1 - THREE.MathUtils.smoothstep(tS, stunt.a + stunt.len, stunt.a + stunt.len + 25));
       const bs = tS - AHEAD;
-      const rise = stunt.kind === "climb" ? 7.5 : stunt.kind === "tower" ? 9 : 5.5;
+      const rise = stunt.kind === "climb" ? 7.5 : 5.5;
       // (Up the skyscraper, looking further on, so over the roof the view
       // is of the sky and the city - not the road filling the screen.)
       const on = 10;
@@ -1022,10 +1019,7 @@ function Rig({
       camera.up.set(0, 1, 0);
     }
     const sw = settle(dt);
-    // (Up the monolith, the camera rides exactly its place behind the
-    // traveller: easing toward it would cut the corner, through the slab.)
-    const onTower = road.stunts.some((z) => z.kind === "tower" && tS > z.a - 5 && tS < z.a + z.len + 5);
-    if (cut || (onTower && !still)) camera.position.copy(eye);
+    if (cut) camera.position.copy(eye);
     else camera.position.lerp(eye, sw.k);
     if (sw.moving) lookCur.lerp(look, sw.k);
     else lookCur.copy(look);

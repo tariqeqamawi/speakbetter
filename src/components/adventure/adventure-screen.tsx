@@ -76,6 +76,9 @@ const TRACERS = Array.from({ length: 44 }, (_, i) => {
   };
 });
 
+/** 0-1, for the white wash into the finish. */
+const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
+
 export function AdventureScreen({
   stops,
   phases,
@@ -661,9 +664,13 @@ export function AdventureScreen({
       setFinishLine(-1);
     };
   }, [finished]);
+  // (Once through and closed, no more white wash - looking back down the
+  // road from inside the vortex.)
+  const [finishSeen, setFinishSeen] = useState(false);
   const closeFinish = () => {
     hushFinish.current();
     setFinished(false);
+    setFinishSeen(true);
   };
 
   // Start, replay or locked: under the traveller on the full ride; in
@@ -831,6 +838,20 @@ export function AdventureScreen({
             Start Challenge
           </span>
         </div>
+      )}
+
+      {/* Into the vortex: the screen washes to white as the traveller goes
+          in, then clears to Coach's words. (Only for someone who has done
+          every challenge - for anyone else the road stops short of it.) */}
+      {allDone && !demo && !finishSeen && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-[29] bg-white"
+          style={{
+            opacity: finished ? 0 : clamp01((at - (road.finish - 34)) / 30),
+            transition: finished ? "opacity 1.6s ease 0.4s" : "none",
+          }}
+        />
       )}
 
       {/* The finish. */}

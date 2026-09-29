@@ -200,7 +200,7 @@ export function FinishGate({ road, cols: given }: { road: RoadLayout; cols: THRE
 
 
 /** How long the ring tunnel into the finish is. */
-export const FINISH_TUNNEL = 240;
+export const FINISH_TUNNEL = 720;
 const RING_GAP = 4.5;
 
 const RING_VERT = /* glsl */ `
@@ -230,6 +230,43 @@ const RING_FRAG = /* glsl */ `
     vec3 c = mix(a, b, smoothstep(0.7, 1.0, fract(f)));
     float pulse = 0.75 + 0.8 * pow(0.5 + 0.5 * sin(vK * 0.5 - uTime * 9.0), 8.0);
     gl_FragColor = vec4(c * pulse, 1.0);
+  }
+`;
+
+// THE VORTEX at the tunnel's end: a funnel of every section's colour
+// spiralling away into the distance, spinning - the challenge portals'
+// swirl, in all the colours, drawn down a long cone so it seems to go on
+// for ever.
+const VORTEX_VERT = /* glsl */ `
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+const VORTEX_FRAG = /* glsl */ `
+  uniform float uTime;
+  uniform vec3 uCols[5];
+  varying vec2 vUv;
+  void main() {
+    // Round the funnel, and down it (0 at its mouth, 1 far off).
+    float around = vUv.x;
+    float deep = 1.0 - vUv.y;
+    float sw = around * 3.0 + deep * 9.0 - uTime * 1.3;
+    float f = fract(sw / 5.0) * 5.0;
+    int i = int(floor(f));
+    vec3 a = uCols[0];
+    vec3 b = uCols[1];
+    for (int k = 0; k < 5; k++) {
+      if (k == i) a = uCols[k];
+      if (k == (i + 1) - (i + 1) / 5 * 5) b = uCols[k];
+    }
+    vec3 c = mix(a, b, smoothstep(0.55, 1.0, fract(f)));
+    float streak = 0.55 + 0.45 * sin(sw * 6.2831853 * 2.0);
+    // Brighter into the depths, to a white-hot eye.
+    float glow = 0.45 + 0.8 * pow(deep, 3.0);
+    vec3 col = mix(c * streak * glow, vec3(1.0), smoothstep(0.94, 1.0, deep) * 0.8);
+    gl_FragColor = vec4(col, 1.0);
   }
 `;
 
@@ -282,6 +319,33 @@ export function FinishTunnel({ road, cols }: { road: RoadLayout; cols: THREE.Col
   /* eslint-enable react-hooks/immutability */
   const label = useMemo(() => (typeof document === "undefined" ? null : finishLabel(cols)), [cols]);
   useEffect(() => () => label?.dispose(), [label]);
+  const vortex = useMemo(() => {
+    const palette = [0, 1, 2, 3, 4].map((i) => (cols[i] ?? cols[0] ?? new THREE.Color("#ffffff")).clone().multiplyScalar(0.9));
+    // A long open cone, its mouth round the road and its tip far beyond,
+    // lying along the road (its axis along -z in the group's frame).
+    const geo = new THREE.ConeGeometry(11.5, 150, 64, 24, true).rotateX(-Math.PI / 2).translate(0, 0, -75);
+    const mat = new THREE.ShaderMaterial({
+      vertexShader: VORTEX_VERT,
+      fragmentShader: VORTEX_FRAG,
+      uniforms: { uTime: { value: 0 }, uCols: { value: palette } },
+      side: THREE.BackSide,
+      toneMapped: false,
+    });
+    return new THREE.Mesh(geo, mat);
+  }, [cols]);
+  useEffect(
+    () => () => {
+      vortex.geometry.dispose();
+      (vortex.material as THREE.Material).dispose();
+    },
+    [vortex],
+  );
+  /* eslint-disable react-hooks/immutability -- the vortex, turned every frame */
+  useFrame(({ clock }) => {
+    (vortex.material as THREE.ShaderMaterial).uniforms.uTime.value = clock.elapsedTime;
+    vortex.rotation.z = clock.elapsedTime * 0.6;
+  });
+  /* eslint-enable react-hooks/immutability */
   const { position, facing } = useMemo(() => ({ position: pointAt(road, road.finish), facing: pointAt(road, road.finish - 1) }), [road]);
   const group = useRef<THREE.Group>(null);
   useEffect(() => {
@@ -290,14 +354,18 @@ export function FinishTunnel({ road, cols }: { road: RoadLayout; cols: THREE.Col
   return (
     <>
       <primitive object={rings} />
-      {label && (
-        <group ref={group} position={position}>
-          <mesh position={[0, 19, 0]}>
-            <planeGeometry args={[26, 6.5]} />
-            <meshBasicMaterial map={label} color="#b4b4b4" transparent toneMapped={false} depthWrite={false} side={THREE.DoubleSide} />
-          </mesh>
+      {/* (The group looks back down the road: +z toward the traveller.) */}
+      <group ref={group} position={position}>
+        <group position={[0, 3.5, 0]}>
+          <primitive object={vortex} />
         </group>
-      )}
+        {label && (
+          <mesh position={[0, 24, 0]}>
+            <planeGeometry args={[56, 14]} />
+            <meshBasicMaterial map={label} color="#d0d0d0" transparent toneMapped={false} depthWrite={false} side={THREE.DoubleSide} />
+          </mesh>
+        )}
+      </group>
     </>
   );
 }

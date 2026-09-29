@@ -1477,8 +1477,6 @@ export function structurePlan(road: RoadLayout) {
   }
   const climb = road.stunts.find((z) => z.kind === "climb");
   if (climb) monuments.speakers = { a: climb.a };
-  const towerZ = road.stunts.find((z) => z.kind === "tower");
-  if (towerZ) monuments.tower = { a: towerZ.a };
   // Every great arch is now a giant pair of headphones.
   monuments.headphones = arches.splice(0, arches.length);
 
