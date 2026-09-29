@@ -34,20 +34,20 @@ interface VariantSpec {
 }
 
 const variants: Record<Variant, VariantSpec> = {
-  // Rides low in the header band, beneath the wordmark and navigation -
-  // mirroring the mark, where the wave sits under the lion.
   // Rides low in the header band, beneath the wordmark and navigation.
-  // It spans the whole page rather than sitting under the mark, so it
-  // stays a thin scrolling line - no lens, no ribbon weight.
+  // It spans the whole page rather than sitting under the mark, so it is
+  // drawn as the logo's ribbons - thick, soft bands rather than wires -
+  // but faint: a quiet detail behind the bar, not three bright lines
+  // moving across it all the time.
   header: {
     viewH: 44,
-    midY: 33,
+    midY: 30,
     fade: [14, 50, 86, 100],
     lens: 0,
     waves: [
-      { period: 96, amplitude: 7, opacity: 0.5, width: 1.5, className: "soundwave-a" },
-      { period: 132, amplitude: 5, opacity: 0.34, width: 1.2, className: "soundwave-b" },
-      { period: 68, amplitude: 3.5, opacity: 0.24, width: 1, className: "soundwave-c" },
+      { period: 104, amplitude: 8, opacity: 0.16, width: 7, className: "soundwave-a" },
+      { period: 146, amplitude: 6, opacity: 0.13, width: 5.5, className: "soundwave-b" },
+      { period: 74, amplitude: 4, opacity: 0.1, width: 4, className: "soundwave-c" },
     ],
   },
   // The hero carries it at full strength, directly under the lion, so
