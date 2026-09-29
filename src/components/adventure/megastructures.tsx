@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { Monuments, type MonumentPlan } from "./monuments";
-import { ROAD_HALF, groundAt, pointAt, seeded, sideAt, venueStretch, type RoadLayout } from "./road-geometry";
+import { ROAD_HALF, VICTORY_AFTER, WEAVE, groundAt, pointAt, seeded, sideAt, venueStretch, type RoadLayout } from "./road-geometry";
 
 // SCALE. On the tracks of Extreme-G the road ran between things far
 // bigger than you - towers, gantries, tunnels - and passing them is what
@@ -225,6 +225,18 @@ interface Tower {
  *  corridors and tubes, which need the space round the road. */
 type Keep = { from: number; to: number }[];
 
+/** A tower put exactly where it's wanted rather than at random: the
+ *  giant mics and headphones the weave swings round, the towers it
+ *  bores through (type 11), and the victory stretch's line of speaking
+ *  landmarks. d across the road (0 = over it), w and h its size. */
+export interface Feature {
+  s: number;
+  d: number;
+  w: number;
+  h: number;
+  type: number;
+}
+
 /** The city's towers as parts: each part a primitive, positioned. Two
  *  rows - a near row lining the road, and a far row of taller spires and
  *  giants along the edges of the land - thickening into a real city
@@ -237,6 +249,7 @@ function buildCity(
   colourAt: ColourAt,
   clear: Keep = [],
   victory = Infinity,
+  features: Feature[] = [],
 ) {
   const parts = Object.fromEntries(KINDS.map((k) => [k, [] as THREE.Matrix4[]])) as Record<Kind, THREE.Matrix4[]>;
   /** The victory stretch's glass, lit in every colour. */
@@ -263,7 +276,8 @@ function buildCity(
     groundAt(road, s + 2, ahead);
     anchor.position.set(p.x + side.x * d, p.y - 30, p.z + side.z * d);
     anchor.lookAt(ahead.x + side.x * d, anchor.position.y, ahead.z + side.z * d);
-    anchor.rotateY((rand() - 0.5) * 0.8);
+    // (A tower the road runs through stays square to it.)
+    if (type !== 11) anchor.rotateY((rand() - 0.5) * 0.8);
     anchor.updateMatrix();
     const glow = colourAt(s).clone();
     const put = (k: Kind, x: number, y: number, z: number, sx: number, sy: number, sz: number, ry = 0, rx = 0, rz = 0) => {
@@ -271,7 +285,7 @@ function buildCity(
       local.rotation.set(rx, ry, rz);
       local.scale.set(sx, sy, sz);
       local.updateMatrix();
-      const into = type >= 7 && !GLOWS.has(k) ? lmParts : s > victory && !GLOWS.has(k) ? vParts : parts;
+      const into = type >= 7 && type !== 11 && !GLOWS.has(k) ? lmParts : s > victory && !GLOWS.has(k) ? vParts : parts;
       into[k].push(m.multiplyMatrices(anchor.matrix, local.matrix).clone());
       if (GLOWS.has(k)) tints[k].push(glow);
     };
@@ -368,6 +382,26 @@ function buildCity(
         }
       }
       top = cab * 2;
+    } else if (type === 11) {
+      // A TOWER THE ROAD RUNS THROUGH: an archway bored through its
+      // middle at the height of the skyway, ringed in light either side -
+      // you see the traveller go in, and come out the other side.
+      const roadY = pointAt(road, s).y - anchor.position.y;
+      const OW = ROAD_HALF * 2 + 11;
+      const OH = 19;
+      const W = w;
+      const D = 30;
+      const pw = (W - OW) / 2;
+      for (const sx of [-1, 1]) put("box", sx * (OW / 2 + pw / 2), h / 2, 0, pw, h, D);
+      put("box", 0, (roadY - 1.5) / 2, 0, OW, roadY - 1.5, D);
+      put("box", 0, roadY + OH - 2 + (h - roadY - OH + 2) / 2, 0, OW, h - roadY - OH + 2, D);
+      put("box", 0, h + 14, 0, W * 0.62, 28, D * 0.62);
+      put("cyl", 0, h + 40, 0, 0.8, 26, 0.8);
+      for (const z of [-D / 2 - 0.4, D / 2 + 0.4]) {
+        put("gRing", 0, roadY + OH / 2 - 1.5, z, OW + 3, OH + 3, OW + 3);
+        put("gRing", 0, roadY + OH / 2 - 1.5, z, OW + 6, OH + 6, OW + 6);
+      }
+      top = h + 54;
     } else {
       // Spire: a slim hexagonal base rising into a long needle.
       put("cyl6", 0, h * 0.2, 0, w * 0.8, h * 0.4, w * 0.8);
@@ -383,19 +417,25 @@ function buildCity(
   };
 
   const end = road.finish;
+  // THE PLACED ONES first - and nothing at random right beside them.
+  for (const f of features) tower(f.s, f.d, f.w, f.h, f.type);
+  const besideFeature = (s: number, d: number) =>
+    features.some((f) => Math.abs(f.s - s) < (f.type === 11 ? 26 : 22) && (f.type === 11 || Math.sign(f.d) === Math.sign(d)));
   // THE NEAR ROW, lining the road.
   for (let s = 60; s < end; ) {
     const c = inCity(s);
     const won = s > victory;
     for (const sd of c > 0.3 ? [-1, 1] : [rand() < 0.5 ? -1 : 1]) {
-      const d = sd * (ROAD_HALF + (won ? 14 : 20) + rand() * (won ? 18 : c > 0.3 ? 30 : 45));
-      if (kept(s, d)) continue;
+      // (In the victory stretch they stand back a little, behind the line
+      // of speaking landmarks along its edges.)
+      const d = sd * (ROAD_HALF + (won ? 36 : 20) + rand() * (won ? 22 : c > 0.3 ? 30 : 45));
+      if (kept(s, d) || besideFeature(s, d)) continue;
       // One in six is a nod to speaking - a mic, headphones, a speaker
       // stack - that reads as a tower until you look again.
       const speaking = rand() < 0.17;
       tower(s, d, 6 + rand() * 9, (70 + rand() * 110) * (1 + c * 0.4), speaking ? 7 + Math.floor(rand() * 4) : Math.floor(rand() * 7));
     }
-    s += won ? 7 + rand() * 5 : THREE.MathUtils.lerp(28 + rand() * 24, 9 + rand() * 8, c);
+    s += won ? 10 + rand() * 6 : THREE.MathUtils.lerp(28 + rand() * 24, 9 + rand() * 8, c);
   }
   // THE FAR ROW, along the edges of the land: taller, bigger, mostly
   // spires, needles and obelisks - the skyline you're always heading for.
@@ -420,6 +460,7 @@ function City({
   colourAt,
   clear,
   victory,
+  features,
 }: {
   road: RoadLayout;
   dense?: { from: number; to: number };
@@ -427,10 +468,11 @@ function City({
   colourAt: ColourAt;
   clear: Keep;
   victory?: number;
+  features: Feature[];
 }) {
   const { parts, lmParts, vParts, tints, towers } = useMemo(
-    () => buildCity(road, seeded(97), dense, keep, colourAt, clear, victory),
-    [road, dense, keep, colourAt, clear, victory],
+    () => buildCity(road, seeded(97), dense, keep, colourAt, clear, victory, features),
+    [road, dense, keep, colourAt, clear, victory, features],
   );
   const winning = useMemo(
     () =>
@@ -1328,12 +1370,56 @@ export function structurePlan(road: RoadLayout) {
   if (climb) monuments.speakers = { a: climb.a };
   // Every great arch is now a giant pair of headphones.
   monuments.headphones = arches.splice(0, arches.length);
+
+  // THE CITY WEAVE's landmarks: at the height of each swing, on the inside
+  // of the bend - so the road sweeps round it - a giant stage mic, a pair
+  // of headphones standing on end, a podcast mic, in turn, their heads
+  // level with the skyway; and wherever the road straightens between two
+  // swings, a tower with an archway bored through it that the road runs
+  // through.
+  const features: Feature[] = [];
+  const weave = road.skyways.find((w) => (w as { wave?: boolean }).wave);
+  if (weave) {
+    const from = weave.a + 70 + 50;
+    const to = weave.b - 170 - 50;
+    const half = WEAVE.K * Math.PI;
+    for (let k = Math.ceil((from - weave.a) / half); weave.a + k * half < to; k++) {
+      const at = weave.a + k * half;
+      // (The road turns toward +side where k is even.)
+      const side = k % 2 ? -1 : 1;
+      const which = k % 3;
+      if (which === 0) features.push({ s: at, d: side * (ROAD_HALF + 24), w: 18, h: 108, type: 7 });
+      else if (which === 1) features.push({ s: at, d: side * (ROAD_HALF + 26), w: 12, h: 132, type: 9 });
+      else features.push({ s: at, d: side * (ROAD_HALF + 28), w: 16, h: 122, type: 8 });
+      const mid = at + half / 2;
+      if (mid < to && k % 2 === 0) features.push({ s: mid, d: 0, w: ROAD_HALF * 2 + 42, h: 150 + (k % 3) * 30, type: 11 });
+    }
+  }
+  // THE VICTORY STRETCH, lined all the way with everything you've passed:
+  // stage mics, podcast mics, headphones on end and speaker stacks (smaller
+  // than the climb's), either side, in every colour - and headphone arches
+  // over the road.
+  const vFrom = lastStop + VICTORY_AFTER + 30;
+  // (Clear of the lion at the finish, which stands alone.)
+  const vTo = road.finish - 280;
+  let k = 0;
+  for (let s = vFrom; s < vTo; s += 44, k++) {
+    for (const side of [-1, 1]) {
+      const type = [7, 8, 9, 10][(k + (side > 0 ? 2 : 0)) % 4];
+      const w = type === 10 ? 9 : type === 9 ? 9 : 11;
+      const h = type === 10 ? 64 : type === 9 ? 96 : 110;
+      features.push({ s: s + (side > 0 ? 22 : 0), d: side * (ROAD_HALF + (type === 10 ? 20 : 24)), w, h, type });
+    }
+  }
+  for (let s = vFrom + 150; s < vTo - 80; s += 230) monuments.headphones.push(s);
   /** Where the towers keep well clear, to let the monuments stand alone. */
   const clear = [...monuments.mic.map((m) => ({ from: m.s - 38, to: m.s + 38 })), climb ? { s: climb.a + climb.len / 2 } : undefined]
     .filter((m): m is { from: number; to: number } | { s: number } => Boolean(m))
     .map((m) => ("s" in m ? { from: m.s - 90, to: m.s + 90 } : m))
     .concat(monuments.headphones.map((s) => ({ from: s - 25, to: s + 25 })));
-  return { arches, corridors, tunnels, venues, spotRuns, keep, monuments, clear };
+  // The lion at the finish stands alone.
+  clear.push({ from: road.finish - 240, to: road.finish + 260 });
+  return { arches, corridors, tunnels, venues, spotRuns, keep, monuments, clear, features };
 }
 
 export function Megastructures({
@@ -1357,7 +1443,7 @@ export function Megastructures({
   const denseSpan = useMemo(() => (dense ? { from: dense.from, to: dense.to } : undefined), [dense]);
   return (
     <group>
-      <City road={road} dense={denseSpan} keep={plan.keep} colourAt={colourAt} clear={plan.clear} victory={victory} />
+      <City road={road} dense={denseSpan} keep={plan.keep} colourAt={colourAt} clear={plan.clear} victory={victory} features={plan.features} />
       <Monuments road={road} colourAt={colourAt} plan={plan.monuments} />
       <Venue road={road} colourAt={colourAt} venues={plan.venues} />
       <Corridors road={road} colourAt={colourAt} runs={plan.corridors} />

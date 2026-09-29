@@ -19,7 +19,7 @@ export const SPACING = 224;
 export const LEAD_IN = 220;
 /** After the last challenge: the victory stretch - a dense run of towers
  *  lit in every section's colour - and then the finish. */
-export const LEAD_OUT = 460;
+export const LEAD_OUT = 1150;
 /** Where the victory stretch begins, after the last challenge. */
 export const VICTORY_AFTER = 60;
 /** How far ahead of the camera the traveller walks. Everything that
@@ -106,6 +106,9 @@ function cross(a: V3, b: V3): V3 {
  *  reaches between the two speaker stacks, the level run across between
  *  them, and the way back down. */
 export const CLIMB = { LEAD: 12, UP: 72, H: 46, TOP: 46, DOWN: 90 };
+/** The city weave: how hard the road swings (radians), and how long each
+ *  swing is (a full left-and-right every 2*pi*K along the road). */
+export const WEAVE = { A: 0.72, K: 30 };
 /** The loop's size: its radius, how far it drifts forward, and sideways. */
 export const LOOP = { R: 40, D: 96, W: 18 };
 
@@ -249,10 +252,18 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = [], opts: Ro
   // The speaker climb: the first stretch within T (kept clear for it).
   const climbI = calm ? -1 : phaseOf.findIndex((ph, i) => i > 0 && ph === "T" && phaseOf[i - 1] === "T" && i % 2 === 1 && !venueStretch(i));
   if (climbI > 0) EXTRA[climbI] = 260;
-  // The wave skyway through the city: the first stretch of Y after its
-  // first challenge, made longer so it's a ride of its own.
-  const waveI = yFirstI > 0 && phaseOf[yFirstI + 1] === "Y" && !calm ? yFirstI + 1 : -1;
-  if (waveI > 0) EXTRA[waveI] = 220;
+  // The wave skyway through the city: the last stretch of Y, into the
+  // last challenge - a long ride of its own, weaving round the giant
+  // mics and headphones and through the towers, then sloping gently down
+  // to the last portal and on into the victory stretch.
+  // (The last one that isn't the stage and auditorium's stretch.)
+  let waveI = -1;
+  for (let i = checkpoints - 1; i > yFirstI && yFirstI > 0 && !calm; i--)
+    if (phaseOf[i] === "Y" && phaseOf[i - 1] === "Y" && !venueStretch(i)) {
+      waveI = i;
+      break;
+    }
+  if (waveI > 0) EXTRA[waveI] = 640;
   const stops: number[] = [];
   for (let i = 0, at = LEAD_IN; i < checkpoints; i++) {
     at += i > 0 ? SPACING + (EXTRA[i] ?? 0) : 0;
@@ -332,11 +343,13 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = [], opts: Ro
     if ((ph === "T" && i % 2 === 1) || ph === "Y" || (ph === "S" && i === 2))
       skyways.push({ a: stops[i - 1] + 30, b: stops[i] - 30, h: ph === "Y" ? 52 : ph === "T" ? 36 : 26, wave: i === waveI });
   }
+  // (The weave comes down slowly: a long, gentle slope, not a drop.)
+  const rampOut = (w: { a: number; b: number; wave?: boolean }) => (w.wave ? 170 : Math.min(70, (w.b - w.a) / 2.5));
   const liftAt = (s: number) =>
     skyways.reduce((m, w) => {
       if (s <= w.a || s >= w.b) return m;
       const ramp = Math.min(70, (w.b - w.a) / 2.5);
-      const env = THREE.MathUtils.smootherstep(s, w.a, w.a + ramp) * (1 - THREE.MathUtils.smootherstep(s, w.b - ramp, w.b));
+      const env = THREE.MathUtils.smootherstep(s, w.a, w.a + ramp) * (1 - THREE.MathUtils.smoothstep(s, w.b - rampOut(w), w.b));
       return Math.max(m, w.h * env);
     }, 0);
 
@@ -365,12 +378,13 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = [], opts: Ro
   // Only where the skyway has finished climbing and before it comes down:
   // the weave is all left and right, the road level through it.
   const weaveRamp = weaveSky ? Math.min(70, (weaveSky.b - weaveSky.a) / 2.5) : 0;
+  const weaveOut = weaveSky ? rampOut(weaveSky) : 0;
   const weaveAt = (s: number) =>
     weaveSky
       ? THREE.MathUtils.smoothstep(s, weaveSky.a + weaveRamp + 5, weaveSky.a + weaveRamp + 45) *
-        (1 - THREE.MathUtils.smoothstep(s, weaveSky.b - weaveRamp - 45, weaveSky.b - weaveRamp - 5))
+        (1 - THREE.MathUtils.smoothstep(s, weaveSky.b - weaveOut - 45, weaveSky.b - weaveOut - 5))
       : 0;
-  const weave = (s: number) => (weaveSky ? 0.55 * Math.sin((s - weaveSky.a) / 34) * weaveAt(s) : 0);
+  const weave = (s: number) => (weaveSky ? WEAVE.A * Math.sin((s - weaveSky.a) / WEAVE.K) * weaveAt(s) : 0);
   const heading = (s: number) => {
     // The same bends, drawn out over the longer road.
     const u = s / STRETCH;
