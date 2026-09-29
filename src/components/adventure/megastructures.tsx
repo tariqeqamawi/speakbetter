@@ -1401,7 +1401,7 @@ export function structurePlan(road: RoadLayout) {
   // over the road.
   const vFrom = lastStop + VICTORY_AFTER + 30;
   // (Clear of the lion at the finish, which stands alone.)
-  const vTo = road.finish - 280;
+  const vTo = road.finish - 150;
   let k = 0;
   for (let s = vFrom; s < vTo; s += 44, k++) {
     for (const side of [-1, 1]) {
@@ -1418,7 +1418,7 @@ export function structurePlan(road: RoadLayout) {
     .map((m) => ("s" in m ? { from: m.s - 90, to: m.s + 90 } : m))
     .concat(monuments.headphones.map((s) => ({ from: s - 25, to: s + 25 })));
   // The lion at the finish stands alone.
-  clear.push({ from: road.finish - 240, to: road.finish + 260 });
+  clear.push({ from: road.finish - 110, to: road.finish + 70 });
   return { arches, corridors, tunnels, venues, spotRuns, keep, monuments, clear, features };
 }
 
@@ -1444,9 +1444,9 @@ export function Megastructures({
   return (
     <group>
       <City road={road} dense={denseSpan} keep={plan.keep} colourAt={colourAt} clear={plan.clear} victory={victory} features={plan.features} />
-      <Monuments road={road} colourAt={colourAt} plan={plan.monuments} />
+      <Monuments road={road} colourAt={colourAt} plan={plan.monuments} calm={calm} />
       <Venue road={road} colourAt={colourAt} venues={plan.venues} />
-      <Corridors road={road} colourAt={colourAt} runs={plan.corridors} />
+      {!calm && <Corridors road={road} colourAt={colourAt} runs={plan.corridors} />}
       {!calm && <Tubes road={road} colourAt={colourAt} tunnels={plan.tunnels} />}
       <Pylons road={road} colourAt={colourAt} />
       {/* The cable tangle over the first skyway (the lowest). */}

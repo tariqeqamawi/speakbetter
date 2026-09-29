@@ -57,7 +57,7 @@ function canvasTex(w: number, h: number, draw: (g: CanvasRenderingContext2D) => 
   draw(c.getContext("2d")!);
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
-  t.anisotropy = 4;
+  t.anisotropy = 8;
   return t;
 }
 
@@ -101,6 +101,42 @@ function numberTex(n: number, state: PortalState) {
 
 /** The banner above the portal: the challenge's name, and its score once
  *  passed. */
+/** The calm view's name on the road: big, up to two lines, white with a
+ *  dark edge so it reads on any colour of road from high above. */
+function flatNameTex(title: string, hex: string, shut: boolean) {
+  return canvasTex(1024, 320, (g) => {
+    g.font = "800 104px system-ui, sans-serif";
+    // Two lines, split where they come out most even; then the size that
+    // fits the longer one across.
+    const words = title.split(/\s+/);
+    let lines = [title];
+    let best = g.measureText(title).width;
+    for (let i = 1; i < words.length && best > 940; i++) {
+      const pair = [words.slice(0, i).join(" "), words.slice(i).join(" ")];
+      const w = Math.max(...pair.map((l) => g.measureText(l).width));
+      if (w < best) {
+        best = w;
+        lines = pair;
+      }
+    }
+    g.font = `800 ${Math.floor(Math.min(104, (104 * 940) / best))}px system-ui, sans-serif`;
+    g.textAlign = "center";
+    g.textBaseline = "middle";
+    g.lineJoin = "round";
+    const ys = lines.length === 1 ? [160] : [100, 222];
+    lines.forEach((l, i) => {
+      g.lineWidth = 22;
+      g.strokeStyle = "rgba(4,8,18,0.92)";
+      g.strokeText(l, 512, ys[i]);
+      g.fillStyle = shut ? "#8a93ad" : "#ffffff";
+      g.fillText(l, 512, ys[i]);
+    });
+    // A bar of the section's colour under it.
+    g.fillStyle = shut ? "#3a4260" : hex;
+    g.fillRect(412, lines.length === 1 ? 240 : 296, 200, 14);
+  });
+}
+
 function bannerTex(title: string, hex: string, state: PortalState, score?: number, dormant = false) {
   return canvasTex(1024, 200, (g) => {
     const dim = state === "locked" && !dormant;
@@ -134,7 +170,10 @@ function bannerTex(title: string, hex: string, state: PortalState, score?: numbe
 /** The calm view's portals lie flat on the road, three times the size,
  *  so from high above each one is a full circle you can't miss. */
 export const PORTAL_FLAT_SCALE = 3;
-export const PORTAL_FLAT_Y = 0.35;
+export const PORTAL_FLAT_Y = 1.1;
+/** How high a standing portal's centre is above the road - clear of it
+ *  even where the road rises into a dip beyond. */
+export const PORTAL_Y = 3.7;
 
 export function Portal({
   road,
@@ -166,7 +205,7 @@ export function Portal({
   const bannerMat = useRef<THREE.MeshBasicMaterial>(null);
   const numMat = useRef<THREE.MeshBasicMaterial>(null);
   const { position, facing } = useMemo(() => {
-    const y = flat ? PORTAL_FLAT_Y : 3.3;
+    const y = flat ? PORTAL_FLAT_Y : PORTAL_Y;
     const p = pointAt(road, s).add(new THREE.Vector3(0, y, 0));
     const f = pointAt(road, s - 1).add(new THREE.Vector3(0, y, 0));
     // (Flat: turned only about the upright, so it lies level.)
@@ -211,6 +250,7 @@ export function Portal({
   );
   const numMap = useMemo(() => numberTex(n, ahead ? "locked" : state), [n, ahead, state]);
   const banner = useMemo(() => bannerTex(title, hex, state, score, dormant), [title, hex, state, score, dormant]);
+  const flatName = useMemo(() => (flat ? flatNameTex(title, hex, shut) : null), [flat, title, hex, shut]);
 
   /* eslint-disable react-hooks/immutability */
   useFrame(({ clock, camera }) => {
@@ -257,7 +297,7 @@ export function Portal({
           like light on wet tarmac. None under a shut one. */}
       </group>
       {!shut && !flat && (
-        <mesh position={[0, -3.25, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <mesh position={[0, 0.05 - PORTAL_Y, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[9, 9]} />
           <meshBasicMaterial
             map={pool()}
@@ -268,6 +308,16 @@ export function Portal({
             blending={THREE.AdditiveBlending}
             toneMapped={false}
           />
+        </mesh>
+      )}
+      {/* The calm view: the challenge's name laid flat on the road just
+          beyond the portal, big enough to read from high above, its top
+          pointing on down the road. */}
+      {flat && (
+        <mesh position={[0, 1.2 - PORTAL_FLAT_Y, -(2.5 * PORTAL_FLAT_SCALE + 8)]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[46, 14.4]} />
+          {/* (Not hidden by the land where it runs past the road's edges.) */}
+          <meshBasicMaterial map={flatName} transparent opacity={0.96} depthTest={false} depthWrite={false} toneMapped={false} side={THREE.DoubleSide} />
         </mesh>
       )}
       {!flat && (

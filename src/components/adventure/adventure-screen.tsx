@@ -171,19 +171,33 @@ export function AdventureScreen({
     if (!el || demo || typeof window === "undefined" || !("DeviceOrientationEvent" in window)) return;
     if (!window.matchMedia("(pointer: coarse)").matches) return;
     let base: { lr: number; fb: number } | null = null;
+    let smooth = { lr: 0, fb: 0 };
     const onTilt = (e: DeviceOrientationEvent) => {
       if (e.beta === null || e.gamma === null) return;
       const angle = (screen.orientation?.angle ?? 0) % 360;
       const [lr, fb] =
         angle === 90 ? [e.beta, -e.gamma] : angle === 270 || angle === -90 ? [-e.beta, e.gamma] : [e.gamma, e.beta];
-      if (!base) base = { lr, fb };
-      // The rest position follows slowly, so a new way of holding the
-      // phone becomes the new straight-ahead.
-      base.lr += (lr - base.lr) * 0.004;
-      base.fb += (fb - base.fb) * 0.004;
+      // While travelling the view is locked straight ahead (the world's
+      // camera sees to that), and however the phone is held then becomes
+      // straight ahead for when they stop.
+      if (!base || Math.abs(travel.v) > 0.02 || travel.target !== null) {
+        base = { lr, fb };
+        smooth = { lr, fb };
+        travel.look.yaw = 0;
+        travel.look.pitch = 0;
+        return;
+      }
+      // The readings smoothed hard - a phone's sensor jitters - and the
+      // rest position following slowly, so a new way of holding it becomes
+      // the new straight-ahead.
+      smooth.lr += (lr - smooth.lr) * 0.08;
+      smooth.fb += (fb - smooth.fb) * 0.08;
+      base.lr += (smooth.lr - base.lr) * 0.002;
+      base.fb += (smooth.fb - base.fb) * 0.002;
       const clamp = (v: number) => Math.max(-1, Math.min(1, v));
-      travel.look.yaw = clamp((lr - base.lr) / 25) * 0.62;
-      travel.look.pitch = clamp((base.fb - fb) / 25) * 0.32;
+      // A small range: a glance, not a turn of the head.
+      travel.look.yaw = clamp((smooth.lr - base.lr) / 30) * 0.28;
+      travel.look.pitch = clamp((base.fb - smooth.fb) / 30) * 0.14;
     };
     let listening = false;
     const listen = () => {

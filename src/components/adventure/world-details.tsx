@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { PORTAL_Y } from "./portal";
 import { AHEAD, pointAt, sideAt, surfaceAt, upAt, type RoadLayout, type Travel } from "./road-geometry";
 
 // What stands on and beside the road: the traveller and the neon line
@@ -143,7 +144,7 @@ export function Traveller({
       // Through the portal: drawn into the eye of the vortex, turning
       // and shrinking to nothing.
       const k = THREE.MathUtils.smoothstep((performance.now() - travel.portal.since) / 1300, 0, 1);
-      const eye = pointAt(road, travel.portal.s).add(new THREE.Vector3(0, 3.3, 0));
+      const eye = pointAt(road, travel.portal.s).add(new THREE.Vector3(0, PORTAL_Y, 0));
       disc.current.position.copy(p.setY(p.y + 1.3)).lerp(eye, k);
       disc.current.lookAt(camera.position);
       disc.current.rotateZ(k * 8);

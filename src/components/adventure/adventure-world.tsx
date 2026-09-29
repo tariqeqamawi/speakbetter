@@ -6,7 +6,7 @@ import * as THREE from "three";
 import { Fireflies, Scenery } from "./world-extras";
 import { Megastructures, structurePlan } from "./megastructures";
 import { SectionWeather } from "./weather";
-import { PORTAL_FLAT_SCALE, PORTAL_FLAT_Y, Portal } from "./portal";
+import { PORTAL_FLAT_SCALE, PORTAL_FLAT_Y, PORTAL_Y, Portal } from "./portal";
 import { SkyDome } from "./sky-dome";
 import { City } from "./city";
 import { Bloom, GateSparks, Sky, SpeedSparks } from "./fx";
@@ -828,8 +828,8 @@ function Rig({
       e.copy(poseTmp).sub(l).setY(0).normalize().multiplyScalar(6).add(l);
       e.y = l.y + 230;
     } else if (view === "3d") {
-      pointAt(road, tS - 22, e).setY(e.y + 58);
-      pointAt(road, tS + 14, l);
+      pointAt(road, tS - 50, e).setY(e.y + 95);
+      pointAt(road, tS + 40, l);
     } else {
       pointAt(road, tS - AHEAD, e).setY(e.y + 7.5);
       pointAt(road, tS + 26, l).setY(l.y + 1.2);
@@ -869,8 +869,8 @@ function Rig({
       const k = THREE.MathUtils.smoothstep((performance.now() - travel.portal.since) / 1700, 0, 1);
       pointAt(road, travel.portal.s - 2.2 - (1 - k) * 12, pos);
       pointAt(road, travel.portal.s, at);
-      eye.set(pos.x, pos.y + 3.3 + (1 - k) * 4, pos.z);
-      look.set(at.x, at.y + 3.3, at.z);
+      eye.set(pos.x, pos.y + PORTAL_Y + (1 - k) * 4, pos.z);
+      look.set(at.x, at.y + PORTAL_Y, at.z);
       camera.position.lerp(eye, 1 - Math.pow(0.0005, dt));
       camera.up.set(0, 1, 0);
       camera.lookAt(look);
@@ -919,9 +919,9 @@ function Rig({
       // the road ahead - the whole stretch laid out like a map.
       // (Steep enough that the portals lying flat on the road read as
       // circles.)
-      pointAt(road, tS - 22, pos);
-      pointAt(road, tS + 14, at);
-      eye.copy(pos).setY(pos.y + 58);
+      pointAt(road, tS - 50, pos);
+      pointAt(road, tS + 40, at);
+      eye.copy(pos).setY(pos.y + 95);
       look.copy(at);
       if (carried.current) camera.position.add(moved.copy(pos).sub(prevPos));
       prevPos.copy(pos);
@@ -1024,9 +1024,13 @@ function Rig({
     }
     // Looking around: the phone's tilt swings the view side to side and
     // lifts it toward the horizon, eased so it glides rather than jitters.
-    const ease = Math.min(1, dt * 4);
-    yaw.current += (travel.look.yaw - yaw.current) * ease;
-    pitch.current += (travel.look.pitch - pitch.current) * ease;
+    // Only once the traveller has been completely still for half a
+    // second, and eased very gently; the moment they move, it glides back
+    // to straight ahead and stays there.
+    const looking = stillFor.current > 0.5 && !leaveTo;
+    const glide = 1 - Math.pow(looking ? 0.35 : 0.02, dt);
+    yaw.current += ((looking ? travel.look.yaw : 0) - yaw.current) * glide;
+    pitch.current += ((looking ? travel.look.pitch : 0) - pitch.current) * glide;
     camera.rotateY(yaw.current);
     camera.rotateX(pitch.current);
     // The view widens as you go faster and settles as you slow; the page
@@ -1088,7 +1092,7 @@ function Picker({
       let best: number | null = null;
       let bestD = Infinity;
       road.stops.forEach((s, i) => {
-        pointAt(road, s, p).y += flat ? PORTAL_FLAT_Y : 3.3;
+        pointAt(road, s, p).y += flat ? PORTAL_FLAT_Y : PORTAL_Y;
         toP.subVectors(p, cam.position);
         const d = toP.length();
         // In front, near enough to be seen, not so near it has faded
@@ -1300,7 +1304,7 @@ export function AdventureWorld({
       ))}
       <FinishLion road={road} cols={finishCols} />
       <Rig road={road} travel={travel} onMove={onMove} limit={limit ?? road.finish + 10} calm={calm} arrive={arrive} leaveTo={leaveTo} />
-      {pickRef && <Picker road={road} pickRef={pickRef} far={calm ? 160 : 70} flat={calm} />}
+      {pickRef && <Picker road={road} pickRef={pickRef} far={calm ? 240 : 70} flat={calm} />}
     </Canvas>
   );
 }

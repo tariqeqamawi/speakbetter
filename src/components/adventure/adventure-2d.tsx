@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { WorldPhase, WorldStop } from "./adventure-world";
 
 // The same road, flat: for anybody who would rather scroll a page than
@@ -14,6 +14,9 @@ import type { WorldPhase, WorldStop } from "./adventure-world";
 
 /** Height of a row, of a phase heading, and how far the path swings. */
 const ROW = 118;
+/** Zoomed in: much more road between one challenge and the next, and room
+ *  for each one's picture. */
+const ROW_ZOOMED = 300;
 const HEAD = 64;
 const SWING = 0.26;
 /** Room at the top for the finish. */
@@ -23,9 +26,13 @@ export function Adventure2D({
   stops,
   phases,
   scrollRoot,
+  zoomed = false,
 }: {
   stops: WorldStop[];
   phases: WorldPhase[];
+  /** Zoomed in (the magnifying glass): the map stretched out, a picture
+   *  for each challenge. */
+  zoomed?: boolean;
   /** When the map sits inside a scrolling frame (the landing page's
    *  phone), scroll that rather than the page. */
   scrollRoot?: React.RefObject<HTMLElement | null>;
@@ -61,6 +68,42 @@ export function Adventure2D({
     }, 1200);
   };
 
+  // THE ZOOM, eased from one to the other over half a second - the map
+  // stretching or closing up - with the challenge you're on held still on
+  // the screen while it does.
+  const [z, setZ] = useState(zoomed ? 1 : 0);
+  const anchorTop = useRef<number | null>(null);
+  const anchor = () => (here.current ?? (list.current?.querySelector("[data-first]") as HTMLElement | null));
+  useEffect(() => {
+    const target = zoomed ? 1 : 0;
+    const from = z;
+    if (from === target) return;
+    anchorTop.current = anchor()?.getBoundingClientRect().top ?? null;
+    const t0 = performance.now();
+    let raf = 0;
+    const step = () => {
+      const k = Math.min(1, (performance.now() - t0) / 500);
+      const e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+      setZ(from + (target - from) * e);
+      if (k < 1) raf = requestAnimationFrame(step);
+      else anchorTop.current = null;
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+    // (Starts from wherever it has got to.)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [zoomed]);
+  useLayoutEffect(() => {
+    const was = anchorTop.current;
+    const el = anchor();
+    if (was === null || !el) return;
+    const drift = el.getBoundingClientRect().top - was;
+    const root = scrollRoot?.current;
+    if (root) root.scrollBy(0, drift);
+    else window.scrollBy(0, drift);
+  });
+  const row = ROW + (ROW_ZOOMED - ROW) * z;
+
   const colour = new Map(phases.map((p) => [p.id, p.color]));
 
   // Lay everything out once: where each heading goes, and each stop's
@@ -73,8 +116,8 @@ export function Adventure2D({
       heads.push({ phase: stop.phase, top: y });
       y += HEAD;
     }
-    centres.push({ x: 0.5 + Math.sin(i * 0.9) * SWING, y: y + ROW / 2 });
-    y += ROW;
+    centres.push({ x: 0.5 + Math.sin(i * 0.9) * SWING, y: y + row / 2 });
+    y += row;
   });
   // Then turned upside down, so the journey climbs the page: the first
   // challenge at the bottom, each phase's heading at its foot, and on up
@@ -150,7 +193,7 @@ export function Adventure2D({
               key={stop.slug}
               ref={on ? here : undefined}
               data-first={i === 0 ? "" : undefined}
-              className="absolute flex items-center gap-3"
+              className={`absolute flex gap-3 ${z > 0.02 ? "items-start" : "items-center"}`}
               style={{
                 top: cy - 28,
                 ...(left ? { left: `calc(${x * 100}% - 28px)` } : { right: `calc(${(1 - x) * 100}% - 28px)` }),
@@ -176,6 +219,23 @@ export function Adventure2D({
                 >
                   {stop.title}
                 </span>
+                {/* Zoomed in: the challenge's picture. */}
+                {z > 0.02 && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={stop.image}
+                    alt=""
+                    loading="lazy"
+                    className="rounded-lg border object-cover"
+                    style={{
+                      width: 128 * z,
+                      height: 72 * z,
+                      opacity: z * (locked ? 0.45 : 1),
+                      borderColor: locked ? "#3a4260" : c,
+                      filter: locked ? "grayscale(0.7)" : undefined,
+                    }}
+                  />
+                )}
                 {done && stop.score !== undefined && (
                   <span className="text-xs font-bold" style={{ color: c }}>
                     Passed · {stop.score}

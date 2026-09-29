@@ -67,7 +67,18 @@ function placeAt(g: THREE.Group, road: RoadLayout, s: number, d: number) {
   g.lookAt(ahead.x + side.x * d, p.y, ahead.z + side.z * d);
 }
 
-export function Monuments({ road, colourAt, plan }: { road: RoadLayout; colourAt: ColourAt; plan: MonumentPlan }) {
+export function Monuments({
+  road,
+  colourAt,
+  plan,
+  calm = false,
+}: {
+  road: RoadLayout;
+  colourAt: ColourAt;
+  plan: MonumentPlan;
+  /** The calm view from above: no arches over the road to hide the traveller. */
+  calm?: boolean;
+}) {
   const glass = useMemo(() => new THREE.ShaderMaterial({ vertexShader: RIM_VERT, fragmentShader: RIM_FRAG }), []);
 
   const { scene, lit } = useMemo(() => {
@@ -204,7 +215,7 @@ export function Monuments({ road, colourAt, plan }: { road: RoadLayout; colourAt
       emissive: "#0a1636",
       emissiveIntensity: 0.6,
     });
-    for (const s of plan.headphones ?? []) {
+    for (const s of calm ? [] : (plan.headphones ?? [])) {
       const c = colourAt(s).clone().lerp(new THREE.Color("#ffffff"), 0.15).multiplyScalar(1.7);
       const g = new THREE.Group();
       const SPAN = ROAD_HALF + 20; // cups' centre from the road's middle
@@ -234,7 +245,7 @@ export function Monuments({ road, colourAt, plan }: { road: RoadLayout; colourAt
     }
 
     return { scene: root, lit };
-  }, [road, colourAt, plan, glass]);
+  }, [road, colourAt, plan, glass, calm]);
 
   useEffect(
     () => () => {
