@@ -120,55 +120,75 @@ export function Monuments({ road, colourAt, plan }: { road: RoadLayout; colourAt
     }
 
     const cupMat = new THREE.MeshStandardMaterial({ color: "#07080c", roughness: 0.35, metalness: 0.5 });
-    // THE SPEAKER THE ROAD CLIMBS: a giant black cabinet standing across
-    // the road, its face where the road turns straight up. The road runs
-    // up the face, round the edge of the big woofer - glowing, pulsing -
-    // over the top and down the back.
+    // THE SPEAKER STACKS THE ROAD CLIMBS BETWEEN: one either side of the
+    // road - a great subwoofer cabinet with a monitor speaker on top,
+    // black, their cones glowing and pulsing - and the road rising up
+    // between them to near their tops, across, and down the far side.
     if (plan.speakers) {
       const { a } = plan.speakers;
       const c = colourAt(a).clone().multiplyScalar(1.6);
-      const { H, FACE, TOP, WOOF_Y, WOOF_R } = CLIMB;
-      const W = 64;
-      const D = TOP + 16;
-      const g = new THREE.Group();
-      // Stand at the start of the climb, facing along the road (+z ahead).
+      const { H } = CLIMB;
+      // Where the road runs level between them: measured from the road
+      // itself, so the stacks always stand either side of the top.
       const p0 = pointAt(road, a);
-      const ahead = pointAt(road, a + 2);
-      g.position.copy(p0);
-      g.lookAt(ahead.x, p0.y, ahead.z);
-      // Just behind the road where it turns up the face - measured from the
-      // road itself, so the cabinet is always exactly under it.
-      const F = ahead.clone().sub(p0).setY(0).normalize();
-      let faceAt = FACE;
-      for (let d = 0; d < 120; d += 0.5) {
-        const q = pointAt(road, a + d);
-        if (q.y - p0.y > 12) {
-          faceAt = q.sub(p0).dot(F);
-          break;
-        }
+      let from = -1;
+      let to = -1;
+      for (let d = 0; d < 400; d += 1) {
+        if (pointAt(road, a + d).y - p0.y > H - 0.8) {
+          if (from < 0) from = d;
+          to = d;
+        } else if (from >= 0) break;
       }
-      const front = faceAt + 1.4;
-      // The cabinet.
-      g.add(mesh(new THREE.BoxGeometry(W, H - 0.6, D), cupMat, 0, (H - 0.6) / 2, front + D / 2));
-      const zf = front - 0.4;
-      const cone = (x: number, y: number, r: number) => {
-        g.add(mesh(new THREE.TorusGeometry(r, r * 0.06, 10, 64), glow(c), x, y, zf));
-        g.add(mesh(new THREE.TorusGeometry(r * 0.62, r * 0.035, 8, 48), glow(c.clone().multiplyScalar(0.7)), x, y, zf));
-        g.add(mesh(new THREE.CircleGeometry(r * 0.3, 32), glow(c.clone().multiplyScalar(0.45)), x, y, zf - 0.1, 0, Math.PI));
+      const mid = a + (from >= 0 ? (from + to) / 2 : 120);
+      // The subwoofer, and the monitor on top of it.
+      const SW = 32;
+      const SH = 36;
+      const SD = 30;
+      const MW = 24;
+      const MH = 22;
+      const MD = 20;
+      const cone = (g: THREE.Group, x: number, y: number, z: number, r: number) => {
+        g.add(mesh(new THREE.TorusGeometry(r, r * 0.07, 10, 64), glow(c), x, y, z));
+        g.add(mesh(new THREE.TorusGeometry(r * 0.62, r * 0.04, 8, 48), glow(c.clone().multiplyScalar(0.7)), x, y, z));
+        g.add(mesh(new THREE.CircleGeometry(r * 0.3, 32), glow(c.clone().multiplyScalar(0.45)), x, y, z - 0.1, 0, Math.PI));
       };
-      // The woofer (the road swings round its edge), and the tweeters.
-      cone(0, H * WOOF_Y, WOOF_R);
-      cone(-15, H * 0.8, 6.5);
-      cone(15, H * 0.8, 6.5);
-      cone(0, H * 0.8, 3.5);
-      // A seam of light round the cabinet's front edge.
-      for (const [x, y, sx, sy] of [
-        [0, H - 0.6, W, 0.6],
-        [-W / 2, H / 2, 0.6, H],
-        [W / 2, H / 2, 0.6, H],
-      ] as const)
-        g.add(mesh(new THREE.BoxGeometry(sx, sy, 0.6), glow(c.clone().multiplyScalar(0.8)), x, y, zf));
-      root.add(g);
+      const seam = (g: THREE.Group, y0: number, w: number, h: number, z: number) => {
+        for (const [x, y, sx, sy] of [
+          [0, y0 + h, w, 0.5],
+          [0, y0, w, 0.5],
+          [-w / 2, y0 + h / 2, 0.5, h],
+          [w / 2, y0 + h / 2, 0.5, h],
+        ] as const)
+          g.add(mesh(new THREE.BoxGeometry(sx, sy, 0.5), glow(c.clone().multiplyScalar(0.8)), x, y, z));
+      };
+      for (const side of [-1, 1]) {
+        const outer = new THREE.Group();
+        placeAt(outer, road, mid, side * (ROAD_HALF + 8 + SW / 2));
+        // (Placed facing along the road: its local +x points back across
+        // to the road on the right-hand side, away from it on the left.)
+        const inward = side;
+        const g = new THREE.Group();
+        // Toed in a little, their fronts to the traveller coming up.
+        g.rotation.y = -inward * 0.3;
+        outer.add(g);
+        // The subwoofer: one huge cone, and a port either side of it.
+        const zs = -SD / 2 - 0.4;
+        g.add(mesh(new THREE.BoxGeometry(SW, SH, SD), cupMat, 0, SH / 2, 0));
+        cone(g, 0, SH * 0.48, zs, 12);
+        for (const x of [-11.5, 11.5]) g.add(mesh(new THREE.TorusGeometry(2.2, 0.35, 8, 32), glow(c.clone().multiplyScalar(0.6)), x, SH * 0.14, zs));
+        seam(g, 0, SW, SH, zs);
+        // The monitor on top, tipped back a touch.
+        const m = new THREE.Group();
+        m.position.set(0, SH, -2);
+        m.rotation.x = -0.12;
+        const zm = -MD / 2 - 0.4;
+        m.add(mesh(new THREE.BoxGeometry(MW, MH, MD), cupMat, 0, MH / 2, 0));
+        cone(m, 0, MH * 0.38, zm, 7);
+        cone(m, 0, MH * 0.8, zm, 2.6);
+        seam(m, 0, MW, MH, zm);
+        g.add(m);
+        root.add(outer);
+      }
     }
 
     // HEADPHONES ARCHES - the road's great gateways. The band a dark

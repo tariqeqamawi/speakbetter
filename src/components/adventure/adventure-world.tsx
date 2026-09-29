@@ -11,7 +11,7 @@ import { SkyDome } from "./sky-dome";
 import { City } from "./city";
 import { Bloom, GateSparks, Sky, SpeedSparks } from "./fx";
 import { AHEAD, ColourWall, RoadsideComment, RoadsideTrophy, Traveller } from "./world-details";
-import { GATE_BEFORE, VICTORY_AFTER, hills, layoutRoad, pointAt, reachedPhase, seeded, sideAt, type RoadLayout, type Travel, ROAD_HALF, bankLift, tiltAt, groundAt, surfaceAt, upAt, LOOP } from "./road-geometry";
+import { GATE_BEFORE, VICTORY_AFTER, hills, layoutRoad, pointAt, reachedPhase, seeded, sideAt, type RoadLayout, type Travel, ROAD_HALF, bankLift, tiltAt, groundAt, surfaceAt, upAt } from "./road-geometry";
 
 // The S.T.O.R.Y. adventure as a world you travel through.
 //
@@ -972,8 +972,6 @@ function Rig({
   const pos = useMemo(() => new THREE.Vector3(), []);
   const at = useMemo(() => new THREE.Vector3(), []);
   const across = useMemo(() => new THREE.Vector3(), []);
-  const entry = useMemo(() => new THREE.Vector3(), []);
-  const fwd = useMemo(() => new THREE.Vector3(), []);
   const sEye = useMemo(() => new THREE.Vector3(), []);
   const sLook = useMemo(() => new THREE.Vector3(), []);
   const offset = useMemo(() => new THREE.Vector3(), []);
@@ -1107,47 +1105,24 @@ function Rig({
       eye.y += bankLift(road, s + AHEAD, ride * 0.7);
       look.addScaledVector(across, ride * 0.5);
     }
-    // ON A STUNT the camera stays behind the traveller, as on the rest of
-    // the road - upright, never rolling - and follows them round the
-    // loop, through the corkscrew and up the speaker. Stop halfway and it
-    // waits; go back and it goes back with them.
+    // ON A STUNT the camera stays right behind the traveller, riding the
+    // track the way the rest of the road does: back along it and out from
+    // its surface. Up the speaker climb it stays upright; round the loop
+    // and through the corkscrew it turns over with the track, like a
+    // camera on the car behind on a coaster - so you go round with them,
+    // always looking on down the road. Stop halfway and it waits; go back
+    // and it goes back with them.
     const stunt = road.stunts.find((z) => tS > z.a - 25 && tS < z.a + z.len + 25);
     if (stunt) {
       const k = THREE.MathUtils.smoothstep(tS, stunt.a - 25, stunt.a) * (1 - THREE.MathUtils.smoothstep(tS, stunt.a + stunt.len, stunt.a + stunt.len + 25));
-      // Where the traveller is now.
-      surfaceAt(road, tS, road.rideAt(tS), 1.3, at);
-      if (stunt.kind === "climb") {
-        // Up the face of the speaker: back down the road behind them and
-        // out from its surface - under them on the face, above on the top.
-        const bs = tS - AHEAD;
-        pointAt(road, bs, sEye).addScaledVector(upAt(road, bs, across), 7.5);
-        pointAt(road, tS + 9, sLook).addScaledVector(upAt(road, tS + 9, across), 1.2);
-      } else {
-        // The loop and the corkscrew: a fixed distance behind the traveller
-        // along the way the stunt runs, so however the road turns over
-        // the camera never ends up beside, above or ahead of them.
-        groundAt(road, stunt.a, entry);
-        sideAt(road, stunt.a, across);
-        fwd.set(across.z, 0, -across.x);
-        const along = offset.subVectors(at, entry).dot(fwd);
-        groundAt(road, THREE.MathUtils.clamp(tS, stunt.a, stunt.a + stunt.len), sLook);
-        const lat = offset.subVectors(sLook, entry).dot(across);
-        const lift = stunt.kind === "loop" ? 0.35 * (at.y - entry.y) : 4 * road.stuntAt(tS);
-        const gFwd = offset.subVectors(sLook, entry).dot(fwd);
-        sEye.copy(entry).addScaledVector(fwd, along - AHEAD).addScaledVector(across, lat);
-        sEye.y = entry.y + 7.5 + lift;
-        if (stunt.kind === "loop") {
-          // Over the top of the loop the traveller is on the far side of
-          // it, facing back: to keep them in view without ever turning over,
-          // the camera eases a little out to the side as they go over, and
-          // back in behind them as they come down.
-          const u = THREE.MathUtils.clamp((tS - stunt.a) / stunt.len, 0, 1);
-          const w = Math.pow(Math.sin(Math.PI * u), 2);
-          offset.copy(entry).addScaledVector(fwd, gFwd - 6).addScaledVector(across, lat - 26);
-          offset.y = entry.y + LOOP.R * 0.75;
-          sEye.lerp(offset, w);
-        }
-        sLook.copy(at);
+      const bs = tS - AHEAD;
+      const rise = stunt.kind === "climb" ? 7.5 : 5.5;
+      pointAt(road, bs, sEye).addScaledVector(upAt(road, bs, across), rise);
+      pointAt(road, tS + 10, sLook).addScaledVector(upAt(road, tS + 10, across), 1.2);
+      if (stunt.kind !== "climb") {
+        // The camera's up turns with the track's, blended in and out.
+        upAt(road, bs, across);
+        camera.up.set(0, 1, 0).lerp(across, k).normalize();
       }
       // Blended in and out over the way in and the way out.
       offset.subVectors(eye, pos);

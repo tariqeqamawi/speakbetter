@@ -102,37 +102,33 @@ function cross(a: V3, b: V3): V3 {
 /** A stunt's shape in its own frame - forward, side, up from where it
  *  starts - sampled by distance along it: the road's point, its rolled
  *  side and up, and the ground's point beneath. */
-/** The speaker climb's size: its face height, and how deep its top is. */
-export const CLIMB = { H: 62, FACE: 24, TOP: 36, WOOF_Y: 0.38, WOOF_R: 17 };
+/** The speaker climb's size: the flat run in, the climb, the height it
+ *  reaches between the two speaker stacks, the level run across between
+ *  them, and the way back down. */
+export const CLIMB = { LEAD: 12, UP: 72, H: 46, TOP: 46, DOWN: 90 };
 /** The loop's size: its radius, how far it drifts forward, and sideways. */
-export const LOOP = { R: 27, D: 70, W: 16 };
+export const LOOP = { R: 40, D: 96, W: 18 };
 
 function stuntShape(kind: Stunt["kind"]) {
   const N = 2400;
   const pos: V3[] = [];
   const ground: [number, number][] = [];
   const upRaw: V3[] = [];
-  // THE SPEAKER CLIMB: straight up the face of a giant speaker - swinging
-  // round the edge of its woofer on the way - over the top, and down the
-  // back on a long slope. (Forward, side, up.)
+  // THE SPEAKER CLIMB: up a steep ramp between two great speaker stacks
+  // (monuments.tsx), level across between them near their tops, and
+  // down a long slope on the far side. (Forward, side, up.)
   const climb =
     kind === "climb"
       ? (() => {
-          const { H, FACE, TOP } = CLIMB;
+          const { LEAD, UP, H, TOP, DOWN } = CLIMB;
           const pts: THREE.Vector3[] = [];
-          for (let x = 0; x <= FACE - 8; x += 4) pts.push(new THREE.Vector3(x, 0, 0));
-          for (let t = 0.2; t < 1; t += 0.2) pts.push(new THREE.Vector3(FACE - 8 + 8 * Math.sin((t * Math.PI) / 2), 0, 8 - 8 * Math.cos((t * Math.PI) / 2)));
-          for (let z = 8; z <= H - 8; z += 3) pts.push(new THREE.Vector3(FACE, 23 * Math.sin((Math.PI * (z - 8)) / (H - 16)), z));
-          for (let t = 0.2; t < 1; t += 0.2) pts.push(new THREE.Vector3(FACE + 8 - 8 * Math.cos((t * Math.PI) / 2), 0, H - 8 + 8 * Math.sin((t * Math.PI) / 2)));
-          for (let x = FACE + 8; x <= FACE + 8 + TOP; x += 4) pts.push(new THREE.Vector3(x, 0, H));
-          const x0 = FACE + 8 + TOP;
-          for (let t = 4; t <= H; t += 4) {
-            // Down the back: easing in, a long slope, easing out onto the land.
-            const k = t / H;
-            pts.push(new THREE.Vector3(x0 + t * 1.6, 0, H * (1 - THREE.MathUtils.smootherstep(k, 0, 1))));
-          }
-          const xe = x0 + H * 1.6;
-          for (let x = 4; x <= 24; x += 4) pts.push(new THREE.Vector3(xe + x, 0, 0));
+          const ease = (k: number) => THREE.MathUtils.smootherstep(k, 0, 1);
+          for (let x = 0; x < LEAD; x += 3) pts.push(new THREE.Vector3(x, 0, 0));
+          for (let x = 0; x < UP; x += 3) pts.push(new THREE.Vector3(LEAD + x, 0, H * ease(x / UP)));
+          for (let x = 0; x < TOP; x += 3) pts.push(new THREE.Vector3(LEAD + UP + x, 0, H));
+          for (let x = 0; x <= DOWN; x += 3) pts.push(new THREE.Vector3(LEAD + UP + TOP + x, 0, H * (1 - ease(x / DOWN))));
+          const xe = LEAD + UP + TOP + DOWN;
+          for (let x = 3; x <= 18; x += 3) pts.push(new THREE.Vector3(xe + x, 0, 0));
           return new THREE.CatmullRomCurve3(pts, false, "centripetal");
         })()
       : null;
@@ -249,7 +245,7 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = [], opts: Ro
   const loopI = oIdx.length && !calm ? oIdx[Math.floor(oIdx.length / 2)] : -1;
   const EXTRA: Record<number, number> = {};
   if (yFirstI > 0 && !calm) EXTRA[yFirstI] = 200;
-  if (loopI > 0) EXTRA[loopI] = 170;
+  if (loopI > 0) EXTRA[loopI] = 270;
   // The speaker climb: the first stretch within T (kept clear for it).
   const climbI = calm ? -1 : phaseOf.findIndex((ph, i) => i > 0 && ph === "T" && phaseOf[i - 1] === "T" && i % 2 === 1 && !venueStretch(i));
   if (climbI > 0) EXTRA[climbI] = 260;
