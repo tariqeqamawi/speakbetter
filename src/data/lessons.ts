@@ -62,13 +62,11 @@ export const lessons: Lesson[] = [
   { vimeoId: "1080662335", title: "Rhetorical Questions", category: "structure" },
   { vimeoId: "1081163913", title: "Using Promise & Payoff", category: "structure" },
   { vimeoId: "1081197526", title: "Open Loops", category: "structure" },
-  { vimeoId: "1081197216", title: "Balances & Reversals", category: "structure" },
   { vimeoId: "1081197062", title: "Using A Pattern Interrupt", category: "structure" },
   { vimeoId: "1081198709", title: "How To Structure Longer Talks", category: "structure" },
   { vimeoId: "1081198798", title: "How To Open Your Talk", category: "structure" },
   { vimeoId: "1081198886", title: "Framework: Tell, Teach, Action", category: "structure" },
   { vimeoId: "1081198957", title: "Framework: Hook, Story, Close", category: "structure" },
-  { vimeoId: "1080635988", title: "Speak As If To a Room of 9 Year Olds", category: "structure" },
 
   // ── Confidence & Presence (green) ───────────────────────────────────
   { vimeoId: "1081029629", title: "Why You Have a Fear of Public Speaking", category: "mindset" },
@@ -82,6 +80,7 @@ export const lessons: Lesson[] = [
   { vimeoId: "1082732774", title: "Being Professional vs Being Serious", category: "mindset" },
   { vimeoId: "1081162172", title: "Make It About Your Audience", category: "mindset" },
   { vimeoId: "1094883641", title: "Don't Give Your Power Away", category: "mindset" },
+  { vimeoId: "1080635988", title: "Speak As If To a Room of 9 Year Olds", category: "mindset" },
 
   // ── Body language & physical expression (blue) ──────────────────────
   { vimeoId: "1081708997", title: "Introduction To Body & Physical Expression", category: "body-language" },
@@ -106,6 +105,7 @@ export const lessons: Lesson[] = [
   // Moved from Figurative: a rhyme is a finishing tool for a speaker who
   // already has the basics - Advanced, not a first figure of speech.
   { vimeoId: "1081164442", title: "Using Rhyme", category: "advanced" },
+  { vimeoId: "1081197216", title: "Balances & Reversals", category: "advanced" },
   // Moved from Storytelling: casting the client as the hero, and tying
   // the call to action to the moral, are business-speaking moves for a
   // speaker past the basics of story.
