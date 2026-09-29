@@ -425,3 +425,4 @@ what.
 - Landing headline + orange line rewritten (phone size ~half), Coach re-voiced (headline-v3); Next challenge pill under the view switch; Vimeo fallback to its own play button when a phone blocks starts — `5d21c44`
 - Road: speaker climb between twin speaker stacks; loop 1.5x bigger; camera stays behind through loop and corkscrew (coaster-style) — `a60f8a2`
 - Road: weave 2x longer (last Y stretch) round giant mics/headphones and through archway towers, gentle slope down; victory stretch 2.5x, lined with landmarks; neon lion-head finish — `854e26f`
+- Road views: 2D/3D/4D switch glides and crossfades (no blank), keeps your place; 2D map bottom-to-top; calm 3D avatar and flat portals 3x — `ad3542f`
