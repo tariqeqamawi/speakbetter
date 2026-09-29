@@ -431,3 +431,4 @@ what.
 - Coach's reviews: older reviews filled in once from their own record and saved; revisited reviews skip the holding line — `3752d84`
 - Phone top space removed across the app; Challenges defaults to Orientation; 2D magnifier removed (always zoomed); lion thumbnails; dashboard tour on phones — `222af0b`
 - New challenge 18 "Watch Any 5 Figurative & Sensory Skills" (watch 5 Paint lessons within the challenge; shared watch rule; 25 challenges) — `3b49892`
+- Road batch 4: talking heads rebuilt on a straight level stretch; monolith climb (road outside the facade, chase camera behind); ring tunnel into the finish; dark spire skyline; edge blur + finer colourful speed lines; less T dust and R embers — `6a3aca8`
