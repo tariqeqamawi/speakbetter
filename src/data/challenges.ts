@@ -262,7 +262,7 @@ export const challenges: Challenge[] = [
   {
     slug: "beatbox-rhythm",
     phase: "T",
-    title: "Beatbox or Rhythm Flow",
+    title: "Beatbox and Rhythm Flow",
     vimeoId: "1081935006",
     brief:
       "The self-consciousness breaker: beatbox, hum a rhythm, or flow to a beat on camera. Being willing to look silly is a speaking superpower.",
