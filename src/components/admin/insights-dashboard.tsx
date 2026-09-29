@@ -142,7 +142,7 @@ function Progress({ data }: { data: SampleCohort }) {
     const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
     const weekScore = weeks.map((ts) => avg(ts.map((t) => t.score)));
     const weekColor = weeks.map((ts) =>
-      Object.fromEntries(categories.map((c) => [c.id, avg(ts.map((t) => t.spectrum[c.id]))])),
+      Object.fromEntries(categories.map((c) => [c.id, avg(ts.map((t) => t.spectrum[c.id] ?? 0))])),
     );
 
     // Each student against themselves: first take and latest, for
@@ -155,8 +155,8 @@ function Progress({ data }: { data: SampleCohort }) {
     const colorGain = categories
       .map((c) => ({
         c,
-        first: avg(paired.map(({ first }) => first.spectrum[c.id])),
-        last: avg(paired.map(({ last }) => last.spectrum[c.id])),
+        first: avg(paired.map(({ first }) => first.spectrum[c.id] ?? 0)),
+        last: avg(paired.map(({ last }) => last.spectrum[c.id] ?? 0)),
       }))
       .sort((a, b) => b.last - b.first - (a.last - a.first));
     const lit = (sp: Record<string, number>) => Object.values(sp).filter((v) => v >= LIT_AT).length;
@@ -180,7 +180,7 @@ function Progress({ data }: { data: SampleCohort }) {
     `Speak Better - cohort progress over ${p.weekScore.length} weeks (${p.n} students with 3+ recorded takes)`,
     `Average score: ${Math.round(p.firstAvg)} on their first take -> ${Math.round(p.lastAvg)} on their latest (+${Math.round(gain)} points, +${pct(gain, p.firstAvg)}%)`,
     `${pct(p.improved, p.n)}% of students improved`,
-    `Colors lit: ${p.litFirst.toFixed(1)} -> ${p.litLast.toFixed(1)} of 7`,
+    `Colors lit: ${p.litFirst.toFixed(1)} -> ${p.litLast.toFixed(1)} of 8`,
     `Fastest-growing skill: ${fastest.c.name} (+${Math.round(fastest.last - fastest.first)})`,
     ...p.weekScore.map((v, i) => `Week ${i + 1}: average ${Math.round(v)} (${p.weekN[i]} students active)`),
   ].join("\n");
@@ -189,7 +189,7 @@ function Progress({ data }: { data: SampleCohort }) {
     <Panel
       id="progress"
       title="Is their speaking getting better?"
-      blurb="Every student measured against their own first take, then the whole cohort week by week - in score and in each of the seven colors."
+      blurb="Every student measured against their own first take, then the whole cohort week by week - in score and in each of the eight colors."
     >
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat
@@ -201,7 +201,7 @@ function Progress({ data }: { data: SampleCohort }) {
         <Stat value={`${pct(p.improved, p.n)}%`} label={`of ${p.n} students improved`} accent="text-storytelling" />
         <Stat
           value={`${p.litFirst.toFixed(1)} → ${p.litLast.toFixed(1)}`}
-          label="colors lit, of 7"
+          label="colors lit, of 8"
           accent="text-body-language"
         />
       </div>

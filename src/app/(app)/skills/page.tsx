@@ -28,7 +28,7 @@ export default function SkillsPage() {
           <ChevronDownIcon className="size-3.5 transition-transform group-open:rotate-180" />
         </summary>
         <p className="max-w-lg pt-2 text-sm text-ink-muted">
-          Short, focused lessons - one to two minutes each - across the seven colors of dynamic speaking. Dip in;
+          Short, focused lessons - one to two minutes each - across the eight colors of dynamic speaking. Dip in;
           don&apos;t binge.
         </p>
       </details>

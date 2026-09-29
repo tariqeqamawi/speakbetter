@@ -12,6 +12,7 @@ const COLORS = [
   "var(--color-storytelling)",
   "var(--color-figurative)",
   "var(--color-acting)",
+  "var(--color-voice)",
   "var(--color-structure)",
   "var(--color-mindset)",
   "var(--color-body-language)",

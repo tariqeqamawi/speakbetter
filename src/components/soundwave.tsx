@@ -160,11 +160,12 @@ function HeaderWave({ className }: { className: string }) {
         <defs>
           <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stopColor="var(--color-storytelling)" />
-            <stop offset="16%" stopColor="var(--color-figurative)" />
-            <stop offset="33%" stopColor="var(--color-acting)" />
-            <stop offset="50%" stopColor="var(--color-structure)" />
-            <stop offset="67%" stopColor="var(--color-mindset)" />
-            <stop offset="84%" stopColor="var(--color-body-language)" />
+            <stop offset="14%" stopColor="var(--color-figurative)" />
+            <stop offset="29%" stopColor="var(--color-acting)" />
+            <stop offset="43%" stopColor="var(--color-voice)" />
+            <stop offset="57%" stopColor="var(--color-structure)" />
+            <stop offset="71%" stopColor="var(--color-mindset)" />
+            <stop offset="86%" stopColor="var(--color-body-language)" />
             <stop offset="100%" stopColor="var(--color-advanced)" />
           </linearGradient>
         </defs>
@@ -228,11 +229,12 @@ export function Soundwave({
         <defs>
           <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stopColor="var(--color-storytelling)" />
-            <stop offset="16%" stopColor="var(--color-figurative)" />
-            <stop offset="33%" stopColor="var(--color-acting)" />
-            <stop offset="50%" stopColor="var(--color-structure)" />
-            <stop offset="67%" stopColor="var(--color-mindset)" />
-            <stop offset="84%" stopColor="var(--color-body-language)" />
+            <stop offset="14%" stopColor="var(--color-figurative)" />
+            <stop offset="29%" stopColor="var(--color-acting)" />
+            <stop offset="43%" stopColor="var(--color-voice)" />
+            <stop offset="57%" stopColor="var(--color-structure)" />
+            <stop offset="71%" stopColor="var(--color-mindset)" />
+            <stop offset="86%" stopColor="var(--color-body-language)" />
             <stop offset="100%" stopColor="var(--color-advanced)" />
           </linearGradient>
           {spec.lens > 0 && (

@@ -360,11 +360,11 @@ function Outcomes({ m }: { m: M }) {
                   <div key={c.id} className="relative h-1.5 rounded-full bg-navy-900">
                     <div
                       className="absolute inset-y-0 left-0 rounded-full"
-                      style={{ width: `${last!.spectrum[c.id]}%`, background: `var(--color-${c.id})` }}
+                      style={{ width: `${last!.spectrum[c.id] ?? 0}%`, background: `var(--color-${c.id})` }}
                     />
                     <div
                       className="absolute inset-y-0 left-0 rounded-full bg-navy-950/60"
-                      style={{ width: `${first!.spectrum[c.id]}%` }}
+                      style={{ width: `${first!.spectrum[c.id] ?? 0}%` }}
                     />
                   </div>
                 ))}

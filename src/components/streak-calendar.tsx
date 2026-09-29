@@ -18,7 +18,7 @@ function iso(d: number) {
 }
 
 /** The cascade, in the spectrum's order. */
-const STREAK_COLORS = ["mindset", "body-language", "storytelling", "figurative", "acting", "structure", "advanced"] as const;
+const STREAK_COLORS = ["mindset", "body-language", "storytelling", "figurative", "acting", "voice", "structure", "advanced"] as const;
 
 export function StreakCalendar({ state }: { state: AppState }) {
   const days = practiceDays(state);

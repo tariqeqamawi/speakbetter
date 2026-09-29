@@ -119,7 +119,7 @@ export function buildContext(
   const system = [
     COACH_BRIEF,
     "",
-    "THE SEVEN CATEGORIES (use these ids exactly)",
+    "THE EIGHT CATEGORIES (use these ids exactly)",
     categoryGuide(),
     "",
     "THE STUDENT'S LEVEL",

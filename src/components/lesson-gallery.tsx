@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { categories, categoryById, type CategoryId } from "@/data/categories";
-import { lessons } from "@/data/lessons";
+import { lessonsInCategory } from "@/data/lessons";
 import { lessonMinutes } from "@/lib/progress";
 import { CategoryIcon } from "@/components/category-icons";
 import { ChevronDownIcon } from "@/components/icons";
@@ -46,7 +46,7 @@ export function LessonGallery() {
     return () => clearInterval(t);
   }, [auto, seen]);
 
-  const shown = useMemo(() => lessons.filter((l) => l.category === color), [color]);
+  const shown = useMemo(() => lessonsInCategory(color), [color]);
   const cat = categoryById.get(color)!;
   const current = shown[Math.min(index, shown.length - 1)];
   const minutes = useMemo(
@@ -99,7 +99,7 @@ export function LessonGallery() {
       <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:justify-center sm:overflow-visible sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {categories.map((c) => {
           const on = c.id === color;
-          const count = lessons.filter((l) => l.category === c.id).length;
+          const count = lessonsInCategory(c.id).length;
           return (
             <button
               key={c.id}

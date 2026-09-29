@@ -112,7 +112,7 @@ export function deckCardsIn(category: CategoryId): string[] {
 export const rulesCard = {
   title: "How to use this deck",
   points: [
-    "Building a talk? Pull one card of each color. Seven ingredients - a story, the language to paint it, a way to perform it, a shape, a mindset, a body, a finish.",
+    "Building a talk? Pull one card of each color. Eight ingredients - a story, the language to paint it, a way to perform it, a voice to carry it, a shape, a mindset, a body, a finish.",
     "Need one idea fast? The color is the index. Reach for yellow for storytelling, cyan for body language, and read the two lines on the back.",
     "Every card is a lesson in the course. The card is the reminder; the video is the teaching.",
   ],

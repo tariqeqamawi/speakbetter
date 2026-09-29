@@ -72,17 +72,27 @@ const strengths: Record<CategoryId, Observation[]> = {
     },
     {
       note: "Your imagery touched more than one sense, which makes it immersive.",
-      lessonIds: ["1080679081"], // Visual, Aural & Kinaesthetic Speaking
+      lessonIds: ["1081707157"], // Onomatopoeia
     },
   ],
   acting: [
     {
-      note: "Your vocal variety kept the delivery musical - tone shifts arrived right on the story beats.",
-      lessonIds: ["1080675446"], // Making Your Message a Melody
-    },
-    {
       note: "You embodied the moment instead of reporting it.",
       lessonIds: ["1081163657"], // Simulate Sounds & Embody Emotions
+    },
+    {
+      note: "You acted the scene out rather than describing it - we watched it happen.",
+      lessonIds: ["1081162875"], // Don't Just Speak It, Act Out The Scene
+    },
+  ],
+  voice: [
+    {
+      note: "Your vocal variety kept the delivery musical - tone shifts arrived right on the story beats.",
+      lessonIds: ["1081285460"], // Vocal Delivery: Make Your Message a Melody
+    },
+    {
+      note: "That pause before the key line gave it room to land.",
+      lessonIds: ["1081162033"], // Powerful Pause vs Awkward Silence
     },
   ],
   structure: [
@@ -117,12 +127,12 @@ const strengths: Record<CategoryId, Observation[]> = {
   ],
   advanced: [
     {
-      note: "That pause before the key line was a genuine mic-drop setup.",
-      lessonIds: ["1081162033"], // Powerful Pause vs Awkward Silence
+      note: "That closing line was a genuine mic-drop setup.",
+      lessonIds: ["1081161815"], // How To Build Mic Drop Moments
     },
     {
-      note: "Succinct and clean - nothing overstayed its welcome.",
-      lessonIds: ["1081200223"], // Staying Succinct: Pro Tip
+      note: "You invited rather than sold - the ask felt like a recommendation.",
+      lessonIds: ["1081164747"], // Don't Sell - Invite & Recommend
     },
   ],
 };
@@ -150,12 +160,22 @@ const improvements: Record<CategoryId, Observation[]> = {
   ],
   acting: [
     {
+      note: "Step into the scene - play the characters rather than reporting what they said.",
+      lessonIds: ["1081163466"], // How To Convey Multiple Characters
+    },
+    {
+      note: "Imagine it before you say it - the picture in your head is what the audience sees.",
+      lessonIds: ["1081162752"], // Don't Just Say It, Imagine It
+    },
+  ],
+  voice: [
+    {
       note: "A few filler words crept in under pressure - swap them for silent pauses.",
       lessonIds: ["1080629747"], // What Are Filler Words
     },
     {
       note: "Let your voice range wider: the melody flattened in the middle third.",
-      lessonIds: ["1080675446"], // Making Your Message a Melody
+      lessonIds: ["1081285460"], // Vocal Delivery: Make Your Message a Melody
     },
   ],
   structure: [
@@ -190,12 +210,12 @@ const improvements: Record<CategoryId, Observation[]> = {
   ],
   advanced: [
     {
-      note: "One deliberate pause before your best line would have doubled its weight.",
-      lessonIds: ["1081162033"], // Powerful Pause vs Awkward Silence
+      note: "Build to one mic-drop line - a short, quotable close the room can carry out.",
+      lessonIds: ["1081161815"], // How To Build Mic Drop Moments
     },
     {
-      note: "Trim the runway: the first two sentences could go entirely.",
-      lessonIds: ["1081200223"], // Staying Succinct: Pro Tip
+      note: "Tie the call to action to the moral of your story, so the ask feels earned.",
+      lessonIds: ["1081198162"], // Link Your Call To Action To The Moral Of The Story
     },
   ],
 };
@@ -254,12 +274,12 @@ export function mockReview(body: MockRequest): ReviewResponse | null {
 
   const litColors = categories.filter((c) => spectrum[c.id] >= 40).length;
   const summary = passed
-    ? `Challenge complete - ${litColors} of 7 colors lit up. ${
+    ? `Challenge complete - ${litColors} of ${categories.length} colors lit up. ${
         litColors >= 6
           ? "That's a genuinely full-spectrum talk."
           : "Widen the spectrum next attempt and watch the score climb."
       }`
-    : `Not there yet - but ${litColors} of 7 colors showed up, and every attempt is compounding. Focus on the notes below and go again.`;
+    : `Not there yet - but ${litColors} of ${categories.length} colors showed up, and every attempt is compounding. Focus on the notes below and go again.`;
 
   // The rest of the review's shape, so the page can be seen whole in
   // development: what worked (the three strongest colors), the cited

@@ -33,7 +33,7 @@ const COLORS = [
   "var(--color-storytelling)",
   "var(--color-acting)",
   "var(--color-structure)",
-  "#3b6cff",
+  "var(--color-voice)",
   "var(--color-mindset)",
   "var(--color-body-language)",
 ];

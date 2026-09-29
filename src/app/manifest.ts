@@ -57,7 +57,7 @@ export default function manifest(): MetadataRoute.Manifest {
         sizes: "824x1600",
         type: "image/png",
         form_factor: "narrow",
-        label: "Seven colors of speaking, each a section of short lessons",
+        label: "Eight colors of speaking, each a section of short lessons",
       },
       {
         src: "/screenshots/cards-narrow.png",
@@ -78,7 +78,7 @@ export default function manifest(): MetadataRoute.Manifest {
         sizes: "1280x800",
         type: "image/png",
         form_factor: "wide",
-        label: "Seven colors of speaking, each a section of short lessons",
+        label: "Eight colors of speaking, each a section of short lessons",
       },
       {
         src: "/screenshots/cards-wide.png",

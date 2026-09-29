@@ -14,7 +14,7 @@ import { talkMailto } from "@/data/site";
 
 export const metadata: Metadata = {
   title: "The Deck",
-  description: "The Speak Better card deck: a card for every speaking skill, in seven colors. Pull one of each and you have a talk.",
+  description: "The Speak Better card deck: a card for every speaking skill, in eight colors. Pull one of each and you have a talk.",
 };
 
 /** What each color's card brings to a talk (data/deck.ts, "How the deck is used"). */
@@ -22,6 +22,7 @@ const ROLE: Record<string, string> = {
   storytelling: "the story you'll tell",
   figurative: "the language you'll paint it in",
   acting: "how you'll perform it",
+  voice: "how your voice will carry it",
   structure: "the shape you'll build",
   mindset: "what you'll bring to it",
   "body-language": "what your body will do",
@@ -33,8 +34,8 @@ export default function DeckPage() {
   return (
     <div className="flex flex-col gap-20 pb-10">
       <div className="flex flex-col items-center gap-8">
-        <SiteHero ghost="The Deck" kicker="The Speak Better deck" title="Your whole speaking toolkit, in seven colors" accent="text-figurative">
-          {cards} cards, color-coded to seven areas of public speaking, designed for speakers who desire engaging talks
+        <SiteHero ghost="The Deck" kicker="The Speak Better deck" title="Your whole speaking toolkit, in eight colors" accent="text-figurative">
+          {cards} cards, color-coded to eight areas of public speaking, designed for speakers who desire engaging talks
           on the fly.
         </SiteHero>
         <div className="relative w-full max-w-4xl overflow-hidden rounded-3xl border border-navy-600">
@@ -51,11 +52,11 @@ export default function DeckPage() {
       </div>
 
       <section className="flex flex-col items-center gap-8">
-        <SiteHeading kicker="How it works" title="Seven cards on the table, one of every color" accent="text-structure" />
+        <SiteHeading kicker="How it works" title="Eight cards on the table, one of every color" accent="text-structure" />
         {/* Tariq's words. */}
         <p className="-mt-4 max-w-2xl text-center text-ink-muted text-balance">
           Every speaking skill in your hand and ready to use immediately. {cards} cards, one for every skill in the Speak
-          Better system, split up into seven colors. Pull cards from one color to learn skills in that area, or pull a
+          Better system, split up into eight colors. Pull cards from one color to learn skills in that area, or pull a
           card of every color to have the ingredients for a dynamic talk that lights up the stage.
         </p>
         <ol className="grid w-full max-w-4xl gap-3 sm:grid-cols-2 lg:grid-cols-4">

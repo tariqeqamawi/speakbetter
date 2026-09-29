@@ -20,7 +20,7 @@ const PACKS = [
 ];
 
 const WHAT = [
-  { title: "Every seat, the full app", body: "All the skill lessons in the seven colors, the card deck, and the 25 challenges of the S.T.O.R.Y. road." },
+  { title: "Every seat, the full app", body: "All the skill lessons in the eight colors, the card deck, and the 25 challenges of the S.T.O.R.Y. road." },
   { title: "Coach on every take", body: "Each person films, and the AI coach watches and reviews every attempt - gestures, eyes, voice and the story." },
   { title: "Live with Tariq", body: "Sessions for your group with Tariq himself - hot-seat coaching on the talks your people actually have to give." },
   { title: "Built around your people", body: "Pitches, all-hands, client calls, keynotes, going on camera - we shape the program around what they're preparing for." },

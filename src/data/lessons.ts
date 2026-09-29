@@ -2,13 +2,17 @@ import type { CategoryId } from "./categories";
 
 // The Skills library - every lesson video, sorted into its color category.
 // Vimeo ids come from the course's actual video library. The category sort
-// is a strong first pass awaiting Tariq's review (build plan, Phase 1);
-// vocal-delivery lessons are nested under "acting" pending that review.
+// is Tariq's, reviewed lesson by lesson; the vocal-delivery lessons have
+// their own colour, Voice, rather than sitting inside Act.
 
 export interface Lesson {
   vimeoId: string;
   title: string;
+  /** Its home colour: the one it scores in, and the suit its card sits in. */
   category: CategoryId;
+  /** Other colours it is also listed under - one lesson, one watch, shown
+   *  on more than one shelf because it belongs on both. */
+  alsoIn?: CategoryId[];
 }
 
 export const lessons: Lesson[] = [
@@ -23,8 +27,9 @@ export const lessons: Lesson[] = [
   { vimeoId: "1081290890", title: "How To Create Your Story Book - Step 1", category: "storytelling" },
   { vimeoId: "1081292518", title: "How To Create Your Story Book - Step 2", category: "storytelling" },
   { vimeoId: "1081292414", title: "Add The Moral or Message", category: "storytelling" },
-  { vimeoId: "1081294121", title: "Give The Setting Then Dive Into The Scene", category: "storytelling" },
-  { vimeoId: "1080679081", title: "Visual, Aural & Kinaesthetic Speaking", category: "storytelling" },
+  // A storytelling technique that is also how a talk is framed: listed in
+  // Frame too (alsoIn), watched once.
+  { vimeoId: "1081294121", title: "Give The Setting Then Dive Into The Scene", category: "storytelling", alsoIn: ["structure"] },
 
   // ── Figurative language (orange) ────────────────────────────────────
   { vimeoId: "1081032328", title: "Introduction To Figurative Language", category: "figurative" },
@@ -38,7 +43,7 @@ export const lessons: Lesson[] = [
   { vimeoId: "1081707642", title: "Analogies Masterclass", category: "figurative" },
   { vimeoId: "1080654991", title: "Alliteration", category: "figurative" },
 
-  // ── Acting skills for speakers (red) - includes vocal delivery ──────
+  // ── Acting skills for speakers (red) ────────────────────────────────
   { vimeoId: "1081031146", title: "Imagination: The Production Studio In Your Mind", category: "acting" },
   { vimeoId: "1081162752", title: "Acting Tip For Speakers: Don't Just Say It, Imagine It", category: "acting" },
   { vimeoId: "1081162875", title: "Don't Just Speak It, Act Out The Scene", category: "acting" },
@@ -46,13 +51,21 @@ export const lessons: Lesson[] = [
   { vimeoId: "1081163466", title: "How To Convey Multiple Characters", category: "acting" },
   { vimeoId: "1081163657", title: "Simulate Sounds & Embody Emotions", category: "acting" },
   { vimeoId: "1081163798", title: "Using Props To Anchor Your Talk", category: "acting" },
-  { vimeoId: "1080443133", title: "Voice: Conversational vs Commanding", category: "acting" },
-  { vimeoId: "1080612884", title: "Warming Up The Voice", category: "acting" },
-  { vimeoId: "1080675446", title: "Making Your Message a Melody", category: "acting" },
-  { vimeoId: "1081285460", title: "Vocal Delivery: Make Your Message a Melody", category: "acting" },
-  { vimeoId: "1081162033", title: "Powerful Pause vs Awkward Silence", category: "acting" },
-  { vimeoId: "1081200064", title: "Using Tongue Twisters To Improve Speech", category: "acting" },
-  { vimeoId: "1080629747", title: "What Are Filler Words And How To Remove Them", category: "acting" },
+
+  // ── Voice & vocal delivery (royal blue) ─────────────────────────────
+  // Split out of Act: pace, pitch, pause, projection, fillers - how the
+  // voice carries the message, as against acting the scene out.
+  { vimeoId: "1080612884", title: "Warming Up The Voice", category: "voice" },
+  { vimeoId: "1080443133", title: "Voice: Conversational vs Commanding", category: "voice" },
+  { vimeoId: "1081285460", title: "Vocal Delivery: Make Your Message a Melody", category: "voice" },
+  { vimeoId: "1080675446", title: "Making Your Message a Melody", category: "voice" },
+  { vimeoId: "1081200064", title: "Using Tongue Twisters To Improve Speech", category: "voice" },
+  { vimeoId: "1081162033", title: "Powerful Pause vs Awkward Silence", category: "voice" },
+  { vimeoId: "1080629747", title: "What Are Filler Words And How To Remove Them", category: "voice" },
+  { vimeoId: "1080679081", title: "Visual, Aural & Kinaesthetic Speaking", category: "voice" },
+  { vimeoId: "1082732774", title: "Being Professional vs Being Serious", category: "voice" },
+  { vimeoId: "1081032074", title: "How To Speak Naturally To a Phone or Camera", category: "voice" },
+  { vimeoId: "1081200223", title: "Staying Succinct: Pro Tip", category: "voice" },
 
   // ── Structure & framing (purple) ────────────────────────────────────
   { vimeoId: "1080624037", title: "Inform, Inspire, Invite, Empower, Entertain, Educate", category: "structure" },
@@ -77,10 +90,10 @@ export const lessons: Lesson[] = [
   { vimeoId: "1094881996", title: "How To Overcome Your Fear Of Speaking: Soften", category: "mindset" },
   { vimeoId: "1081162517", title: "As The Speaker You Have ALL The Power!", category: "mindset" },
   { vimeoId: "1081162691", title: "You Are Delivering An Experience, Not A Talk", category: "mindset" },
-  { vimeoId: "1082732774", title: "Being Professional vs Being Serious", category: "mindset" },
   { vimeoId: "1081162172", title: "Make It About Your Audience", category: "mindset" },
   { vimeoId: "1094883641", title: "Don't Give Your Power Away", category: "mindset" },
   { vimeoId: "1080635988", title: "Speak As If To a Room of 9 Year Olds", category: "mindset" },
+  { vimeoId: "1081032253", title: "Keep The Light Source In Front", category: "mindset" },
 
   // ── Body language & physical expression (blue) ──────────────────────
   { vimeoId: "1081708997", title: "Introduction To Body & Physical Expression", category: "body-language" },
@@ -99,9 +112,6 @@ export const lessons: Lesson[] = [
   { vimeoId: "1081164747", title: "Don't Sell - Invite & Recommend", category: "advanced" },
   { vimeoId: "1081198604", title: "How To Memorize Your Talks", category: "advanced" },
   { vimeoId: "1081165164", title: "Memorized Inserts", category: "advanced" },
-  { vimeoId: "1081200223", title: "Staying Succinct: Pro Tip", category: "advanced" },
-  { vimeoId: "1081032074", title: "How To Speak Naturally To a Phone or Camera", category: "mindset" },
-  { vimeoId: "1081032253", title: "Keep The Light Source In Front", category: "advanced" },
   // Moved from Figurative: a rhyme is a finishing tool for a speaker who
   // already has the basics - Advanced, not a first figure of speech.
   { vimeoId: "1081164442", title: "Using Rhyme", category: "advanced" },
@@ -117,6 +127,16 @@ export const lessons: Lesson[] = [
 
 export const lessonByVimeoId = new Map(lessons.map((l) => [l.vimeoId, l]));
 
+/** Whether a lesson is listed under a colour - its home, or one it is
+ *  also shown in. */
+export function isInCategory(lesson: Lesson, category: CategoryId): boolean {
+  return lesson.category === category || Boolean(lesson.alsoIn?.includes(category));
+}
+
+/** Every lesson listed under a colour: its own, then the ones it shares. */
 export function lessonsInCategory(category: CategoryId): Lesson[] {
-  return lessons.filter((l) => l.category === category);
+  return [
+    ...lessons.filter((l) => l.category === category),
+    ...lessons.filter((l) => l.category !== category && l.alsoIn?.includes(category)),
+  ];
 }

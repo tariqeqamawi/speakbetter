@@ -221,7 +221,7 @@ function LandingBody() {
           </h2>
           <p className="-mt-2 max-w-2xl text-center text-lg text-ink-muted text-balance sm:text-xl">
             Other speaking apps give you generic advice, even the ones <em>with</em> AI coaching. Speak Better shows
-            your speaking across seven key areas, color-coded, each one lighting up as you demonstrate its skills.
+            your speaking across eight key areas, color-coded, each one lighting up as you demonstrate its skills.
             It&apos;s unlike anything out there.
           </p>
           <span className="spectrum-rule h-1 w-16 rounded-full" />

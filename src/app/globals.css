@@ -26,12 +26,13 @@
   --color-ink-muted: #a6adc4;
   --color-ink-faint: #767e99;
 
-  /* The seven skill categories - master plan §03.
+  /* The eight skill categories - master plan §03.
    * Neon and saturated, each verified to clear 3:1 contrast on the navy
-   * ground and to stay perceptually distinct from the other six. */
+   * ground and to stay perceptually distinct from the other seven. */
   --color-storytelling: #ffd60a; /* neon yellow  - Storytelling techniques */
   --color-figurative: #ff9500; /* bright orange - Figurative language */
   --color-acting: #ff4a2b; /* bright red    - Acting skills for speakers */
+  --color-voice: #4d6bff; /* royal blue    - Voice & vocal delivery */
   --color-structure: #f53de0; /* magenta       - Structure & framing */
   --color-mindset: #1fe890; /* neon green    - Speaker's mindset & psychology */
   --color-body-language: #22d9f5; /* bright cyan   - Body language & physical expression */
@@ -1019,7 +1020,7 @@ svg.soundwave-c {
 /* The reward for finishing a lesson, rising off the player and away.
    Slower and taller than .xp-pop, which is a receipt printed in place -
    this one is meant to be watched leaving. */
-/* A figure drawn in all seven colors. The spectrum belongs to the
+/* A figure drawn in all eight colors. The spectrum belongs to the
  * student, so the numbers that are theirs - minutes spoken, XP earned
  * - are painted in it rather than in one accent. */
 .spectrum-text {
@@ -1028,6 +1029,7 @@ svg.soundwave-c {
     var(--color-storytelling),
     var(--color-figurative),
     var(--color-acting),
+    var(--color-voice),
     var(--color-structure),
     var(--color-mindset),
     var(--color-body-language),
@@ -1060,7 +1062,7 @@ svg.soundwave-c {
   }
 }
 
-/* Where the student is standing on the road: a ring of all seven
+/* Where the student is standing on the road: a ring of all eight
  * colors around their circle, turning slowly and breathing, so the one
  * marker that moves is unmistakable without covering anything. */
 .here-ring {
@@ -1069,6 +1071,7 @@ svg.soundwave-c {
     var(--color-storytelling),
     var(--color-figurative),
     var(--color-acting),
+    var(--color-voice),
     var(--color-structure),
     var(--color-mindset),
     var(--color-body-language),
@@ -1208,22 +1211,25 @@ svg.soundwave-c {
   100% {
     background-color: #846f05;
   }
-  14.3% {
+  12.5% {
     background-color: #854e00;
   }
-  28.6% {
+  25.0% {
     background-color: #852716;
   }
-  42.9% {
+  37.5% {
+    background-color: #23349a;
+  }
+  50.0% {
     background-color: #7f2075;
   }
-  57.1% {
+  62.5% {
     background-color: #10794b;
   }
-  71.4% {
+  75.0% {
     background-color: #12717f;
   }
-  85.7% {
+  87.5% {
     background-color: #6d0926;
   }
 }
@@ -1233,22 +1239,25 @@ svg.soundwave-c {
   100% {
     background-color: var(--color-storytelling);
   }
-  14.3% {
+  12.5% {
     background-color: var(--color-figurative);
   }
-  28.6% {
+  25.0% {
     background-color: var(--color-acting);
   }
-  42.9% {
+  37.5% {
+    background-color: var(--color-voice);
+  }
+  50.0% {
     background-color: var(--color-structure);
   }
-  57.1% {
+  62.5% {
     background-color: var(--color-mindset);
   }
-  71.4% {
+  75.0% {
     background-color: var(--color-body-language);
   }
-  85.7% {
+  87.5% {
     background-color: var(--color-advanced-lift);
   }
 }
@@ -1457,8 +1466,8 @@ svg.soundwave-c {
     var(--color-storytelling),
     var(--color-figurative),
     var(--color-acting),
+    var(--color-voice),
     var(--color-structure),
-    #3b6cff,
     var(--color-mindset),
     var(--color-body-language),
     var(--color-storytelling)
@@ -1508,6 +1517,7 @@ svg.soundwave-c {
     var(--color-storytelling),
     var(--color-figurative),
     var(--color-acting),
+    var(--color-voice),
     var(--color-structure),
     var(--color-mindset),
     var(--color-body-language),
@@ -1976,7 +1986,8 @@ html.bare .demo-banner {
     var(--color-ink) 30%,
     var(--color-storytelling) 40%,
     var(--color-figurative) 45%,
-    var(--color-acting) 50%,
+    var(--color-acting) 49%,
+    var(--color-voice) 52%,
     var(--color-structure) 55%,
     var(--color-mindset) 60%,
     var(--color-body-language) 65%,
@@ -2737,8 +2748,8 @@ html.bare .demo-banner {
     var(--color-storytelling),
     var(--color-figurative),
     var(--color-acting),
+    var(--color-voice),
     var(--color-structure),
-    #3b6cff,
     var(--color-mindset),
     var(--color-body-language),
     var(--color-storytelling)
@@ -3241,19 +3252,20 @@ html.bare .demo-banner {
   .reality-drift { animation: none; }
 }
 
-/* The seven colours of speaking, in turn: the spectrum's number moves
+/* The eight colours of speaking, in turn: the spectrum's number moves
  * through them, and its picture shifts hue with it. */
 @keyframes spectrum-cycle {
   0%, 100% { color: var(--color-storytelling); }
-  14% { color: var(--color-structure); }
-  28% { color: var(--color-acting); }
-  42% { color: var(--color-figurative); }
-  57% { color: var(--color-mindset); }
-  71% { color: var(--color-body-language); }
-  85% { color: var(--color-advanced); }
+  12.5% { color: var(--color-structure); }
+  25% { color: var(--color-acting); }
+  37.5% { color: var(--color-voice); }
+  50% { color: var(--color-figurative); }
+  62.5% { color: var(--color-mindset); }
+  75% { color: var(--color-body-language); }
+  87.5% { color: var(--color-advanced); }
 }
 .spectrum-cycle {
-  animation: spectrum-cycle 7s linear infinite;
+  animation: spectrum-cycle 8s linear infinite;
 }
 @keyframes spectrum-hue {
   from { filter: hue-rotate(0deg) saturate(1.1); }
@@ -3270,7 +3282,7 @@ html.bare .demo-banner {
 /* THE CALLS TO ACTION - saturated colour with a neon border. Replaces
  * the neon sign and the glass pill above (their rules still load; these
  * come later and win). The face of the button is the colour itself, at
- * full saturation, slowly cascading through the seven; round it, a
+ * full saturation, slowly cascading through the eight; round it, a
  * border of light in the same colour, glowing, stepping through the
  * spectrum with it. */
 @property --cta-c {
@@ -3280,19 +3292,20 @@ html.bare .demo-banner {
 }
 @keyframes cta-cascade {
   0%, 100% { --cta-c: #ffd60a; }
-  14.3% { --cta-c: #ff9500; }
-  28.6% { --cta-c: #ff4a2b; }
-  42.9% { --cta-c: #f53de0; }
-  57.1% { --cta-c: #1fe890; }
-  71.4% { --cta-c: #22d9f5; }
-  85.7% { --cta-c: #f0356a; }
+  12.5% { --cta-c: #ff9500; }
+  25% { --cta-c: #ff4a2b; }
+  37.5% { --cta-c: #4d6bff; }
+  50% { --cta-c: #f53de0; }
+  62.5% { --cta-c: #1fe890; }
+  75% { --cta-c: #22d9f5; }
+  87.5% { --cta-c: #f0356a; }
 }
 .cta-neon-wrap,
 .cta-neon {
   border-radius: 9999px;
 }
 .cta-neon-wrap {
-  animation: cta-cascade 21s linear infinite;
+  animation: cta-cascade 24s linear infinite;
 }
 .cta-neon-glow {
   display: none;
@@ -3467,6 +3480,7 @@ html.bare .demo-banner {
   --color-storytelling: #8a6a2c;
   --color-figurative: #a8812f;
   --color-acting: #9c9c96;
+  --color-voice: #6f6f6a;
   --color-advanced: #b8b8b2;
   background: #ffffff;
   color: var(--color-ink);

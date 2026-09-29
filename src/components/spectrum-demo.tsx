@@ -25,6 +25,7 @@ const FLAT: Sample = {
     storytelling: 22,
     figurative: 12,
     acting: 15,
+    voice: 20,
     structure: 68,
     mindset: 61,
     "body-language": 18,
@@ -34,12 +35,13 @@ const FLAT: Sample = {
 
 const DYNAMIC: Sample = {
   label: "After",
-  caption: "Same speaker, same topic - now reaching across all seven.",
+  caption: "Same speaker, same topic - now reaching across all eight.",
   score: 88,
   spectrum: {
     storytelling: 91,
     figurative: 74,
     acting: 68,
+    voice: 79,
     structure: 82,
     mindset: 86,
     "body-language": 77,
@@ -79,7 +81,7 @@ export function SpectrumDemo() {
     return () => clearInterval(id);
   }, [live]);
 
-  const lit = categories.filter((c) => showing.spectrum[c.id] >= 40).length;
+  const lit = categories.filter((c) => (showing.spectrum[c.id] ?? 0) >= 40).length;
 
   return (
     <div
@@ -111,7 +113,7 @@ export function SpectrumDemo() {
 
       <div className="flex flex-col gap-2">
         {categories.map((cat) => {
-          const value = showing.spectrum[cat.id];
+          const value = showing.spectrum[cat.id] ?? 0;
           const on = value >= 40;
           return (
             <div key={cat.id} className="flex items-center gap-3">

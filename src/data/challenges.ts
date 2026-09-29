@@ -1,5 +1,5 @@
 import type { CategoryId } from "./categories";
-import { lessons } from "./lessons";
+import { lessonsInCategory } from "./lessons";
 
 // The STORY curriculum - master plan §04. Five phases, 25 challenges,
 // each matched to its filmed explainer video and the Skills lessons a
@@ -207,7 +207,7 @@ export const challenges: Challenge[] = [
     targetSkills: ["mindset"],
     // Every Presence lesson in the library, read from it - so a lesson
     // moved in or out of Presence is picked up here too.
-    relatedLessonIds: lessons.filter((l) => l.category === "mindset").map((l) => l.vimeoId),
+    relatedLessonIds: lessonsInCategory("mindset").map((l) => l.vimeoId),
   },
 
   // ── T - Train Your Instrument ───────────────────────────────────────
@@ -223,7 +223,7 @@ export const challenges: Challenge[] = [
       "No filler words for the full recording",
       "Use pauses instead of fillers when you need to think",
     ],
-    targetSkills: ["acting", "mindset"],
+    targetSkills: ["voice", "mindset"],
     relatedLessonIds: ["1080629747", "1081162033", "1081200223"],
   },
   {
@@ -253,7 +253,7 @@ export const challenges: Challenge[] = [
       "Use at least one deliberate change of pace",
       "Include one powerful pause",
     ],
-    targetSkills: ["acting"],
+    targetSkills: ["voice"],
     relatedLessonIds: ["1080675446", "1081285460", "1080443133", "1081162033"],
   },
   {
@@ -268,7 +268,7 @@ export const challenges: Challenge[] = [
       "Repeat each at increasing speed",
       "Stay intelligible even at top speed",
     ],
-    targetSkills: ["acting"],
+    targetSkills: ["voice"],
     relatedLessonIds: ["1081200064", "1080612884"],
   },
   {
@@ -283,7 +283,7 @@ export const challenges: Challenge[] = [
       "Commit fully - no breaking into apology",
       "Have fun with it (it shows)",
     ],
-    targetSkills: ["mindset", "acting"],
+    targetSkills: ["mindset", "voice"],
     relatedLessonIds: ["1094881996", "1080612884", "1082732774"],
   },
 
@@ -438,7 +438,7 @@ export const challenges: Challenge[] = [
     targetSkills: ["figurative"],
     // Every Paint lesson, read from the library so the list follows it
     // when a lesson moves colour.
-    relatedLessonIds: lessons.filter((l) => l.category === "figurative").map((l) => l.vimeoId),
+    relatedLessonIds: lessonsInCategory("figurative").map((l) => l.vimeoId),
   },
   {
     slug: "someone-elses-story",
@@ -514,7 +514,7 @@ export const challenges: Challenge[] = [
       "Introduce a (real or imagined) guest so they sound fascinating",
       "Land a clean handoff question to end",
     ],
-    targetSkills: ["structure", "acting"],
+    targetSkills: ["structure", "voice"],
     relatedLessonIds: ["1081198798", "1081198957", "1080443133"],
   },
   {

@@ -64,6 +64,7 @@ const LIBRARY: { category: CategoryId; title: string; message: string }[] = [
   { category: "storytelling", title: "Once Upon a Time", message: "Every Tell lesson watched. You know how a story is built now; go and tell one." },
   { category: "figurative", title: "Word Painter", message: "Every Paint lesson watched. The palette is yours." },
   { category: "acting", title: "Method Actor", message: "Every Act lesson watched. Now perform the moment instead of reporting it." },
+  { category: "voice", title: "Perfect Pitch", message: "Every Voice lesson watched. Pace, pause and melody - your instrument is tuned." },
   { category: "structure", title: "The Architect", message: "Every Frame lesson watched. You can build a talk that stands up on its own." },
   { category: "body-language", title: "Body of Work", message: "Every Body lesson watched. Your whole body is part of the talk now." },
   { category: "advanced", title: "Grandmaster", message: "Every Pro lesson watched. The tricks the professionals use - all of them." },
@@ -207,7 +208,7 @@ export const badgeDefs: BadgeDef[] = [
     message:
       "Every color lit up in a single talk. That is a genuinely dynamic speaker at work.",
     icon: "spectrum",
-    how: "Light up all seven colors in a single talk - 60 or more on every one.",
+    how: "Light up every color in a single talk - 60 or more on every one.",
     earned: (s) =>
       s.attempts.some((a) =>
         Object.values(a.spectrum).every((v) => v >= 60),
@@ -317,12 +318,14 @@ export const badgeDefs: BadgeDef[] = [
     title: "Composer",
     message: "You made your message a melody. Range like that keeps a room.",
     icon: "zap",
-    how: "Score 85 or higher on 'Play With Your Voice', and 75 or higher on acting in three other challenges.",
+    how: "Score 85 or higher on 'Play With Your Voice', and 75 or higher on voice in three other challenges.",
     earned: (s) =>
       s.attempts.some((a) => a.challengeSlug === "voice-melody" && a.passed && (a.score ?? 0) >= 85) &&
       new Set(
         s.attempts
-          .filter((a) => a.challengeSlug !== "voice-melody" && (a.spectrum.acting ?? 0) >= 75)
+          // Takes scored before Voice had its own colour carried the
+          // voice inside Act, so those still count on their Act score.
+          .filter((a) => a.challengeSlug !== "voice-melody" && (a.spectrum.voice ?? a.spectrum.acting ?? 0) >= 75)
           .map((a) => a.challengeSlug),
       ).size >= 3,
   },

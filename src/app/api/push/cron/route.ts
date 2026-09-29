@@ -36,7 +36,7 @@ function pick(record: PushRecord): { kind: keyof PushRecord["sent"]; note: Note 
       kind: "recap",
       note: {
         title: "Your week, in colors",
-        body: `${r.colorsLit} of 7 colors lit in your talks so far, ${r.xp.toLocaleString()} XP to your name, ${
+        body: `${r.colorsLit} of 8 colors lit in your talks so far, ${r.xp.toLocaleString()} XP to your name, ${
           r.streak > 1 ? `a ${r.streak}-day streak running` : "a fresh week ahead"
         }. Keep going.`,
         url: "/profile",

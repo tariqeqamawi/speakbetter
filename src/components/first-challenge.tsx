@@ -99,7 +99,7 @@ export function FirstChallenge() {
             {[
               ["What you did with your hands and eyes", "text-body-language"],
               ["Which lessons you were already using", "text-storytelling"],
-              ["Your score, and your seven-color spectrum", "text-mindset"],
+              ["Your score, and your eight-color spectrum", "text-mindset"],
               ["Said aloud, with the words on screen", "text-advanced"],
             ].map(([line, color]) => (
               <li key={line} className="flex items-start gap-2">

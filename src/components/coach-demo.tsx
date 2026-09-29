@@ -36,6 +36,7 @@ const SAMPLE_SPECTRUM: Record<CategoryId, number> = {
   storytelling: 72,
   figurative: 34,
   acting: 41,
+  voice: 30,
   structure: 58,
   mindset: 66,
   "body-language": 63,
@@ -328,7 +329,7 @@ export function CoachDemo() {
           </ul>
         </DemoSection>
 
-        <DemoSection title={`Your color spectrum - ${lit} of 7 lit up`} Icon={SpectrumIcon} accentClass="text-body-language">
+        <DemoSection title={`Your color spectrum - ${lit} of 8 lit up`} Icon={SpectrumIcon} accentClass="text-body-language">
           {/* The wave first, as every real review shows it, then the bars. */}
           <div className="mb-4 overflow-hidden rounded-xl bg-navy-950/70 p-3">
             <SpectrumWave values={SAMPLE_SPECTRUM} highlight={["storytelling", "mindset"]} max={100} className="h-36 w-full sm:h-44" />

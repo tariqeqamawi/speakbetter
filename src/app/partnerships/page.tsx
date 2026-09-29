@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 const KINDS = [
   { title: "Schools & universities", body: "Speaking as part of the curriculum - the app for your students, and Tariq for the big day.", accent: "border-mindset/50 text-mindset" },
-  { title: "Coaches & trainers", body: "Give your clients the seven colors and Coach between your sessions.", accent: "border-storytelling/50 text-storytelling" },
+  { title: "Coaches & trainers", body: "Give your clients the eight colors and Coach between your sessions.", accent: "border-storytelling/50 text-storytelling" },
   { title: "Events & conferences", body: "A keynote or workshop from Tariq, and the app for your attendees afterwards.", accent: "border-acting/50 text-acting" },
   { title: "Creators & affiliates", body: "Share Speak Better with your audience and grow with it.", accent: "border-structure/50 text-structure" },
 ];

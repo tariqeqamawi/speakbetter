@@ -1,4 +1,6 @@
-// The seven color-coded skill categories - master plan §03.
+// The eight color-coded skill categories - master plan §03. (Seven
+// until Voice was split out of Act: the voice lessons were half of what
+// Act meant, and a colour that means two things teaches neither.)
 // Category colors are defined once in globals.css; the class strings here
 // must stay literal so Tailwind's scanner picks them up.
 
@@ -6,6 +8,7 @@ export type CategoryId =
   | "storytelling"
   | "figurative"
   | "acting"
+  | "voice"
   | "structure"
   | "mindset"
   | "body-language"
@@ -68,10 +71,22 @@ export const categories: Category[] = [
     short: "Act",
     code: "ACT",
     colorName: "Bright red",
-    blurb: "Voice, character, emotion, and scene work - deliver the experience, don't just say it.",
+    blurb: "Imagination, character, emotion and scene work - deliver the experience, don't just say it.",
     bgClass: "bg-acting",
     textClass: "text-acting",
     borderClass: "border-acting",
+  },
+  {
+    id: "voice",
+    name: "Voice",
+    subtitle: "Vocal Delivery",
+    short: "Voice",
+    code: "VOICE",
+    colorName: "Royal blue",
+    blurb: "Pace, pitch, pause and projection - no fillers, and a message that plays like a melody.",
+    bgClass: "bg-voice",
+    textClass: "text-voice",
+    borderClass: "border-voice",
   },
   {
     id: "structure",

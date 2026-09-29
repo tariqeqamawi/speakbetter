@@ -590,7 +590,11 @@ export function Feedback({
   // review instead, with the way to hear it beside it.
   const spokenPlan = preview || hasCoach(state);
   const litCount = categories.filter((c) => (attempt.spectrum[c.id] ?? 0) >= 40).length;
-  const neededLit = challenge.targetSkills.filter((c) => (attempt.spectrum[c] ?? 0) >= 40).length;
+  // A take scored before Voice was split out of Act has no Voice number:
+  // its voice was scored inside Act, so that stands in for it here.
+  const neededLit = challenge.targetSkills.filter(
+    (c) => (attempt.spectrum[c] ?? (c === "voice" ? attempt.spectrum.acting : 0) ?? 0) >= 40,
+  ).length;
 
   // The reveal is a sequence, not a page load: bars land one at a time,
   // the score counts up, the verdict arrives, the notes follow. Same
@@ -599,9 +603,9 @@ export function Feedback({
     revisit ||
     (typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches);
-  const [barsShown, setBarsShown] = useState(reduceMotion ? 7 : 0);
+  const [barsShown, setBarsShown] = useState(reduceMotion ? categories.length : 0);
   const [shownScore, setShownScore] = useState(reduceMotion ? attempt.score : 0);
-  const barsDone = barsShown >= 7;
+  const barsDone = barsShown >= categories.length;
   const scoreDone = shownScore >= attempt.score;
 
   // One bar every 260ms - enough gap for each landing to register.
@@ -765,7 +769,7 @@ export function Feedback({
 
       <ReviewSection
         title="Your color spectrum"
-        summary={settled ? `${litCount} of 7 colors lit - ${neededLit} of the ${challenge.targetSkills.length} this challenge needed` : "Landing now…"}
+        summary={settled ? `${litCount} of ${categories.length} colors lit - ${neededLit} of the ${challenge.targetSkills.length} this challenge needed` : "Landing now…"}
         Icon={SpectrumIcon}
         accentClass="text-body-language"
         open
@@ -1413,7 +1417,7 @@ function BarConfetti({ dense = false }: { dense?: boolean }) {
     left: ((i * 37) % 100) + (((i * 17) % 7) - 3) / 3,
     delay: ((i * 53) % 130) / 100,
     dur: 2.4 + ((i * 29) % 100) / 55,
-    color: ["storytelling", "figurative", "acting", "structure", "mindset", "body-language", "advanced"][i % 7],
+    color: ["storytelling", "figurative", "acting", "voice", "structure", "mindset", "body-language", "advanced"][i % 8],
     w: 4 + (i % 4) * 2,
     // Some pieces are ribbons, some are squares, and they drift to
     // different sides on the way down - all one shape falling straight

@@ -12,6 +12,8 @@ const spectrum = (v: number[]): Record<CategoryId, number> => ({
   storytelling: v[0],
   figurative: v[1],
   acting: v[2],
+  // The demo's takes were written with seven colours; Voice tracks Act.
+  voice: v[7] ?? Math.round(v[2] * 0.95),
   structure: v[3],
   mindset: v[4],
   "body-language": v[5],

@@ -25,6 +25,9 @@ export function SpectrumBars({
     <SleepOffscreen className="flex flex-col gap-2">
       {categories.map((cat, i) => {
         const value = Math.max(0, Math.min(100, spectrum[cat.id] ?? 0));
+        // A take scored before this colour existed (Voice, split out of
+        // Act) has no number for it: say so, rather than draw a zero.
+        const unmeasured = spectrum[cat.id] === undefined && Object.keys(spectrum).length > 0;
         const shown = revealCount === undefined || i < revealCount;
         const lit = value >= 40 && shown;
         const needed = Boolean(required?.includes(cat.id));
@@ -55,7 +58,7 @@ export function SpectrumBars({
               </div>
             </div>
             <span className={`w-8 shrink-0 text-right text-xs tabular-nums ${needed ? "" : "text-ink-faint"}`}>
-              {shown ? value : "·"}
+              {!shown ? "·" : unmeasured ? <span title="Not measured - this take was scored before this colour existed">–</span> : value}
             </span>
             {marks && (
               <span
@@ -91,6 +94,7 @@ export function SpectrumKey({
       <div className="flex justify-between px-1">
         {categories.map((cat) => {
           const v = Math.max(0, Math.min(100, spectrum[cat.id] ?? 0));
+          const unmeasured = spectrum[cat.id] === undefined && Object.keys(spectrum).length > 0;
           const needed = Boolean(required?.includes(cat.id));
           const lit = v >= 40;
           return (
@@ -100,7 +104,7 @@ export function SpectrumKey({
               className={`flex w-0 flex-1 flex-col items-center gap-0.5 ${lit || needed ? cat.textClass : "text-ink-faint"}`}
             >
               <span className={`text-[0.65rem] font-bold tabular-nums ${needed ? "drop-shadow-[0_0_6px_currentColor]" : ""}`}>
-                {v}
+                {unmeasured ? "–" : v}
               </span>
               <span
                 className={`text-[0.55rem] font-semibold uppercase tracking-wider ${

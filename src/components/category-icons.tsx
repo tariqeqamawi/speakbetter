@@ -2,7 +2,7 @@ import type { CategoryId } from "@/data/categories";
 
 // One icon per skill category, drawn on the same 24×24 grid as the rest
 // of the set. Each takes its color from the category it belongs to, so
-// the seven read as a family while staying individually recognizable.
+// the eight read as a family while staying individually recognizable.
 
 type IconProps = { className?: string };
 
@@ -43,6 +43,17 @@ function ActingIcon({ className = "size-6" }: IconProps) {
       <path d="M4.75 5.25h14.5v6.5a7.25 7.25 0 0 1-14.5 0v-6.5Z" />
       <path d="M9 9.25h.01M15 9.25h.01" />
       <path d="M9.5 14.25c.7.8 1.5 1.2 2.5 1.2s1.8-.4 2.5-1.2" />
+    </svg>
+  );
+}
+
+/** A mouth's sound going out in waves - the voice. */
+function VoiceIcon({ className = "size-6" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M4 9.25v5.5M7.5 6.75v10.5M11 9.75v4.5" />
+      <path d="M14.75 8.5a4.75 4.75 0 0 1 0 7" />
+      <path d="M17.75 5.75a8.5 8.5 0 0 1 0 12.5" />
     </svg>
   );
 }
@@ -95,6 +106,7 @@ const icons: Record<CategoryId, (p: IconProps) => React.ReactElement> = {
   storytelling: StorytellingIcon,
   figurative: FigurativeIcon,
   acting: ActingIcon,
+  voice: VoiceIcon,
   structure: StructureIcon,
   mindset: MindsetIcon,
   "body-language": BodyLanguageIcon,

@@ -129,7 +129,7 @@ const MOMENTS: Moment[] = [
     body: (
       <>
         Without knowing it, he had been creating what would become Speak Better: a full, color-coded method across
-        seven areas of speaking, with the real-world practice and repertoire of skills he wished he had been taught.
+        eight areas of speaking, with the real-world practice and repertoire of skills he wished he had been taught.
         Fast forward a few years, and through the advances in technology and AI, Tariq created his Speak Better
         mascot - a lion with a mane of true colors who could roar on screen or stage. He put all of his methodology,
         his skills and his coaching approach into Coach the Lion, and for the first time is guiding a live cohort to

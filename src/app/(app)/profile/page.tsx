@@ -7,7 +7,7 @@ import { LiveStrip } from "@/components/live-strip";
 import { useStore } from "@/lib/store";
 import { challenges } from "@/data/challenges";
 import { categories } from "@/data/categories";
-import { lessons } from "@/data/lessons";
+import { lessons, lessonsInCategory } from "@/data/lessons";
 import { SpectrumSignature } from "@/components/spectrum-signature";
 import { StreakCalendar } from "@/components/streak-calendar";
 import { BadgeCollection } from "@/components/badge-collection";
@@ -206,7 +206,7 @@ export default function DashboardPage() {
       </div>
       <ul className="flex flex-col gap-5">
         {categories.map((cat) => {
-          const inCat = lessons.filter((l) => l.category === cat.id);
+          const inCat = lessonsInCategory(cat.id);
           const seen = inCat.filter((l) =>
             state.watchedLessons.includes(l.vimeoId),
           ).length;

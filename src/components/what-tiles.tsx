@@ -167,10 +167,10 @@ export function CoachTalking() {
   );
 }
 
-// ── 7 colors: the spectrum as the app draws it, wave then bars ─────────
+// ── 8 colors: the spectrum as the app draws it, wave then bars ─────────
 const SAMPLE: Record<CategoryId, number>[] = [
-  { storytelling: 72, figurative: 34, acting: 41, structure: 58, mindset: 66, "body-language": 63, advanced: 22 },
-  { storytelling: 84, figurative: 58, acting: 62, structure: 70, mindset: 80, "body-language": 76, advanced: 40 },
+  { storytelling: 72, figurative: 34, acting: 41, voice: 30, structure: 58, mindset: 66, "body-language": 63, advanced: 22 },
+  { storytelling: 84, figurative: 58, acting: 62, voice: 64, structure: 70, mindset: 80, "body-language": 76, advanced: 40 },
 ];
 
 export function SpectrumMorph() {
@@ -193,7 +193,7 @@ export function SpectrumMorph() {
             <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-navy-700">
               <div
                 className="h-full rounded-full transition-[width] duration-700 ease-out"
-                style={{ width: bars ? `${values[c.id]}%` : "0%", background: COLOR(c.id), transitionDelay: `${i * 70}ms` }}
+                style={{ width: bars ? `${values[c.id] ?? 0}%` : "0%", background: COLOR(c.id), transitionDelay: `${i * 70}ms` }}
               />
             </div>
           </div>

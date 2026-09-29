@@ -42,7 +42,7 @@ export function CohortSpectrum({ data, compact = false }: { data: SampleCohort; 
           takes: takes.length,
           lit: takes.length ? takes.reduce((a, t) => a + litCount(t.spectrum), 0) / takes.length : 0,
           share: Object.fromEntries(
-            categories.map((cat) => [cat.id, takes.length ? takes.filter((t) => t.spectrum[cat.id] >= LIT_AT).length / takes.length : 0]),
+            categories.map((cat) => [cat.id, takes.length ? takes.filter((t) => (t.spectrum[cat.id] ?? 0) >= LIT_AT).length / takes.length : 0]),
           ) as Record<CategoryId, number>,
         };
       })
@@ -76,7 +76,7 @@ export function CohortSpectrum({ data, compact = false }: { data: SampleCohort; 
           <b className="text-ink">
             {m.litFirst.toFixed(1)} → {m.litLatest.toFixed(1)}
           </b>{" "}
-          of 7, first take to latest.
+          of 8, first take to latest.
         </p>
       </div>
 
@@ -84,7 +84,7 @@ export function CohortSpectrum({ data, compact = false }: { data: SampleCohort; 
         <div className="flex flex-col gap-2">
           <h3 className="text-sm font-semibold">Colors lit, challenge by challenge</h3>
           <p className="-mt-1 text-xs text-ink-faint">
-            Each dot is one of the seven colors, as bright as the share of takes on that challenge that lit it. The
+            Each dot is one of the eight colors, as bright as the share of takes on that challenge that lit it. The
             figure is how many colors a take lit, on average.
           </p>
           <ol className="flex flex-col gap-1">
