@@ -433,3 +433,4 @@ what.
 - New challenge 18 "Watch Any 5 Figurative & Sensory Skills" (watch 5 Paint lessons within the challenge; shared watch rule; 25 challenges) — `3b49892`
 - Road batch 4: talking heads rebuilt on a straight level stretch; monolith climb (road outside the facade, chase camera behind); ring tunnel into the finish; dark spire skyline; edge blur + finer colourful speed lines; less T dust and R embers — `6a3aca8`
 - New eighth colour Voice (royal blue #4d6bff): vocal lessons out of Act, Coach scores it, spectrum/dial/deck/badges 7→8, old takes show Voice unmeasured; Give The Setting also in Frame (alsoIn); Light Source → Presence — `f3c7393`
+- Road batch 5: real scanned talking heads (CC BY 3.0, credited on About); monolith removed, gentle rise into the victory city; ring tunnel 3x, big FINISH, colour vortex, white wash to Coach's congratulations — `f268d37`
