@@ -47,7 +47,7 @@ export const FEATURES = [
   {
     Icon: SpectrumIcon,
     name: "Speaking Spectrum",
-    line: "Seven colors that light up as you use the skills behind them.",
+    line: "Eight colors that light up as you use the skills behind them.",
     color: "text-storytelling",
   },
   {
@@ -71,7 +71,7 @@ export const FEATURES = [
   {
     Icon: DeckIcon,
     name: "Digital card deck",
-    line: "77 cards - pull one, or deal a spread of all seven colors.",
+    line: "77 cards - pull one, or deal a spread of all eight colors.",
     color: "text-figurative",
   },
   {

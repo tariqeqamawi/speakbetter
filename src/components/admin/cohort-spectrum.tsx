@@ -18,10 +18,10 @@ export const LIT_AT = 40;
 
 const avgSpectrum = (list: Record<CategoryId, number>[]) =>
   Object.fromEntries(
-    categories.map((c) => [c.id, list.length ? list.reduce((a, s) => a + s[c.id], 0) / list.length : 0]),
+    categories.map((c) => [c.id, list.length ? list.reduce((a, s) => a + (s[c.id] ?? 0), 0) / list.length : 0]),
   ) as Record<CategoryId, number>;
 
-const litCount = (s: Record<CategoryId, number>) => categories.filter((c) => s[c.id] >= LIT_AT).length;
+const litCount = (s: Record<CategoryId, number>) => categories.filter((c) => (s[c.id] ?? 0) >= LIT_AT).length;
 
 export function CohortSpectrum({ data, compact = false }: { data: SampleCohort; compact?: boolean }) {
   const m = useMemo(() => {
@@ -61,7 +61,7 @@ export function CohortSpectrum({ data, compact = false }: { data: SampleCohort; 
         <div className="rounded-2xl border border-navy-600 bg-navy-900/60 p-4">
           <SpectrumWave values={m.latest} ghost={m.first} max={100} animate={false} className="h-44 w-full sm:h-52" />
         </div>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs sm:grid-cols-4 lg:grid-cols-7">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs sm:grid-cols-4 lg:grid-cols-8">
           {categories.map((c) => (
             <span key={c.id} className="flex flex-col">
               <span style={{ color: `var(--color-${c.id})` }}>{c.name}</span>

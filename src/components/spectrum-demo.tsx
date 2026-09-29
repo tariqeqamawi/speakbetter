@@ -98,7 +98,7 @@ export function SpectrumDemo() {
             {showing.label}
           </span>
           <span className="text-xs text-ink-faint">
-            {lit} of 7 colors
+            {lit} of {categories.length} colors
           </span>
         </span>
         <span className="text-2xl font-bold tabular-nums text-ink transition-all duration-500">

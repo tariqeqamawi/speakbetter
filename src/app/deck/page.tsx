@@ -40,7 +40,7 @@ export default function DeckPage() {
         </SiteHero>
         <div className="relative w-full max-w-4xl overflow-hidden rounded-3xl border border-navy-600">
           <Image
-            src="/deck/printed-deck-oak.webp"
+            src="/deck/printed-deck-oak-v2.webp"
             alt="The printed Speak Better deck on an oak desk, some cards face up beside the box"
             width={1600}
             height={1063}
@@ -77,7 +77,7 @@ export default function DeckPage() {
 
       <section className="grid items-center gap-8 lg:grid-cols-2">
         <div className="relative aspect-[3/2] overflow-hidden rounded-3xl border border-navy-600">
-          <Image src="/deck/printed-deck-black.webp" alt="The deck in its box, cards fanned" fill sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover" />
+          <Image src="/deck/printed-deck-black-v2.webp" alt="The deck in its box, cards fanned" fill sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover" />
         </div>
         <div className="flex flex-col gap-4">
           <SiteHeading kicker="How to get it" title="Printed, or in the app" accent="text-mindset" />

@@ -70,7 +70,7 @@ export function TierArt({ has }: { has: string[] }) {
           // the real card faces and backs).
           <span className="relative block size-full">
             <Image
-              src="/deck/printed-deck-oak.webp"
+              src="/deck/printed-deck-oak-v2.webp"
               alt="The printed Speak Better deck fanned on a desk beside its box"
               fill
               sizes="120px"
@@ -111,14 +111,14 @@ export function TierArt({ has }: { has: string[] }) {
           </span>
         </span>
       </Tile>
-      {/* The book itself - Speak Better: The 7 Colors of Fearless, Unforgettable Speaking - (was: Express Your True Colors and Roar
+      {/* The book itself - Speak Better: The 8 Colors of Fearless, Unforgettable Speaking - (was: Express Your True Colors and Roar
           on Screen and Stage - rendered from the copy Tariq holds up in
           the storybook lesson (public/book). */}
       <Tile on={h("book")} label="The book">
         <span className="relative block size-full">
           <Image
-            src="/book/book-oak-v1-portrait.webp"
-            alt="The Speak Better book: The 7 Colors of Fearless, Unforgettable Speaking, by Tariq EQ Amawi"
+            src="/book/book-oak-v2-portrait.webp"
+            alt="The Speak Better book: The 8 Colors of Fearless, Unforgettable Speaking, by Tariq EQ Amawi"
             fill
             sizes="120px"
             className="object-cover"

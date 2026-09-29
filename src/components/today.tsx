@@ -113,7 +113,7 @@ export function Today() {
             else gets measured against.
           </p>
           <p className="text-sm text-ink-muted">
-            Coach watches it and comes back with your score, your seven colors and the one thing to do next. Nobody
+            Coach watches it and comes back with your score, your eight colors and the one thing to do next. Nobody
             else ever sees the video.
           </p>
           <Link

@@ -236,7 +236,7 @@ function Progress({ data }: { data: SampleCohort }) {
           </p>
         </div>
 
-        {/* The seven colors, week by week: four bars a color, faint to full. */}
+        {/* The eight colors, week by week: four bars a color, faint to full. */}
         <div className="flex flex-col gap-3">
           <h3 className="text-sm font-semibold">The color spectrum by week</h3>
           <div className="flex h-56 items-end gap-3 border-b border-navy-600 px-1">

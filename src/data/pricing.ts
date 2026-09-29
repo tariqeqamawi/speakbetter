@@ -22,7 +22,7 @@ export interface Feature {
 }
 
 export const features: Feature[] = [
-  { id: "lessons", label: "All 83 skill lessons, in the seven colors" },
+  { id: "lessons", label: "All 83 skill lessons, in the eight colors" },
   { id: "deck", label: "The digital card deck - all 77 cards, in the app" },
   { id: "journey", label: "The STORY adventure - 25 challenges, five phases" },
   { id: "written", label: "Coach watches every take and writes you the full review card" },
@@ -40,7 +40,7 @@ export const features: Feature[] = [
     label: "Personal 1-to-1 feedback from Tariq himself - your takes, watched and reviewed by the teacher",
   },
   { id: "printed", label: "The physical card deck - printed, boxed and posted to you" },
-  { id: "book", label: "The book, when it ships - Speak Better: The 7 Colors of Fearless, Unforgettable Speaking" },
+  { id: "book", label: "The book, when it ships - Speak Better: The 8 Colors of Fearless, Unforgettable Speaking" },
   { id: "first", label: "First access to every new lesson and challenge" },
 ];
 

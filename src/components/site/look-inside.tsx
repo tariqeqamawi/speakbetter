@@ -15,7 +15,7 @@ import { lessonsInCategory } from "@/data/lessons";
 
 type Spread = { left: React.ReactNode; right: React.ReactNode };
 
-const ORDER = ["mindset", "storytelling", "figurative", "acting", "structure", "body-language", "advanced"] as const;
+const ORDER = ["mindset", "storytelling", "figurative", "acting", "voice", "structure", "body-language", "advanced"] as const;
 
 function spreads(): Spread[] {
   const chapters = ORDER.map((id) => categories.find((c) => c.id === id)!);
@@ -23,7 +23,7 @@ function spreads(): Spread[] {
     left: (
       <div className="flex h-full flex-col justify-center gap-3 text-center">
         <p className="text-[0.65rem] font-bold uppercase tracking-[0.3em] text-[#6b6f7c]">Speak Better</p>
-        <p className="font-serif text-2xl leading-tight text-[#141824] sm:text-3xl">The 7 Colors of Fearless, Unforgettable Speaking</p>
+        <p className="font-serif text-2xl leading-tight text-[#141824] sm:text-3xl">The 8 Colors of Fearless, Unforgettable Speaking</p>
         <p className="font-serif text-sm italic text-[#4a4f5c]">Find your true colors. Unleash your confidence. Roar on screen and stage.</p>
         <p className="mt-4 text-xs font-semibold tracking-[0.2em] text-[#141824]">TARIQ EQ AMAWI</p>
       </div>

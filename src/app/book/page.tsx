@@ -19,7 +19,7 @@ import { credit, testimonials } from "@/data/testimonials";
 export const metadata: Metadata = {
   title: "The Book",
   description:
-    "Speak Better: The 7 Colors of Fearless, Unforgettable Speaking, by Tariq EQ Amawi. Find your true colors. Unleash your confidence. Roar on screen and stage.",
+    "Speak Better: The 8 Colors of Fearless, Unforgettable Speaking, by Tariq EQ Amawi. Find your true colors. Unleash your confidence. Roar on screen and stage.",
 };
 
 const WAITLIST = talkMailto("Book waitlist", ["Name", "Anything you'd like the book to cover"]);
@@ -37,7 +37,7 @@ export default function BookPage() {
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-6 -z-10 select-none whitespace-nowrap text-center text-[26vw] font-black uppercase leading-[0.85] tracking-tighter text-white/[0.04] lg:text-[15rem]"
         >
-          7 Colors
+          8 Colors
         </span>
         <div className="flex flex-col items-center gap-4 text-center lg:items-start lg:text-left">
           <span className="rounded-full border border-storytelling/50 bg-storytelling/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-storytelling">
@@ -46,7 +46,7 @@ export default function BookPage() {
           <h1 className="flex flex-col gap-2">
             <span className="text-sm font-bold uppercase tracking-[0.35em] text-ink-muted">Speak Better</span>
             <span className="text-4xl font-semibold leading-[1.05] tracking-tight text-balance sm:text-5xl">
-              The 7 Colors of Fearless, Unforgettable Speaking
+              The 8 Colors of Fearless, Unforgettable Speaking
             </span>
           </h1>
           <p className="max-w-md text-lg text-ink-muted">
@@ -67,8 +67,8 @@ export default function BookPage() {
         </div>
         <div className="relative mx-auto w-full max-w-2xl">
           <Image
-            src="/book/book-oak-v1.webp"
-            alt="Speak Better: The 7 Colors of Fearless, Unforgettable Speaking - the hardback on an oak desk beside the card deck"
+            src="/book/book-oak-v2.webp"
+            alt="Speak Better: The 8 Colors of Fearless, Unforgettable Speaking - the hardback on an oak desk beside the card deck"
             width={1600}
             height={1062}
             priority
@@ -89,9 +89,9 @@ export default function BookPage() {
 
       {/* LOOK INSIDE. */}
       <section id="inside" className="flex scroll-mt-24 flex-col items-center gap-8">
-        <SiteHeading kicker="Take a look inside" title="Seven colors. Seven chapters." accent="text-structure" />
+        <SiteHeading kicker="Take a look inside" title="Eight colors. Eight chapters." accent="text-structure" />
         <p className="-mt-4 max-w-xl text-center text-ink-muted">
-          Every skill a speaker needs sorts into one of seven colors - the same seven the Speak Better app is built on. The
+          Every skill a speaker needs sorts into one of eight colors - the same eight the Speak Better app is built on. The
           book gives each its own chapter.
         </p>
         <LookInside />
@@ -102,7 +102,7 @@ export default function BookPage() {
         <SiteHeading kicker="Why a book" title="Your voice, on paper, to keep" accent="text-figurative" />
         <p className="text-ink-muted">
           The app teaches the colors on video and coaches you through them take by take. The book is the same method
-          you can carry, underline and come back to the night before a big talk - all seven colors in one place, and the
+          you can carry, underline and come back to the night before a big talk - all eight colors in one place, and the
           stories behind them.
         </p>
       </section>

@@ -23,7 +23,7 @@ export interface SampleTake {
   level: string;
   score: number;
   passed: boolean;
-  /** Coach's read of the seven colors, 0-100 each. */
+  /** Coach's read of the eight colors, 0-100 each. */
   spectrum: Record<CategoryId, number>;
   transcript: string;
   coachFocus: string;

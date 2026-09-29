@@ -138,7 +138,7 @@ export const mainTour: TourStop[] = [
     target: "[data-tour='skills']",
     route: "/skills",
     title: "The skills",
-    body: "Eighty-three skill and lesson videos, one to two minutes each, sorted into the seven colors of speaking - bite-sized canapés, rather than long boring videos. Drag your thumb around the dial and let go to choose a color, and you'll drop into its videos, complete with summaries, a digital card and a full transcript.",
+    body: "Eighty-three skill and lesson videos, one to two minutes each, sorted into the eight colors of speaking - bite-sized canapés, rather than long boring videos. Drag your thumb around the dial and let go to choose a color, and you'll drop into its videos, complete with summaries, a digital card and a full transcript.",
     film: SKILLS,
   },
   {
