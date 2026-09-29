@@ -151,13 +151,19 @@ function screenAngle(): number {
  * instead, which every browser allows. The "Tap for sound" button then
  * appears on the frame (onPlay sees the player muted), and one tap on it
  * brings the sound back.
+ *
+ * Some phones refuse even that: an iPhone in Low Power Mode, and some
+ * in-app browsers (Instagram, WhatsApp), start nothing that wasn't
+ * tapped inside the video itself - and a tap on our own play button is
+ * outside it. Then `blocked` hands the frame to Vimeo's own controls,
+ * whose play button is inside the video and always works.
  */
-function playOrMute(player: Player) {
+function playOrMute(player: Player, blocked?: () => void) {
   player.play().catch(() => {
     player
       .setMuted(true)
       .then(() => player.play())
-      .catch(() => {});
+      .catch(() => blocked?.());
   });
 }
 
@@ -192,6 +198,9 @@ export function VimeoPlayer({
   xp?: number;
 }) {
   const holderRef = useRef<HTMLDivElement>(null);
+  // The browser would start nothing we asked for: show Vimeo's own
+  // controls, so the viewer's tap lands inside the video (playOrMute).
+  const [native, setNative] = useState(false);
   const playerRef = useRef<Player | null>(null);
   const shellRef = useRef<HTMLDivElement>(null);
   const [fullscreen, setFullscreen] = useState(false);
@@ -331,7 +340,7 @@ export function VimeoPlayer({
     if (!holderRef.current) return;
     const player = new Player(holderRef.current, {
       url: vimeoEmbedUrl(vimeoId),
-      controls: false,
+      controls: native,
       title: false,
       byline: false,
       portrait: false,
@@ -342,7 +351,7 @@ export function VimeoPlayer({
       // play() that far from a gesture is one the browser answers by
       // muting - which is how the orientation videos went silent. The
       // iframe's own autoplay rides the page's activation instead.
-      autoplay,
+      autoplay: autoplay && !native,
     });
     playerRef.current = player;
 
@@ -350,7 +359,7 @@ export function VimeoPlayer({
       .ready()
       .then(() => {
         setReady(true);
-        if (autoplay) playOrMute(player);
+        if (autoplay && !native) playOrMute(player, () => setNative(true));
       })
       .catch(() => {});
     player.getDuration().then(setDuration).catch(() => {});
@@ -459,7 +468,7 @@ export function VimeoPlayer({
       player.destroy().catch(() => {});
       playerRef.current = null;
     };
-  }, [vimeoId, autoplay, cueAt]);
+  }, [vimeoId, autoplay, cueAt, native]);
 
   // From a tap, which is the one thing the browser wanted.
   const unmute = useCallback(() => {
@@ -475,7 +484,7 @@ export function VimeoPlayer({
     const p = playerRef.current;
     if (!p) return;
     if (playing) p.pause().catch(() => {});
-    else playOrMute(p);
+    else playOrMute(p, () => setNative(true));
   }, [playing]);
 
   const replay = useCallback(() => {
@@ -825,8 +834,9 @@ export function VimeoPlayer({
           </div>
         )}
 
-        {/* click anywhere to play/pause */}
-        <button
+        {/* click anywhere to play/pause - unless the browser blocked
+            us, when Vimeo's own play button takes the tap instead */}
+        {!native && <button
           type="button"
           onClick={togglePlay}
           aria-label={playing ? "Pause" : "Play"}
@@ -843,7 +853,7 @@ export function VimeoPlayer({
               <PlayFillIcon className="ml-0.5 size-7" />
             )}
           </span>
-        </button>
+        </button>}
       </div>
 
       {/* our controls */}

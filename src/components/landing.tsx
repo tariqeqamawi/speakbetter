@@ -109,14 +109,14 @@ function LandingBody() {
               button is centred under it; on a laptop, where the column reads
               from the left, it lines up with the left edge of the words. */}
           <div className="flex flex-col items-center gap-3 lg:w-fit lg:items-start">
-            <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-5xl lg:text-[2.5rem] xl:text-[2.8rem]">
-              <span className="block">Master public speaking in minutes, not months.</span>
+            <h1 className="text-xl font-semibold tracking-tight text-balance sm:text-3xl lg:text-[2.2rem] xl:text-[2.5rem]">
+              <span className="block">Master full-spectrum, fearless speaking in minutes, not months.</span>
               <span className="mt-1 block">Unleash your true colors and roar on screen or stage.</span>
             </h1>
             <SpeakLine audioSrc={HEADLINE_AUDIO} label="Listen to Coach" channel="hero" />
           </div>
-          <p className="text-xl font-medium text-figurative text-balance sm:text-2xl">
-            Overcome your fears and step into your true power on any platform.
+          <p className="text-base font-medium text-figurative text-balance sm:text-xl">
+            Go from shy to shining as you dissolve nerves, eliminate filler words, and speak confidently on camera.
           </p>
           <p className="text-lg text-ink text-balance sm:text-xl">
             <b className="font-semibold text-storytelling">Starts {cohort.startShort}</b> · 20 founding spots - a special
