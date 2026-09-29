@@ -67,7 +67,7 @@ export const categories: Category[] = [
   {
     id: "acting",
     name: "Act",
-    subtitle: "Acting",
+    subtitle: "Performance",
     short: "Act",
     code: "ACT",
     colorName: "Bright red",
@@ -91,7 +91,7 @@ export const categories: Category[] = [
   {
     id: "structure",
     name: "Frame",
-    subtitle: "Structure",
+    subtitle: "Talk Structure",
     short: "Frame",
     code: "FRAME",
     colorName: "Magenta",
@@ -103,7 +103,7 @@ export const categories: Category[] = [
   {
     id: "mindset",
     name: "Presence",
-    subtitle: "Confidence",
+    subtitle: "Confidence on Camera",
     short: "Presence",
     code: "PRESENCE",
     colorName: "Neon green",
@@ -115,7 +115,7 @@ export const categories: Category[] = [
   {
     id: "body-language",
     name: "Body",
-    subtitle: "Body Language",
+    subtitle: "Posture & Stance",
     short: "Body",
     code: "BODY",
     colorName: "Bright cyan",
@@ -127,7 +127,7 @@ export const categories: Category[] = [
   {
     id: "advanced",
     name: "Pro",
-    subtitle: "Advanced",
+    subtitle: "Advanced Skills",
     short: "Pro",
     code: "PRO",
     colorName: "Deep crimson",
