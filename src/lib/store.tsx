@@ -98,6 +98,10 @@ export interface Attempt {
    *  said (components/rate-review.tsx) - training data for Coach. */
   rating?: "spot-on" | "partly" | "off";
   ratingNote?: string;
+  /** An older review whose missing sections - what worked, the lessons,
+   *  the skills spotted, since you started - were written in afterwards
+   *  from its own record (lib/coach/backfill.ts), so it isn't asked twice. */
+  backfilled?: boolean;
 }
 
 /**
@@ -265,6 +269,8 @@ interface StoreApi {
   checkIn: (patch: Partial<CheckIns>) => void;
   /** The student's verdict on one of Coach's reviews. */
   rateAttempt: (id: string, rating: "spot-on" | "partly" | "off", note?: string) => void;
+  /** Add sections to a review already kept - never replacing what's there. */
+  fillAttempt: (id: string, patch: Partial<Attempt>) => void;
   /** Post a before-and-after to the community (§12). */
   shareReel: (reel: SharedReel) => void;
   dismissCelebration: (badgeId: string) => void;
@@ -624,6 +630,21 @@ function StoreCore({
       giveConsent: () => persist({ ...stateRef.current, consentAt: new Date().toISOString() }),
       checkIn: (patch) =>
         persist({ ...stateRef.current, checkIns: { ...stateRef.current.checkIns, ...patch } }),
+      fillAttempt: (id, patch) =>
+        persist({
+          ...stateRef.current,
+          attempts: stateRef.current.attempts.map((a) => {
+            if (a.id !== id) return a;
+            const filled: Attempt = { ...a, backfilled: true };
+            // Only the gaps: a section the review already has is kept.
+            for (const [k, v] of Object.entries(patch) as [keyof Attempt, unknown][]) {
+              const have = a[k];
+              if (have === undefined || have === "" || (Array.isArray(have) && have.length === 0))
+                (filled as unknown as Record<string, unknown>)[k] = v;
+            }
+            return filled;
+          }),
+        }),
       rateAttempt: (id, rating, note) =>
         persist({
           ...stateRef.current,

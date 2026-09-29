@@ -741,7 +741,7 @@ export function Feedback({
       )}
 
       {settled && attempt.spoken && (spokenPlan ? (
-        <ReviewVoice spoken={attempt.spoken} onVerdict={() => setVerdictShown(true)} />
+        <ReviewVoice spoken={attempt.spoken} onVerdict={() => setVerdictShown(true)} revisit={revisit} />
       ) : (
         <WrittenReview spoken={attempt.spoken} />
       ))}
@@ -1032,9 +1032,25 @@ function WrittenReview({ spoken }: { spoken: string }) {
  * what browsers allow. The verdict block under the notes lands when
  * the coach reaches it, or on a tap of "Skip to the verdict".
  */
-function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => void }) {
-  const [url, setUrl] = useState<string | null>(null);
-  const [state, setState] = useState<"loading" | "ready" | "playing" | "done" | "failed">("loading");
+/** Coach's voice for a review already made, kept for the visit - so
+ *  opening the same review twice doesn't make the voice twice. */
+const voiceCache = new Map<string, string>();
+
+function ReviewVoice({
+  spoken,
+  onVerdict,
+  revisit = false,
+}: {
+  spoken: string;
+  onVerdict: () => void;
+  /** A review opened again later: it's done, so no holding line and
+   *  nothing made until they ask to hear it. */
+  revisit?: boolean;
+}) {
+  const [url, setUrl] = useState<string | null>(() => voiceCache.get(spoken) ?? null);
+  const [state, setState] = useState<"idle" | "loading" | "ready" | "playing" | "done" | "failed">(() =>
+    revisit ? (voiceCache.has(spoken) ? "ready" : "idle") : "loading",
+  );
   const lionRef = useRef<TalkingLionHandle>(null);
   const [play, setPlay] = useState(false);
   const [transcript, setTranscript] = useState(false);
@@ -1045,7 +1061,7 @@ function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => v
   // The wait becomes a person gathering their thoughts, which is what
   // it actually is.
   const [hold] = useState(() => pickHold());
-  const [holding, setHolding] = useState(true);
+  const [holding, setHolding] = useState(!revisit);
   // While he is talking, a trophy the take won waits for him to finish.
   // The holding line is a few seconds; if the browser refused to start
   // it, its "ended" never comes, so that hold lets go on its own.
@@ -1053,10 +1069,13 @@ function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => v
   useHoldReveals(state === "playing");
 
   useEffect(() => {
+    // Revisited: made on the tap, not on the open (hear, below).
+    if (revisit) return;
     let alive = true;
     speakUrl(spoken).then((u) => {
       if (!alive) return;
       if (u) {
+        voiceCache.set(spoken, u);
         setUrl(u);
         setState("ready");
       } else {
@@ -1073,6 +1092,18 @@ function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => v
 
   const hear = () => {
     lionRef.current?.prime();
+    if (!url) {
+      // A revisited review's voice, made now it's been asked for.
+      setState("loading");
+      speakUrl(spoken).then((u) => {
+        if (!u) return setState("failed");
+        voiceCache.set(spoken, u);
+        setUrl(u);
+        setPlay(true);
+        setState("playing");
+      });
+      return;
+    }
     setPlay(true);
     setState("playing");
   };
@@ -1096,11 +1127,13 @@ function ReviewVoice({ spoken, onVerdict }: { spoken: string; onVerdict: () => v
         }}
         className="scale-90"
       />
-      {(state === "loading" || state === "ready" || state === "done") && (
+      {(state === "idle" || state === "loading" || state === "ready" || state === "done") && (
         <CoachPill onClick={hear} disabled={state === "loading"}>
           <ListenIcon className="size-4" />
           {state === "loading"
-            ? "Coach is putting his thoughts together…"
+            ? revisit
+              ? "Loading Coach's voice…"
+              : "Coach is putting his thoughts together…"
             : state === "done"
               ? "Hear it again"
               : "Coach's review"}

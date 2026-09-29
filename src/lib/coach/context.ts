@@ -51,7 +51,7 @@ ${entry.text.trim()}`;
 }
 
 /** A lesson as the coach reads it: in full, or as its card. */
-function lessonBlock(vimeoId: string, full: boolean): string {
+export function lessonBlock(vimeoId: string, full: boolean): string {
   const lesson = lessonByVimeoId.get(vimeoId);
   if (!lesson) return "";
   const cat = categories.find((c) => c.id === lesson.category)!;

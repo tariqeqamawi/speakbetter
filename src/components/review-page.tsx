@@ -7,6 +7,7 @@ import { challengeBySlug, storyPhases } from "@/data/challenges";
 import { BackLink } from "@/components/back-link";
 import { Feedback } from "@/components/practice-panel";
 import { loadVideo } from "@/lib/attempt-videos";
+import { BackfillPending, useReviewBackfill } from "@/components/review-backfill";
 
 // A review from the student's record, laid out as it landed. The
 // recording plays too, where this device still holds it.
@@ -16,6 +17,7 @@ export function ReviewPage({ id }: { id: string }) {
   const attempt = state.attempts.find((a) => a.id === id);
   const attemptId = attempt?.id;
   const [videoUrl, setVideoUrl] = useState("");
+  const filling = useReviewBackfill(attempt);
   useEffect(() => {
     if (!attemptId) return;
     let url = "";
@@ -71,6 +73,7 @@ export function ReviewPage({ id }: { id: string }) {
           {when} · {length} recorded
         </p>
       </header>
+      {filling && <BackfillPending />}
       <Feedback attempt={attempt} videoUrl={videoUrl} challenge={challenge} onDone={() => {}} revisit />
     </div>
   );

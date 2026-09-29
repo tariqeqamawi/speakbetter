@@ -6,6 +6,9 @@ import { challenges } from "@/data/challenges";
 import { SectionBanner } from "@/components/section-banner";
 import { ChevronDownIcon, FilmIcon } from "@/components/icons";
 import { Feedback } from "@/components/practice-panel";
+import { BackfillPending, useReviewBackfill } from "@/components/review-backfill";
+import type { Attempt } from "@/lib/store";
+import type { Challenge } from "@/data/challenges";
 
 // Everything the coach has said, newest first: each review's verdict,
 // score, spectrum and what the coach said aloud, with the notes behind
@@ -82,7 +85,7 @@ export function CoachHistory() {
                   do next. A folded summary meant reading it twice. */}
               {isOpen && challenge && (
                 <div className="border-t border-navy-600 py-3">
-                  <Feedback attempt={a} videoUrl="" challenge={challenge} onDone={() => {}} revisit />
+                  <OpenReview attempt={a} challenge={challenge} />
                 </div>
               )}
             </article>
@@ -90,5 +93,16 @@ export function CoachHistory() {
         })}
       </div>
     </section>
+  );
+}
+
+/** One review, opened - an older one filled in first (review-backfill). */
+function OpenReview({ attempt, challenge }: { attempt: Attempt; challenge: Challenge }) {
+  const filling = useReviewBackfill(attempt);
+  return (
+    <div className="flex flex-col gap-3">
+      {filling && <BackfillPending />}
+      <Feedback attempt={attempt} videoUrl="" challenge={challenge} onDone={() => {}} revisit />
+    </div>
   );
 }
