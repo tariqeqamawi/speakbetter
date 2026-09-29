@@ -428,3 +428,4 @@ what.
 - Road views: 2D/3D/4D switch glides and crossfades (no blank), keeps your place; 2D map bottom-to-top; calm 3D avatar and flat portals 3x — `ad3542f`
 - Road: 3D view further out + flat challenge names; portals raised; 2D zoom with thumbnails; logo-style profile lion finish (smaller, saturated, neon edges); tilt look only when still, smooth — `a9bf382`
 - Road batch 3: HUD (2D zoomed default, Start corner in landscape, remembered full screen, edge tracers); world (3x tubes + ring runs, boom mics, talking faces, fog, glassy towers, weather in every section); finale (skyscraper climb, mid-height victory city 2x, finish arch back); 3D names/buttons, line lock icon — cbb1707 09b222a f667d17 
+- Coach's reviews: older reviews filled in once from their own record and saved; revisited reviews skip the holding line — `3752d84`
