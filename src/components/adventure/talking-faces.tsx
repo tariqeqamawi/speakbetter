@@ -102,7 +102,7 @@ export function TalkingFaces({ road, s, colourAt }: { road: RoadLayout; s: numbe
       // (The group's +x across the road, to the right.)
       yaw: Math.atan2(-side.z, side.x),
       gap: ROAD_HALF + 36,
-      mouthY: Math.max(PLINTH + HEAD_H * 0.3, pointAt(road, s).y - g.y + 12),
+      mouthY: Math.max(PLINTH + HEAD_H * 0.4, pointAt(road, s).y - g.y + 12),
     };
   }, [road, s]);
 

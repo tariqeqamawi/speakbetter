@@ -375,11 +375,11 @@ const TERRAIN_FRAG = /* glsl */ `
     float diff = max(dot(n, L), 0.0);
     float fres = pow(1.0 - max(dot(n, V), 0.0), 4.0);
     float spec = pow(max(dot(n, normalize(L + V)), 0.0), 70.0);
-    vec3 albedo = vec3(0.010, 0.014, 0.030);
+    vec3 albedo = vec3(0.005, 0.007, 0.015);
     vec3 col = albedo * (0.35 * hemi + 0.9 * diff) * ao;
-    col += vec3(0.05, 0.06, 0.12) * spec * ao;
-    col += uHorizon * fres * 0.22 * ao;
-    col += vNeon * (0.035 * haloWide * crowd + 0.05 * (wave + wake)) * ao;
+    col += vec3(0.03, 0.035, 0.07) * spec * ao;
+    col += uHorizon * fres * 0.08 * ao;
+    col += vNeon * (0.018 * haloWide * crowd + 0.05 * (wave + wake)) * ao;
 
     // The light itself.
     // A dot is a point, not a line: it needs more light to read.
@@ -510,7 +510,7 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
         uniforms: {
           uTime: { value: 0 },
           uFrom: { value: 0 },
-          uFog: { value: new THREE.Color("#040816") },
+          uFog: { value: new THREE.Color("#02040b") },
           uFogDensity: { value: 0.0042 },
           uHorizon: { value: new THREE.Color("#3a3f8f") },
           // Where Your Impact's rays converge: the city, far past the road.
@@ -534,7 +534,7 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
       const here = travel.s + AHEAD;
       const sp = spans.find((x) => here >= x.from && here < x.to) ?? spans[0];
       if (sp) {
-        hazeTarget.set("#040816").lerp(tintOf(sp.color), 0.2);
+        hazeTarget.set("#02040b").lerp(tintOf(sp.color), 0.12);
         const u = material.uniforms.uFog.value as THREE.Color;
         u.lerp(hazeTarget, 0.03);
         const fog = scene.fog as THREE.FogExp2 | null;
@@ -684,8 +684,8 @@ function EdgeLights({ road, spans }: { road: RoadLayout; spans: Span[] }) {
 function Road({ road, spans, trail }: { road: RoadLayout; spans: Span[]; trail: THREE.BufferGeometry[] }) {
   const g = useMemo(
     () => ({
-      surface: ribbon(road, spans, -ROAD_HALF, ROAD_HALF, 0, (ph, o) => o.set("#101a33").lerp(ph, 0.12)),
-      glow: ribbon(road, spans, -1.8, 1.8, 0.03, (ph, o) => o.copy(ph).multiplyScalar(0.7)),
+      surface: ribbon(road, spans, -ROAD_HALF, ROAD_HALF, 0, (ph, o) => o.set("#060a15").lerp(ph, 0.07)),
+      glow: ribbon(road, spans, -1.8, 1.8, 0.03, (ph, o) => o.copy(ph).multiplyScalar(0.5)),
       // The road ahead, not yet travelled: a faint guide line.
       line: ribbon(road, spans, -0.12, 0.12, 0.05, (ph, o) => o.copy(ph).multiplyScalar(0.45)),
       left: ribbon(road, spans, -ROAD_HALF, -ROAD_HALF + 0.2, 0.04, (ph, o) => o.copy(ph).multiplyScalar(0.7)),
@@ -1225,7 +1225,7 @@ export function AdventureWorld({
       gl={{ antialias: true, powerPreference: "high-performance" }}
       camera={{ fov: 62, near: 0.1, far: 1200, position: [0, 3, 6] }}
       onCreated={({ scene }) => {
-        scene.fog = new THREE.FogExp2("#040816", 0.0038);
+        scene.fog = new THREE.FogExp2("#02040b", 0.0038);
       }}
     >
       <hemisphereLight args={["#8090d0", "#0a0f20", 2.2]} />
