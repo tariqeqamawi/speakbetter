@@ -111,6 +111,13 @@ export interface Challenge {
    */
   watchCount?: number;
   /**
+   * With watchCount: lessons watched before the student reached the
+   * challenge DO count if there are already enough of them - arrive
+   * having watched that many and it's complete. Fewer, and they watch
+   * that many new ones (or every one left, if fewer remain).
+   */
+  creditEarlier?: boolean;
+  /**
    * A baseline is the "before": the student as they arrived, recorded
    * before a single technique. Its first recording is kept on the
    * device for good, never dropped for a newer one, so that weeks later
@@ -189,21 +196,18 @@ export const challenges: Challenge[] = [
   {
     slug: "mindset-toolbox",
     phase: "S",
-    title: "Watch All The Presence Skills",
+    title: "Watch Any 5 Presence Skills",
     vimeoId: null,
     passive: true,
+    watchCount: 5,
+    creditEarlier: true,
     brief:
-      "The one challenge you complete by watching: work through the green Presence lessons in Skills. Everything else in the course stands on this foundation.",
-    criteria: ["Watch the Presence lessons in Skills"],
+      "The challenge you complete by watching: pick any five of the green Presence lessons in Skills. Everything else in the course stands on this foundation.",
+    criteria: ["Watch any 5 of the Presence lessons in Skills"],
     targetSkills: ["mindset"],
-    relatedLessonIds: [
-      "1081029629",
-      "1081029780",
-      "1081029881",
-      "1081030261",
-      "1081197407",
-      "1094881996",
-    ],
+    // Every Presence lesson in the library, read from it - so a lesson
+    // moved in or out of Presence is picked up here too.
+    relatedLessonIds: lessons.filter((l) => l.category === "mindset").map((l) => l.vimeoId),
   },
 
   // ── T - Train Your Instrument ───────────────────────────────────────

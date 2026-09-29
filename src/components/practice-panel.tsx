@@ -1550,13 +1550,15 @@ function PassiveProgress({ challenge }: { challenge: Challenge }) {
       </h2>
       <p className="text-sm text-ink-muted">
         {auto
-          ? "Complete - you'd already watched every one of these before you got here."
+          ? w.before.length >= challenge.relatedLessonIds.length
+            ? "Complete - you'd already watched every one of these before you got here."
+            : `Complete - you'd already watched ${w.before.length} of these before you got here.`
           : w.done
             ? some
               ? `Complete - ${w.counted.length} watched in this challenge.`
               : "Toolbox complete - every mindset lesson watched. That foundation carries the whole journey."
             : some
-              ? `${w.counted.length} of ${w.needed} watched in this challenge. Pick ${w.counted.length === 0 ? "any" : ""} ${w.needed - w.counted.length} ${w.counted.length === 0 ? "" : "more "}from the list below and open ${w.needed - w.counted.length === 1 ? "it" : "them"} above.`.replace(/\s+/g, " ")
+              ? `Watch ${w.needed - w.counted.length} more ${w.needed - w.counted.length === 1 ? "video" : "videos"} to complete this challenge - ${w.counted.length} of ${w.needed} watched so far. Pick any from the list below.`
               : `${w.counted.length} of ${w.needed} lessons watched. Open each lesson above to complete this challenge.`}
       </p>
       {some && w.before.length > 0 && !auto && (

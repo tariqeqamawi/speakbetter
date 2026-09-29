@@ -61,6 +61,9 @@ export function watchProgress(
   const start = new Set(state.watchStarts?.[challenge.slug] ?? state.watchedLessons);
   const before = ids.filter((id) => start.has(id));
   const counted = ids.filter((id) => watched.has(id) && !start.has(id));
+  // Enough watched before arriving, where that counts: done already.
+  if (challenge.creditEarlier && before.length >= challenge.watchCount)
+    return { needed: 0, counted, before, done: true };
   const needed = Math.min(challenge.watchCount, ids.length - before.length);
   return { needed, counted, before, done: counted.length >= needed };
 }
