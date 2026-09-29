@@ -40,7 +40,7 @@ export function roadStops(state: AppState, ready: boolean, crowd: ChallengePrese
       title: c.title,
       phase: c.phase,
       state: st,
-      image: c.vimeoId ? `/thumbs/${c.vimeoId}.jpg` : "/lion-head.png",
+      image: c.vimeoId ? `/thumbs/${c.vimeoId}.jpg` : "/logo-mark.png",
       trophy: `/trophy/challenge-${c.slug}.webp`,
       trophyWon: state.badges.some((b) => b.id === `challenge-${c.slug}`),
       score: best,

@@ -13,7 +13,7 @@ const cards = wholeDeck();
 
 export default function CardsPage() {
   return (
-    <div className="flex flex-col gap-3 pb-10 pt-4">
+    <div className="flex flex-col gap-3 pb-10 pt-1">
       <h1 className="sr-only">Cards</h1>
       <SectionTabs />
       <SectionTour section="cards" />

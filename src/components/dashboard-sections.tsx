@@ -105,7 +105,7 @@ export function DashboardPanel({
   return (
     // Pulled up to sit straight under the header: the bar is the first
     // thing on the page, with no dead space above it.
-    <div className="-mt-8 flex flex-col gap-4">
+    <div className="-mt-3 flex flex-col gap-4 lg:-mt-8">
       {/* One bar, the same shape as every other "switch the view of
           this page" control in the app - full width, scrolling sideways
           rather than wrapping into rows, stuck under the header. */}

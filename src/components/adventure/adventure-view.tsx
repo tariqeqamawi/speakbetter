@@ -38,7 +38,6 @@ const MODES: { id: Mode; label: string; name: string }[] = [
 // (A new key: under the old one, "3d" meant the full ride.)
 const KEY = "adventure-view-3";
 const OLD_KEY = "adventure-view";
-const ZOOM_KEY = "adventure-2d-zoom";
 
 export function AdventureView({
   stops,
@@ -67,27 +66,12 @@ export function AdventureView({
   const done = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => () => clearTimeout(done.current), []);
   const chrome = useRoadChrome();
-  // The flat map opens zoomed in - the road drawn out long, like the 3D
-  // and 4D ones - unless this device last chose it zoomed out.
-  const [zoomed, setZoomedState] = useState(true);
-  const setZoomed = (next: (z: boolean) => boolean) =>
-    setZoomedState((z) => {
-      const v = next(z);
-      try {
-        localStorage.setItem(ZOOM_KEY, v ? "1" : "0");
-      } catch {
-        // fine
-      }
-      return v;
-    });
   useEffect(() => {
     try {
       // After mounting, so the server's render and the first client
       // render agree.
       const saved = localStorage.getItem(KEY) ?? (localStorage.getItem(OLD_KEY) === "2d" ? "2d" : null);
       if (saved === "2d" || saved === "3d") setMode(saved);
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- read once, after mounting
-      if (localStorage.getItem(ZOOM_KEY) === "0") setZoomedState(false);
     } catch {
       // no storage: 4D
     }
@@ -137,24 +121,6 @@ export function AdventureView({
               </button>
             ))}
           </div>
-          {/* The flat map: zoom in, for more road between the challenges
-              and a picture of each. */}
-          {mode === "2d" && (
-            <button
-              type="button"
-              onClick={() => setZoomed((z) => !z)}
-              aria-pressed={zoomed}
-              aria-label={zoomed ? "Zoom out" : "Zoom in"}
-              title={zoomed ? "Zoom out" : "Zoom in"}
-              className={`grid size-9 place-items-center rounded-full border backdrop-blur ${zoomed ? "border-ink/60 bg-ink/15 text-ink" : "border-navy-600 bg-navy-950/80 text-ink-muted hover:text-ink"}`}
-            >
-              <svg viewBox="0 0 24 24" className="size-[1.1rem]" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden>
-                <circle cx="10.5" cy="10.5" r="6.5" />
-                <path d="M15.5 15.5 20 20" />
-                {zoomed ? <path d="M7.5 10.5h6" /> : <path d="M7.5 10.5h6M10.5 7.5v6" />}
-              </svg>
-            </button>
-          )}
           {/* Back to the Orientation tab - the road has no tab row above it. */}
           {chrome.toOrientation && (
             <button
@@ -202,7 +168,7 @@ export function AdventureView({
         const switching = layers.length > 1;
         const body =
           l.mode === "2d" ? (
-            <Map2D stops={stops} phases={phases} heightClass={heightClass} zoomed={zoomed} />
+            <Map2D stops={stops} phases={phases} heightClass={heightClass} />
           ) : (
             <AdventureScreen
               calm={l.mode === "3d"}
@@ -284,17 +250,15 @@ function Map2D({
   stops,
   phases,
   heightClass,
-  zoomed,
 }: {
   stops: WorldStop[];
   phases: WorldPhase[];
   heightClass?: string;
-  zoomed: boolean;
 }) {
   const frame = useRef<HTMLDivElement>(null);
   return (
     <div ref={frame} className={`${heightClass ?? "h-[calc(100dvh-4rem)]"} overflow-y-auto overscroll-contain bg-[#070c18] pt-14`}>
-      <Adventure2D stops={stops} phases={phases} scrollRoot={frame} zoomed={zoomed} />
+      <Adventure2D stops={stops} phases={phases} scrollRoot={frame} zoomed />
     </div>
   );
 }

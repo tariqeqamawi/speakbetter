@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function SkillsPage() {
   return (
-    <div className="flex flex-col gap-3 pb-10 pt-4">
+    <div className="flex flex-col gap-3 pb-10 pt-1">
       {/* The tabs are the heading - see section-tabs.tsx. */}
       <h1 className="sr-only">Skills</h1>
       <SectionTabs />

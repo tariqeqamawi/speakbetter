@@ -17,9 +17,11 @@ export default function ChallengesPage() {
   return (
     <ChallengesTabs
       heading={
-        <header className="flex flex-col items-center gap-2 text-center">
-          <ChallengesIcon className="size-7 shrink-0 text-structure" />
+        <header className="flex flex-col items-center text-center">
+          {/* The icon sits in the line, just before "Welcome" - not on a
+              row of its own above it. */}
           <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+            <ChallengesIcon className="mr-2 inline-block size-6 shrink-0 -translate-y-0.5 align-middle text-structure sm:size-7" />
             Welcome to your interactive challenges
           </h1>
         </header>

@@ -38,7 +38,7 @@ export function Today() {
   const meta = state.level ? levelMeta[state.level] : null;
 
   return (
-    <div className="flex flex-col gap-8 py-6">
+    <div className="flex flex-col gap-8 pb-6 pt-1 lg:pt-6">
       {/* Who else is on the road, first thing and stuck there.
           
           It was halfway down the page before, which made `sticky` a

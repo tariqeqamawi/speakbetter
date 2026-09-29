@@ -15,6 +15,9 @@ import type { WorldPhase, WorldStop } from "./adventure-world";
 
 /** Height of a row, of a phase heading, and how far the path swings. */
 const ROW = 118;
+/** The picture for a challenge with no video (live-adventure.tsx). */
+const LION = "/logo-mark.png";
+
 /** Zoomed in: much more road between one challenge and the next, and room
  *  for each one's picture. */
 const ROW_ZOOMED = 300;
@@ -227,13 +230,17 @@ export function Adventure2D({
                     src={stop.image}
                     alt=""
                     loading="lazy"
-                    className="rounded-lg border object-cover"
+                    // A challenge with no video of its own shows the whole
+                    // lion, on the app's navy glass - never cropped to a face.
+                    className={`rounded-lg border ${stop.image === LION ? "object-contain p-1.5" : "object-cover"}`}
                     style={{
                       width: 128 * z,
                       height: 72 * z,
                       opacity: z * (locked ? 0.45 : 1),
                       borderColor: locked ? "#3a4260" : c,
                       filter: locked ? "grayscale(0.7)" : undefined,
+                      background:
+                        stop.image === LION ? "radial-gradient(120% 90% at 30% 20%, #2a1b5c 0%, #0f1a3a 45%, #0a2a2e 100%)" : undefined,
                     }}
                   />
                 )}

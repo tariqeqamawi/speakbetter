@@ -32,7 +32,7 @@ export function ChallengesTabs({
   orientation: React.ReactNode;
   road: React.ReactNode;
 }) {
-  const { state, ready } = useStore();
+  const { ready } = useStore();
   const [tab, setTab] = useState<Tab | null>(null);
   useEffect(() => {
     if (!ready || tab) return;
@@ -42,11 +42,11 @@ export function ChallengesTabs({
     setTab(
       asked === "orientation" || asked === "challenges"
         ? asked
-        : touring || state.attempts.length > 0
+        : touring
           ? "challenges"
           : "orientation",
     );
-  }, [ready, tab, state.attempts.length]);
+  }, [ready, tab]);
   const current: Tab = tab ?? "orientation";
 
   // The road's height: from where it starts to the bottom of the screen,
@@ -197,7 +197,7 @@ export function ChallengesTabs({
   return (
     // On the road the tab row goes: the road starts straight under the
     // header, and the way back to Orientation is a pill on the road itself.
-    <div className={`flex flex-col ${current === "challenges" ? "-mt-8 sm:-mt-4" : "gap-6 pt-4"}`}>
+    <div className={`flex flex-col ${current === "challenges" ? "-mt-3 lg:-mt-4" : "gap-4 pt-1 lg:gap-6 lg:pt-4"}`}>
       {current === "orientation" && (
         <>
           {heading}

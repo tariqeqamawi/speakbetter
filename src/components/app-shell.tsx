@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { areaOf, track } from "@/lib/insights";
 import { ConsentGate } from "@/components/consent-gate";
+import { SITE_PATHS } from "@/data/site";
 
 // The column the app lives in. With the rail on a laptop (see Sidebar)
 // the content shifts across to sit beside it; for a visitor - the
@@ -15,6 +16,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { state, ready } = useStore();
   const railed = ready && state.unlocked;
   useUsage(railed);
+  // Inside the app on a phone the page starts right under the top bar -
+  // the Skills / Cards switch, Today's first card - with no empty band
+  // above it. The website's pages keep their breathing room.
+  const path = usePathname();
+  const tight = railed && !SITE_PATHS.includes(path ?? "");
   return (
     <>
       {/* Inside the app, the landing page's light: a soft green and purple
@@ -22,7 +28,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {railed && <div className="app-glow" aria-hidden />}
       <ConsentGate />
       <main
-        className={`mx-auto w-full max-w-5xl flex-1 px-4 pb-28 pt-8 lg:pb-12 xl:max-w-[96rem] xl:px-8 ${
+        className={`mx-auto w-full max-w-5xl flex-1 px-4 pb-28 ${tight ? "pt-3 lg:pt-8" : "pt-8"} lg:pb-12 xl:max-w-[96rem] xl:px-8 ${
           railed ? "app-glass lg:pl-[15.5rem] xl:pl-[16rem]" : ""
         }`}
       >
