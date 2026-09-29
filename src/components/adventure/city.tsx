@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { AHEAD, pointAt, seeded, sideAt, type RoadLayout, type Travel } from "./road-geometry";
+import { AHEAD, groundAt, seeded, sideAt, type RoadLayout, type Travel } from "./road-geometry";
 
 // Your Impact's destination: a far-future city of light on the horizon,
 // beyond the end of the land, never reached. Tall tapering spires, each
@@ -117,9 +117,9 @@ export function City({ road, travel, revealFrom }: { road: RoadLayout; travel: T
     // The city itself, well beyond the end of the land - you travel
     // towards it for the whole last phase and never reach it. A grid of
     // blocks, tallest at the centre.
-    const past = road.length + 160;
-    const centre = pointAt(road, road.length).clone();
-    pointAt(road, road.length, p);
+    const past = road.length + 40;
+    const centre = groundAt(road, road.length).clone();
+    groundAt(road, road.length, p);
     sideAt(road, road.length, side);
     tangent.set(side.z, 0, -side.x);
     centre.addScaledVector(tangent, past - road.length + 140);
@@ -180,7 +180,7 @@ export function City({ road, travel, revealFrom }: { road: RoadLayout; travel: T
     const rand = seeded(13);
     const side = sideAt(road, road.length);
     const ahead = new THREE.Vector3(side.z, 0, -side.x);
-    const base = pointAt(road, road.length).addScaledVector(ahead, 600);
+    const base = groundAt(road, road.length).addScaledVector(ahead, 600);
     return Array.from({ length: 9 }, (_, i) => ({
       pos: base.clone().addScaledVector(side, (i - 4) * 80 + (rand() - 0.5) * 30).add(new THREE.Vector3(0, 30 + rand() * 40, 0)),
       size: 160 + rand() * 120,
@@ -239,7 +239,7 @@ export function City({ road, travel, revealFrom }: { road: RoadLayout; travel: T
   const cars = useMemo(() => {
     const rand = seeded(31);
     const side = sideAt(road, road.length);
-    const centre = pointAt(road, road.length).addScaledVector(new THREE.Vector3(side.z, 0, -side.x), 330);
+    const centre = groundAt(road, road.length).addScaledVector(new THREE.Vector3(side.z, 0, -side.x), 330);
     return Array.from({ length: CARS }, () => ({
       cx: centre.x + (rand() - 0.5) * 180,
       cz: centre.z + (rand() - 0.5) * 180,
@@ -302,7 +302,7 @@ export function City({ road, travel, revealFrom }: { road: RoadLayout; travel: T
   // The city's ground: the land stops where the road does, so the city
   // stands on its own dark plaza, reaching out past the edge of the map.
   const plaza = useMemo(() => {
-    const p = pointAt(road, road.length);
+    const p = groundAt(road, road.length);
     const side = sideAt(road, road.length);
     return p.addScaledVector(new THREE.Vector3(side.z, 0, -side.x), 330);
   }, [road]);

@@ -1,10 +1,11 @@
 "use client";
 
+import { LockIcon } from "./lock-icon";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AHEAD, GATE_BEFORE, Travel, layoutRoad, progressAt, reachedPhase, sAtProgress } from "./road-geometry";
+import { AHEAD, GATE_BEFORE, Travel, layoutRoad, progressAt, reachedPhase, sAtProgress, victoryStart } from "./road-geometry";
 import { structurePlan } from "./megastructures";
 import type { MonumentPlan } from "./monuments";
 import { RoadDial } from "./road-dial";
@@ -127,7 +128,7 @@ export function AdventureScreen({
       // (And the stunts, the victory stretch, the finish: ?road-at=loop.)
       const stunt = road.stunts.find((z) => z.kind === (at as string));
       if (stunt) return Math.max(0, stunt.a - 40);
-      if ((at as string) === "victory") return road.stops[road.stops.length - 1] + 20;
+      if ((at as string) === "victory") return victoryStart(road) + 20;
       if ((at as string) === "finish") return road.finish - 90;
       const weave = road.skyways.find((w) => (w as { wave?: boolean }).wave);
       if ((at as string) === "weave" && weave) return weave.a + 60;
@@ -663,6 +664,51 @@ export function AdventureScreen({
     setFinished(false);
   };
 
+  // Start, replay or locked: under the traveller on the full ride; in
+  // the calm view from above, up in the middle of the screen, over the
+  // portal's name on the road - never on top of the traveller.
+  const actions = (
+    <>
+        {canStart && !diving && (
+          <button
+            type="button"
+            onClick={() => dive(stop.slug, road.stops[nearest])}
+            // Upright: under the traveller, just above the letters. Held
+            // sideways on a phone: down in the bottom-left corner, under the
+            // left thumb - the dial is under the right one.
+            className={
+              calm
+                ? "pointer-events-auto rounded-full px-7 py-3 text-base font-bold text-navy-950 shadow-lg"
+                : "pointer-events-auto -mb-1 rounded-full px-7 py-3 text-base font-bold text-navy-950 shadow-lg [@media(orientation:landscape)_and_(max-height:520px)]:absolute [@media(orientation:landscape)_and_(max-height:520px)]:mb-0 [@media(orientation:landscape)_and_(max-height:520px)]:left-[max(0.75rem,env(safe-area-inset-left))] [@media(orientation:landscape)_and_(max-height:520px)]:bottom-[max(1.25rem,calc(env(safe-area-inset-bottom)+0.5rem))]"
+            }
+            style={{ background: phase?.color, boxShadow: `0 0 30px ${phase?.color}` }}
+          >
+            Start challenge
+          </button>
+        )}
+        {locked && (
+          <button
+            type="button"
+            onClick={backToCurrent}
+            className="pointer-events-auto mb-2 rounded-full border border-navy-600 bg-navy-900/85 px-4 py-2 text-sm text-ink-muted"
+          >
+            <LockIcon className="-mt-0.5 mr-1 size-3.5" />Locked
+          </button>
+        )}
+        {/* A portal already been through: go again, without the dive -
+            that is for the next one. */}
+        {passed && (
+          <Link
+            href={`/challenges/${stop.slug}`}
+            className="pointer-events-auto mb-2 rounded-full border-2 bg-navy-900/85 px-6 py-2.5 text-sm font-bold text-ink"
+            style={{ borderColor: phase?.color }}
+          >
+            Replay challenge
+          </Link>
+        )}
+    </>
+  );
+
   return (
     <div
       ref={frame}
@@ -751,7 +797,7 @@ export function AdventureScreen({
       {notice && (
         <div role="status" className="pointer-events-none absolute inset-x-0 top-[44%] z-20 flex justify-center px-6">
           <p className="coach-note-in rounded-2xl border border-navy-500 bg-navy-950/90 px-5 py-3 text-center text-sm font-semibold text-ink shadow-2xl backdrop-blur">
-            🔒 {notice}
+            <LockIcon className="-mt-0.5 mr-1.5 size-4" />{notice}
           </p>
         </div>
       )}
@@ -847,6 +893,10 @@ export function AdventureScreen({
         </button>
       )}
 
+      {calm && !demo && (
+        <div className="pointer-events-none absolute inset-x-0 top-[40%] z-20 flex flex-col items-center px-4">{actions}</div>
+      )}
+
       <div
         className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-1 bg-gradient-to-t from-[#070c18]/95 to-transparent px-4 pt-16 text-center"
         // Clear of a phone's home bar and rounded corners, in full screen.
@@ -862,42 +912,10 @@ export function AdventureScreen({
             Continue from challenge {hereIndex + 1} →
           </button>
         )}
-        {canStart && !diving && (
-          <button
-            type="button"
-            onClick={() => dive(stop.slug, road.stops[nearest])}
-            // Upright: under the traveller, just above the letters. Held
-            // sideways on a phone: down in the bottom-left corner, under the
-            // left thumb - the dial is under the right one.
-            className="pointer-events-auto -mb-1 rounded-full px-7 py-3 text-base font-bold text-navy-950 shadow-lg [@media(orientation:landscape)_and_(max-height:520px)]:absolute [@media(orientation:landscape)_and_(max-height:520px)]:mb-0 [@media(orientation:landscape)_and_(max-height:520px)]:left-[max(0.75rem,env(safe-area-inset-left))] [@media(orientation:landscape)_and_(max-height:520px)]:bottom-[max(1.25rem,calc(env(safe-area-inset-bottom)+0.5rem))]"
-            style={{ background: phase?.color, boxShadow: `0 0 30px ${phase?.color}` }}
-          >
-            Start challenge
-          </button>
-        )}
-        {locked && (
-          <button
-            type="button"
-            onClick={backToCurrent}
-            className="pointer-events-auto mb-2 rounded-full border border-navy-600 bg-navy-900/85 px-4 py-2 text-sm text-ink-muted"
-          >
-            🔒 Complete your current section first
-          </button>
-        )}
-        {/* A portal already been through: go again, without the dive -
-            that is for the next one. */}
-        {passed && (
-          <Link
-            href={`/challenges/${stop.slug}`}
-            className="pointer-events-auto mb-2 rounded-full border-2 bg-navy-900/85 px-6 py-2.5 text-sm font-bold text-ink"
-            style={{ borderColor: phase?.color }}
-          >
-            Replay challenge
-          </Link>
-        )}
+        {!calm && actions}
         {atGate && (
           <span className="mb-2 rounded-full border border-navy-600 bg-navy-900/85 px-4 py-2 text-sm text-ink-muted">
-            🔒 Complete every challenge to cross the finish line
+            <LockIcon className="-mt-0.5 mr-1.5 size-4" />Complete every challenge to cross the finish line
           </span>
         )}
         {atFinish && <span className="text-lg font-bold text-ink">The finish line</span>}

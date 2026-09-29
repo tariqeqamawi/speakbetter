@@ -106,18 +106,22 @@ function numberTex(n: number, state: PortalState) {
 function flatNameTex(title: string, hex: string, shut: boolean) {
   return canvasTex(1024, 320, (g) => {
     g.font = "800 104px system-ui, sans-serif";
-    // Two lines, split where they come out most even; then the size that
-    // fits the longer one across.
+    // One line if it fits. Otherwise two, split by words: both lines with
+    // at least two words where the name allows it ("Play with / Your
+    // Voice", "Beatbox and / Rhythm Flow"), and of those the most even;
+    // then the size that fits the longer line across.
     const words = title.split(/\s+/);
     let lines = [title];
     let best = g.measureText(title).width;
-    for (let i = 1; i < words.length && best > 940; i++) {
-      const pair = [words.slice(0, i).join(" "), words.slice(i).join(" ")];
-      const w = Math.max(...pair.map((l) => g.measureText(l).width));
-      if (w < best) {
-        best = w;
-        lines = pair;
-      }
+    if (best > 940 && words.length > 1) {
+      const splits = Array.from({ length: words.length - 1 }, (_, k) => {
+        const pair = [words.slice(0, k + 1).join(" "), words.slice(k + 1).join(" ")];
+        return { pair, w: Math.max(...pair.map((l) => g.measureText(l).width)), both: k + 1 >= 2 && words.length - k - 1 >= 2 };
+      });
+      const pool = splits.some((x) => x.both) ? splits.filter((x) => x.both) : splits;
+      const pick = pool.reduce((m, x) => (x.w < m.w ? x : m));
+      lines = pick.pair;
+      best = pick.w;
     }
     g.font = `800 ${Math.floor(Math.min(104, (104 * 940) / best))}px system-ui, sans-serif`;
     g.textAlign = "center";
@@ -126,9 +130,15 @@ function flatNameTex(title: string, hex: string, shut: boolean) {
     const ys = lines.length === 1 ? [160] : [100, 222];
     lines.forEach((l, i) => {
       g.lineWidth = 22;
-      g.strokeStyle = "rgba(4,8,18,0.92)";
+      // (A soft glow of the section's colour round an open one's letters.)
+      if (!shut) {
+        g.shadowColor = hex;
+        g.shadowBlur = 26;
+      }
+      g.strokeStyle = "#04081a";
       g.strokeText(l, 512, ys[i]);
-      g.fillStyle = shut ? "#8a93ad" : "#ffffff";
+      g.shadowBlur = 0;
+      g.fillStyle = shut ? "#c3c9da" : "#ffffff";
       g.fillText(l, 512, ys[i]);
     });
     // A bar of the section's colour under it.
@@ -158,7 +168,7 @@ function bannerTex(title: string, hex: string, state: PortalState, score?: numbe
       g.fillRect(x - 14, 52, 4, 96);
       x += 16;
     }
-    g.fillStyle = dim ? "#6a7390" : dormant ? "#aab2c8" : "#f4f6ff";
+    g.fillStyle = dormant ? "#dfe3ee" : "#ffffff";
     g.font = "700 56px system-ui, sans-serif";
     let text = title;
     const room = 1000 - x - 30;
@@ -170,6 +180,8 @@ function bannerTex(title: string, hex: string, state: PortalState, score?: numbe
 /** The calm view's portals lie flat on the road, three times the size,
  *  so from high above each one is a full circle you can't miss. */
 export const PORTAL_FLAT_SCALE = 3;
+const LIVE_NAME = new THREE.Color(1, 1, 1);
+const QUIET_NAME = new THREE.Color(0.92, 0.92, 0.92);
 export const PORTAL_FLAT_Y = 1.1;
 /** How high a standing portal's centre is above the road - clear of it
  *  even where the road rises into a dip beyond. */
@@ -317,7 +329,17 @@ export function Portal({
         <mesh position={[0, 1.2 - PORTAL_FLAT_Y, -(2.5 * PORTAL_FLAT_SCALE + 8)]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[46, 14.4]} />
           {/* (Not hidden by the land where it runs past the road's edges.) */}
-          <meshBasicMaterial map={flatName} transparent opacity={0.96} depthTest={false} depthWrite={false} toneMapped={false} side={THREE.DoubleSide} />
+          {/* Solid, not see-through; an open challenge's name glows. */}
+          <meshBasicMaterial
+            map={flatName}
+            color={!shut && state === "here" ? LIVE_NAME : QUIET_NAME}
+            transparent
+            alphaTest={0.45}
+            depthTest={false}
+            depthWrite={false}
+            toneMapped={false}
+            side={THREE.DoubleSide}
+          />
         </mesh>
       )}
       {!flat && (

@@ -3,7 +3,7 @@
 import { useEffect, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { CLIMB, ROAD_HALF, groundAt, pointAt, sideAt, type RoadLayout } from "./road-geometry";
+import { CLIMB, ROAD_HALF, TOWER, groundAt, pointAt, sideAt, type RoadLayout } from "./road-geometry";
 
 // THE MONUMENTS - three landmarks of speaking, far bigger than anything
 // else in the city, so it takes long enough to pass them for the penny
@@ -29,6 +29,8 @@ export interface MonumentPlan {
   speakers?: { a: number };
   /** Every great arch of the road is a pair of headphones. */
   headphones?: number[];
+  /** The skyscraper the road climbs at the end of Y: where its stunt starts. */
+  tower?: { a: number };
   /** The two giant faces, either side of the road, talking to each other. */
   faces?: number;
   /** Podcast mics on boom arms, leaning out over the road from one side. */
@@ -206,6 +208,48 @@ export function Monuments({
       }
     }
 
+    // THE SKYSCRAPER the road climbs: dark glass, far taller than anything
+    // around it, its corners and floors lit in every section's colour -
+    // the road running straight up its near face, over its roof and down
+    // its far face.
+    if (plan.tower) {
+      const { a } = plan.tower;
+      const { H, NEAR, FAR } = TOWER;
+      const cols = ["#1FE890", "#22D9F5", "#FFD60A", "#FF4A2B", "#F53DE0"].map((h) => new THREE.Color(h).multiplyScalar(1.5));
+      const g = new THREE.Group();
+      const p0 = pointAt(road, a);
+      const ahead = pointAt(road, a + 2);
+      g.position.copy(p0);
+      g.lookAt(ahead.x, p0.y, ahead.z);
+      const W = 44;
+      const D = FAR - NEAR - 1.6;
+      const zc = (NEAR + FAR) / 2;
+      g.add(mesh(new THREE.BoxGeometry(W, H - 0.6, D), glass, 0, (H - 0.6) / 2, zc));
+      // Its foot, down into the ground.
+      g.add(mesh(new THREE.BoxGeometry(W + 6, 40, D + 6), glass, 0, -20, zc));
+      // Lit corners.
+      [
+        [-W / 2, NEAR + 0.8],
+        [W / 2, NEAR + 0.8],
+        [-W / 2, FAR - 0.8],
+        [W / 2, FAR - 0.8],
+      ].forEach(([x, z], i) => g.add(mesh(new THREE.BoxGeometry(0.9, H, 0.9), glow(cols[i % cols.length]), x, H / 2, z)));
+      // Bands of light round its floors, climbing through the colours.
+      for (let y = 14, k = 0; y < H - 4; y += 12, k++) {
+        const c = glow(cols[k % cols.length].clone().multiplyScalar(0.75));
+        for (const x of [-W / 2 - 0.2, W / 2 + 0.2]) g.add(mesh(new THREE.BoxGeometry(0.4, 0.5, D), c, x, y, zc));
+        // (On the faces the road runs up, only out at the edges.)
+        for (const z of [NEAR + 0.6, FAR - 0.6]) for (const x of [-W / 2 + 8, W / 2 - 8]) g.add(mesh(new THREE.BoxGeometry(14, 0.5, 0.4), c, x, y, z));
+      }
+      // Light running up the faces the road climbs and comes down, either
+      // side of it - so, on the way up, you see the height pour past.
+      for (const z of [NEAR + 0.5, FAR - 0.5])
+        [-15, -8.5, 8.5, 15].forEach((x, i) => g.add(mesh(new THREE.BoxGeometry(0.5, H, 0.3), glow(cols[(i + (z > zc ? 2 : 0)) % cols.length].clone().multiplyScalar(0.8)), x, H / 2, z)));
+      // The roof's rim.
+      for (const x of [-W / 2, W / 2]) g.add(mesh(new THREE.BoxGeometry(0.9, 0.9, D), glow(cols[4]), x, H, zc));
+      root.add(g);
+    }
+
     // PODCAST MICS ON BOOM ARMS: from a base beside the road, the arm
     // rises at an angle, bends at its elbow and reaches out over the road,
     // the mic hanging from its end and leaning on toward the far side -
@@ -289,6 +333,8 @@ export function Monuments({
         g.add(mesh(new THREE.CircleGeometry(8, 36), glow(c.clone().multiplyScalar(0.3)), x + inward * 5.9, CUP_Y, 0, 0, inward * (Math.PI / 2)));
       }
       placeAt(g, road, s, 0);
+      // (Where the road is up in the air, the arch stands over it there.)
+      g.position.y = pointAt(road, s).y;
       root.add(g);
     }
 

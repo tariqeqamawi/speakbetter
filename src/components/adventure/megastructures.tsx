@@ -5,7 +5,7 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { Monuments, type MonumentPlan } from "./monuments";
 import { TalkingFaces } from "./talking-faces";
-import { ROAD_HALF, VICTORY_AFTER, WEAVE, groundAt, pointAt, seeded, sideAt, venueStretch, type RoadLayout } from "./road-geometry";
+import { ROAD_HALF, WEAVE, victoryStart, groundAt, pointAt, seeded, sideAt, venueStretch, type RoadLayout } from "./road-geometry";
 
 // SCALE. On the tracks of Extreme-G the road ran between things far
 // bigger than you - towers, gantries, tunnels - and passing them is what
@@ -226,6 +226,14 @@ const TOWER_FRAG = /* glsl */ `
 // details in every section's colour - green, cyan, gold, red, magenta -
 // brighter, and beating slowly like a crowd on its feet.
 const VICTORY_VERT = TOWER_VERT.replace(
+  "vKind = floor(h2 * 4.0);",
+  // (Only lines - seams up the corners and bands round the floors - so the
+  // bodies stay dark and the colour is all in the glow.)
+  "vKind = h2 < 0.5 ? 0.0 : 3.0;",
+).replace(
+  "vBody = h3 < 0.4 ? vec3(0.006, 0.016, 0.075) : h3 < 0.7 ? vec3(0.003, 0.034, 0.052) : vec3(0.022, 0.008, 0.072);",
+  "vBody = vec3(0.006, 0.007, 0.011);",
+).replace("vGlassy = step(0.5, fract(h3 * 7.3));", "vGlassy = 1.0;").replace(
   "vGlow = h1 < 0.4 ? vec3(0.25, 0.55, 1.0) : h1 < 0.7 ? vec3(0.66, 0.36, 1.0) : vec3(0.2, 0.95, 0.75);",
   "vGlow = h1 < 0.2 ? vec3(0.12, 0.91, 0.56) : h1 < 0.4 ? vec3(0.13, 0.85, 0.96) : h1 < 0.6 ? vec3(1.0, 0.84, 0.04) : h1 < 0.8 ? vec3(1.0, 0.29, 0.17) : vec3(0.96, 0.24, 0.88);",
 );
@@ -461,22 +469,25 @@ function buildCity(
   for (let s = 60; s < end; ) {
     const c = inCity(s);
     const won = s > victory;
-    for (const sd of c > 0.3 ? [-1, 1] : [rand() < 0.5 ? -1 : 1]) {
+    // (Through the victory stretch the city thickens the further you go,
+    // until it runs into the great city at the end.)
+    const deep = won ? THREE.MathUtils.clamp((s - victory) / Math.max(1, end - victory), 0, 1) : 0;
+    for (const sd of c > 0.3 || won ? [-1, 1] : [rand() < 0.5 ? -1 : 1]) {
       // (In the victory stretch they stand back a little, behind the line
       // of speaking landmarks along its edges.)
-      const d = sd * (ROAD_HALF + (won ? 36 : 20) + rand() * (won ? 22 : c > 0.3 ? 30 : 45));
+      const d = sd * (ROAD_HALF + (won ? 36 - deep * 10 : 20) + rand() * (won ? 22 : c > 0.3 ? 30 : 45));
       if (kept(s, d) || besideFeature(s, d)) continue;
       // One in six is a nod to speaking - a mic, headphones, a speaker
       // stack - that reads as a tower until you look again.
       const speaking = rand() < 0.17;
-      tower(s, d, 6 + rand() * 9, (70 + rand() * 110) * (1 + c * 0.4), speaking ? [7, 8, 8, 10][Math.floor(rand() * 4)] : Math.floor(rand() * 7));
+      tower(s, d, 6 + rand() * 9, (70 + rand() * 110) * (1 + c * 0.4) * (1 + deep * 0.8), speaking ? [7, 8, 8, 10][Math.floor(rand() * 4)] : Math.floor(rand() * 7));
     }
-    s += won ? 10 + rand() * 6 : THREE.MathUtils.lerp(28 + rand() * 24, 9 + rand() * 8, c);
+    s += won ? THREE.MathUtils.lerp(14, 5, deep) + rand() * 5 : THREE.MathUtils.lerp(28 + rand() * 24, 9 + rand() * 8, c);
   }
   // THE FAR ROW, along the edges of the land: taller, bigger, mostly
   // spires, needles and obelisks - the skyline you're always heading for.
   for (let s = 40; s < end; ) {
-    const c = inCity(s);
+    const c = Math.max(inCity(s), s > victory ? 0.6 + 0.4 * THREE.MathUtils.clamp((s - victory) / Math.max(1, end - victory), 0, 1) : 0);
     for (const sd of [-1, 1]) {
       if (rand() < 0.35 - c * 0.3) continue;
       if (clear.some((k) => s > k.from && s < k.to)) continue;
@@ -1477,6 +1488,8 @@ export function structurePlan(road: RoadLayout) {
   }
   const climb = road.stunts.find((z) => z.kind === "climb");
   if (climb) monuments.speakers = { a: climb.a };
+  const towerZ = road.stunts.find((z) => z.kind === "tower");
+  if (towerZ) monuments.tower = { a: towerZ.a };
   // Every great arch is now a giant pair of headphones.
   monuments.headphones = arches.splice(0, arches.length);
 
@@ -1509,9 +1522,9 @@ export function structurePlan(road: RoadLayout) {
   // stage mics, podcast mics, headphones on end and speaker stacks (smaller
   // than the climb's), either side, in every colour - and headphone arches
   // over the road.
-  const vFrom = lastStop + VICTORY_AFTER + 30;
+  const vFrom = victoryStart(road) + 30;
   // (Clear of the lion at the finish, which stands alone.)
-  const vTo = road.finish - 150;
+  const vTo = road.finish - 60;
   let k = 0;
   for (let s = vFrom; s < vTo; s += 44, k++) {
     for (const side of [-1, 1]) {
@@ -1531,8 +1544,8 @@ export function structurePlan(road: RoadLayout) {
     .filter((m): m is { from: number; to: number } | { s: number } => Boolean(m))
     .map((m) => ("s" in m ? { from: m.s - 90, to: m.s + 90 } : m))
     .concat(monuments.headphones.map((s) => ({ from: s - 25, to: s + 25 })));
-  // The lion at the finish stands alone.
-  clear.push({ from: road.finish - 110, to: road.finish + 70 });
+  // The finish arch stands clear.
+  clear.push({ from: road.finish - 40, to: road.finish + 30 });
   if (faces !== undefined) clear.push({ from: faces - 70, to: faces + 70 });
   return { arches, corridors, tunnels, venues, spotRuns, keep, monuments, clear, features };
 }

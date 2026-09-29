@@ -10,9 +10,9 @@ import { PORTAL_FLAT_SCALE, PORTAL_FLAT_Y, PORTAL_Y, Portal } from "./portal";
 import { SkyDome } from "./sky-dome";
 import { City } from "./city";
 import { Bloom, GateSparks, Sky, SpeedSparks } from "./fx";
-import { FinishLion } from "./finish-lion";
+import { FinishGate } from "./finish-gate";
 import { AHEAD, ColourWall, RoadsideComment, RoadsideTrophy, Traveller } from "./world-details";
-import { GATE_BEFORE, VICTORY_AFTER, hills, layoutRoad, pointAt, reachedPhase, seeded, sideAt, type RoadLayout, type Travel, ROAD_HALF, bankLift, tiltAt, groundAt, surfaceAt, upAt } from "./road-geometry";
+import { GATE_BEFORE, victoryStart, hills, layoutRoad, pointAt, reachedPhase, seeded, sideAt, type RoadLayout, type Travel, ROAD_HALF, bankLift, tiltAt, groundAt, surfaceAt, upAt } from "./road-geometry";
 
 // The S.T.O.R.Y. adventure as a world you travel through.
 //
@@ -80,7 +80,7 @@ function phaseSpans(road: RoadLayout, stops: WorldStop[], phases: WorldPhase[]) 
   }).map((sp, _, all) => ({
     ...sp,
     // Past the last challenge: the victory stretch, in every colour.
-    victory: road.stops[stops.length - 1] + VICTORY_AFTER,
+    victory: victoryStart(road),
     all: all.map((x) => x.col),
   }));
 }
@@ -956,9 +956,12 @@ function Rig({
     // ground beneath instead of the rolling road.
     const posS = s + f * 2 - b * 4 - up * 5;
     const atS = s + AHEAD + 26 - f * 2 - up * 9;
-    if (road.stuntAt(posS) > 0) groundAt(road, posS, pos);
+    // (Not round the skyscraper: the road comes off it up in the air, and
+    // the ground there is far below.)
+    const byTower = (x: number) => road.stunts.some((z) => z.kind === "tower" && x > z.a - 40 && x < z.a + z.len + 40);
+    if (road.stuntAt(posS) > 0 && !byTower(posS)) groundAt(road, posS, pos);
     else pointAt(road, posS, pos);
-    if (road.stuntAt(atS) > 0) groundAt(road, atS, at);
+    if (road.stuntAt(atS) > 0 && !byTower(atS)) groundAt(road, atS, at);
     else pointAt(road, atS, at);
     eye.copy(pos).setY(pos.y + 7.5 - f * 3 - b * 0.4 + up * 6.5);
     look.copy(at).setY(at.y + 1.2 + f * 0.6);
@@ -983,9 +986,12 @@ function Rig({
     if (stunt) {
       const k = THREE.MathUtils.smoothstep(tS, stunt.a - 25, stunt.a) * (1 - THREE.MathUtils.smoothstep(tS, stunt.a + stunt.len, stunt.a + stunt.len + 25));
       const bs = tS - AHEAD;
-      const rise = stunt.kind === "climb" ? 7.5 : 5.5;
+      const rise = stunt.kind === "climb" ? 7.5 : stunt.kind === "tower" ? 7 : 5.5;
+      // (Up the skyscraper, looking further on, so over the roof the view
+      // is of the sky and the city - not the road filling the screen.)
+      const on = stunt.kind === "tower" ? 24 : 10;
       pointAt(road, bs, sEye).addScaledVector(upAt(road, bs, across), rise);
-      pointAt(road, tS + 10, sLook).addScaledVector(upAt(road, tS + 10, across), 1.2);
+      pointAt(road, tS + on, sLook).addScaledVector(upAt(road, tS + on, across), 1.2);
       if (stunt.kind !== "climb") {
         // The camera's up turns with the track's, blended in and out.
         upAt(road, bs, across);
@@ -1302,7 +1308,7 @@ export function AdventureWorld({
           flat={calm}
         />
       ))}
-      <FinishLion road={road} cols={finishCols} />
+      <FinishGate road={road} cols={finishCols} />
       <Rig road={road} travel={travel} onMove={onMove} limit={limit ?? road.finish + 10} calm={calm} arrive={arrive} leaveTo={leaveTo} />
       {pickRef && <Picker road={road} pickRef={pickRef} far={calm ? 240 : 70} flat={calm} />}
     </Canvas>

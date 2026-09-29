@@ -1,5 +1,6 @@
 "use client";
 
+import { LockIcon } from "./lock-icon";
 import Link from "next/link";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { WorldPhase, WorldStop } from "./adventure-world";
@@ -260,7 +261,7 @@ export function Adventure2D({
                 )}
                 {locked && (
                   <button type="button" onClick={backToCurrent} className="text-xs text-ink-faint hover:text-ink-muted">
-                    🔒 Complete your current section first
+                    <LockIcon className="-mt-0.5 mr-1 size-3.5" />Locked
                   </button>
                 )}
               </span>
@@ -271,7 +272,7 @@ export function Adventure2D({
       {notice && (
         <div role="status" className="pointer-events-none fixed inset-x-0 top-1/2 z-50 flex justify-center px-6">
           <p className="coach-note-in rounded-2xl border border-navy-500 bg-navy-950/95 px-5 py-3 text-center text-sm font-semibold text-ink shadow-2xl backdrop-blur">
-            🔒 Complete your current section to unlock this one.
+            <LockIcon className="-mt-0.5 mr-1.5 size-4" />Complete your current section to unlock this one.
           </p>
         </div>
       )}
