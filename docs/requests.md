@@ -435,3 +435,4 @@ what.
 - New eighth colour Voice (royal blue #4d6bff): vocal lessons out of Act, Coach scores it, spectrum/dial/deck/badges 7→8, old takes show Voice unmeasured; Give The Setting also in Frame (alsoIn); Light Source → Presence — `f3c7393`
 - Road batch 5: real scanned talking heads (CC BY 3.0, credited on About); monolith removed, gentle rise into the victory city; ring tunnel 3x, big FINISH, colour vortex, white wash to Coach's congratulations — `f268d37`
 - Challenge lesson audit: 13 challenges' suggested lessons/colours corrected (table in Desktop\Tariq Files\Speak Better - Screenshots\Challenge lessons audit.md) — `a3e54b7`
+- Eight colors beyond the app: book retitled The 8 Colors (cover photos, /book, Look Inside gains a Voice chapter), printed-deck photos with the royal-blue eighth card, admin, Stripe pack description — `d311143`
