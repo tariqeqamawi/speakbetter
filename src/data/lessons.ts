@@ -15,7 +15,6 @@ export const lessons: Lesson[] = [
   // ── Storytelling techniques (yellow) ────────────────────────────────
   { vimeoId: "1081030429", title: "Stories Make The World Go Round", category: "storytelling" },
   { vimeoId: "1081031042", title: "Storytelling: Don't Tell it, Relive The Experience", category: "storytelling" },
-  { vimeoId: "1081031146", title: "Imagination: The Production Studio In Your Mind", category: "storytelling" },
   { vimeoId: "1081031433", title: "Life Scene NOT Life Story", category: "storytelling" },
   { vimeoId: "1081031495", title: "Facts Tell, Stories Sell", category: "storytelling" },
   { vimeoId: "1081031584", title: "Story Time: The Almost Snowboarder", category: "storytelling" },
@@ -40,6 +39,7 @@ export const lessons: Lesson[] = [
   { vimeoId: "1080654991", title: "Alliteration", category: "figurative" },
 
   // ── Acting skills for speakers (red) - includes vocal delivery ──────
+  { vimeoId: "1081031146", title: "Imagination: The Production Studio In Your Mind", category: "acting" },
   { vimeoId: "1081162752", title: "Acting Tip For Speakers: Don't Just Say It, Imagine It", category: "acting" },
   { vimeoId: "1081162875", title: "Don't Just Speak It, Act Out The Scene", category: "acting" },
   { vimeoId: "1081163248", title: "Narrate The Scene To Zoom Into Moments", category: "acting" },
