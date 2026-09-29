@@ -79,8 +79,6 @@ export const lessons: Lesson[] = [
   { vimeoId: "1094881996", title: "How To Overcome Your Fear Of Speaking: Soften", category: "mindset" },
   { vimeoId: "1081162517", title: "As The Speaker You Have ALL The Power!", category: "mindset" },
   { vimeoId: "1081162691", title: "You Are Delivering An Experience, Not A Talk", category: "mindset" },
-  { vimeoId: "1081199069", title: "NLP & Autosuggestion", category: "mindset" },
-  { vimeoId: "1081199902", title: "Building A Thank Account", category: "mindset" },
   { vimeoId: "1082732774", title: "Being Professional vs Being Serious", category: "mindset" },
   { vimeoId: "1081162172", title: "Make It About Your Audience", category: "mindset" },
   { vimeoId: "1094883641", title: "Don't Give Your Power Away", category: "mindset" },
@@ -113,6 +111,8 @@ export const lessons: Lesson[] = [
   // speaker past the basics of story.
   { vimeoId: "1081198327", title: "The Client In The Hero's Journey", category: "advanced" },
   { vimeoId: "1081198162", title: "Link Your Call To Action To The Moral Of The Story", category: "advanced" },
+  { vimeoId: "1081199069", title: "NLP & Autosuggestion", category: "advanced" },
+  { vimeoId: "1081199902", title: "Building A Thank Account", category: "advanced" },
 ];
 
 export const lessonByVimeoId = new Map(lessons.map((l) => [l.vimeoId, l]));
