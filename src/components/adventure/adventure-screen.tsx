@@ -132,6 +132,8 @@ export function AdventureScreen({
       const weave = road.skyways.find((w) => (w as { wave?: boolean }).wave);
       if ((at as string) === "weave" && weave) return weave.a + 60;
       if ((at as string) === "tube") return structurePlan(road).tunnels[0].from - 10;
+      const ringRun = structurePlan(road).tunnels.find((t) => t.rings);
+      if ((at as string) === "rings" && ringRun) return ringRun.from - 10;
       const m = at ? structurePlan(road).monuments[at] : undefined;
       const first = Array.isArray(m) ? m[0] : m;
       const ms = typeof first === "number" ? first : first && "s" in first ? first.s : first?.a;

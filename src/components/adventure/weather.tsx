@@ -8,9 +8,11 @@ import { AHEAD, pointAt, type RoadLayout, type Travel } from "./road-geometry";
 // THE WEATHER OF EACH SECTION - a little air you can see, and only where
 // you are, so it tells you where you are without cluttering the road:
 //
-// - S: a faint green aurora hanging in the sky ahead.
-// - T: cyan dust drifting slowly across the land.
+// - S: a green aurora hanging in the sky ahead.
+// - T: cyan dust drifting across the land.
+// - O: golden sparks, like pollen, drifting slowly down.
 // - R: embers floating up, red and orange.
+// - Y: neon rain, magenta and violet, streaking down through the city.
 //
 // Each fades in as you cross into its section and out as you leave. A
 // few hundred points at most; nothing at all for anyone who has asked
@@ -72,7 +74,7 @@ function Drift({
   low: number;
   high: number;
 }) {
-  const R = 70; // how far round the traveller they live
+  const R = 46; // how far round the traveller they live
   const { geo, vel } = useMemo(() => {
     const geo = new THREE.BufferGeometry();
     const pos = new Float32Array(count * 3);
@@ -122,7 +124,7 @@ function Drift({
     const dt = Math.min(dtRaw, 0.05);
     const here = travel.s + AHEAD;
     const w = inside(stretch, here);
-    mat.opacity = w * 0.85;
+    mat.opacity = w;
     if (w <= 0.001) {
       placed.current = false;
       return;
@@ -134,7 +136,7 @@ function Drift({
       const a = Math.random() * Math.PI * 2;
       const r = Math.sqrt(Math.random()) * R;
       pos[i * 3] = centre.x + Math.cos(a) * r;
-      pos[i * 3 + 1] = centre.y + (anyHeight ? low + Math.random() * (high - low) : low);
+      pos[i * 3 + 1] = centre.y + (anyHeight ? low + Math.random() * (high - low) : rise < 0 ? high : low);
       pos[i * 3 + 2] = centre.z + Math.sin(a) * r;
     };
     for (let i = 0; i < count; i++) {
@@ -150,7 +152,8 @@ function Drift({
       const dx = pos[i * 3] - centre.x;
       const dz = pos[i * 3 + 2] - centre.z;
       // Left behind, or risen out of sight: back into the air round you.
-      if (dx * dx + dz * dz > R * R || pos[i * 3 + 1] - centre.y > high + 10) spawn(i, rise === 0);
+      const y = pos[i * 3 + 1] - centre.y;
+      if (dx * dx + dz * dz > R * R || y > high + 10 || y < low - 4) spawn(i, rise === 0);
     }
     placed.current = true;
     (geo.attributes.position as THREE.BufferAttribute).needsUpdate = true;
@@ -208,15 +211,15 @@ function Aurora({ travel, stretch }: { travel: Travel; stretch: Stretch | undefi
   useFrame(({ clock, camera }) => {
     const w = inside(stretch, travel.s + AHEAD);
     mat.uniforms.uTime.value = clock.elapsedTime;
-    mat.uniforms.uAlpha.value = w * 0.6;
+    mat.uniforms.uAlpha.value = w * 1.1;
     const m = mesh.current;
     if (!m) return;
     m.visible = w > 0.001;
     if (!m.visible) return;
     // Always ahead of you, high in the sky, far off.
     camera.getWorldDirection(fwd).setY(0).normalize();
-    m.position.copy(camera.position).addScaledVector(fwd, 620);
-    m.position.y = camera.position.y + 290;
+    m.position.copy(camera.position).addScaledVector(fwd, 460);
+    m.position.y = camera.position.y + 170;
     m.lookAt(camera.position.x, m.position.y, camera.position.z);
   });
   /* eslint-enable react-hooks/immutability */
@@ -227,6 +230,72 @@ function Aurora({ travel, stretch }: { travel: Travel; stretch: Stretch | undefi
   );
 }
 
+/** Neon rain: short bright streaks falling fast through the air round
+ *  you - one line each, so a few hundred cost almost nothing. */
+function Rain({ road, travel, stretch, count, colours }: { road: RoadLayout; travel: Travel; stretch: Stretch | undefined; count: number; colours: string[] }) {
+  const R = 40;
+  const TOP = 46;
+  const LEN = 4.5;
+  const geo = useMemo(() => {
+    const g = new THREE.BufferGeometry();
+    const pos = new Float32Array(count * 6);
+    const col = new Float32Array(count * 6);
+    const c = new THREE.Color();
+    for (let i = 0; i < count; i++) {
+      c.set(colours[i % colours.length]).multiplyScalar(2.4);
+      // (The tail of each streak fainter than its head.)
+      col.set([c.r * 0.25, c.g * 0.25, c.b * 0.25, c.r, c.g, c.b], i * 6);
+      pos.set([0, -1e5, 0, 0, -1e5, 0], i * 6);
+    }
+    g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    g.setAttribute("color", new THREE.BufferAttribute(col, 3));
+    return g;
+  }, [count, colours]);
+  const mat = useMemo(
+    () => new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }),
+    [],
+  );
+  useEffect(
+    () => () => {
+      geo.dispose();
+      mat.dispose();
+    },
+    [geo, mat],
+  );
+  const centre = useMemo(() => new THREE.Vector3(), []);
+  const placed = useRef(false);
+  /* eslint-disable react-hooks/immutability -- particles, moved every frame */
+  useFrame((_, dtRaw) => {
+    const dt = Math.min(dtRaw, 0.05);
+    const w = inside(stretch, travel.s + AHEAD);
+    mat.opacity = w;
+    if (w <= 0.001) {
+      placed.current = false;
+      return;
+    }
+    pointAt(road, travel.s + AHEAD + 18, centre);
+    const p = (geo.attributes.position as THREE.BufferAttribute).array as Float32Array;
+    for (let i = 0; i < count; i++) {
+      let y = p[i * 6 + 4] - 34 * dt;
+      if (!placed.current || y < centre.y - 2 || (p[i * 6 + 3] - centre.x) ** 2 + (p[i * 6 + 5] - centre.z) ** 2 > R * R) {
+        const a = Math.random() * Math.PI * 2;
+        const r = Math.sqrt(Math.random()) * R;
+        p[i * 6 + 3] = centre.x + Math.cos(a) * r;
+        p[i * 6 + 5] = centre.z + Math.sin(a) * r;
+        y = centre.y + (placed.current ? TOP : Math.random() * TOP);
+      }
+      p[i * 6] = p[i * 6 + 3];
+      p[i * 6 + 2] = p[i * 6 + 5];
+      p[i * 6 + 4] = y;
+      p[i * 6 + 1] = y + LEN;
+    }
+    placed.current = true;
+    (geo.attributes.position as THREE.BufferAttribute).needsUpdate = true;
+  });
+  /* eslint-enable react-hooks/immutability */
+  return <lineSegments geometry={geo} material={mat} frustumCulled={false} />;
+}
+
 export function SectionWeather({ road, travel, spans }: { road: RoadLayout; travel: Travel; spans: Stretch[] }) {
   const still = useMemo(
     () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -235,12 +304,16 @@ export function SectionWeather({ road, travel, spans }: { road: RoadLayout; trav
   const find = (id: string) => spans.find((s) => s.id === id);
   const embers = useMemo(() => ["#ff4a2b", "#ff9500", "#ffb347"], []);
   const dust = useMemo(() => ["#22d9f5", "#9befff"], []);
+  const pollen = useMemo(() => ["#ffd60a", "#ffe98a", "#ffb800"], []);
+  const neon = useMemo(() => ["#f53de0", "#b04bff", "#ff6ad5"], []);
   if (still) return null;
   return (
     <group>
       <Aurora travel={travel} stretch={find("S")} />
-      <Drift road={road} travel={travel} stretch={find("T")} count={300} colours={dust} size={0.22} rise={0} wind={2.2} low={1} high={16} />
-      <Drift road={road} travel={travel} stretch={find("R")} count={260} colours={embers} size={0.32} rise={2.4} wind={0.4} low={0} high={34} />
+      <Drift road={road} travel={travel} stretch={find("T")} count={280} colours={dust} size={0.7} rise={0} wind={3.2} low={1} high={18} />
+      <Drift road={road} travel={travel} stretch={find("O")} count={240} colours={pollen} size={0.8} rise={-1.4} wind={1.2} low={0} high={30} />
+      <Drift road={road} travel={travel} stretch={find("R")} count={260} colours={embers} size={0.9} rise={3.2} wind={0.6} low={0} high={34} />
+      <Rain road={road} travel={travel} stretch={find("Y")} count={420} colours={neon} />
     </group>
   );
 }

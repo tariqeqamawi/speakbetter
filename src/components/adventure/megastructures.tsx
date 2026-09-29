@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { Monuments, type MonumentPlan } from "./monuments";
+import { TalkingFaces } from "./talking-faces";
 import { ROAD_HALF, VICTORY_AFTER, WEAVE, groundAt, pointAt, seeded, sideAt, venueStretch, type RoadLayout } from "./road-geometry";
 
 // SCALE. On the tracks of Extreme-G the road ran between things far
@@ -77,11 +78,11 @@ const GLASS_FRAG = /* glsl */ `
     float fres = pow(1.0 - abs(dot(N, V)), 3.0);
     float side = 0.5 + 0.5 * dot(N, normalize(vec3(-0.3, 0.6, -0.5)));
     float floors = smoothstep(0.9, 1.0, fract(vH / 3.2)) * 0.22;
-    vec3 col = vTint * 0.12 * (0.55 + 0.8 * side)
-      + vTint * fres * 0.42
+    vec3 col = vTint * 0.06 * (0.55 + 0.8 * side)
+      + vTint * fres * 0.3
       + vTint * floors * (0.3 + fres) * 0.9;
     float fog = 1.0 - exp(-uFogD * uFogD * vDepth * vDepth);
-    gl_FragColor = vec4(mix(col, uFog, fog * 0.85), 1.0);
+    gl_FragColor = vec4(mix(col, uFog, fog * 0.93), 1.0);
   }
 `;
 
@@ -121,12 +122,21 @@ const TOWER_VERT = /* glsl */ `
   varying vec3 vGlow;
   varying float vKind;
   varying float vSeed;
+  varying vec3 vBody;
+  varying float vGlassy;
+  varying float vBase;
   void main() {
     float h1 = fract(sin(dot(instanceMatrix[3].xz, vec2(12.9898, 78.233))) * 43758.5453);
     float h2 = fract(sin(dot(instanceMatrix[3].xz, vec2(39.3468, 11.135))) * 24634.6345);
     vGlow = h1 < 0.4 ? vec3(0.25, 0.55, 1.0) : h1 < 0.7 ? vec3(0.66, 0.36, 1.0) : vec3(0.2, 0.95, 0.75);
     vKind = floor(h2 * 4.0);
     vSeed = h1 * 10.0;
+    // The body: the app's glassy navy, leaning blue, teal or violet; one
+    // building in two a mirror-glass that shows the sky.
+    float h3 = fract(sin(dot(instanceMatrix[3].xz, vec2(63.7, 17.9))) * 9151.31);
+    vBody = h3 < 0.4 ? vec3(0.006, 0.016, 0.075) : h3 < 0.7 ? vec3(0.003, 0.034, 0.052) : vec3(0.022, 0.008, 0.072);
+    vGlassy = step(0.5, fract(h3 * 7.3));
+    vBase = instanceMatrix[3].y + 30.0;
     vec4 wp = modelMatrix * instanceMatrix * vec4(position, 1.0);
     vN = normalize(mat3(modelMatrix) * mat3(instanceMatrix) * normal);
     vV = cameraPosition - wp.xyz;
@@ -146,6 +156,22 @@ const TOWER_FRAG = /* glsl */ `
   varying vec3 vGlow;
   varying float vKind;
   varying float vSeed;
+  varying vec3 vBody;
+  varying float vGlassy;
+  varying float vBase;
+  // The sky the glass reflects: dark overhead, a band of violet and teal
+  // light round the horizon, a few neon lights of the city in it - one
+  // fixed picture, looked up by direction, so reflections cost nothing.
+  vec3 skyEnv(vec3 d) {
+    float h = d.y;
+    vec3 c = mix(vec3(0.05, 0.03, 0.12), vec3(0.01, 0.015, 0.05), smoothstep(0.0, 0.7, h));
+    c += vec3(0.20, 0.12, 0.42) * exp(-h * h * 40.0) + vec3(0.05, 0.30, 0.34) * exp(-(h - 0.12) * (h - 0.12) * 120.0);
+    float az = atan(d.z, d.x);
+    float neon = pow(max(0.0, sin(az * 9.0 + 1.3)), 40.0) * exp(-h * h * 25.0);
+    c += vec3(0.9, 0.35, 1.0) * neon * 0.6;
+    c += vec3(0.02, 0.02, 0.05) * max(0.0, -h) * 2.0;
+    return c;
+  }
   float line(float v, float w) {
     float d = abs(fract(v) - 0.5) * 2.0;
     return smoothstep(1.0 - w - fwidth(v) * 2.0, 1.0 - w * 0.2, d);
@@ -179,10 +205,20 @@ const TOWER_FRAG = /* glsl */ `
       // Bands of light round its floors.
       g = line(y / 9.0 + vSeed, 0.05) * 1.1;
     }
-    vec3 base = vec3(0.022, 0.035, 0.07) * (0.55 + 0.7 * side);
-    vec3 col = base + vec3(0.12, 0.18, 0.35) * fres * 0.35 + vGlow * g * up;
+    // FAKED LIGHT: darker toward its foot (the street's shadow), a little
+    // lighter up high, and a wash of its own glow's colour on its walls,
+    // as if the light bounced.
+    float hh = max(0.0, vW.y - vBase);
+    float ao = 0.35 + 0.65 * smoothstep(0.0, 45.0, hh);
+    float lift = 0.85 + 0.35 * smoothstep(20.0, 220.0, hh);
+    vec3 base = vBody * (0.6 + 0.65 * side) * ao * lift;
+    base += vGlow * 0.035 * ao * up;
+    // Mirror glass: the sky, strongest at a glancing angle.
+    vec3 R = reflect(-V, N);
+    vec3 refl = skyEnv(R) * (0.25 + 0.75 * fres) * vGlassy * ao;
+    vec3 col = base + refl + vBody * 2.2 * fres * (1.0 - vGlassy) + vGlow * g * up;
     float fog = 1.0 - exp(-uFogD * uFogD * vDepth * vDepth);
-    gl_FragColor = vec4(mix(col, uFog, fog * 0.85), 1.0);
+    gl_FragColor = vec4(mix(col, uFog, fog * 0.93), 1.0);
   }
 `;
 
@@ -433,7 +469,7 @@ function buildCity(
       // One in six is a nod to speaking - a mic, headphones, a speaker
       // stack - that reads as a tower until you look again.
       const speaking = rand() < 0.17;
-      tower(s, d, 6 + rand() * 9, (70 + rand() * 110) * (1 + c * 0.4), speaking ? 7 + Math.floor(rand() * 4) : Math.floor(rand() * 7));
+      tower(s, d, 6 + rand() * 9, (70 + rand() * 110) * (1 + c * 0.4), speaking ? [7, 8, 8, 10][Math.floor(rand() * 4)] : Math.floor(rand() * 7));
     }
     s += won ? 10 + rand() * 6 : THREE.MathUtils.lerp(28 + rand() * 24, 9 + rand() * 8, c);
   }
@@ -445,7 +481,7 @@ function buildCity(
       if (rand() < 0.35 - c * 0.3) continue;
       if (clear.some((k) => s > k.from && s < k.to)) continue;
       const d = sd * (80 + rand() * 75);
-      const type = rand() < 0.22 ? 7 + Math.floor(rand() * 4) : [1, 2, 6, 6, 5, 0, 3][Math.floor(rand() * 7)];
+      const type = rand() < 0.22 ? [7, 8, 8, 10][Math.floor(rand() * 4)] : [1, 2, 6, 6, 5, 0, 3][Math.floor(rand() * 7)];
       tower(s, d, 10 + rand() * 14, 150 + rand() * 190, type);
     }
     s += THREE.MathUtils.lerp(40 + rand() * 35, 14 + rand() * 10, c);
@@ -479,7 +515,7 @@ function City({
       new THREE.ShaderMaterial({
         vertexShader: VICTORY_VERT,
         fragmentShader: VICTORY_FRAG,
-        uniforms: { uFog: { value: new THREE.Color("#040816") }, uFogD: { value: 0.003 }, uTime: { value: 0 } },
+        uniforms: { uFog: { value: new THREE.Color("#040816") }, uFogD: { value: 0.0036 }, uTime: { value: 0 } },
       }),
     [],
   );
@@ -490,10 +526,10 @@ function City({
       new THREE.ShaderMaterial({
         vertexShader: GLASS_VERT,
         fragmentShader: GLASS_FRAG.replace(
-          "gl_FragColor = vec4(mix(col, uFog, fog * 0.85), 1.0);",
-          "col = vec3(0.012, 0.013, 0.018) * (0.6 + 0.8 * side) + vec3(0.55, 0.62, 0.78) * pow(1.0 - abs(dot(N, V)), 2.2) * 0.6;\n    gl_FragColor = vec4(mix(col, uFog, fog * 0.85), 1.0);",
+          "gl_FragColor = vec4(mix(col, uFog, fog * 0.93), 1.0);",
+          "col = vec3(0.004, 0.006, 0.02) * (0.6 + 0.8 * side) + vec3(0.10, 0.16, 0.42) * pow(1.0 - abs(dot(N, V)), 3.5) * 0.45;\n    gl_FragColor = vec4(mix(col, uFog, fog * 0.93), 1.0);",
         ),
-        uniforms: { uFog: { value: new THREE.Color("#040816") }, uFogD: { value: 0.003 } },
+        uniforms: { uFog: { value: new THREE.Color("#040816") }, uFogD: { value: 0.0036 } },
       }),
     [],
   );
@@ -512,7 +548,7 @@ function City({
       new THREE.ShaderMaterial({
         vertexShader: TOWER_VERT,
         fragmentShader: TOWER_FRAG,
-        uniforms: { uFog: { value: new THREE.Color("#040816") }, uFogD: { value: 0.003 } },
+        uniforms: { uFog: { value: new THREE.Color("#040816") }, uFogD: { value: 0.0036 } },
       }),
     [],
   );
@@ -599,7 +635,7 @@ function Corridors({ road, colourAt, runs }: { road: RoadLayout; colourAt: Colou
     count,
     useMemo(() => new THREE.BoxGeometry(1, 1, 1), []),
     useMemo(
-      () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color("#040816") }, uFogD: { value: 0.003 } } }),
+      () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color("#040816") }, uFogD: { value: 0.0036 } } }),
       [],
     ),
   );
@@ -682,7 +718,7 @@ function Venue({ road, colourAt, venues }: { road: RoadLayout; colourAt: ColourA
   const rows = venues.reduce((n, v) => n + Math.max(0, Math.floor((v.seatsTo - v.stage - 14) / ROW)), 0);
   const seatCount = rows * PER_ROW * 2;
   const glass = useMemo(
-    () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color("#040816") }, uFogD: { value: 0.003 } } }),
+    () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color("#040816") }, uFogD: { value: 0.0036 } } }),
     [],
   );
   const seats = useInstanced(seatCount, useMemo(() => new THREE.BoxGeometry(1, 1, 1), []), useMemo(() => glass.clone(), [glass]));
@@ -811,7 +847,7 @@ function SpotlightRuns({ road, colourAt, runs }: { road: RoadLayout; colourAt: C
   }, [runs]);
   const gantries = rigs.length / 2;
   const glass = useMemo(
-    () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color("#040816") }, uFogD: { value: 0.003 } } }),
+    () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color("#040816") }, uFogD: { value: 0.0036 } } }),
     [],
   );
   const beams = useInstanced(gantries * 3, useMemo(() => new THREE.BoxGeometry(1, 1, 1), []), glass);
@@ -1068,7 +1104,7 @@ function Pylons({ road, colourAt }: { road: RoadLayout; colourAt: ColourAt }) {
     return out;
   }, [road]);
   const glass = useMemo(
-    () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color("#040816") }, uFogD: { value: 0.003 } } }),
+    () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color("#040816") }, uFogD: { value: 0.0036 } } }),
     [],
   );
   const posts = useInstanced(spots.length * 3, useMemo(() => new THREE.BoxGeometry(1, 1, 1), []), glass);
@@ -1182,7 +1218,40 @@ const TUBE_FRAG = /* glsl */ `
   }
 `;
 
-function Tubes({ road, colourAt, tunnels }: { road: RoadLayout; colourAt: ColourAt; tunnels: { from: number; to: number }[] }) {
+// THE RING RUNS: the same way through, but no tube - only rings of light
+// standing round the road one after another, the land and sky showing
+// between them, and the tracers' bright heads still racing along through
+// them like orbs.
+const RINGS_FRAG = /* glsl */ `
+  uniform vec3 uColor;
+  uniform float uLen;
+  uniform float uTime;
+  varying vec2 vUv;
+  varying float vDepth;
+  void main() {
+    float along = vUv.x * uLen;
+    float around = vUv.y;
+    float rd = (fract(along / 9.0) - 0.5) * 9.0;
+    float ring = exp(-rd * rd * 5.0);
+    // A slow pulse running along the rings.
+    float wave = 0.6 + 0.4 * sin(along * 0.12 - uTime * 3.0);
+    float lanes = 14.0;
+    float lane = floor(around * lanes);
+    float inLane = fract(around * lanes) - 0.5;
+    float h = fract(sin(lane * 91.7 + 3.1) * 43758.5453);
+    float gap = 40.0 + h * 50.0;
+    float x = fract((along - uTime * (38.0 + h * 40.0) + h * 300.0) / gap) * gap;
+    float hx = min(x, gap - x);
+    float orb = exp(-hx * hx * 1.2) * exp(-inLane * inLane * 40.0);
+    vec3 col = uColor * ring * wave * 1.5 + mix(uColor, vec3(1.0), 0.6) * orb * 2.2;
+    float ends = smoothstep(0.0, 6.0, along) * smoothstep(uLen, uLen - 6.0, along);
+    float a = clamp(ring * wave * 0.95 + orb, 0.0, 1.0) * ends;
+    if (a < 0.01) discard;
+    gl_FragColor = vec4(col, a);
+  }
+`;
+
+function Tubes({ road, colourAt, tunnels }: { road: RoadLayout; colourAt: ColourAt; tunnels: { from: number; to: number; rings?: boolean }[] }) {
   const items = useMemo(
     () =>
       tunnels.map((tn) => {
@@ -1193,9 +1262,11 @@ function Tubes({ road, colourAt, tunnels }: { road: RoadLayout; colourAt: Colour
         const geo = new THREE.TubeGeometry(curve, Math.ceil(len / 1.5), 8.6, 40, false);
         const mat = new THREE.ShaderMaterial({
           vertexShader: TUBE_VERT,
-          fragmentShader: TUBE_FRAG,
+          fragmentShader: tn.rings ? RINGS_FRAG : TUBE_FRAG,
           side: THREE.DoubleSide,
           toneMapped: false,
+          transparent: Boolean(tn.rings),
+          depthWrite: !tn.rings,
           uniforms: {
             uColor: { value: colourAt((tn.from + tn.to) / 2).clone().multiplyScalar(1.2) },
             uLen: { value: len },
@@ -1314,13 +1385,32 @@ function Searchlights({ road, towers, dense }: { road: RoadLayout; towers: Tower
 export function structurePlan(road: RoadLayout) {
   const arches: number[] = [];
   const corridors: { from: number; to: number }[] = [];
-  const tunnels: { from: number; to: number }[] = [];
+  /** (rings: not a tube but a run of glowing rings the road passes through.) */
+  const tunnels: { from: number; to: number; rings?: boolean }[] = [];
   const venues: { stage: number; seatsTo: number }[] = [];
   const spotRuns: { from: number; to: number }[] = [];
+  const ringDone = new Set<number>();
   const lastStop = road.stops[road.stops.length - 1] ?? 0;
-  openStretches(road).forEach((st, i) => {
+  // THE TWO FACES: in the first open stretch after the speaker climb (in
+  // T), and nothing else there.
+  const climbZ = road.stunts.find((z) => z.kind === "climb");
+  const stretches = openStretches(road);
+  const facesAt = stretches.findIndex(
+    (st, i) =>
+      climbZ &&
+      st.from > climbZ.a + climbZ.len + 20 &&
+      st.to - st.from > 120 &&
+      !venueStretch(i) &&
+      !road.stunts.some((z) => z.a < st.to + 40 && z.a + z.len > st.from - 40) &&
+      !road.skyways.some((w) => w.a < st.to && w.b > st.from) &&
+      // (Level ground: not in one of the great banked sweeps.)
+      Array.from({ length: 12 }, (_, k) => st.from - 30 + ((st.to - st.from + 60) * k) / 11).every((x) => Math.abs(road.sweepTilt(x)) < 0.02),
+  );
+  const faces = facesAt >= 0 ? (stretches[facesAt].from + stretches[facesAt].to) / 2 : undefined;
+  stretches.forEach((st, i) => {
     // The victory stretch, after the last challenge, is all towers.
     if (st.from > lastStop) return;
+    if (i === facesAt) return;
     // A stretch with a loop or a corkscrew in it holds nothing else.
     if (road.stunts.some((z) => z.a < st.to + 40 && z.a + z.len > st.from - 40)) return;
     // Nor one where the road is up on a skyway.
@@ -1331,8 +1421,27 @@ export function structurePlan(road: RoadLayout) {
     // (Every other arch is a run of spotlights instead.)
     if (i % 6 === 3) spotRuns.push({ from: mid - half, to: mid + half });
     else if (i % 3 === 0) arches.push(mid);
-    else if (i % 3 === 1) corridors.push({ from: mid - half, to: mid + half });
-    else if (!venueStretch(i)) tunnels.push({ from: mid - half, to: mid + half });
+    else if (i % 3 === 1) {
+      // Every other corridor of lights is a RING RUN instead: a long run
+      // of glowing rings the road passes through, the tracers racing along
+      // through them.
+      if ((corridors.length + ringDone.size) % 2 === 1) {
+        ringDone.add(i);
+        tunnels.push({ from: mid - 150, to: mid + 60, rings: true });
+      } else corridors.push({ from: mid - half, to: mid + half });
+    }
+    else if (!venueStretch(i)) {
+      // THE TUBES: long - three times what they were - running on past
+      // the next portal into the stretch beyond, unless the road leaves
+      // the ground there, or the city's victory stretch begins.
+      const far = mid + ((i + 1) % 6 === 3 ? 150 : 200);
+      const clash =
+        far > lastStop ||
+        i + 1 === facesAt ||
+        road.stunts.some((z) => z.a < far && z.a + z.len > st.to) ||
+        road.skyways.some((w) => w.a < far && w.b > st.to);
+      tunnels.push({ from: mid - 150, to: clash ? st.to : far });
+    }
     else {
       // Out of a tube, onto a stage, and past the audience.
       const tubeTo = mid - 18;
@@ -1353,7 +1462,7 @@ export function structurePlan(road: RoadLayout) {
   // either side of the road - a pair beside the city's highest skyway,
   // one more in the open land of O (after the loop); the speaker the road
   // climbs; the headphones in place of every great arch.
-  const monuments: MonumentPlan = {};
+  const monuments: MonumentPlan = { faces };
   const tallest = [...road.skyways].sort((p, q) => q.h - p.h)[0];
   const loop = road.stunts.find((z) => z.kind === "loop");
   const n = road.stops.length;
@@ -1378,6 +1487,7 @@ export function structurePlan(road: RoadLayout) {
   // swings, a tower with an archway bored through it that the road runs
   // through.
   const features: Feature[] = [];
+  monuments.booms = [];
   const weave = road.skyways.find((w) => (w as { wave?: boolean }).wave);
   if (weave) {
     const from = weave.a + 70 + 50;
@@ -1389,7 +1499,7 @@ export function structurePlan(road: RoadLayout) {
       const side = k % 2 ? -1 : 1;
       const which = k % 3;
       if (which === 0) features.push({ s: at, d: side * (ROAD_HALF + 24), w: 18, h: 108, type: 7 });
-      else if (which === 1) features.push({ s: at, d: side * (ROAD_HALF + 26), w: 12, h: 132, type: 9 });
+      else if (which === 1) monuments.booms!.push({ s: at, side });
       else features.push({ s: at, d: side * (ROAD_HALF + 28), w: 16, h: 122, type: 8 });
       const mid = at + half / 2;
       if (mid < to && k % 2 === 0) features.push({ s: mid, d: 0, w: ROAD_HALF * 2 + 42, h: 150 + (k % 3) * 30, type: 11 });
@@ -1405,13 +1515,17 @@ export function structurePlan(road: RoadLayout) {
   let k = 0;
   for (let s = vFrom; s < vTo; s += 44, k++) {
     for (const side of [-1, 1]) {
-      const type = [7, 8, 9, 10][(k + (side > 0 ? 2 : 0)) % 4];
-      const w = type === 10 ? 9 : type === 9 ? 9 : 11;
-      const h = type === 10 ? 64 : type === 9 ? 96 : 110;
+      const type = [7, 8, 10][(k + (side > 0 ? 1 : 0)) % 3];
+      const w = type === 10 ? 9 : 11;
+      const h = type === 10 ? 64 : 110;
       features.push({ s: s + (side > 0 ? 22 : 0), d: side * (ROAD_HALF + (type === 10 ? 20 : 24)), w, h, type });
     }
   }
   for (let s = vFrom + 150; s < vTo - 80; s += 230) monuments.headphones.push(s);
+  // And podcast mics on boom arms leaning out over it, from one side then
+  // the other.
+  for (let s = vFrom + 60, side = 1; s < vTo - 40; s += 115, side = -side)
+    if (monuments.headphones.every((h) => Math.abs(h - s) > 30)) monuments.booms.push({ s, side });
   /** Where the towers keep well clear, to let the monuments stand alone. */
   const clear = [...monuments.mic.map((m) => ({ from: m.s - 38, to: m.s + 38 })), climb ? { s: climb.a + climb.len / 2 } : undefined]
     .filter((m): m is { from: number; to: number } | { s: number } => Boolean(m))
@@ -1419,6 +1533,7 @@ export function structurePlan(road: RoadLayout) {
     .concat(monuments.headphones.map((s) => ({ from: s - 25, to: s + 25 })));
   // The lion at the finish stands alone.
   clear.push({ from: road.finish - 110, to: road.finish + 70 });
+  if (faces !== undefined) clear.push({ from: faces - 70, to: faces + 70 });
   return { arches, corridors, tunnels, venues, spotRuns, keep, monuments, clear, features };
 }
 
@@ -1445,6 +1560,7 @@ export function Megastructures({
     <group>
       <City road={road} dense={denseSpan} keep={plan.keep} colourAt={colourAt} clear={plan.clear} victory={victory} features={plan.features} />
       <Monuments road={road} colourAt={colourAt} plan={plan.monuments} calm={calm} />
+      {plan.monuments.faces !== undefined && <TalkingFaces road={road} s={plan.monuments.faces} colourAt={colourAt} />}
       <Venue road={road} colourAt={colourAt} venues={plan.venues} />
       {!calm && <Corridors road={road} colourAt={colourAt} runs={plan.corridors} />}
       {!calm && <Tubes road={road} colourAt={colourAt} tunnels={plan.tunnels} />}

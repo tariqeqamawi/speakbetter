@@ -29,6 +29,10 @@ export interface MonumentPlan {
   speakers?: { a: number };
   /** Every great arch of the road is a pair of headphones. */
   headphones?: number[];
+  /** The two giant faces, either side of the road, talking to each other. */
+  faces?: number;
+  /** Podcast mics on boom arms, leaning out over the road from one side. */
+  booms?: { s: number; side: number }[];
 }
 
 type ColourAt = (s: number) => THREE.Color;
@@ -49,11 +53,11 @@ const RIM_FRAG = /* glsl */ `
   void main() {
     vec3 N = normalize(vN);
     vec3 V = normalize(vV);
-    float fres = pow(1.0 - abs(dot(N, V)), 2.2);
+    float fres = pow(1.0 - abs(dot(N, V)), 3.5);
     float side = 0.5 + 0.5 * dot(N, normalize(vec3(-0.3, 0.6, -0.5)));
     // Black, like the real thing - a glossy black with a cool sheen at
     // its edges so the shape still reads against the night.
-    vec3 col = vec3(0.012, 0.013, 0.018) * (0.6 + 0.8 * side) + vec3(0.55, 0.62, 0.78) * (fres * 0.55);
+    vec3 col = vec3(0.006, 0.007, 0.012) * (0.6 + 0.8 * side) + vec3(0.40, 0.48, 0.72) * (fres * 0.5);
     gl_FragColor = vec4(col, 1.0);
   }
 `;
@@ -200,6 +204,50 @@ export function Monuments({
         g.add(m);
         root.add(outer);
       }
+    }
+
+    // PODCAST MICS ON BOOM ARMS: from a base beside the road, the arm
+    // rises at an angle, bends at its elbow and reaches out over the road,
+    // the mic hanging from its end and leaning on toward the far side -
+    // like the studio arm over a desk, the size of a building.
+    for (const { s, side } of plan.booms ?? []) {
+      const c = colourAt(s).clone().lerp(new THREE.Color("#ffffff"), 0.2).multiplyScalar(1.6);
+      const g = new THREE.Group();
+      const ground = groundAt(road, s);
+      // (Standing on the ground; where the road is up on a skyway, the
+      // arm starts from the road's height on a tall post.)
+      const lift = Math.max(0, pointAt(road, s).y - ground.y);
+      placeAt(g, road, s, 0);
+      const foot = new THREE.Vector3(side * (ROAD_HALF + 16), lift, 0);
+      const elbow = new THREE.Vector3(side * (ROAD_HALF + 6), lift + 44, 0);
+      const tip = new THREE.Vector3(-side * 2, lift + 36, 0);
+      const bar = (a: THREE.Vector3, b: THREE.Vector3, r: number) => {
+        const m = mesh(new THREE.CylinderGeometry(r, r, a.distanceTo(b), 12), glass, 0, 0, 0);
+        m.position.copy(a).add(b).multiplyScalar(0.5);
+        m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize());
+        g.add(m);
+      };
+      if (lift > 0) bar(new THREE.Vector3(foot.x, -2, 0), foot, 1.8);
+      g.add(mesh(new THREE.CylinderGeometry(6, 7.5, 3, 24), glass, foot.x, foot.y + 1.5, 0));
+      // The arm: two bars each way, as on the real thing, with springs of light.
+      for (const dz of [-1.4, 1.4]) {
+        bar(foot.clone().setZ(dz), elbow.clone().setZ(dz), 0.8);
+        bar(elbow.clone().setZ(dz), tip.clone().setZ(dz), 0.7);
+      }
+      g.add(mesh(new THREE.TorusGeometry(2.4, 0.5, 8, 24), glow(c), elbow.x, elbow.y, 0));
+      // The mic, hanging from the end, tipped toward the far side.
+      const mic = new THREE.Group();
+      mic.position.copy(tip);
+      mic.rotation.z = side * 0.45;
+      const R = 5;
+      const L = 18;
+      mic.add(mesh(new THREE.BoxGeometry(2, 5, 2), glass, 0, -2.5, 0));
+      mic.add(mesh(new THREE.CylinderGeometry(R, R * 0.9, L, 32), glass, 0, -5 - L / 2, 0));
+      mic.add(mesh(new THREE.SphereGeometry(R * 1.06, 24, 12, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), glass, 0, -5 - L, 0));
+      mic.add(mesh(new THREE.CylinderGeometry(R * 1.05, R * 1.05, 2, 32, 1, true), glow(c), 0, -5 - L * 0.35, 0));
+      for (const y of [-5 - L * 0.7, -5 - L * 0.85]) mic.add(mesh(new THREE.TorusGeometry(R * 1.02, 0.25, 6, 32), glow(c.clone().multiplyScalar(0.6)), 0, y, 0, Math.PI / 2));
+      g.add(mic);
+      root.add(g);
     }
 
     // HEADPHONES ARCHES - the road's great gateways. The band a dark

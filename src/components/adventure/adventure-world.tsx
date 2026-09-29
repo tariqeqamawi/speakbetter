@@ -401,7 +401,7 @@ const TERRAIN_FRAG = /* glsl */ `
     float fog = 1.0 - exp(-uFogDensity * uFogDensity * vDepth * vDepth);
     // DEPTH: the far land sinks into a dark haze - graded, never a wall -
     // so near and far read apart instead of everything equally sharp.
-    gl_FragColor = vec4(mix(col, uFog, fog * 0.85), 1.0);
+    gl_FragColor = vec4(mix(col, uFog, fog * 0.93), 1.0);
   }
 `;
 
@@ -511,7 +511,7 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
           uTime: { value: 0 },
           uFrom: { value: 0 },
           uFog: { value: new THREE.Color("#040816") },
-          uFogDensity: { value: 0.0036 },
+          uFogDensity: { value: 0.0042 },
           uHorizon: { value: new THREE.Color("#3a3f8f") },
           // Where Your Impact's rays converge: the city, far past the road.
           uTarget: { value: road.length + 330 },
@@ -1215,7 +1215,7 @@ export function AdventureWorld({
       gl={{ antialias: true, powerPreference: "high-performance" }}
       camera={{ fov: 62, near: 0.1, far: 1200, position: [0, 3, 6] }}
       onCreated={({ scene }) => {
-        scene.fog = new THREE.FogExp2("#040816", 0.0032);
+        scene.fog = new THREE.FogExp2("#040816", 0.0038);
       }}
     >
       <hemisphereLight args={["#8090d0", "#0a0f20", 2.2]} />
