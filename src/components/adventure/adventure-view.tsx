@@ -38,6 +38,7 @@ const MODES: { id: Mode; label: string; name: string }[] = [
 // (A new key: under the old one, "3d" meant the full ride.)
 const KEY = "adventure-view-3";
 const OLD_KEY = "adventure-view";
+const ZOOM_KEY = "adventure-2d-zoom";
 
 export function AdventureView({
   stops,
@@ -66,13 +67,27 @@ export function AdventureView({
   const done = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => () => clearTimeout(done.current), []);
   const chrome = useRoadChrome();
-  const [zoomed, setZoomed] = useState(false);
+  // The flat map opens zoomed in - the road drawn out long, like the 3D
+  // and 4D ones - unless this device last chose it zoomed out.
+  const [zoomed, setZoomedState] = useState(true);
+  const setZoomed = (next: (z: boolean) => boolean) =>
+    setZoomedState((z) => {
+      const v = next(z);
+      try {
+        localStorage.setItem(ZOOM_KEY, v ? "1" : "0");
+      } catch {
+        // fine
+      }
+      return v;
+    });
   useEffect(() => {
     try {
       // After mounting, so the server's render and the first client
       // render agree.
       const saved = localStorage.getItem(KEY) ?? (localStorage.getItem(OLD_KEY) === "2d" ? "2d" : null);
       if (saved === "2d" || saved === "3d") setMode(saved);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- read once, after mounting
+      if (localStorage.getItem(ZOOM_KEY) === "0") setZoomedState(false);
     } catch {
       // no storage: 4D
     }

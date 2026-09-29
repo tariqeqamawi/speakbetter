@@ -18,6 +18,9 @@ import { PILL_OFF, PILL_ON, RoadChromeContext } from "@/components/adventure/roa
 
 type Tab = "orientation" | "challenges";
 
+/** The full-screen road, as last chosen with its button. */
+const FULL_KEY = "road-full-screen";
+
 export function ChallengesTabs({
   heading,
   actions,
@@ -65,6 +68,14 @@ export function ChallengesTabs({
   const setFull = (on: boolean) => {
     chose.current = true;
     setFullState(on);
+    // Remembered: whoever hides the bars with the button once, on a phone
+    // held sideways, finds them hidden every time they come back to the
+    // road sideways - until they show them again with the same button.
+    try {
+      localStorage.setItem(FULL_KEY, on ? "1" : "0");
+    } catch {
+      // no storage: just this time
+    }
     const el = box.current;
     try {
       // The browser's own full screen too, hiding its bars - where it
@@ -101,6 +112,25 @@ export function ChallengesTabs({
       window.removeEventListener("keydown", onKey);
     };
   }, []);
+
+  // Sideways on a phone, with the bars hidden last time: hidden again -
+  // on opening the road, and whenever the phone is turned on its side.
+  useEffect(() => {
+    if (current !== "challenges") return;
+    const sideways = window.matchMedia("(orientation: landscape) and (pointer: coarse)");
+    const apply = () => {
+      let wanted = false;
+      try {
+        wanted = localStorage.getItem(FULL_KEY) === "1";
+      } catch {
+        // no storage
+      }
+      if (wanted && sideways.matches) setFullState(true);
+    };
+    apply();
+    sideways.addEventListener("change", apply);
+    return () => sideways.removeEventListener("change", apply);
+  }, [current]);
 
   // A phone turned sideways drops into our full screen by itself, but a
   // browser only hides its own bars (the address bar) for a tap - so the

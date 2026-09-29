@@ -57,7 +57,9 @@ export function Bloom({
     // nothing while it's off.
     const k = travel ? Math.max(0, (travel.feel - 0.25) / 0.75) : 0;
     blur.enabled = k > 0.01;
-    blur.uniforms.uAmount.value = k * k * 0.06 + (travel?.boost ?? 0) * 0.06;
+    // (Only the faintest blur now: the tracers along the edges carry the
+    // speed.)
+    blur.uniforms.uAmount.value = k * k * 0.012 + (travel?.boost ?? 0) * 0.012;
     composer.render(dt);
   }, 1);
   /* eslint-enable react-hooks/immutability */

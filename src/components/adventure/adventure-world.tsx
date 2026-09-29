@@ -940,8 +940,8 @@ function Rig({
         cam.fov = 55;
         cam.updateProjectionMatrix();
       }
-      gl.domElement.parentElement?.style.setProperty("--road-speed", "0");
-      gl.domElement.parentElement?.style.setProperty("--road-boost", "0");
+      (gl.domElement.closest<HTMLElement>("[role=application]") ?? gl.domElement.parentElement)?.style.setProperty("--road-speed", "0");
+      (gl.domElement.closest<HTMLElement>("[role=application]") ?? gl.domElement.parentElement)?.style.setProperty("--road-boost", "0");
       const now = performance.now();
       if (Math.abs(s - last.current) > 0.25 && (now - lastAt.current > 100 || Math.abs(travel.v) < 0.3)) {
         last.current = s;
@@ -1041,8 +1041,8 @@ function Rig({
       cam.fov = fov;
       cam.updateProjectionMatrix();
     }
-    gl.domElement.parentElement?.style.setProperty("--road-speed", f.toFixed(3));
-    gl.domElement.parentElement?.style.setProperty("--road-boost", b.toFixed(3));
+    (gl.domElement.closest<HTMLElement>("[role=application]") ?? gl.domElement.parentElement)?.style.setProperty("--road-speed", f.toFixed(3));
+    (gl.domElement.closest<HTMLElement>("[role=application]") ?? gl.domElement.parentElement)?.style.setProperty("--road-boost", b.toFixed(3));
     // Lean into the bends with the road - more the faster you go.
     // (Up to the steep lean of the great sweeps.)
     const target = THREE.MathUtils.clamp(tiltAt(road, s + AHEAD) * (0.9 + f * 0.5), -0.85, 0.85);

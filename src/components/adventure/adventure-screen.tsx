@@ -61,6 +61,18 @@ const TALK = {
   city: 16,
 };
 
+/** The speed tracers: each one's angle out from the vanishing point (hugging
+ *  the left and right edges, a few along the top), when it starts, how long
+ *  it takes, and its colour. */
+const TRACERS = [
+  -40, -28, -17, -8, 6, 16, 27, 38, 52, 128, 142, 153, 164, 172, 188, 197, 208, 220, -140, -122, -104, -76, -58, -48,
+].map((a, i) => ({
+  a,
+  d: ((i * 0.37) % 1.1).toFixed(2),
+  t: (0.42 + ((i * 0.13) % 0.3)).toFixed(2),
+  c: ["#ffffff", "#9befff", "#ffffff", "#ffd6f6", "#ffffff", "#c9ffe6"][i % 6],
+}));
+
 export function AdventureScreen({
   stops,
   phases,
@@ -703,6 +715,16 @@ export function AdventureScreen({
       {/* Speed: faint streaks rushing past the edges, as strong as the
           road is fast (--road-speed, set by the camera each frame). */}
       <div aria-hidden className="road-streaks pointer-events-none absolute inset-0 z-[5]" />
+      {/* FLAT OUT: light tracers streaking past along the edges of the view,
+          out from where the road meets the sky - the main feel of speed. */}
+      <div aria-hidden className="road-tracers pointer-events-none absolute inset-0 z-[5] overflow-hidden">
+        {TRACERS.map((t, i) => (
+          <span
+            key={i}
+            style={{ ["--a" as string]: `${t.a}deg`, ["--d" as string]: `${t.d}s`, ["--t" as string]: `${t.t}s`, ["--c" as string]: t.c }}
+          />
+        ))}
+      </div>
       {/* Now and then, a shooting star across the top of the sky. */}
       <span aria-hidden className="road-shooting-star pointer-events-none absolute left-[10%] top-[12%] z-[4] h-px w-24" />
 
@@ -842,7 +864,10 @@ export function AdventureScreen({
           <button
             type="button"
             onClick={() => dive(stop.slug, road.stops[nearest])}
-            className="pointer-events-auto mb-2 rounded-full px-7 py-3 text-base font-bold text-navy-950 shadow-lg"
+            // Upright: under the traveller, just above the letters. Held
+            // sideways on a phone: down in the bottom-left corner, under the
+            // left thumb - the dial is under the right one.
+            className="pointer-events-auto -mb-1 rounded-full px-7 py-3 text-base font-bold text-navy-950 shadow-lg [@media(orientation:landscape)_and_(max-height:520px)]:absolute [@media(orientation:landscape)_and_(max-height:520px)]:mb-0 [@media(orientation:landscape)_and_(max-height:520px)]:left-[max(0.75rem,env(safe-area-inset-left))] [@media(orientation:landscape)_and_(max-height:520px)]:bottom-[max(1.25rem,calc(env(safe-area-inset-bottom)+0.5rem))]"
             style={{ background: phase?.color, boxShadow: `0 0 30px ${phase?.color}` }}
           >
             Start challenge

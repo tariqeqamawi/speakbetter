@@ -3539,6 +3539,32 @@ html.bare .demo-banner {
   mask-image: radial-gradient(circle at 50% 42%, transparent 28%, #000 78%);
   -webkit-mask-image: radial-gradient(circle at 50% 42%, transparent 28%, #000 78%);
 }
+/* Flat out: light tracers streaking outward along the edges of the view,
+   from where the road meets the sky. Nothing below near-top speed. */
+.road-tracers {
+  opacity: clamp(0, calc((var(--road-speed, 0) - 0.6) * 2.5 + var(--road-boost, 0)), 1);
+}
+.road-tracers span {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: 20vmin;
+  height: 3px;
+  border-radius: 999px;
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg, transparent, var(--c, #fff));
+  box-shadow: 0 0 6px var(--c, #fff);
+  opacity: 0;
+  animation: road-tracer var(--t, 0.5s) linear var(--d, 0s) infinite;
+}
+@keyframes road-tracer {
+  0% { transform: rotate(var(--a)) translateX(14vmin) scaleX(0.3); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: rotate(var(--a)) translateX(75vmax) scaleX(2.2); opacity: 0.9; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .road-tracers { display: none; }
+}
 /* A shooting star now and then, high in the sky. */
 .road-shooting-star {
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9));
