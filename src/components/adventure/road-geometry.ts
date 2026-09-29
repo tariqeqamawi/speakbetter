@@ -688,3 +688,21 @@ export function reachedPhase(stops: { state: string; phase: string }[], phases: 
   }
   return furthest;
 }
+
+/** Where s is on the journey, counted in challenges: 2.5 is halfway from
+ *  the second checkpoint to the third. The calm road and the full ride
+ *  are laid out to different lengths, so switching between them carries
+ *  this across rather than a distance. */
+export function progressAt(road: RoadLayout, s: number): number {
+  const marks = [0, ...road.stops, road.finish];
+  for (let i = 0; i < marks.length - 1; i++)
+    if (s < marks[i + 1] || i === marks.length - 2) return i + THREE.MathUtils.clamp((s - marks[i]) / Math.max(1, marks[i + 1] - marks[i]), 0, 1);
+  return 0;
+}
+
+/** The distance along this road for a progress from progressAt. */
+export function sAtProgress(road: RoadLayout, p: number): number {
+  const marks = [0, ...road.stops, road.finish];
+  const i = THREE.MathUtils.clamp(Math.floor(p), 0, marks.length - 2);
+  return marks[i] + (marks[i + 1] - marks[i]) * THREE.MathUtils.clamp(p - i, 0, 1);
+}

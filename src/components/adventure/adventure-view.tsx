@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AdventureScreen } from "./adventure-screen";
 import { Adventure2D } from "./adventure-2d";
 import { LevelPicker } from "@/components/level-picker";
 import { ROAD_SKY } from "./world-phases";
 import { FullScreenIcon, PILL_OFF, PILL_ON, useRoadChrome } from "./road-chrome";
-import type { WorldPhase, WorldStop } from "./adventure-world";
+import type { ViewMode, WorldPhase, WorldStop } from "./adventure-world";
 
 // The adventure three ways - the student's choice, kept on the device:
 //   2D  the flat map, for anybody who would rather scroll, or whose phone
@@ -16,7 +16,20 @@ import type { WorldPhase, WorldStop } from "./adventure-world";
 //   4D  the full ride - speed, loops, the corkscrew, the skyways
 // 4D is the default.
 
-type Mode = "2d" | "3d" | "4d";
+type Mode = ViewMode;
+
+/** One view on screen. While switching there are two: the one being left,
+ *  underneath, its camera heading for the new view's place, and the new
+ *  one fading in over it, its camera arriving from the old one's - so one
+ *  seems to turn into the other. Then the old one goes, to save battery. */
+interface Layer {
+  id: number;
+  mode: Mode;
+  arrive: Mode | null;
+  leaveTo: Mode | null;
+  /** Where on the journey to open (the view before's place). */
+  start: number | null;
+}
 const MODES: { id: Mode; label: string; name: string }[] = [
   { id: "2d", label: "2D", name: "Flat map" },
   { id: "3d", label: "3D", name: "Calm road, from above" },
@@ -44,21 +57,33 @@ export function AdventureView({
    *  of a box the road scrolls inside. */
   stickyTop?: string;
 }) {
-  const [mode, setMode] = useState<Mode>("4d");
+  const [layers, setLayers] = useState<Layer[]>([{ id: 0, mode: "4d", arrive: null, leaveTo: null, start: null }]);
+  const mode = layers[layers.length - 1].mode;
+  // Where the traveller is, in challenges, as the 3D and 4D views report it.
+  const progress = useRef<number | null>(null);
+  const nextId = useRef(1);
+  const setMode = (m: Mode) => setLayers([{ id: nextId.current++, mode: m, arrive: null, leaveTo: null, start: null }]);
+  const done = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(done.current), []);
   const chrome = useRoadChrome();
   useEffect(() => {
     try {
       // After mounting, so the server's render and the first client
       // render agree.
       const saved = localStorage.getItem(KEY) ?? (localStorage.getItem(OLD_KEY) === "2d" ? "2d" : null);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (saved === "2d" || saved === "3d") setMode(saved);
     } catch {
       // no storage: 4D
     }
   }, []);
   const choose = (m: Mode) => {
-    setMode(m);
+    if (m === mode) return;
+    const calmer = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const from = layers[layers.length - 1];
+    const next: Layer = { id: nextId.current++, mode: m, arrive: calmer ? null : from.mode, leaveTo: null, start: progress.current };
+    setLayers([{ ...from, leaveTo: calmer ? null : m }, next]);
+    clearTimeout(done.current);
+    done.current = setTimeout(() => setLayers((ls) => ls.filter((l) => l.id === next.id)), calmer ? 350 : 1700);
     try {
       localStorage.setItem(KEY, m);
     } catch {
@@ -138,21 +163,94 @@ export function AdventureView({
           )}
         </div>
       </div>
-      {mode !== "2d" ? (
-        <AdventureScreen
-          key={mode}
-          calm={mode === "3d"}
-          stops={stops}
-          phases={phases}
-          fallbackAvatar={fallbackAvatar}
-          skyImage={skyImage ?? undefined}
-          heightClass={heightClass}
-        />
-      ) : (
-        <div className="pt-14">
-          <Adventure2D stops={stops} phases={phases} />
-        </div>
-      )}
+      {layers.map((l, i) => {
+        const top = i === layers.length - 1;
+        const switching = layers.length > 1;
+        const body =
+          l.mode === "2d" ? (
+            <Map2D stops={stops} phases={phases} heightClass={heightClass} />
+          ) : (
+            <AdventureScreen
+              calm={l.mode === "3d"}
+              stops={stops}
+              phases={phases}
+              fallbackAvatar={fallbackAvatar}
+              skyImage={skyImage ?? undefined}
+              heightClass={heightClass}
+              startProgress={l.start}
+              onProgress={top ? (p) => (progress.current = p) : undefined}
+              arrive={l.arrive}
+              leaveTo={l.leaveTo}
+            />
+          );
+        // (The same wrapper whether arriving or leaving, so the view
+        // being left isn't rebuilt as it goes underneath.)
+        return (
+          <FadeIn
+            key={l.id}
+            on={top && switching}
+            leaving={!top}
+            // Into the map: once the camera has started to rise. Out of it:
+            // straight away, as the camera comes down.
+            delay={l.mode === "2d" && l.arrive ? 450 : 0}
+            duration={l.arrive ? (l.mode === "2d" ? 800 : 650) : 300}
+          >
+            {body}
+          </FadeIn>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Fades its view in over the one being left, when switching. */
+function FadeIn({
+  on,
+  leaving,
+  delay,
+  duration,
+  children,
+}: {
+  on: boolean;
+  /** The view being left: held underneath, out of the way, until it goes. */
+  leaving: boolean;
+  delay: number;
+  duration: number;
+  children: React.ReactNode;
+}) {
+  const [shown, setShown] = useState(!on);
+  useEffect(() => {
+    if (!on) return;
+    // Two frames: mounted at nothing first, so the fade has somewhere to
+    // start from.
+    let b = 0;
+    const a = requestAnimationFrame(() => {
+      b = requestAnimationFrame(() => setShown(true));
+    });
+    return () => {
+      cancelAnimationFrame(a);
+      cancelAnimationFrame(b);
+    };
+  }, [on]);
+  return (
+    <div
+      aria-hidden={leaving || undefined}
+      className={leaving ? "pointer-events-none absolute inset-x-0 top-0 h-full overflow-hidden" : "relative z-[1]"}
+      style={on ? { opacity: shown ? 1 : 0, transition: `opacity ${duration}ms ease ${delay}ms` } : undefined}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** The flat map, in a frame the height of the road's, scrolling inside it -
+ *  so switching to and from it, the page stays where it is and one view
+ *  fades straight into the other. */
+function Map2D({ stops, phases, heightClass }: { stops: WorldStop[]; phases: WorldPhase[]; heightClass?: string }) {
+  const frame = useRef<HTMLDivElement>(null);
+  return (
+    <div ref={frame} className={`${heightClass ?? "h-[calc(100dvh-4rem)]"} overflow-y-auto overscroll-contain bg-[#070c18] pt-14`}>
+      <Adventure2D stops={stops} phases={phases} scrollRoot={frame} />
     </div>
   );
 }

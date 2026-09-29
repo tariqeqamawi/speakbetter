@@ -5,7 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import type { WorldPhase, WorldStop } from "./adventure-world";
 
 // The same road, flat: for anybody who would rather scroll a page than
-// travel a world. Top to bottom, challenge 1 to 24, on a gently winding
+// travel a world. Bottom to top - the way the road runs away from you in
+// 3D and 4D - challenge 1 at the foot and the finish at the top, on a gently winding
 // lit path - each phase opening with its letter and name, each
 // challenge a numbered stop with its name beside it. Everything the 3D
 // road offers that matters is here too: which one you are on, Start on
@@ -15,6 +16,8 @@ import type { WorldPhase, WorldStop } from "./adventure-world";
 const ROW = 118;
 const HEAD = 64;
 const SWING = 0.26;
+/** Room at the top for the finish. */
+const FINISH = 96;
 
 export function Adventure2D({
   stops,
@@ -35,9 +38,12 @@ export function Adventure2D({
     const top = el.getBoundingClientRect().top - root.getBoundingClientRect().top + root.scrollTop;
     root.scrollTo({ top: top - root.clientHeight / 2 + el.clientHeight / 2, behavior: smooth ? "smooth" : "auto" });
   };
-  // Open on the one the student is on.
+  // Open on the one the student is on - or, with none open, at the
+  // start, down at the foot of the map.
+  const list = useRef<HTMLOListElement>(null);
   useEffect(() => {
-    centre(here.current);
+    const el = list.current?.lastElementChild as HTMLElement | null;
+    centre(here.current ?? (list.current?.querySelector("[data-first]") as HTMLElement | null) ?? el);
     // Once, on opening.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -70,11 +76,16 @@ export function Adventure2D({
     centres.push({ x: 0.5 + Math.sin(i * 0.9) * SWING, y: y + ROW / 2 });
     y += ROW;
   });
-  const height = y;
+  // Then turned upside down, so the journey climbs the page: the first
+  // challenge at the bottom, each phase's heading at its foot, and on up
+  // to the finish.
+  const height = y + FINISH;
+  for (const h of heads) h.top = height - h.top - HEAD;
+  for (const c of centres) c.y = height - c.y;
 
   return (
     <div className="mx-auto w-full max-w-xl px-4 pb-24 pt-4">
-      <ol className="relative" style={{ height }}>
+      <ol ref={list} className="relative" style={{ height }}>
         {/* The path, behind everything: lit and solid where it has been
             walked, a faint dashed line where it has not. */}
         <li aria-hidden className="pointer-events-none absolute inset-0">
@@ -99,6 +110,14 @@ export function Adventure2D({
               );
             })}
           </svg>
+        </li>
+
+        {/* The finish, at the top of the climb. */}
+        <li aria-hidden className="absolute inset-x-0 top-2 flex flex-col items-center gap-1">
+          <span className="text-[0.7rem] font-bold uppercase tracking-[0.3em] text-ink-faint">Finish</span>
+          <span className="text-3xl" style={{ filter: "drop-shadow(0 0 12px #f5a524)" }}>
+            🦁
+          </span>
         </li>
 
         {heads.map((h) => {
@@ -130,6 +149,7 @@ export function Adventure2D({
             <li
               key={stop.slug}
               ref={on ? here : undefined}
+              data-first={i === 0 ? "" : undefined}
               className="absolute flex items-center gap-3"
               style={{
                 top: cy - 28,

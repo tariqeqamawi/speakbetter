@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AHEAD, GATE_BEFORE, Travel, layoutRoad, reachedPhase } from "./road-geometry";
+import { AHEAD, GATE_BEFORE, Travel, layoutRoad, progressAt, reachedPhase, sAtProgress } from "./road-geometry";
 import { structurePlan } from "./megastructures";
 import type { MonumentPlan } from "./monuments";
 import { RoadDial } from "./road-dial";
@@ -17,7 +17,7 @@ import { ROAD_LINES, ROAD_TALK, roadLineClip, talkClip } from "@/data/greetings"
 import { activated, playApplause, playCoachLine, playGateChime, playRoadWhoosh, startRoadWind } from "@/lib/feedback-fx";
 import { Confetti } from "@/components/confetti";
 import { useStore } from "@/lib/store";
-import type { PickPortal, WorldPhase, WorldStop } from "./adventure-world";
+import type { PickPortal, ViewMode, WorldPhase, WorldStop } from "./adventure-world";
 
 // The adventure screen: the 3D road filling the frame, and the few
 // things laid over it - which phase you are in, which checkpoint you
@@ -70,6 +70,10 @@ export function AdventureScreen({
   demo = false,
   demoOnce = false,
   calm = false,
+  startProgress = null,
+  onProgress,
+  arrive = null,
+  leaveTo = null,
 }: {
   stops: WorldStop[];
   phases: WorldPhase[];
@@ -87,6 +91,13 @@ export function AdventureScreen({
   demoOnce?: boolean;
   /** The calm "3D" view: the road without its stunts, seen from above. */
   calm?: boolean;
+  /** Where to open, carried over from the view just left (see progressAt). */
+  startProgress?: number | null;
+  /** Told where the traveller is as they go, in the same terms. */
+  onProgress?: (p: number) => void;
+  /** Switching views: the view just left, or the one being switched to. */
+  arrive?: ViewMode | null;
+  leaveTo?: ViewMode | null;
 }) {
   const road = useMemo(() => layoutRoad(stops.length, stops.map((s) => s.phase), { calm }), [stops, calm]);
   // The checkpoint the student is on.
@@ -114,7 +125,10 @@ export function AdventureScreen({
       const ms = typeof first === "number" ? first : first && "s" in first ? first.s : first?.a;
       if (ms !== undefined) return Math.max(0, ms - 150);
     }
+    if (startProgress !== null) return sAtProgress(road, startProgress);
     return hereIndex > 0 ? Math.max(0, road.stops[hereIndex] - AHEAD - 2) : 0;
+    // (Where to open is decided once, on opening.)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [road, hereIndex]);
   const [travel] = useState(() => new Travel(start));
   const [s, setS] = useState(start);
@@ -134,7 +148,17 @@ export function AdventureScreen({
   const { state } = useStore();
   const avatar = state.avatar && /^(data:image|\/|https?:)/.test(state.avatar) ? state.avatar : fallbackAvatar;
 
-  const onMove = useCallback((next: number) => setS(next), []);
+  const progressTo = useRef(onProgress);
+  useEffect(() => {
+    progressTo.current = onProgress;
+  }, [onProgress]);
+  const onMove = useCallback(
+    (next: number) => {
+      setS(next);
+      progressTo.current?.(progressAt(road, next));
+    },
+    [road],
+  );
   const chrome = useRoadChrome();
 
   // TILT TO LOOK AROUND. Tip the phone left and the view swings to show
@@ -619,7 +643,7 @@ export function AdventureScreen({
       aria-label="The S.T.O.R.Y. road. Drag down or use the down arrow to travel forward."
       className={`relative w-full touch-none select-none ${heightClass} overflow-hidden bg-[#070c18] outline-none`}
     >
-      <AdventureWorld stops={stops} phases={phases} travel={travel} onMove={onMove} avatar={avatar} pickRef={pickRef} limit={limit} skyImage={skyImage} active={onScreen} calm={calm} />
+      <AdventureWorld stops={stops} phases={phases} travel={travel} onMove={onMove} avatar={avatar} pickRef={pickRef} limit={limit} skyImage={skyImage} active={onScreen} calm={calm} arrive={arrive} leaveTo={leaveTo} />
 
       {bannerPhase && (
         <div key={banner!.key} className="phase-banner pointer-events-none absolute inset-x-0 top-16 z-20 flex justify-center px-4">

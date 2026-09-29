@@ -6,7 +6,7 @@ import * as THREE from "three";
 import { Fireflies, Scenery } from "./world-extras";
 import { Megastructures, structurePlan } from "./megastructures";
 import { SectionWeather } from "./weather";
-import { Portal } from "./portal";
+import { PORTAL_FLAT_SCALE, PORTAL_FLAT_Y, Portal } from "./portal";
 import { SkyDome } from "./sky-dome";
 import { City } from "./city";
 import { Bloom, GateSparks, Sky, SpeedSparks } from "./fx";
@@ -758,15 +758,27 @@ function Stars() {
 }
 
 /** The camera, riding the road. */
+/** Which view a switch is coming from, or going to. */
+export type ViewMode = "2d" | "3d" | "4d";
+
 function Rig({
   road,
   travel,
   onMove,
   limit,
   calm = false,
+  arrive = null,
+  leaveTo = null,
 }: {
   road: RoadLayout;
   travel: Travel;
+  /** Just switched here from another view: the camera starts where that
+   *  view's camera was - high over the map, or down behind the traveller -
+   *  and glides into its own place. */
+  arrive?: ViewMode | null;
+  /** Switching away: the camera glides to where the next view's will be
+   *  (right up over the road, for the flat map) while that view fades in. */
+  leaveTo?: ViewMode | null;
   /** The calm "3D" view: high up and looking down on the road, like a
    *  map come to life - no speed effects, no shake, no lean. */
   calm?: boolean;
@@ -803,8 +815,49 @@ function Rig({
     [],
   );
 
+  // THE SWITCH BETWEEN VIEWS: where each view's camera sits, so this one
+  // can start from the last one's place, or head for the next one's.
+  const lookCur = useMemo(() => new THREE.Vector3(), []);
+  const since = useRef(-1);
+  const poseTmp = useMemo(() => new THREE.Vector3(), []);
+  const pose = (view: ViewMode, tS: number, e: THREE.Vector3, l: THREE.Vector3) => {
+    if (view === "2d") {
+      // Straight up over the road ahead, looking down on it like the map.
+      pointAt(road, tS + 45, l);
+      pointAt(road, tS + 43, poseTmp);
+      e.copy(poseTmp).sub(l).setY(0).normalize().multiplyScalar(6).add(l);
+      e.y = l.y + 230;
+    } else if (view === "3d") {
+      pointAt(road, tS - 22, e).setY(e.y + 58);
+      pointAt(road, tS + 14, l);
+    } else {
+      pointAt(road, tS - AHEAD, e).setY(e.y + 7.5);
+      pointAt(road, tS + 26, l).setY(l.y + 1.2);
+    }
+  };
+  /** How the camera eases toward its place: slowly while a switch is under
+   *  way, briskly the rest of the time. */
+  const settle = (frameDt: number) => {
+    // (The first frames after a new canvas appears can report a long
+    // step; the glide must not jump to the end on one.)
+    const dt = Math.min(frameDt, 1 / 30);
+    since.current = since.current < 0 ? 0 : since.current + dt;
+    const moving = leaveTo !== null || (arrive !== null && since.current < 1.8);
+    return { k: 1 - Math.pow(moving && !still ? 0.035 : 0.001, dt), moving: moving && !still };
+  };
+
   /* eslint-disable react-hooks/immutability -- the camera is three.js's, moved every frame */
   useFrame((_, dt) => {
+    // Arriving from another view: start the camera where that one's was.
+    if (since.current < 0 && arrive && !still) {
+      pose(arrive, travel.s + AHEAD, camera.position, lookCur);
+      camera.lookAt(lookCur);
+    }
+    // Leaving: no more travel - the road holds still under the camera.
+    if (leaveTo) {
+      travel.v = 0;
+      travel.target = null;
+    }
     // The road is magnetic: stop anywhere on the loop or the corkscrew,
     // upside down if you like, and go back the way you came.
     travel.floor = 0;
@@ -864,16 +917,22 @@ function Rig({
     if (calm) {
       // THE CALM VIEW: high above and behind the traveller, looking down
       // the road ahead - the whole stretch laid out like a map.
-      pointAt(road, tS - 40, pos);
-      pointAt(road, tS + 10, at);
-      eye.copy(pos).setY(pos.y + 46);
+      // (Steep enough that the portals lying flat on the road read as
+      // circles.)
+      pointAt(road, tS - 22, pos);
+      pointAt(road, tS + 14, at);
+      eye.copy(pos).setY(pos.y + 58);
       look.copy(at);
       if (carried.current) camera.position.add(moved.copy(pos).sub(prevPos));
       prevPos.copy(pos);
       carried.current = true;
-      camera.position.lerp(eye, 1 - Math.pow(0.001, dt));
+      if (leaveTo) pose(leaveTo, tS, eye, look);
+      const sw = settle(dt);
+      camera.position.lerp(eye, sw.k);
       camera.up.set(0, 1, 0);
-      camera.lookAt(look);
+      if (sw.moving) lookCur.lerp(look, sw.k);
+      else lookCur.copy(look);
+      camera.lookAt(lookCur);
       travel.feel = 0;
       travel.boost = 0;
       const cam = camera as THREE.PerspectiveCamera;
@@ -945,9 +1004,16 @@ function Rig({
     if (carried.current) camera.position.add(moved.copy(pos).sub(prevPos));
     prevPos.copy(pos);
     carried.current = true;
+    if (leaveTo) {
+      pose(leaveTo, tS, eye, look);
+      camera.up.set(0, 1, 0);
+    }
+    const sw = settle(dt);
     if (cut) camera.position.copy(eye);
-    else camera.position.lerp(eye, 1 - Math.pow(0.001, dt));
-    camera.lookAt(look);
+    else camera.position.lerp(eye, sw.k);
+    if (sw.moving) lookCur.lerp(look, sw.k);
+    else lookCur.copy(look);
+    camera.lookAt(lookCur);
     // At speed the road shakes the camera - harder flat out.
     if (f > 0.55 && !still) {
       const k = (f - 0.55) / 0.45;
@@ -998,7 +1064,18 @@ export type PickPortal = (clientX: number, clientY: number) => number | null;
 
 /** Answers PickPortal by projecting each portal onto the screen: its
  *  centre, and its radius at that distance. */
-function Picker({ road, pickRef, far = 70 }: { road: RoadLayout; pickRef: React.RefObject<PickPortal | null>; far?: number }) {
+function Picker({
+  road,
+  pickRef,
+  far = 70,
+  flat = false,
+}: {
+  road: RoadLayout;
+  pickRef: React.RefObject<PickPortal | null>;
+  far?: number;
+  /** The calm view's portals: lying flat on the road, three times the size. */
+  flat?: boolean;
+}) {
   const { camera, gl } = useThree();
   useEffect(() => {
     const cam = camera as THREE.PerspectiveCamera;
@@ -1011,13 +1088,13 @@ function Picker({ road, pickRef, far = 70 }: { road: RoadLayout; pickRef: React.
       let best: number | null = null;
       let bestD = Infinity;
       road.stops.forEach((s, i) => {
-        pointAt(road, s, p).y += 3.3;
+        pointAt(road, s, p).y += flat ? PORTAL_FLAT_Y : 3.3;
         toP.subVectors(p, cam.position);
         const d = toP.length();
         // In front, near enough to be seen, not so near it has faded
         // for the traveller to pass through.
         if (toP.dot(forward) <= 0 || d > far || d < 4) return;
-        const r = (2.5 / (d * Math.tan(THREE.MathUtils.degToRad(cam.fov / 2)))) * (rect.height / 2);
+        const r = ((flat ? 2.5 * PORTAL_FLAT_SCALE : 2.5) / (d * Math.tan(THREE.MathUtils.degToRad(cam.fov / 2)))) * (rect.height / 2);
         p.project(cam);
         const x = rect.left + ((p.x + 1) / 2) * rect.width;
         const y = rect.top + ((1 - p.y) / 2) * rect.height;
@@ -1031,7 +1108,7 @@ function Picker({ road, pickRef, far = 70 }: { road: RoadLayout; pickRef: React.
     return () => {
       pickRef.current = null;
     };
-  }, [camera, gl, road, pickRef, far]);
+  }, [camera, gl, road, pickRef, far, flat]);
   return null;
 }
 
@@ -1046,6 +1123,8 @@ export function AdventureWorld({
   skyImage,
   active = true,
   calm = false,
+  arrive = null,
+  leaveTo = null,
 }: {
   stops: WorldStop[];
   phases: WorldPhase[];
@@ -1069,6 +1148,9 @@ export function AdventureWorld({
   active?: boolean;
   /** The calm "3D" view: no stunts or skyways, seen from high above. */
   calm?: boolean;
+  /** Switching views: the view just left, or the one being switched to. */
+  arrive?: ViewMode | null;
+  leaveTo?: ViewMode | null;
 }) {
   const road = useMemo(() => layoutRoad(stops.length, stops.map((s) => s.phase), { calm }), [stops, calm]);
   const spans = useMemo(() => phaseSpans(road, stops, phases), [road, stops, phases]);
@@ -1198,6 +1280,7 @@ export function AdventureWorld({
         colourAt={colourAlong}
         powers={powerColours}
         powerCount={powerCount}
+        scale={calm ? 3 : 1}
       />
       {!calm && <SpeedSparks road={road} travel={travel} colourAt={colourAlong} />}
       <SectionWeather road={road} travel={travel} spans={spans} />
@@ -1212,11 +1295,12 @@ export function AdventureWorld({
           colour={phaseCol.get(stop.phase) ?? new THREE.Color("#ffffff")}
           score={stop.score}
           dormant={phases.findIndex((p) => p.id === stop.phase) > reached}
+          flat={calm}
         />
       ))}
       <FinishLion road={road} cols={finishCols} />
-      <Rig road={road} travel={travel} onMove={onMove} limit={limit ?? road.finish + 10} calm={calm} />
-      {pickRef && <Picker road={road} pickRef={pickRef} far={calm ? 140 : 70} />}
+      <Rig road={road} travel={travel} onMove={onMove} limit={limit ?? road.finish + 10} calm={calm} arrive={arrive} leaveTo={leaveTo} />
+      {pickRef && <Picker road={road} pickRef={pickRef} far={calm ? 160 : 70} flat={calm} />}
     </Canvas>
   );
 }

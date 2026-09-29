@@ -131,6 +131,11 @@ function bannerTex(title: string, hex: string, state: PortalState, score?: numbe
   });
 }
 
+/** The calm view's portals lie flat on the road, three times the size,
+ *  so from high above each one is a full circle you can't miss. */
+export const PORTAL_FLAT_SCALE = 3;
+export const PORTAL_FLAT_Y = 0.35;
+
 export function Portal({
   road,
   s,
@@ -140,6 +145,7 @@ export function Portal({
   colour,
   score,
   dormant = false,
+  flat = false,
 }: {
   road: RoadLayout;
   s: number;
@@ -152,15 +158,21 @@ export function Portal({
    *  section's colour and its name, and nothing else - no vortex, no
    *  number. Only the section they are in has live portals. */
   dormant?: boolean;
+  /** The calm view: flat on the road, facing up, and three times the size. */
+  flat?: boolean;
 }) {
   const group = useRef<THREE.Group>(null);
   const ring = useRef<THREE.MeshBasicMaterial>(null);
   const bannerMat = useRef<THREE.MeshBasicMaterial>(null);
   const numMat = useRef<THREE.MeshBasicMaterial>(null);
   const { position, facing } = useMemo(() => {
-    const p = pointAt(road, s).add(new THREE.Vector3(0, 3.3, 0));
-    return { position: p, facing: pointAt(road, s - 1).add(new THREE.Vector3(0, 3.3, 0)) };
-  }, [road, s]);
+    const y = flat ? PORTAL_FLAT_Y : 3.3;
+    const p = pointAt(road, s).add(new THREE.Vector3(0, y, 0));
+    const f = pointAt(road, s - 1).add(new THREE.Vector3(0, y, 0));
+    // (Flat: turned only about the upright, so it lies level.)
+    if (flat) f.y = p.y;
+    return { position: p, facing: f };
+  }, [road, s, flat]);
   useEffect(() => {
     group.current?.lookAt(facing);
   }, [facing]);
@@ -205,7 +217,7 @@ export function Portal({
     material.uniforms.uTime.value = clock.elapsedTime;
     const d = camera.position.distanceTo(position);
     // Thin out as you arrive, so you go through the portal, not into it.
-    const near = THREE.MathUtils.smoothstep(d, 3, 10);
+    const near = flat ? 1 : THREE.MathUtils.smoothstep(d, 3, 10);
     material.uniforms.uFade.value = near;
     if (numMat.current) numMat.current.opacity = dormant ? 0 : near;
     // The name: faint far off, fully solid as you come up to the portal
@@ -222,6 +234,9 @@ export function Portal({
 
   return (
     <group ref={group} position={position}>
+      {/* (Flat: the disc laid face up, the number's top pointing on down
+          the road, and all of it three times the size.) */}
+      <group rotation={flat ? [-Math.PI / 2, 0, 0] : [0, 0, 0]} scale={flat ? PORTAL_FLAT_SCALE : 1}>
       <mesh material={material}>
         <circleGeometry args={[2.4, 64]} />
       </mesh>
@@ -240,7 +255,8 @@ export function Portal({
       {/* The portal lights the road beneath it: a pool of its glow on the
           ground, white under an open one, its colour under a done one -
           like light on wet tarmac. None under a shut one. */}
-      {!shut && (
+      </group>
+      {!shut && !flat && (
         <mesh position={[0, -3.25, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[9, 9]} />
           <meshBasicMaterial
@@ -254,10 +270,12 @@ export function Portal({
           />
         </mesh>
       )}
+      {!flat && (
       <mesh position={[0, 3.35, 0]}>
         <planeGeometry args={[5.6, 1.09]} />
         <meshBasicMaterial ref={bannerMat} map={banner} transparent depthWrite={false} side={THREE.DoubleSide} toneMapped={false} />
       </mesh>
+      )}
     </group>
   );
 }

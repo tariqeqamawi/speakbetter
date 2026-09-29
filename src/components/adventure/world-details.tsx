@@ -69,10 +69,13 @@ export function Traveller({
   trail,
   powers,
   powerCount,
+  scale = 1,
 }: {
   road: RoadLayout;
   travel: Travel;
   image: string;
+  /** How big it's drawn: three times over in the calm view from above. */
+  scale?: number;
   /** The road-hugging ribbons to reveal up to the traveller. */
   trail: THREE.BufferGeometry[];
   colourAt: (s: number) => THREE.Color;
@@ -144,13 +147,13 @@ export function Traveller({
       disc.current.position.copy(p.setY(p.y + 1.3)).lerp(eye, k);
       disc.current.lookAt(camera.position);
       disc.current.rotateZ(k * 8);
-      disc.current.scale.setScalar(Math.max(0.001, 1 - k * k));
+      disc.current.scale.setScalar(Math.max(0.001, scale * (1 - k * k)));
       return;
     }
-    disc.current?.scale.setScalar(1);
+    disc.current?.scale.setScalar(scale);
     // Up the high side of a banked sweep and back to the middle; round the
     // loop and over in the corkscrew, standing on the road's own up.
-    surfaceAt(road, s, road.rideAt(s), 1.3 + bob, p);
+    surfaceAt(road, s, road.rideAt(s), (1.3 + bob) * scale, p);
     disc.current?.position.copy(p);
     if (disc.current) upAt(road, s, disc.current.up);
     disc.current?.lookAt(camera.position);
