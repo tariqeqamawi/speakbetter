@@ -10,6 +10,7 @@
 // Which voice is a choice made on the audition page (/prototype/voice)
 // and kept in the browser until it's settled; then it becomes the one
 // constant below.
+import { clipKey, loadClip, saveClip } from "./voice-store";
 
 /** The thirty stock voices, with Google's one-word character for each
  *  and which way the voice reads. The lion is a low male voice; the
@@ -136,13 +137,21 @@ export function chooseVoice(voice: string, style: string): void {
 export async function speakUrl(text: string, voice?: string, style?: string): Promise<string | null> {
   try {
     const chosen = chosenVoice();
+    const v = voice ?? chosen.voice;
+    const st = style ?? chosen.style;
+    // Said before, on this phone: play it from here, free (voice-store.ts).
+    const key = await clipKey(text, v, st);
+    const kept = await loadClip(key);
+    if (kept) return URL.createObjectURL(kept);
     const res = await fetch("/api/speak", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, voice: voice ?? chosen.voice, style: style ?? chosen.style }),
+      body: JSON.stringify({ text, voice: v, style: st }),
     });
     if (!res.ok) return null;
-    return URL.createObjectURL(await res.blob());
+    const blob = await res.blob();
+    void saveClip(key, blob);
+    return URL.createObjectURL(blob);
   } catch {
     return null;
   }
