@@ -25,7 +25,6 @@ export const lessons: Lesson[] = [
   { vimeoId: "1081292518", title: "How To Create Your Story Book - Step 2", category: "storytelling" },
   { vimeoId: "1081292414", title: "Add The Moral or Message", category: "storytelling" },
   { vimeoId: "1081294121", title: "Give The Setting Then Dive Into The Scene", category: "storytelling" },
-  { vimeoId: "1081198162", title: "Link Your Call To Action To The Moral Of The Story", category: "storytelling" },
   { vimeoId: "1080679081", title: "Visual, Aural & Kinaesthetic Speaking", category: "storytelling" },
 
   // ── Figurative language (orange) ────────────────────────────────────
@@ -109,9 +108,11 @@ export const lessons: Lesson[] = [
   // Moved from Figurative: a rhyme is a finishing tool for a speaker who
   // already has the basics - Advanced, not a first figure of speech.
   { vimeoId: "1081164442", title: "Using Rhyme", category: "advanced" },
-  // Moved from Storytelling: casting the client as the hero is a
-  // business-speaking move, for a speaker past the basics of story.
+  // Moved from Storytelling: casting the client as the hero, and tying
+  // the call to action to the moral, are business-speaking moves for a
+  // speaker past the basics of story.
   { vimeoId: "1081198327", title: "The Client In The Hero's Journey", category: "advanced" },
+  { vimeoId: "1081198162", title: "Link Your Call To Action To The Moral Of The Story", category: "advanced" },
 ];
 
 export const lessonByVimeoId = new Map(lessons.map((l) => [l.vimeoId, l]));
