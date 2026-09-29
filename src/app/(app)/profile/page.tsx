@@ -12,6 +12,7 @@ import { SpectrumSignature } from "@/components/spectrum-signature";
 import { StreakCalendar } from "@/components/streak-calendar";
 import { BadgeCollection } from "@/components/badge-collection";
 import { DashboardHeader, DashboardHeaderCompact } from "@/components/dashboard-header";
+import { SectionTour } from "@/components/section-tour";
 import { lessonMinutes } from "@/lib/progress";
 import { listAllVideos, type StoredVideoMeta } from "@/lib/attempt-videos";
 import { Suspense, useEffect, useState } from "react";
@@ -345,6 +346,10 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6 pb-6 md:pt-1">
+      {/* The top bar's Guided Tour. Here, not inside the header card: on a
+          phone that card is folded away until opened, and a tour mounted
+          inside it never heard the button. */}
+      <SectionTour section="dashboard" />
       {/* The one thing on this page that can be missed.
           
           Everything else here is a record of what has already been

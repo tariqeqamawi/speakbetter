@@ -156,7 +156,15 @@ export function JourneyPhases({
                         className={`size-full object-cover ${passed ? "" : "opacity-40 grayscale"}`}
                       />
                     ) : (
-                      <span className={`block size-full ${phase.tintClass} ${passed ? "" : "opacity-40"}`} />
+                      // No video of its own (a watch-the-lessons challenge):
+                      // the lion on the app's navy glass, not a blank tile.
+                      <span
+                        className={`grid size-full place-items-center ${passed ? "" : "opacity-60"}`}
+                        style={{ background: "radial-gradient(120% 90% at 30% 20%, #2a1b5c 0%, #0f1a3a 45%, #0a2a2e 100%)" }}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src="/logo-mark.png" alt="" loading="lazy" decoding="async" className="h-4/5 w-auto drop-shadow-[0_0_8px_rgba(160,120,255,0.45)]" />
+                      </span>
                     )}
                     {passed ? (
                       <span

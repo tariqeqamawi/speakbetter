@@ -6,7 +6,6 @@ import { standing } from "@/lib/progress";
 import { LevelIcon, levelMeta } from "@/components/level-icon";
 import { LevelMenu } from "@/components/level-picker";
 import { AvatarCrop } from "@/components/avatar-crop";
-import { SectionTour } from "@/components/section-tour";
 import { ChevronDownIcon, ProfileIcon } from "@/components/icons";
 import { ProTip } from "@/components/pro-tip";
 import { ProgressFile } from "@/components/progress-file";
@@ -246,7 +245,6 @@ export function DashboardHeader() {
                 <ChevronDownIcon className="size-3.5 text-ink-faint" />
               </button>
               <span className="text-xs text-ink-faint">{rank.rank.name}</span>
-              <SectionTour section="dashboard" />
 
               {levelOpen && <LevelMenu onClose={() => setLevelOpen(false)} />}
             </span>
