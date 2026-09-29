@@ -238,8 +238,8 @@ export const challenges: Challenge[] = [
       "Use at least three vivid, specific alternatives",
       "Keep the energy of genuine enthusiasm",
     ],
-    targetSkills: ["figurative", "storytelling"],
-    relatedLessonIds: ["1081032328", "1081032528", "1081706536"],
+    targetSkills: ["figurative", "voice"],
+    relatedLessonIds: ["1081032328", "1080648113", "1081032528", "1081706536"],
   },
   {
     slug: "voice-melody",
@@ -254,7 +254,7 @@ export const challenges: Challenge[] = [
       "Include one powerful pause",
     ],
     targetSkills: ["voice"],
-    relatedLessonIds: ["1080675446", "1081285460", "1080443133", "1081162033"],
+    relatedLessonIds: ["1081285460", "1081162033", "1080443133", "1080675446"],
   },
   {
     slug: "tongue-twisters",
@@ -331,7 +331,7 @@ export const challenges: Challenge[] = [
       "Make one comparison nobody's heard before",
     ],
     targetSkills: ["figurative", "storytelling"],
-    relatedLessonIds: ["1081032528", "1081032662", "1080679081", "1081032892"],
+    relatedLessonIds: ["1081032528", "1081032662", "1081031146", "1081032892"],
   },
   {
     slug: "moment-from-your-day",
@@ -361,7 +361,7 @@ export const challenges: Challenge[] = [
       "Let the tension build before it breaks",
     ],
     targetSkills: ["acting", "body-language", "storytelling"],
-    relatedLessonIds: ["1081162875", "1081162752", "1081163913"],
+    relatedLessonIds: ["1081162875", "1081162752", "1081163913", "1081708997"],
   },
   {
     slug: "set-and-scene",
@@ -376,7 +376,7 @@ export const challenges: Challenge[] = [
       "Return to the setting at least once as the story moves",
     ],
     targetSkills: ["storytelling", "figurative"],
-    relatedLessonIds: ["1081031146", "1081163248", "1081294121"],
+    relatedLessonIds: ["1081294121", "1081031146", "1081163248"],
   },
   {
     slug: "twist-third-person",
@@ -391,7 +391,7 @@ export const challenges: Challenge[] = [
       "Land the reveal in a single sentence",
     ],
     targetSkills: ["storytelling", "structure"],
-    relatedLessonIds: ["1081197526", "1081163913", "1081197062"],
+    relatedLessonIds: ["1081031902", "1081198327", "1081197526", "1081163913"],
   },
   {
     slug: "foreshadowing",
@@ -406,7 +406,7 @@ export const challenges: Challenge[] = [
       "Don't call attention to the plant when it happens",
     ],
     targetSkills: ["storytelling", "structure"],
-    relatedLessonIds: ["1081197526", "1081197062", "1081292518"],
+    relatedLessonIds: ["1081163913", "1081197526"],
   },
 
   // ── R - Reveal Deeper Truths ────────────────────────────────────────
@@ -422,8 +422,8 @@ export const challenges: Challenge[] = [
       "Embody each one in voice and body, not just words",
       "Make the transitions feel earned, not switched",
     ],
-    targetSkills: ["acting", "storytelling", "body-language"],
-    relatedLessonIds: ["1081163657", "1081031042", "1081162875"],
+    targetSkills: ["acting", "voice", "body-language"],
+    relatedLessonIds: ["1081163657", "1081161473", "1081031042", "1081162875"],
   },
   {
     slug: "paint-five",
@@ -453,7 +453,7 @@ export const challenges: Challenge[] = [
       "Make the listener feel why the story matters",
     ],
     targetSkills: ["storytelling", "mindset"],
-    relatedLessonIds: ["1081030429", "1081198327", "1081162172"],
+    relatedLessonIds: ["1081290890", "1081031042", "1081162172", "1081292414"],
   },
   {
     slug: "multiple-characters",
@@ -467,8 +467,8 @@ export const challenges: Challenge[] = [
       "Keep it obvious who's speaking without saying 'he said'",
       "Stay in the scene rather than narrating from outside",
     ],
-    targetSkills: ["acting", "body-language", "storytelling"],
-    relatedLessonIds: ["1081163466", "1081162875", "1081163248"],
+    targetSkills: ["acting", "body-language", "voice"],
+    relatedLessonIds: ["1081163466", "1081162875", "1081708997"],
   },
   {
     slug: "story-youve-healed",
@@ -514,8 +514,8 @@ export const challenges: Challenge[] = [
       "Introduce a (real or imagined) guest so they sound fascinating",
       "Land a clean handoff question to end",
     ],
-    targetSkills: ["structure", "voice"],
-    relatedLessonIds: ["1081198798", "1081198957", "1080443133"],
+    targetSkills: ["structure", "storytelling", "voice"],
+    relatedLessonIds: ["1081198798", "1081198327", "1081198957", "1080443133"],
   },
   {
     slug: "thirty-second-pitch",
@@ -530,7 +530,7 @@ export const challenges: Challenge[] = [
       "State the problem, the idea, and the invitation",
       "Invite rather than sell",
     ],
-    targetSkills: ["structure", "mindset", "figurative"],
+    targetSkills: ["structure", "advanced", "voice"],
     relatedLessonIds: ["1081164747", "1081198886", "1081200223"],
   },
   {
@@ -545,8 +545,8 @@ export const challenges: Challenge[] = [
       "Deliver the final line and stop - no trailing words",
       "Make the ending feel inevitable in hindsight",
     ],
-    targetSkills: ["acting", "storytelling", "structure"],
-    relatedLessonIds: ["1081197062", "1081162875", "1081164747"],
+    targetSkills: ["storytelling", "structure", "advanced"],
+    relatedLessonIds: ["1081161815", "1081197216", "1081164442", "1081162033"],
   },
 ];
 
