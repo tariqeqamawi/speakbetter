@@ -66,6 +66,7 @@ export const lessons: Lesson[] = [
   { vimeoId: "1082732774", title: "Being Professional vs Being Serious", category: "voice" },
   { vimeoId: "1081032074", title: "How To Speak Naturally To a Phone or Camera", category: "voice" },
   { vimeoId: "1081200223", title: "Staying Succinct: Pro Tip", category: "voice" },
+  { vimeoId: "1081030261", title: "Become The Voice of Your Values & Messenger Of Your Mission", category: "voice" },
 
   // ── Structure & framing (purple) ────────────────────────────────────
   { vimeoId: "1080624037", title: "Inform, Inspire, Invite, Empower, Entertain, Educate", category: "structure" },
@@ -85,7 +86,6 @@ export const lessons: Lesson[] = [
   { vimeoId: "1081029629", title: "Why You Have a Fear of Public Speaking", category: "mindset" },
   { vimeoId: "1081029780", title: "You Are One Talk Away From Changing Your Life", category: "mindset" },
   { vimeoId: "1081029881", title: "Imagine Your Heart Is The One Speaking", category: "mindset" },
-  { vimeoId: "1081030261", title: "Become The Voice of Your Values & Messenger Of Your Mission", category: "mindset" },
   { vimeoId: "1081197407", title: "You Were a Born Public Speaker", category: "mindset" },
   { vimeoId: "1094881996", title: "How To Overcome Your Fear Of Speaking: Soften", category: "mindset" },
   { vimeoId: "1081162517", title: "As The Speaker You Have ALL The Power!", category: "mindset" },
