@@ -39,6 +39,7 @@ const FRAG = /* glsl */ `
   // (centre u, v; radius u, v) - no star is drawn over its disc.
   uniform vec4 uPlanet;
   uniform float uCurve;
+  uniform float uGlow;
   varying vec2 vUv;
   varying vec3 vDir;
 
@@ -52,6 +53,9 @@ const FRAG = /* glsl */ `
     float m = mod(uv.x, 2.0);
     uv.x = m < 1.0 ? m : 2.0 - m;
     vec3 sky = pow(texture2D(uMap, uv).rgb, vec3(uCurve));
+    // Only the brightest of it lifted past the bloom's threshold, so the
+    // planet's lit edge and the nebula's heart glow and the rest stays dark.
+    sky += sky * smoothstep(0.3, 0.75, dot(sky, vec3(0.299, 0.587, 0.114))) * uGlow;
 
     // Stars (a sparse sky - the picture behind is the point; halved twice
     // since): one per many cells of a grid on the direction, placed at
@@ -98,6 +102,7 @@ export function SkyDome({ image }: { image: string }) {
         uTime: { value: 0 },
         uPlanet: { value: new THREE.Vector4(0.579, 0.25, 0.185, 0.43) },
         uCurve: { value: LOOK.sky },
+        uGlow: { value: LOOK.skyGlow },
       },
     });
   }, [image]);
