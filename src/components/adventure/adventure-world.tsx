@@ -10,6 +10,7 @@ import { PORTAL_FLAT_SCALE, PORTAL_FLAT_Y, PORTAL_Y, Portal } from "./portal";
 import { SkyDome } from "./sky-dome";
 import { City } from "./city";
 import { Bloom, GateSparks, Sky, SpeedSparks } from "./fx";
+import { LOOK } from "./look";
 import { FinishTunnel } from "./finish-gate";
 import { AHEAD, ColourWall, RoadsideComment, RoadsideTrophy, Traveller } from "./world-details";
 import { GATE_BEFORE, victoryStart, hills, layoutRoad, pointAt, reachedPhase, seeded, sideAt, type RoadLayout, type Travel, ROAD_HALF, bankLift, tiltAt, groundAt, surfaceAt, upAt } from "./road-geometry";
@@ -232,6 +233,10 @@ const TERRAIN_FRAG = /* glsl */ `
   uniform float uTarget;
   uniform vec3 uMe;
   uniform float uFeel;
+  uniform float uSurface;
+  uniform float uSheen;
+  uniform float uWash;
+  uniform float uGain;
   varying float vLift;
   varying vec3 vPattern;
   varying vec2 vGrid;
@@ -375,17 +380,17 @@ const TERRAIN_FRAG = /* glsl */ `
     float diff = max(dot(n, L), 0.0);
     float fres = pow(1.0 - max(dot(n, V), 0.0), 4.0);
     float spec = pow(max(dot(n, normalize(L + V)), 0.0), 70.0);
-    vec3 albedo = vec3(0.002, 0.003, 0.006);
+    vec3 albedo = vec3(0.010, 0.014, 0.030) * uSurface;
     vec3 col = albedo * (0.35 * hemi + 0.9 * diff) * ao;
-    col += vec3(0.015, 0.018, 0.035) * spec * ao;
-    col += uHorizon * fres * 0.035 * ao;
-    col += vNeon * (0.01 * haloWide * crowd + 0.05 * (wave + wake)) * ao;
+    col += vec3(0.05, 0.06, 0.12) * uSurface * spec * ao;
+    col += uHorizon * fres * uSheen * ao;
+    col += vNeon * (uWash * haloWide * crowd + 0.05 * (wave + wake)) * ao;
 
     // The light itself.
     // A dot is a point, not a line: it needs more light to read.
     float rest = (0.02 * halo + 0.16 * core) * mix(1.0, 3.2 * gTwinkle, dotsK);
     float lit = (wave + wake) * (1.2 * core + 0.5 * halo + 0.25 * haloWide) + rip * (1.6 * core + 0.7 * halo + 0.3 * haloWide);
-    col += vNeon * (rest + lit * 1.6) * crowd;
+    col += vNeon * (rest + lit * 1.6) * crowd * uGain;
 
     // SHIMMER, in every land - what made O's dots the best thing on the
     // road: at some of the grid's crossings a point of light twinkles at
@@ -396,7 +401,7 @@ const TERRAIN_FRAG = /* glsl */ `
       + pow(max(sin(uTime * 0.35 + sh * 60.0), 0.0), 40.0) * 3.0;
     vec2 sd = (fract(g + 0.5) - 0.5) / max(fwidth(g), vec2(1e-4));
     float spark = exp(-max(length(sd) - 1.3, 0.0) * 1.1) * step(0.45, sh);
-    col += vNeon * spark * stw * 1.1 * crowd * (1.0 - dotsK);
+    col += vNeon * spark * stw * 1.1 * crowd * (1.0 - dotsK) * uGain;
 
     float fog = 1.0 - exp(-uFogDensity * uFogDensity * vDepth * vDepth);
     // DEPTH: the far land sinks into a dark haze - graded, never a wall -
@@ -510,7 +515,11 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
         uniforms: {
           uTime: { value: 0 },
           uFrom: { value: 0 },
-          uFog: { value: new THREE.Color("#010206") },
+          uFog: { value: new THREE.Color(LOOK.haze) },
+          uSurface: { value: LOOK.surface },
+          uSheen: { value: LOOK.sheen },
+          uWash: { value: LOOK.wash },
+          uGain: { value: LOOK.gain },
           uFogDensity: { value: 0.0042 },
           uHorizon: { value: new THREE.Color("#3a3f8f") },
           // Where Your Impact's rays converge: the city, far past the road.
@@ -534,7 +543,7 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
       const here = travel.s + AHEAD;
       const sp = spans.find((x) => here >= x.from && here < x.to) ?? spans[0];
       if (sp) {
-        hazeTarget.set("#010206").lerp(tintOf(sp.color), 0.07);
+        hazeTarget.set(LOOK.haze).lerp(tintOf(sp.color), LOOK.hazeTint);
         const u = material.uniforms.uFog.value as THREE.Color;
         u.lerp(hazeTarget, 0.03);
         const fog = scene.fog as THREE.FogExp2 | null;
@@ -684,12 +693,12 @@ function EdgeLights({ road, spans }: { road: RoadLayout; spans: Span[] }) {
 function Road({ road, spans, trail }: { road: RoadLayout; spans: Span[]; trail: THREE.BufferGeometry[] }) {
   const g = useMemo(
     () => ({
-      surface: ribbon(road, spans, -ROAD_HALF, ROAD_HALF, 0, (ph, o) => o.set("#020409").lerp(ph, 0.04)),
-      glow: ribbon(road, spans, -1.8, 1.8, 0.03, (ph, o) => o.copy(ph).multiplyScalar(0.5)),
+      surface: ribbon(road, spans, -ROAD_HALF, ROAD_HALF, 0, (ph, o) => o.set(LOOK.road).lerp(ph, LOOK.roadTint)),
+      glow: ribbon(road, spans, -1.8, 1.8, 0.03, (ph, o) => o.copy(ph).multiplyScalar(LOOK.mid)),
       // The road ahead, not yet travelled: a faint guide line.
-      line: ribbon(road, spans, -0.12, 0.12, 0.05, (ph, o) => o.copy(ph).multiplyScalar(0.45)),
-      left: ribbon(road, spans, -ROAD_HALF, -ROAD_HALF + 0.2, 0.04, (ph, o) => o.copy(ph).multiplyScalar(0.7)),
-      right: ribbon(road, spans, ROAD_HALF - 0.2, ROAD_HALF, 0.04, (ph, o) => o.copy(ph).multiplyScalar(0.7)),
+      line: ribbon(road, spans, -0.12, 0.12, 0.05, (ph, o) => o.copy(ph).multiplyScalar(0.45 * LOOK.gain)),
+      left: ribbon(road, spans, -ROAD_HALF, -ROAD_HALF + 0.2, 0.04, (ph, o) => o.copy(ph).multiplyScalar(0.7 * LOOK.gain)),
+      right: ribbon(road, spans, ROAD_HALF - 0.2, ROAD_HALF, 0.04, (ph, o) => o.copy(ph).multiplyScalar(0.7 * LOOK.gain)),
       // Lane marks: dashes a third of the way out each side, which pour
       // toward you at speed.
       lanes: dashes(road, spans, [-ROAD_HALF / 2.2, ROAD_HALF / 2.2]),
@@ -1225,12 +1234,12 @@ export function AdventureWorld({
       gl={{ antialias: true, powerPreference: "high-performance" }}
       camera={{ fov: 62, near: 0.1, far: 1200, position: [0, 3, 6] }}
       onCreated={({ scene }) => {
-        scene.fog = new THREE.FogExp2("#010206", 0.0038);
+        scene.fog = new THREE.FogExp2(LOOK.haze, 0.0038);
       }}
     >
-      <hemisphereLight args={["#8090d0", "#05070f", 1.1]} />
-      <ambientLight intensity={0.2} />
-      <directionalLight position={[40, 80, 30]} intensity={0.9} color="#c8d2ff" />
+      <hemisphereLight args={["#8090d0", "#05070f", LOOK.lights[0]]} />
+      <ambientLight intensity={LOOK.lights[1]} />
+      <directionalLight position={[40, 80, 30]} intensity={LOOK.lights[2]} color="#c8d2ff" />
       {skyImage ? <SkyDome image={skyImage} /> : <Stars />}
       <Terrain road={road} spans={spans} travel={travel} />
       <Road road={road} spans={spans} trail={trail} />
@@ -1274,7 +1283,7 @@ export function AdventureWorld({
         gates={spans.slice(1).map((sp, k) => ({ s: sp.from, from: spans[k].color, to: sp.color }))}
       />
       <Sky />
-      <Bloom travel={travel} />
+      <Bloom travel={travel} strength={LOOK.bloom} threshold={LOOK.threshold} radius={LOOK.spread} />
       <Scenery road={road} spans={spans} />
       {spans.find((sp) => sp.id === "Y") && (
         <City road={road} travel={travel} revealFrom={spans.find((sp) => sp.id === "Y")!.from + 240} />
