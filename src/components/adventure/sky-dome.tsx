@@ -3,6 +3,7 @@
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { LOOK } from "./look";
 
 // A painted sky around the whole world - planets, a nebula, a galaxy -
 // on a great cylinder that travels with the camera, so it is always
@@ -37,6 +38,7 @@ const FRAG = /* glsl */ `
   // The big planet in the picture, as an ellipse in texture space
   // (centre u, v; radius u, v) - no star is drawn over its disc.
   uniform vec4 uPlanet;
+  uniform float uCurve;
   varying vec2 vUv;
   varying vec3 vDir;
 
@@ -49,7 +51,7 @@ const FRAG = /* glsl */ `
     vec2 uv = vUv * uRepeat + uOffset;
     float m = mod(uv.x, 2.0);
     uv.x = m < 1.0 ? m : 2.0 - m;
-    vec3 sky = texture2D(uMap, uv).rgb;
+    vec3 sky = pow(texture2D(uMap, uv).rgb, vec3(uCurve));
 
     // Stars (a sparse sky - the picture behind is the point; halved twice
     // since): one per many cells of a grid on the direction, placed at
@@ -95,6 +97,7 @@ export function SkyDome({ image }: { image: string }) {
         uOffset: { value: new THREE.Vector2(0.5, 0) },
         uTime: { value: 0 },
         uPlanet: { value: new THREE.Vector4(0.579, 0.25, 0.185, 0.43) },
+        uCurve: { value: LOOK.sky },
       },
     });
   }, [image]);

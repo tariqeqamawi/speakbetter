@@ -26,17 +26,22 @@ export type Look = {
   threshold: number;
   /** How far the bloom spreads - wide, it hangs over everything as a mist. */
   spread: number;
+  /** The glass buildings' own body, lit - their reflections stay whole. */
+  body: number;
+  /** The painted sky's contrast: above 1, its dim parts sink toward black
+   *  while the planets and nebula keep their light. */
+  sky: number;
 };
 
 export const LOOKS: Look[] = [
   // 0 - as it was this morning
-  { surface: 1, sheen: 0.22, wash: 0.035, gain: 1, haze: "#040816", hazeTint: 0.2, road: "#101a33", roadTint: 0.12, mid: 0.7, lights: [2.2, 0.5, 1.4], bloom: 0.6, threshold: 0.78, spread: 0.25 },
+  { surface: 1, sheen: 0.22, wash: 0.035, gain: 1, haze: "#040816", hazeTint: 0.2, road: "#101a33", roadTint: 0.12, mid: 0.7, lights: [2.2, 0.5, 1.4], bloom: 0.6, threshold: 0.78, spread: 0.25, body: 1, sky: 1 },
   // 1 - darker
-  { surface: 0.2, sheen: 0.035, wash: 0.01, gain: 1, haze: "#010206", hazeTint: 0.07, road: "#020409", roadTint: 0.04, mid: 0.5, lights: [1.1, 0.2, 0.9], bloom: 0.6, threshold: 0.78, spread: 0.25 },
+  { surface: 0.2, sheen: 0.035, wash: 0.01, gain: 1, haze: "#010206", hazeTint: 0.07, road: "#020409", roadTint: 0.04, mid: 0.5, lights: [1.1, 0.2, 0.9], bloom: 0.6, threshold: 0.78, spread: 0.25, body: 1, sky: 1 },
   // 2 - Tron (live): black glass, brighter lines, the glow held close to them
-  { surface: 0, sheen: 0, wash: 0, gain: 1.5, haze: "#000000", hazeTint: 0.03, road: "#000000", roadTint: 0.015, mid: 0.4, lights: [0.5, 0.05, 0.5], bloom: 0.45, threshold: 0.85, spread: 0.08 },
+  { surface: 0, sheen: 0, wash: 0, gain: 1.5, haze: "#000000", hazeTint: 0.03, road: "#000000", roadTint: 0.015, mid: 0.4, lights: [0.5, 0.05, 0.5], bloom: 0.45, threshold: 0.85, spread: 0.08, body: 0.4, sky: 1.35 },
   // 3 - Tron, hard: pure black, lines at full blaze, only a tight glow
-  { surface: 0, sheen: 0, wash: 0, gain: 2, haze: "#000000", hazeTint: 0, road: "#000000", roadTint: 0, mid: 0.3, lights: [0.25, 0, 0.3], bloom: 0.35, threshold: 0.92, spread: 0 },
+  { surface: 0, sheen: 0, wash: 0, gain: 2, haze: "#000000", hazeTint: 0, road: "#000000", roadTint: 0, mid: 0.3, lights: [0.25, 0, 0.3], bloom: 0.35, threshold: 0.92, spread: 0, body: 0.25, sky: 1.5 },
 ];
 
 const DEFAULT = 2;

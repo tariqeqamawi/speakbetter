@@ -5,6 +5,7 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { Monuments, type MonumentPlan } from "./monuments";
 import { TalkingFaces } from "./talking-faces";
+import { LOOK } from "./look";
 import { FINISH_TUNNEL } from "./finish-gate";
 import { ROAD_HALF, WEAVE, victoryStart, groundAt, pointAt, seeded, sideAt, venueStretch, type RoadLayout } from "./road-geometry";
 
@@ -52,7 +53,7 @@ const GLASS_VERT = /* glsl */ `
   void main() {
     // Each building its own tint of dark glass: blue, purple or green.
     float hh = fract(sin(dot(instanceMatrix[3].xz, vec2(12.9898, 78.233))) * 43758.5453);
-    vTint = hh < 0.4 ? vec3(0.16, 0.30, 0.78) : hh < 0.7 ? vec3(0.42, 0.20, 0.72) : vec3(0.12, 0.52, 0.50);
+    vTint = hh < 0.4 ? vec3(0.16, 0.30, 0.78) : hh < 0.7 ? vec3(0.42, 0.20, 0.72) : vec3(0.07, 0.07, 0.16);
     vec4 wp = modelMatrix * instanceMatrix * vec4(position, 1.0);
     vN = normalize(mat3(modelMatrix) * mat3(instanceMatrix) * normal);
     vV = cameraPosition - wp.xyz;
@@ -68,6 +69,7 @@ const GLASS_VERT = /* glsl */ `
 const GLASS_FRAG = /* glsl */ `
   uniform vec3 uFog;
   uniform float uFogD;
+  uniform float uBody;
   varying vec3 vN;
   varying vec3 vV;
   varying float vH;
@@ -79,7 +81,7 @@ const GLASS_FRAG = /* glsl */ `
     float fres = pow(1.0 - abs(dot(N, V)), 3.0);
     float side = 0.5 + 0.5 * dot(N, normalize(vec3(-0.3, 0.6, -0.5)));
     float floors = smoothstep(0.9, 1.0, fract(vH / 3.2)) * 0.22;
-    vec3 col = vTint * 0.06 * (0.55 + 0.8 * side)
+    vec3 col = vTint * 0.06 * (0.55 + 0.8 * side) * uBody
       + vTint * fres * 0.3
       + vTint * floors * (0.3 + fres) * 0.9;
     float fog = 1.0 - exp(-uFogD * uFogD * vDepth * vDepth);
@@ -135,7 +137,7 @@ const TOWER_VERT = /* glsl */ `
     // The body: the app's glassy navy, leaning blue, teal or violet; one
     // building in two a mirror-glass that shows the sky.
     float h3 = fract(sin(dot(instanceMatrix[3].xz, vec2(63.7, 17.9))) * 9151.31);
-    vBody = h3 < 0.4 ? vec3(0.006, 0.016, 0.075) : h3 < 0.7 ? vec3(0.003, 0.034, 0.052) : vec3(0.022, 0.008, 0.072);
+    vBody = h3 < 0.4 ? vec3(0.006, 0.016, 0.075) : h3 < 0.7 ? vec3(0.004, 0.004, 0.010) : vec3(0.022, 0.008, 0.072);
     vGlassy = step(0.5, fract(h3 * 7.3));
     vBase = instanceMatrix[3].y + 30.0;
     vec4 wp = modelMatrix * instanceMatrix * vec4(position, 1.0);
@@ -150,6 +152,7 @@ const TOWER_VERT = /* glsl */ `
 const TOWER_FRAG = /* glsl */ `
   uniform vec3 uFog;
   uniform float uFogD;
+  uniform float uBody;
   varying vec3 vN;
   varying vec3 vV;
   varying vec3 vW;
@@ -166,7 +169,7 @@ const TOWER_FRAG = /* glsl */ `
   vec3 skyEnv(vec3 d) {
     float h = d.y;
     vec3 c = mix(vec3(0.05, 0.03, 0.12), vec3(0.01, 0.015, 0.05), smoothstep(0.0, 0.7, h));
-    c += vec3(0.20, 0.12, 0.42) * exp(-h * h * 40.0) + vec3(0.05, 0.30, 0.34) * exp(-(h - 0.12) * (h - 0.12) * 120.0);
+    c += vec3(0.20, 0.12, 0.42) * exp(-h * h * 40.0) + vec3(0.08, 0.14, 0.40) * exp(-(h - 0.12) * (h - 0.12) * 120.0);
     float az = atan(d.z, d.x);
     float neon = pow(max(0.0, sin(az * 9.0 + 1.3)), 40.0) * exp(-h * h * 25.0);
     c += vec3(0.9, 0.35, 1.0) * neon * 0.6;
@@ -212,8 +215,8 @@ const TOWER_FRAG = /* glsl */ `
     float hh = max(0.0, vW.y - vBase);
     float ao = 0.35 + 0.65 * smoothstep(0.0, 45.0, hh);
     float lift = 0.85 + 0.35 * smoothstep(20.0, 220.0, hh);
-    vec3 base = vBody * (0.6 + 0.65 * side) * ao * lift;
-    base += vGlow * 0.035 * ao * up;
+    vec3 base = vBody * (0.6 + 0.65 * side) * ao * lift * uBody;
+    base += vGlow * 0.035 * ao * up * uBody;
     // Mirror glass: the sky, strongest at a glancing angle.
     vec3 R = reflect(-V, N);
     vec3 refl = skyEnv(R) * (0.25 + 0.75 * fres) * vGlassy * ao;
@@ -232,7 +235,7 @@ const VICTORY_VERT = TOWER_VERT.replace(
   // bodies stay dark and the colour is all in the glow.)
   "vKind = h2 < 0.5 ? 0.0 : 3.0;",
 ).replace(
-  "vBody = h3 < 0.4 ? vec3(0.006, 0.016, 0.075) : h3 < 0.7 ? vec3(0.003, 0.034, 0.052) : vec3(0.022, 0.008, 0.072);",
+  "vBody = h3 < 0.4 ? vec3(0.006, 0.016, 0.075) : h3 < 0.7 ? vec3(0.004, 0.004, 0.010) : vec3(0.022, 0.008, 0.072);",
   "vBody = vec3(0.006, 0.007, 0.011);",
 ).replace("vGlassy = step(0.5, fract(h3 * 7.3));", "vGlassy = 1.0;").replace(
   "vGlow = h1 < 0.4 ? vec3(0.25, 0.55, 1.0) : h1 < 0.7 ? vec3(0.66, 0.36, 1.0) : vec3(0.2, 0.95, 0.75);",
@@ -527,7 +530,7 @@ function City({
       new THREE.ShaderMaterial({
         vertexShader: VICTORY_VERT,
         fragmentShader: VICTORY_FRAG,
-        uniforms: { uFog: { value: new THREE.Color("#040816") }, uFogD: { value: 0.0036 }, uTime: { value: 0 } },
+        uniforms: { uFog: { value: new THREE.Color(LOOK.haze) }, uFogD: { value: 0.0036 }, uBody: { value: LOOK.body }, uTime: { value: 0 } },
       }),
     [],
   );
@@ -541,7 +544,7 @@ function City({
           "gl_FragColor = vec4(mix(col, uFog, fog * 0.93), 1.0);",
           "col = vec3(0.004, 0.006, 0.02) * (0.6 + 0.8 * side) + vec3(0.10, 0.16, 0.42) * pow(1.0 - abs(dot(N, V)), 3.5) * 0.45;\n    gl_FragColor = vec4(mix(col, uFog, fog * 0.93), 1.0);",
         ),
-        uniforms: { uFog: { value: new THREE.Color("#040816") }, uFogD: { value: 0.0036 } },
+        uniforms: { uFog: { value: new THREE.Color(LOOK.haze) }, uFogD: { value: 0.0036 }, uBody: { value: LOOK.body } },
       }),
     [],
   );
@@ -560,7 +563,7 @@ function City({
       new THREE.ShaderMaterial({
         vertexShader: TOWER_VERT,
         fragmentShader: TOWER_FRAG,
-        uniforms: { uFog: { value: new THREE.Color("#040816") }, uFogD: { value: 0.0036 } },
+        uniforms: { uFog: { value: new THREE.Color(LOOK.haze) }, uFogD: { value: 0.0036 }, uBody: { value: LOOK.body } },
       }),
     [],
   );
@@ -647,7 +650,7 @@ function Corridors({ road, colourAt, runs }: { road: RoadLayout; colourAt: Colou
     count,
     useMemo(() => new THREE.BoxGeometry(1, 1, 1), []),
     useMemo(
-      () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color("#040816") }, uFogD: { value: 0.0036 } } }),
+      () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color(LOOK.haze) }, uFogD: { value: 0.0036 }, uBody: { value: LOOK.body } } }),
       [],
     ),
   );
@@ -730,7 +733,7 @@ function Venue({ road, colourAt, venues }: { road: RoadLayout; colourAt: ColourA
   const rows = venues.reduce((n, v) => n + Math.max(0, Math.floor((v.seatsTo - v.stage - 14) / ROW)), 0);
   const seatCount = rows * PER_ROW * 2;
   const glass = useMemo(
-    () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color("#040816") }, uFogD: { value: 0.0036 } } }),
+    () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color(LOOK.haze) }, uFogD: { value: 0.0036 }, uBody: { value: LOOK.body } } }),
     [],
   );
   const seats = useInstanced(seatCount, useMemo(() => new THREE.BoxGeometry(1, 1, 1), []), useMemo(() => glass.clone(), [glass]));
@@ -859,7 +862,7 @@ function SpotlightRuns({ road, colourAt, runs }: { road: RoadLayout; colourAt: C
   }, [runs]);
   const gantries = rigs.length / 2;
   const glass = useMemo(
-    () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color("#040816") }, uFogD: { value: 0.0036 } } }),
+    () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color(LOOK.haze) }, uFogD: { value: 0.0036 }, uBody: { value: LOOK.body } } }),
     [],
   );
   const beams = useInstanced(gantries * 3, useMemo(() => new THREE.BoxGeometry(1, 1, 1), []), glass);
@@ -1116,7 +1119,7 @@ function Pylons({ road, colourAt }: { road: RoadLayout; colourAt: ColourAt }) {
     return out;
   }, [road]);
   const glass = useMemo(
-    () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color("#040816") }, uFogD: { value: 0.0036 } } }),
+    () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color(LOOK.haze) }, uFogD: { value: 0.0036 }, uBody: { value: LOOK.body } } }),
     [],
   );
   const posts = useInstanced(spots.length * 3, useMemo(() => new THREE.BoxGeometry(1, 1, 1), []), glass);
