@@ -16,6 +16,7 @@ import { LessonNotes } from "@/components/lesson-notes";
 import { LessonSummary } from "@/components/lesson-summary";
 import { LessonTranscript } from "@/components/lesson-transcript";
 import { PlayFillIcon } from "@/components/player-icons";
+import { useSkillsView } from "@/lib/skills-view";
 
 // A category as a theater: whichever lesson is selected plays full
 // width, and every other lesson in the color waits in a carousel below.
@@ -37,6 +38,9 @@ export function CategoryTheater({
   lessons: Lesson[];
 }) {
   const { state, ready } = useStore();
+  // In grid view the rail is a list, one lesson under another, rather
+  // than a carousel to swipe through (skills-view.ts).
+  const list = useSkillsView() === "grid";
   const [featuredId, setFeaturedId] = useState(lessons[0].vimeoId);
   const [autoplayNext, setAutoplayNext] = useState(false);
   const [upNext, setUpNext] = useState(false);
@@ -222,31 +226,32 @@ export function CategoryTheater({
         )}
       </div>
 
-      {/* The rail */}
-      <div className="relative flex flex-col gap-2">
+      {/* The rail - in grid view, a list at the top of the page: every
+          lesson in the colour first, and tapping one plays it below. */}
+      <div className={`relative flex flex-col gap-2 ${list ? "order-first" : ""}`}>
         <span className="text-xs font-medium uppercase tracking-wider text-ink-faint">
           All {lessons.length} lessons in this color
         </span>
-        <ul className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2">
+        <ul className={list ? "flex flex-col gap-2.5" : "-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2"}>
           {lessons.map((lesson, i) => {
             const current = lesson.vimeoId === featured.vimeoId;
             return (
               <li
                 key={lesson.vimeoId}
-                className="challenge-enter w-44 shrink-0 snap-start sm:w-52"
+                className={list ? "challenge-enter w-full" : "challenge-enter w-44 shrink-0 snap-start sm:w-52"}
                 style={{ animationDelay: `${Math.min(i, 10) * 45}ms` }}
               >
                 <button
                   type="button"
                   onClick={() => select(lesson.vimeoId)}
                   aria-pressed={current}
-                  className={`lift-card group flex w-full flex-col overflow-hidden rounded-xl border text-left ${category.textClass} ${
+                  className={`lift-card group flex w-full overflow-hidden rounded-xl border text-left ${list ? "flex-row items-center gap-3 pr-3" : "flex-col"} ${category.textClass} ${
                     current
                       ? "border-current shadow-[0_0_18px_-6px_currentColor]"
                       : "border-navy-600 hover:border-current"
                   }`}
                 >
-                  <span className="relative block aspect-video w-full shrink-0 bg-gradient-to-br from-navy-700 to-navy-900">
+                  <span className={`relative block aspect-video shrink-0 bg-gradient-to-br from-navy-700 to-navy-900 ${list ? "w-36 sm:w-44" : "w-full"}`}>
                     <VideoStill
                       vimeoId={lesson.vimeoId}
                       accent={category}
@@ -283,11 +288,11 @@ export function CategoryTheater({
                       className={`absolute inset-x-0 bottom-0 h-0.5 ${category.bgClass} ${current ? "" : "opacity-40"}`}
                     />
                   </span>
-                  <span className="flex flex-col gap-0.5 p-2.5">
+                  <span className={`flex min-w-0 flex-col gap-0.5 ${list ? "py-2" : "p-2.5"}`}>
                     <span className="font-mono text-[0.6rem] tabular-nums text-ink-faint">
                       {String(i + 1).padStart(2, "0")}
                     </span>
-                    <span className="line-clamp-2 text-xs font-medium leading-snug text-ink">
+                    <span className={`line-clamp-2 font-medium leading-snug text-ink ${list ? "text-sm" : "text-xs"}`}>
                       {lesson.title}
                     </span>
                   </span>

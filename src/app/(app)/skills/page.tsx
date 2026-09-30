@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ChevronDownIcon } from "@/components/icons";
-import { SkillDial } from "@/components/skill-dial";
+import { SkillsBrowser } from "@/components/skills-browser";
 import { SectionTabs } from "@/components/section-tabs";
 import { SectionTour } from "@/components/section-tour";
 import { FeatureReaction } from "@/components/feature-reaction";
@@ -9,7 +9,8 @@ export const metadata: Metadata = {
   title: "Skills",
 };
 
-// The dial is the page. What the section is gets one line behind a
+// The dial (or the grid, if that is where the student left the
+// switch - see skills-browser.tsx) is the page. What the section is gets one line behind a
 // chevron beside its name - a paragraph a student reads once and then
 // scrolls past every day afterwards is not worth the top of the
 // screen.
@@ -33,7 +34,7 @@ export default function SkillsPage() {
         </p>
       </details>
 
-      <SkillDial />
+      <SkillsBrowser />
       <FeatureReaction feature="dial" label="the dial" />
     </div>
   );
