@@ -3567,10 +3567,11 @@ html.bare .demo-banner {
   border-radius: 999px;
   transform-origin: 0 50%;
   background: linear-gradient(90deg, transparent, var(--c, #fff));
-  /* Soft round the edges: a streak of light smeared by speed, not a
-     drawn line. */
+  /* Soft round the edges from its glow alone - no CSS blur filter: one
+     on 44 streaks moving every frame over the 3D view was re-blurred by
+     the compositor every frame, and stuttered the road at speed. */
   box-shadow: 0 0 9px var(--c, #fff);
-  filter: blur(0.6px);
+  will-change: transform, opacity;
   opacity: 0;
   animation: road-tracer var(--t, 0.5s) linear var(--d, 0s) infinite;
 }

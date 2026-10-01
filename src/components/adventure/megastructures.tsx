@@ -7,7 +7,7 @@ import { Monuments, type MonumentPlan } from "./monuments";
 import { TalkingFaces } from "./talking-faces";
 import { LOOK } from "./look";
 import { FINISH_TUNNEL } from "./finish-gate";
-import { ROAD_HALF, WEAVE, victoryStart, groundAt, pointAt, seeded, sideAt, venueStretch, type RoadLayout } from "./road-geometry";
+import { ROAD_HALF, victoryStart, groundAt, pointAt, seeded, sideAt, venueStretch, type RoadLayout } from "./road-geometry";
 
 // SCALE. On the tracks of Extreme-G the road ran between things far
 // bigger than you - towers, gantries, tunnels - and passing them is what
@@ -1539,26 +1539,19 @@ export function structurePlan(road: RoadLayout) {
   // through.
   const features: Feature[] = [];
   monuments.booms = [];
-  const weave = road.skyways.find((w) => (w as { wave?: boolean }).wave);
-  if (weave) {
-    const from = weave.a + 70 + 50;
-    // (Where the road stays up and runs on into the victory stretch, the
-    // weave straightens 90 short of its end rather than ramping down.)
-    const runsOn = road.liftAt(weave.b + 5) > 1;
-    const to = weave.b - (runsOn ? 90 : 170) - 50;
-    const half = WEAVE.K * Math.PI;
-    for (let k = Math.ceil((from - weave.a) / half); weave.a + k * half < to; k++) {
-      const at = weave.a + k * half;
-      // (The road turns toward +side where k is even.)
-      const side = k % 2 ? -1 : 1;
-      const which = k % 3;
-      if (which === 0) features.push({ s: at, d: side * (ROAD_HALF + 24), w: 18, h: 108, type: 7 });
-      else if (which === 1) monuments.booms!.push({ s: at, side });
-      else features.push({ s: at, d: side * (ROAD_HALF + 28), w: 16, h: 122, type: 8 });
-      const mid = at + half / 2;
-      if (mid < to && k % 2 === 0) features.push({ s: mid, d: 0, w: ROAD_HALF * 2 + 42, h: 150 + (k % 3) * 30, type: 11 });
-    }
-  }
+  // At the middle of each of the weave's turns, on the inside of the
+  // bend - so the road sweeps round it - a giant stage mic, a podcast mic
+  // on a boom, a pair of headphones on end, in turn; and on the straights
+  // after the second and fourth turns, a tower the road runs through.
+  road.weaveTurns.forEach((t, k) => {
+    const at = (t.a + t.b) / 2;
+    const side = t.dir;
+    const which = k % 3;
+    if (which === 0) features.push({ s: at, d: side * (ROAD_HALF + 24), w: 18, h: 108, type: 7 });
+    else if (which === 1) monuments.booms!.push({ s: at, side });
+    else features.push({ s: at, d: side * (ROAD_HALF + 28), w: 16, h: 122, type: 8 });
+    if (k === 1 || k === 3) features.push({ s: t.b + 13, d: 0, w: ROAD_HALF * 2 + 42, h: 150 + k * 15, type: 11 });
+  });
   // THE VICTORY STRETCH, lined all the way with everything you've passed:
   // stage mics, podcast mics, headphones on end and speaker stacks (smaller
   // than the climb's), either side, in every colour - and headphone arches

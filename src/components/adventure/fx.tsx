@@ -216,6 +216,8 @@ function speedBlur(samples: number) {
         // Only the edges blur - the middle, where you're looking, stays
         // sharp - and they darken a touch, as if rushing past.
         float far = pow(smoothstep(0.26, 0.78, length(dir)), 1.4);
+        // The middle, where the view stays sharp: one read, not ten.
+        if (far < 0.002) { gl_FragColor = vec4(texture2D(tDiffuse, vUv).rgb, 1.0); return; }
         vec2 step = dir * uAmount * far / float(N);
         vec4 sum = vec4(0.0);
         for (int i = 0; i < N; i++) sum += texture2D(tDiffuse, vUv - step * float(i));

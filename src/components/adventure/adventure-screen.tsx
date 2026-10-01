@@ -165,6 +165,9 @@ export function AdventureScreen({
   const [travel] = useState(() => new Travel(start));
   // Bumped to rebuild the 3D scene after a failure (RoadGuard).
   const [worldKey, setWorldKey] = useState(0);
+  const rebuildWorld = useCallback(() => {
+    window.setTimeout(() => setWorldKey((k) => k + 1), 400);
+  }, []);
   const [s, setS] = useState(start);
   const frame = useRef<HTMLDivElement>(null);
   // Only draw while the road is on screen - a page with the road far
@@ -812,7 +815,7 @@ export function AdventureScreen({
           phases={phases}
           travel={travel}
           onMove={onMove}
-          onLost={() => window.setTimeout(() => setWorldKey((k) => k + 1), 400)}
+          onLost={rebuildWorld}
           avatar={avatar}
           pickRef={pickRef}
           limit={limit}
@@ -886,7 +889,7 @@ export function AdventureScreen({
       {/* The confetti cannons: each its own burst, from its own side. */}
       {bursts.map((b) => (
         <div key={b.key} aria-hidden className="pointer-events-none absolute inset-0 z-[11]">
-          <Confetti contained side={b.side} count={140} duration={4200} />
+          <Confetti contained side={b.side} count={90} duration={3800} />
         </div>
       ))}
 

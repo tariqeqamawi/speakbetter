@@ -81,6 +81,9 @@ export interface RoadLayout {
   frames: { ds: number; side: Float32Array; rside: Float32Array; up: Float32Array; ground: Float32Array };
   /** Where the road runs high above the land on pylons, and how high. */
   skyways: { a: number; b: number; h: number }[];
+  /** The city weave's turns, in order: where each starts and ends, and
+   *  which way it goes (+1 right). The landmarks stand by them. */
+  weaveTurns: { a: number; b: number; dir: number }[];
   liftAt: (s: number) => number;
   /** Where the two faces stand, on their straight, level stretch. */
   faces?: number;
@@ -115,12 +118,13 @@ export const CLIMB = { LEAD: 12, UP: 72, H: 46, TOP: 46, DOWN: 90 };
 export const VICTORY_H = 58;
 /** Where it starts rising after the last challenge, and over how long. */
 const VICTORY_RISE = { after: 40, len: 180 };
-/** The city weave: how hard the road swings (radians), how long each
- *  swing is (a full left-and-right every 2*pi*K along the road), and how
- *  far the road banks into each one (radians, at the height of a swing).
- *  Long, slow swings - a left-and-right every ~380 units - so each one is
- *  a carve you sit in, not a flick. */
-export const WEAVE = { A: 0.72, K: 60, BANK: 0.38 };
+/** The city weave: how far each turn swings the road (radians), how far
+ *  the road banks into a turn at its tightest (radians), how high the
+ *  climbing turn lifts it, and the turns in order - -1 left, +1 right.
+ *  Not a metronome of left-right-left-right: left, right, right again,
+ *  left, then a left that climbs and a right that banks back down, and
+ *  straight on into the city of colour. */
+export const WEAVE = { A: 0.78, BANK: 0.38, RISE: 24, TURNS: [-1, 1, 1, -1, -1, 1] };
 /** The corkscrew: how far forward it runs, its radius, and how many times
  *  it rolls over. Two and a half times the length of the first one, but
  *  still one roll - upside down once, slowly, over a long stretch, so
@@ -390,7 +394,8 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = [], opts: Ro
   // floating through the victory city.
   const base = bridge ? bridge.h : 0;
   const victoryLift = (s: number) => (rising ? base + (VICTORY_H - base) * THREE.MathUtils.smootherstep(s, riseAt, riseAt + VICTORY_RISE.len) : 0);
-  const liftAt = (s: number) =>
+  const liftAt = (s: number) => weaveRise(s) + liftBase(s);
+  const liftBase = (s: number) =>
     rising && s >= riseAt
       ? victoryLift(s)
       : bridge && s >= bridge.b
@@ -436,12 +441,35 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = [], opts: Ro
       ? THREE.MathUtils.smoothstep(s, weaveSky.a + weaveRamp + 5, weaveSky.a + weaveRamp + 45) *
         (1 - THREE.MathUtils.smoothstep(s, weaveSky.b - weaveOut - 45, weaveSky.b - weaveOut - 5))
       : 0;
-  const weave = (s: number) => (weaveSky ? WEAVE.A * Math.sin((s - weaveSky.a) / WEAVE.K) * weaveAt(s) : 0);
-  // Banked into each swing like a velodrome: the outside edge lifted,
-  // most where the road turns hardest. (Positive tilt lifts the left
-  // edge, for a turn to the right - the way the weave's heading bends.)
+  // The turns, laid end to end through the weave with a short straight
+  // between each. A turn swings the heading by A and holds it, so a left
+  // then a right is a veer and a straighten - the road snakes, and the
+  // run of them in WEAVE.TURNS sets the pattern.
+  const weaveTurns = (() => {
+    if (!weaveSky) return [] as { a: number; b: number; dir: number }[];
+    const from = weaveSky.a + weaveRamp + 20;
+    const to = weaveSky.b - weaveOut - 20;
+    const n = WEAVE.TURNS.length;
+    const gap = 26;
+    const len = (to - from - gap * (n - 1)) / n;
+    return WEAVE.TURNS.map((dir, i) => ({ a: from + i * (len + gap), b: from + i * (len + gap) + len, dir }));
+  })();
+  const weave = (s: number) =>
+    weaveTurns.reduce((h, t) => h + t.dir * WEAVE.A * THREE.MathUtils.smootherstep(s, t.a, t.b), 0);
+  // Banked into each turn like a velodrome: the outside edge lifted, most
+  // at the turn's tightest. (Positive tilt lifts the left edge, for a
+  // turn to the right.)
   function weaveBank(s: number) {
-    return weaveSky ? WEAVE.BANK * Math.cos((s - weaveSky.a) / WEAVE.K) * weaveAt(s) : 0;
+    for (const t of weaveTurns) if (s > t.a && s < t.b) return t.dir * WEAVE.BANK * Math.sin((Math.PI * (s - t.a)) / (t.b - t.a));
+    return 0;
+  }
+  // The fifth turn climbs - up to the left - and the sixth banks back
+  // down to the right, to the skyway's own height.
+  function weaveRise(s: number) {
+    const up = weaveTurns[4];
+    const down = weaveTurns[5];
+    if (!up || !down) return 0;
+    return WEAVE.RISE * (THREE.MathUtils.smootherstep(s, up.a, up.b) - THREE.MathUtils.smootherstep(s, down.a, down.b));
   }
   const heading = (s: number) => {
     // The same bends, drawn out over the longer road.
@@ -567,6 +595,7 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = [], opts: Ro
     stunts: stunts.map(({ kind, a, len }) => ({ kind, a, len })),
     stuntAt,
     skyways,
+    weaveTurns,
     liftAt,
     frames: { ds: DS, side: fSide, rside: fRside, up: fUp, ground: fGround },
   };

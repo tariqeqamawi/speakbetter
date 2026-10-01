@@ -274,7 +274,11 @@ function Rain({ road, travel, stretch, count, colours }: { road: RoadLayout; tra
     () =>
       new THREE.PointsMaterial({
         map: streak,
-        size: 3.4,
+        // (Pixels on screen, not world units: near the camera a sized-by-
+        // distance drop grew to fill half the view, and the overdraw of
+        // two hundred of them was the cost.)
+        size: 22,
+        sizeAttenuation: false,
         vertexColors: true,
         transparent: true,
         opacity: 0,

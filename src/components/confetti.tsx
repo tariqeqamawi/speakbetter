@@ -173,7 +173,7 @@ export function Confetti({
         ctx.rotate(p.rot);
         ctx.fillStyle = p.color;
         ctx.shadowColor = p.color;
-        ctx.shadowBlur = 12;
+        ctx.shadowBlur = side ? 0 : 12;
         // a strip seen edge-on as it tumbles
         ctx.fillRect(-p.w / 2, (-p.h / 2) * Math.cos(p.rot * 1.7), p.w, p.h * Math.abs(Math.cos(p.rot * 1.7)) + 1);
         ctx.restore();

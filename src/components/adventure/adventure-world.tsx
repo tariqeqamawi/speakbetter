@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { Fireflies, Scenery } from "./world-extras";
@@ -1141,7 +1141,7 @@ function Picker({
   return null;
 }
 
-export function AdventureWorld({
+function AdventureWorldInner({
   stops,
   phases,
   travel,
@@ -1347,3 +1347,9 @@ export function AdventureWorld({
 }
 
 export { layoutRoad };
+
+/** The world, redrawn by React only when its inputs change. The page
+ *  above re-renders ten times a second as the traveller moves (to update
+ *  its own controls); the scene moves itself every frame and needn't be
+ *  walked through by React each of those times. */
+export const AdventureWorld = memo(AdventureWorldInner);
