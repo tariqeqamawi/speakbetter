@@ -85,7 +85,7 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
             <HeroLion className="h-28 w-auto sm:h-36" />
             <Soundwave variant="hero" className="-mt-2 h-10 w-full sm:h-12" />
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">Become Confident Speaking On Video.</h1>
+          <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">Become Confident Speaking On Video In Minutes.</h1>
           <div className="w-full max-w-3xl">
             <div className="overflow-hidden rounded-2xl border border-navy-600 shadow-2xl shadow-navy-950/80">
               <LazyVimeoPlayer
