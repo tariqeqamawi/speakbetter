@@ -1,6 +1,5 @@
 "use client";
 
-import { RoaringLion } from "@/components/roaring-lion";
 
 
 import Link from "next/link";
@@ -48,7 +47,6 @@ import {
 export type DeckCard = DeckCardData;
 
 type View =
-  | { mode: "dial" }
   | { mode: "color"; category: CategoryId; index: number }
   | { mode: "spread" };
 
@@ -70,15 +68,19 @@ function anyOf(cards: DeckCard[]): DeckCard {
 }
 
 export function CardDeck({ cards }: { cards: DeckCard[] }) {
-  const [view, setView] = useState<View>({ mode: "dial" });
+  // No dial in front of the deck: it opens straight onto one colour's
+  // fan - the colour asked for in the address, or one at random - with
+  // the strip of colours beneath it to move between them. (Null for the
+  // first moment, until that's chosen in the browser.)
+  const [view, setView] = useState<View | null>(null);
+  // The colour last open, for the way back from a dealt spread.
+  const [lastColor, setLastColor] = useState<{ category: CategoryId; index: number } | null>(null);
   const [zoom, setZoom] = useState<Zoom | null>(null);
-  const [hovered, setHovered] = useState<CategoryId | null>(null);
   const [shakeOn, setShakeOn] = useState(false);
   // The dealt spread, kept while the student walks away into a color and
   // comes back - a hand you have to re-deal to look at twice is a hand
   // you can't think with.
   const [hand, setHand] = useState<DeckCard[] | null>(null);
-  const dialRef = useRef<HTMLDivElement>(null);
 
   const inSection = useCallback(
     (id: CategoryId) => cards.filter((c) => c.categoryId === id),
@@ -90,15 +92,24 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
     setView({ mode: "color", category, index });
   }, []);
 
-  // Arriving from a colour's "Flash cards" tab (skills-browser.tsx):
-  // /skills/cards?color=voice opens straight onto that colour's cards.
+  // Arriving: from a colour's "Flash cards" tab (skills-browser.tsx),
+  // /skills/cards?color=voice opens onto that colour's cards; otherwise
+  // a colour at random, so each visit starts somewhere new.
   useEffect(() => {
     const wanted = new URLSearchParams(window.location.search).get("color");
-    if (wanted && categories.some((c) => c.id === wanted) && cards.some((c) => c.categoryId === wanted)) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- read once from the URL on arrival
-      setView({ mode: "color", category: wanted as CategoryId, index: 0 });
-    }
+    const stocked = categories.filter((c) => cards.some((d) => d.categoryId === c.id));
+    if (!stocked.length) return;
+    const pick =
+      wanted && stocked.some((c) => c.id === wanted)
+        ? (wanted as CategoryId)
+        : stocked[Math.floor(Math.random() * stocked.length)].id;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- chosen once, on arrival, in the browser
+    setView({ mode: "color", category: pick, index: 0 });
   }, [cards]);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- remembered for the way back from a spread
+    if (view?.mode === "color") setLastColor({ category: view.category, index: view.index });
+  }, [view]);
 
   // ── Pull a card at random ──────────────────────────────────────────
   const pullRandom = useCallback(() => {
@@ -161,54 +172,6 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
     setShakeOn(true);
   };
 
-  // ── The dial: press, slide, release ────────────────────────────────
-  useEffect(() => {
-    if (view.mode !== "dial") return;
-    const dial = dialRef.current;
-    if (!dial) return;
-    let dialing = false;
-
-    const under = (t: Touch): CategoryId | null => {
-      const el = document.elementFromPoint(t.clientX, t.clientY);
-      const node = el?.closest<HTMLElement>("[data-deck-node]");
-      return (node?.dataset.deckNode as CategoryId) ?? null;
-    };
-    const onStart = (e: TouchEvent) => {
-      const cat = under(e.touches[0]);
-      if (!cat) return;
-      dialing = true;
-      setHovered(cat);
-      e.preventDefault();
-    };
-    const onMove = (e: TouchEvent) => {
-      if (!dialing) return;
-      e.preventDefault();
-      setHovered(under(e.touches[0]));
-    };
-    const onEnd = (e: TouchEvent) => {
-      if (!dialing) return;
-      dialing = false;
-      e.preventDefault();
-      const cat = under(e.changedTouches[0]);
-      setHovered(null);
-      if (cat) openColor(cat);
-    };
-    const onCancel = () => {
-      dialing = false;
-      setHovered(null);
-    };
-
-    dial.addEventListener("touchstart", onStart, { passive: false });
-    dial.addEventListener("touchmove", onMove, { passive: false });
-    dial.addEventListener("touchend", onEnd, { passive: false });
-    dial.addEventListener("touchcancel", onCancel);
-    return () => {
-      dial.removeEventListener("touchstart", onStart);
-      dial.removeEventListener("touchmove", onMove);
-      dial.removeEventListener("touchend", onEnd);
-      dial.removeEventListener("touchcancel", onCancel);
-    };
-  }, [view.mode, openColor]);
 
   // The card opened full size sits over whichever surface called it.
   // Opened from the spread it carries the whole hand along as a strip,
@@ -231,11 +194,64 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
     />
   );
 
+  // The two ways in that aren't a colour, drawn as two things rather
+  // than said as two labels: a fan of seven, and one card pulled at
+  // random. Under the colour's fan now that there's no dial to hold them.
+  const waysIn = (
+    <div className="flex flex-col items-center gap-3 pt-3">
+      <div className="grid w-full max-w-md grid-cols-2 gap-2.5">
+        <button
+          type="button"
+          data-tour="spread"
+          onClick={deal}
+          className="group relative flex flex-col items-center gap-1.5 overflow-hidden rounded-2xl border border-navy-600 bg-navy-800 px-3 py-4 transition-colors hover:border-ink-faint"
+        >
+          <span aria-hidden className="spectrum-rule absolute inset-x-0 top-0 h-1" />
+          <FanMark />
+          <span className="text-sm font-bold text-ink">Deal a full spread</span>
+          <span className="text-[0.7rem] leading-tight text-ink-faint">One card of every color</span>
+        </button>
+        <button
+          type="button"
+          data-tour="shuffle"
+          // One tap, one card: pulled at random from the whole deck and
+          // shown. (The first tap also switches shaking on, where the
+          // phone has to ask - so a shake does the same from then on.)
+          onClick={() => {
+            pullRandom();
+            if (!shakeOn) void enableShake();
+          }}
+          className="group relative flex flex-col items-center gap-1.5 overflow-hidden rounded-2xl border border-navy-600 bg-navy-800 px-3 py-4 transition-colors hover:border-ink-faint"
+        >
+          <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-figurative/70" />
+          <span className="deck-shake grid size-10 place-items-center text-figurative">
+            <RepeatIcon className="size-7" />
+          </span>
+          <span className="text-sm font-bold text-ink">Random card</span>
+          <span className="text-[0.7rem] leading-tight text-ink-faint">Any card from the whole deck</span>
+        </button>
+      </div>
+      {hand && (
+        <button
+          type="button"
+          onClick={() => setView({ mode: "spread" })}
+          className="text-xs font-semibold text-ink-muted underline-offset-4 transition-colors hover:text-ink hover:underline"
+        >
+          Back to the spread you dealt
+        </button>
+      )}
+    </div>
+  );
+
+  // (The first moment, before a colour is chosen: the deck's room held,
+  // so nothing jumps when it arrives.)
+  if (!view) return <div data-tour="deck" className="min-h-[34rem]" aria-busy />;
+
   if (view.mode === "color") {
     const list = inSection(view.category);
     const section = categories.find((c) => c.id === view.category)!;
     return (
-      <>
+      <div data-tour="deck" className="flex flex-col gap-2">
         <ColorCarousel
           cards={list}
           section={section}
@@ -243,11 +259,11 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
           onIndex={(index) => setView({ ...view, index })}
           onSection={(id) => openColor(id)}
           onZoom={(index) => setZoom({ list, index })}
-          onBack={() => setView({ mode: "dial" })}
           countIn={(id) => inSection(id).length}
         />
+        {waysIn}
         {overlay}
-      </>
+      </div>
     );
   }
 
@@ -258,165 +274,14 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
           hand={hand}
           onZoom={(index) => setZoom({ list: hand, index })}
           onDeal={deal}
-          onBack={() => setView({ mode: "dial" })}
+          onBack={() => setView({ mode: "color", category: lastColor?.category ?? categories[0].id, index: lastColor?.index ?? 0 })}
         />
         {overlay}
       </>
     );
   }
 
-  const active = hovered ? categories.find((c) => c.id === hovered) : null;
-  const activeCards = active ? inSection(active.id) : [];
-
-  return (
-    <div className="flex flex-col gap-2">
-      {/* The color under the thumb, named above the deck in its color -
-          the hub keeps its shape, as the skill dial's does. */}
-      <div className="flex h-9 flex-col items-center justify-center text-center" aria-live="polite">
-        {active ? (
-          <>
-            <span className={`text-lg font-semibold leading-tight ${active.textClass}`}>{active.short}</span>
-            <span className="text-xs text-ink-muted">{activeCards.length} cards</span>
-          </>
-        ) : null}
-      </div>
-
-      {/* The deck, face down, one color per node */}
-      <div
-        ref={dialRef}
-        data-tour="deck"
-        className="relative mx-auto aspect-square w-full max-w-xl select-none touch-pan-y"
-      >
-        <div
-          className={`absolute left-1/2 top-1/2 flex aspect-square w-[52%] -translate-x-1/2 -translate-y-1/2 items-center justify-center overflow-hidden rounded-full border bg-navy-800/90 transition-[border-color,box-shadow,color] duration-300 ${
-            active
-              ? `border-current ${active.textClass} shadow-[0_0_36px_-6px_currentColor]`
-              : "border-navy-600"
-          }`}
-        >
-          <RoaringLion className="w-[92%] translate-y-[4%]" />
-        </div>
-
-        {categories.map((cat, i) => {
-          const angle = (360 / categories.length) * i + 360 / categories.length / 2;
-          const rad = ((angle - 90) * Math.PI) / 180;
-          const x = 50 + 41 * Math.cos(rad);
-          const y = 50 + 41 * Math.sin(rad);
-          const lit = hovered === cat.id;
-          const count = inSection(cat.id).length;
-          return (
-            <button
-              key={cat.id}
-              type="button"
-              data-deck-node={cat.id}
-              aria-label={`${cat.name} - ${count} cards`}
-              onMouseEnter={() => setHovered(cat.id)}
-              onMouseLeave={() => setHovered(null)}
-              onFocus={() => setHovered(cat.id)}
-              onBlur={() => setHovered(null)}
-              onClick={() => openColor(cat.id)}
-              // A face-down card rather than a dot: the thing you're
-              // reaching for is a card, and it should look like one
-              // before you pick it up.
-              className={`deck-card absolute aspect-[89/127] w-[16%] -translate-x-1/2 -translate-y-1/2 rounded-lg transition-all duration-300 [perspective:640px] ${
-                lit ? "z-10 scale-125" : ""
-              }`}
-              style={{
-                left: `${x}%`,
-                top: `${y}%`,
-                color: `var(--color-${cat.id})`,
-              }}
-            >
-              {/* Two faces on one card, turned together. The stagger
-                  is the card's place in the ring, so the flip travels
-                  round rather than happening everywhere at once. */}
-              <span
-                className="deck-turn relative block size-full"
-                style={{ animationDelay: `${i * 1.8}s` }}
-              >
-                {/* Face down: the colour, and its mark. */}
-                <span
-                  className={`deck-face absolute inset-0 flex items-center justify-center rounded-lg ${
-                    lit ? "shadow-[0_0_26px_-4px_currentColor]" : "shadow-[0_8px_18px_-10px_rgba(3,7,18,0.9)]"
-                  }`}
-                  style={{ background: `var(--color-${cat.id})` }}
-                >
-                  <CategoryIcon
-                    category={cat.id}
-                    className={`text-navy-950 transition-transform duration-300 ${lit ? "size-7" : "size-5"}`}
-                  />
-                </span>
-
-                {/* And face up: what is actually in this colour. */}
-                <span
-                  className="deck-face deck-face-back absolute inset-0 flex flex-col items-center justify-center gap-0.5 rounded-lg border-2 border-current bg-navy-900 px-1 text-center"
-                >
-                  <span className="text-[0.55rem] font-bold uppercase leading-tight tracking-wide text-ink">
-                    {cat.short}
-                  </span>
-                  <span className="text-[0.6rem] font-bold tabular-nums text-current">{count}</span>
-                  <span className="text-[0.45rem] uppercase tracking-wide text-ink-faint">cards</span>
-                </span>
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* The two ways in that aren't a color, and the instruction card */}
-      <div className="flex flex-col items-center gap-4 pt-7">
-        {/* The two ways in that aren't a color, drawn as two things
-            rather than said as two labels: a fan of seven, and one card
-            pulled at random. They were a pair of gray outlined boxes,
-            which is what a form looks like, not a deck of cards. */}
-        <div className="grid w-full max-w-md grid-cols-2 gap-2.5">
-          <button
-            type="button"
-            data-tour="spread"
-            onClick={deal}
-            className="group relative flex flex-col items-center gap-1.5 overflow-hidden rounded-2xl border border-navy-600 bg-navy-800 px-3 py-4 transition-colors hover:border-ink-faint"
-          >
-            <span aria-hidden className="spectrum-rule absolute inset-x-0 top-0 h-1" />
-            <FanMark />
-            <span className="text-sm font-bold text-ink">Deal a full spread</span>
-            <span className="text-[0.7rem] leading-tight text-ink-faint">One card of every color</span>
-          </button>
-          <button
-            type="button"
-            data-tour="shuffle"
-            // One tap, one card: pulled at random from the whole deck and
-            // shown. (The first tap also switches shaking on, where the
-            // phone has to ask - so a shake does the same from then on.)
-            onClick={() => {
-              pullRandom();
-              if (!shakeOn) void enableShake();
-            }}
-            className="group relative flex flex-col items-center gap-1.5 overflow-hidden rounded-2xl border border-navy-600 bg-navy-800 px-3 py-4 transition-colors hover:border-ink-faint"
-          >
-            <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-figurative/70" />
-            <span className="deck-shake grid size-10 place-items-center text-figurative">
-              <RepeatIcon className="size-7" />
-            </span>
-            <span className="text-sm font-bold text-ink">Random card</span>
-            <span className="text-[0.7rem] leading-tight text-ink-faint">Any card from the whole deck</span>
-          </button>
-        </div>
-        {hand && (
-          <button
-            type="button"
-            onClick={() => setView({ mode: "spread" })}
-            className="text-xs font-semibold text-ink-muted underline-offset-4 transition-colors hover:text-ink hover:underline"
-          >
-            Back to the spread you dealt
-          </button>
-        )}
-
-        {/* "How to use the deck" moved to the top of the page.
-            Instructions at the foot of a thing are read by people who
-            have already worked it out. */}
-      </div>
-    </div>
-  );
+  return null;
 }
 
 /** The seven colors as a strip, for moving between them without going out. */
@@ -484,7 +349,6 @@ function ColorCarousel({
   onIndex,
   onSection,
   onZoom,
-  onBack,
   countIn,
 }: {
   cards: DeckCard[];
@@ -493,7 +357,6 @@ function ColorCarousel({
   onIndex: (index: number) => void;
   onSection: (id: CategoryId) => void;
   onZoom: (index: number) => void;
-  onBack: () => void;
   countIn: (id: CategoryId) => number;
 }) {
   const color = `var(--color-${section.id})`;
@@ -518,11 +381,10 @@ function ColorCarousel({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") go(-1);
       if (e.key === "ArrowRight") go(1);
-      if (e.key === "Escape") onBack();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [go, onBack]);
+  }, [go]);
 
   // Drag the fan with a finger or a mouse. A drag that moved the stack
   // swallows the click that follows it, so letting go on top of a card
@@ -555,14 +417,10 @@ function ColorCarousel({
   return (
     <div className="flex flex-col items-center gap-4">
       <div className="flex w-full items-center justify-between gap-3">
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex items-center gap-1.5 text-sm font-semibold text-ink-muted transition-colors hover:text-ink"
-        >
-          <ChevronDownIcon className="size-4 rotate-90" />
-          All colors
-        </button>
+        <h2 className="text-lg font-semibold tracking-tight" style={{ color }}>
+          {section.name}
+          <span className="ml-2 text-xs font-medium text-ink-muted">{section.subtitle}</span>
+        </h2>
         <span
           className="text-xs font-bold uppercase tracking-[0.2em]"
           style={{ color }}

@@ -224,6 +224,11 @@ export function VimeoPlayer({
   const playerRef = useRef<Player | null>(null);
   const shellRef = useRef<HTMLDivElement>(null);
   const [fullscreen, setFullscreen] = useState(false);
+  // Full screen where the browser won't do it for an element (iPhone
+  // Safari): our own - the player fixed over the whole screen, with our
+  // controls still on it - rather than handing the video to the phone's
+  // own player, which has no portrait button and no way back to ours.
+  const [pseudoFull, setPseudoFull] = useState(false);
   // Ref'd so a new callback doesn't tear down and rebuild the player.
   const onEndedRef = useRef(onEnded);
   useEffect(() => {
@@ -655,8 +660,13 @@ export function VimeoPlayer({
     [duration, progress],
   );
 
-  const setFrameMode = (mode: Frame) =>
+  // Portrait from full screen in one tap: out of full screen and straight
+  // into portrait, rather than out first and then in.
+  const setFrameMode = (mode: Frame) => {
+    if (mode !== "fit" && document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    if (mode !== "fit") setPseudoFull(false);
     setFrame((current) => (current === mode ? "fit" : mode));
+  };
 
   // Fullscreen the whole shell, not the iframe - that keeps our own
   // controls on screen. Vimeo's chrome is off, so handing fullscreen to
@@ -684,27 +694,48 @@ export function VimeoPlayer({
   const toggleFullscreen = useCallback(async () => {
     const shell = shellRef.current;
     if (!shell) return;
+    // (From portrait, full screen is the wide view: portrait goes.)
+    setFrame("fit");
+    if (pseudoFull) {
+      setPseudoFull(false);
+      return;
+    }
     try {
       if (document.fullscreenElement) {
         await document.exitFullscreen();
       } else if (shell.requestFullscreen) {
         await shell.requestFullscreen();
       } else {
-        // iOS Safari won't fullscreen an arbitrary element; hand it to
-        // the player, which can go native even though we lose our bar.
-        await playerRef.current?.requestFullscreen();
+        // iOS Safari won't fullscreen an arbitrary element: our own full
+        // screen instead, so our controls - portrait among them - stay.
+        setPseudoFull(true);
       }
     } catch {
-      await playerRef.current?.requestFullscreen().catch(() => {});
+      setPseudoFull(true);
     }
-  }, []);
+  }, [pseudoFull]);
+
+  // Our own full screen holds the page still under it, and Escape leaves.
+  useEffect(() => {
+    if (!pseudoFull) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setPseudoFull(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = previous;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [pseudoFull]);
 
   // Portrait zoom is a takeover, not an inline crop: choosing it fills
   // the whole screen with the speaker. Done with a fixed overlay rather
   // than the Fullscreen API, so it works identically on iPhones, where
   // element fullscreen doesn't exist. Reset framing (or toggling
   // portrait off) returns to the page.
-  const takeover = fullscreen || frame === "portrait";
+  const takeover = fullscreen || pseudoFull || frame === "portrait";
   // Portrait crops the player's own captions off the screen, so it
   // asks for the cues with the renderer off (showing: false) and draws
   // them itself; leaving portrait hands the rendering back.
@@ -761,11 +792,10 @@ export function VimeoPlayer({
   // The holder is scaled inside a masked window; the aspect of that
   // window is what changes between the framings. The SDK gives the
   // iframe fixed pixel dimensions, so it has to be stretched explicitly.
-  const windowClass = takeover
-    ? frame === "portrait"
-      ? "mx-auto h-full max-h-full min-h-0 w-auto aspect-[9/16]"
-      : "min-h-0 w-full flex-1"
-    : "aspect-video w-full";
+  // (Portrait used to be a 9:16 window centred on the screen, which on a
+  // modern phone - taller than 9:16 - left a dark band either side. Now
+  // it's the whole screen, edge to edge, and the video is cropped to it.)
+  const windowClass = takeover ? "min-h-0 w-full flex-1" : "aspect-video w-full";
 
   // In portrait the holder keeps the video's own 16:9 and is sized by
   // height, so it overflows the tall window sideways and gets cropped -
@@ -781,7 +811,7 @@ export function VimeoPlayer({
       style={shellStyle}
       className={
         takeover
-          ? `flex h-full w-full flex-col gap-2 bg-navy-950 p-3 ${
+          ? `flex h-full w-full flex-col gap-2 bg-navy-950 ${frame === "portrait" ? "pb-3" : "p-3"} ${
               fullscreen
                 ? ""
                 : counterRotate
@@ -917,7 +947,7 @@ export function VimeoPlayer({
 
       {/* our controls - kept shallow: the seek bar and one row of
           buttons, with no spare padding between them and the video */}
-      <div className="flex flex-col rounded-xl border border-navy-600 bg-navy-800 px-2 pb-1">
+      <div className={`flex flex-col rounded-xl border border-navy-600 bg-navy-800 px-2 pb-1 ${frame === "portrait" && takeover ? "mx-3" : ""}`}>
         <div
           onPointerDown={onScrubDown}
           onPointerMove={onScrubMove}
@@ -1022,12 +1052,12 @@ export function VimeoPlayer({
             )}
 
             <ControlButton
-              label={fullscreen ? "Exit fullscreen" : "Fullscreen"}
+              label={fullscreen || pseudoFull ? "Exit fullscreen" : "Fullscreen"}
               name={labelled ? "Full screen" : undefined}
               onClick={toggleFullscreen}
-              active={fullscreen}
+              active={fullscreen || pseudoFull}
             >
-              {fullscreen ? <ExitFullscreenIcon /> : <FullscreenIcon />}
+              {fullscreen || pseudoFull ? <ExitFullscreenIcon /> : <FullscreenIcon />}
             </ControlButton>
           </div>
         </div>

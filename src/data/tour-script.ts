@@ -263,8 +263,8 @@ export const sectionTours: Record<SectionId, SectionTour> = {
       {
         id: "sec-cards-pull",
         target: "[data-tour='deck']",
-        title: "Pulling a card",
-        body: "Press and hold a color, then let go, and you get a card from that color at random.",
+        title: "Your deck, open",
+        body: "The deck opens straight onto one color's cards. Tap a color in the strip under them to switch, or pull a random card from the whole deck.",
         film: DECK,
       },
       {
