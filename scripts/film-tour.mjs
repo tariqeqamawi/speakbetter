@@ -105,72 +105,49 @@ const FILMS = {
     }
   },
 
-  // The road, scrolled from the first stop down and back.
-  async journey(p) {
-    await p.goto(`${BASE}/demo/challenges?bare=1`, { waitUntil: "load" });
-    await p.waitForTimeout(1800);
-    const top = await p
-      .locator("#journey-S")
-      .evaluate((el) => el.getBoundingClientRect().top + window.scrollY - 120);
-    await ease(p, 0, top, 1600);
-    await p.waitForTimeout(1000);
-    // How far to travel, as a share of the road rather than a fixed
-    // 1500px.
-    //
-    // THIS MATTERS FOR THE NEW ROAD. The projected terrain gives each
-    // checkpoint about two and a half screens of scroll, so a phase is
-    // several times longer than the old map was - and a fixed 1500px
-    // would film the first checkpoint arriving and then stop, which is
-    // a tour of a journey that never goes anywhere. Travelling a share
-    // of whatever the scene turns out to be survives the change.
-    //
-    // When the projected road replaces the live map, re-record this:
-    //     node scripts/film-tour.mjs journey
-    // and check the result actually shows a checkpoint approaching and
-    // passing, because that is the whole thing the stop is describing.
-    const h = await p.evaluate(() => document.body.scrollHeight);
-    const far = Math.min(top + Math.max(1500, (h - top) * 0.55), h - 900);
-    await ease(p, top, far, 6000);
-    await p.waitForTimeout(1200);
-    await ease(p, far, top, 2400);
-    await p.waitForTimeout(700);
-  },
-
-  // A thumb round the dial, then into a color's lessons.
+  // A thumb round the dial, then into a colour: the lesson big at the
+  // top, the tabs under it (All lessons), then played and zoomed to
+  // portrait.
   async skills(p) {
+    await p.addInitScript(() => {
+      try { window.localStorage.setItem("sb-skills-view", "dial"); } catch {}
+    });
     await p.goto(`${BASE}/demo/skills?bare=1`, { waitUntil: "load" });
     await p.waitForTimeout(1800);
     const dial = p.locator(".touch-pan-y.aspect-square").first();
-    await dial.evaluate((el) => el.scrollIntoView({ block: "center" }));
+    await dial.evaluate((el) => el.scrollIntoView({ block: "center" })).catch(() => {});
     await p.waitForTimeout(800);
-    // These are the categories' `name` field, which changed when the
-    // seven were given one short name each - and this recipe was not
-    // updated with them, so every lookup missed and `continue` quietly
-    // filmed a dial nobody touched. A film that records nothing
-    // happening is the worst kind of broken: it ships.
-    for (const n of ["Confidence", "Figurative & Sensory", "Storytelling"]) {
+    // The dial's nodes are labelled by each colour's short name.
+    for (const n of ["Presence", "Paint", "Tell"]) {
       const box = await p.getByLabel(`${n} - open lessons`).boundingBox();
       if (!box) {
-        console.warn(`  ! no dial node for "${n}" - has the category name changed again?`);
+        console.warn(`  ! no dial node for "${n}" - has the colour's name changed?`);
         continue;
       }
       await p.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 18 });
       await p.waitForTimeout(1000);
     }
-    const box = await p.getByLabel("Storytelling - open lessons").boundingBox();
+    const box = await p.getByLabel("Tell - open lessons").boundingBox();
     if (box) {
       await p.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
       await p.waitForURL("**/skills/storytelling**", { timeout: 15000 }).catch(() => {});
     }
-    await p.waitForTimeout(1400);
-    // The lesson plays right there on the colour's page: play it, let it
-    // run, then zoom to portrait so the teacher fills the phone. (Vimeo
-    // only plays on the site's own domain - film against production:
-    // FILM_BASE=https://speakbetterlive.vercel.app.)
+    await p.waitForTimeout(1600);
+    // The tabs under the video: every lesson in the colour, as a stack.
+    await p.getByRole("tab", { name: "All lessons" }).click().catch(() => {});
+    await p.waitForTimeout(1200);
+    await ease(p, 0, 420, 1600);
+    await p.waitForTimeout(900);
+    await ease(p, 420, 0, 900);
+    await p.getByRole("tab", { name: "This lesson" }).click().catch(() => {});
+    await p.waitForTimeout(600);
+    // Play it, then zoom to portrait so the teacher fills the phone.
+    // (Vimeo only plays on the site's own domain - film against
+    // production for that part: FILM_BASE=https://speakbetter.app.)
     await p.getByRole("button", { name: "Play", exact: true }).first().click({ timeout: 8000 }).catch(() => {});
-    await p.waitForTimeout(3500);
+    await p.waitForTimeout(3000);
     await p.getByRole("button", { name: "Zoom to portrait" }).first().click({ timeout: 8000 }).catch(() => {});
-    await p.waitForTimeout(4500);
+    await p.waitForTimeout(4000);
   },
 
   // The dashboard, tab by tab.
@@ -194,29 +171,31 @@ const FILMS = {
   },
 
 
-  // The deck: a color pressed, then a full spread dealt.
+  // The deck: a colour's fan swiped, then a full spread dealt from the
+  // pill by Skills and Cards, swiped, and its lessons opened.
   async deck(p) {
     await p.goto(`${BASE}/demo/skills/cards?bare=1`, { waitUntil: "load" });
-    await p.waitForTimeout(1800);
-    const deck = p.locator("[data-tour='deck'], .touch-pan-y.aspect-square").first();
-    await deck.evaluate((el) => el.scrollIntoView({ block: "center" })).catch(() => {});
-    await p.waitForTimeout(700);
-    // Press and hold a color, the way a thumb does.
-    const card = p.locator("[data-tour='deck'] button, .touch-pan-y.aspect-square button").first();
-    const box = await card.boundingBox();
-    if (box) {
-      await p.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 14 });
+    await p.waitForTimeout(2000);
+    const swipe = async (dx) => {
+      await p.mouse.move(195, 380);
       await p.mouse.down();
-      await p.waitForTimeout(1400);
+      for (let i = 1; i <= 12; i++) {
+        await p.mouse.move(195 + (dx * i) / 12, 380);
+        await p.waitForTimeout(25);
+      }
       await p.mouse.up();
-      await p.waitForTimeout(2200);
-    }
-    const spread = p.getByRole("button", { name: /Deal a full spread/i }).first();
-    await spread.scrollIntoViewIfNeeded().catch(() => {});
-    await spread.click().catch(() => {});
-    await p.waitForTimeout(3000);
-    const h = await p.evaluate(() => document.body.scrollHeight);
-    await ease(p, 0, Math.min(700, h - 900), 2200);
+      await p.waitForTimeout(550);
+    };
+    await swipe(-150);
+    await swipe(-150);
+    await p.waitForTimeout(500);
+    await p.locator("[data-tour='spread']").first().click().catch(() => {});
+    await p.waitForTimeout(1800);
+    await swipe(-150);
+    await swipe(-150);
+    await p.getByRole("button", { name: /Your spread/ }).first().click().catch(() => {});
+    await p.waitForTimeout(1000);
+    await ease(p, 0, 520, 1800);
     await p.waitForTimeout(1200);
   },
 
@@ -332,6 +311,7 @@ async function film(name) {
     document.addEventListener("DOMContentLoaded", () => document.head.appendChild(st));
     try {
       window.localStorage.setItem("speak-better-tour-v1", "1");
+      window.localStorage.setItem("adventure-unlock-intro", "1");
       for (const k of ["challenges", "skills", "cards", "dashboard", "community", "coach"]) {
         window.localStorage.setItem(`speak-better-tour-${k}-v1`, "1");
       }
