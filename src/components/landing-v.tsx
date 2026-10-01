@@ -301,17 +301,12 @@ function LiveRoom() {
           <span className="absolute bottom-1.5 left-1.5 rounded bg-black/60 px-1.5 py-0.5 text-[0.6rem] font-semibold text-white">Tariq</span>
           <span className="absolute inset-0 rounded-md ring-2 ring-mindset/80" />
         </div>
-        {/* The cohort, in their own tiles. */}
-        <div className="grid grid-cols-2 gap-1">
-          {[
-            ["/selfie/maya-story.jpg", "Maya"],
-            ["/selfie/ben-point.jpg", "Ben"],
-            ["/selfie/claire-calm.jpg", "Claire"],
-            ["/selfie/jay-laugh.jpg", "Jay"],
-          ].map(([src, name]) => (
-            <div key={src} className="relative aspect-video overflow-hidden rounded-md">
-              <Image src={src} alt="" fill sizes="(min-width: 640px) 220px, 50vw" className="object-cover object-[50%_30%]" />
-              <span className="absolute bottom-1 left-1 rounded bg-black/60 px-1.5 py-0.5 text-[0.55rem] font-semibold text-white">{name}</span>
+        {/* The cohort, eight of them, each in their own tile. */}
+        <div className="grid grid-cols-4 gap-1">
+          {["Amara", "Paul", "Mei", "Tom", "Sofia", "Marcus", "Hannah", "Ravi"].map((name, i) => (
+            <div key={name} className="relative aspect-[7/8] overflow-hidden rounded-md">
+              <Image src={`/landing/cohort-${i + 1}.webp`} alt="" fill sizes="(min-width: 640px) 110px, 25vw" className="object-cover" />
+              <span className="absolute bottom-1 left-1 rounded bg-black/60 px-1 py-0.5 text-[0.5rem] font-semibold text-white">{name}</span>
             </div>
           ))}
         </div>
