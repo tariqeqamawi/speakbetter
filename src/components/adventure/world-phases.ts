@@ -18,5 +18,7 @@ export const worldPhases: WorldPhase[] = storyPhases.map((p) => ({
   color: HEX[p.bgClass.replace("bg-", "")] ?? "#ffffff",
 }));
 
-/** The sky over the road: the great purple planet, with stars. */
-export const ROAD_SKY = "/sky/purple-planet.webp";
+/** The sky over the road: a 360 panorama - the Milky Way along the
+ *  horizon, a ringed planet and its moon - mapped on a dome (sky-dome.tsx:
+ *  -l / -r halves on a laptop, -m on a phone). A base path, not a file. */
+export const ROAD_SKY = "/sky/road-a";

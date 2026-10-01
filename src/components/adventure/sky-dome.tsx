@@ -25,6 +25,18 @@ import { LOOK } from "./look";
 // and above its top edge the sky carries on: the picture fades into deep
 // space and the stars run on to the very top.
 //
+// THE PANORAMA (the road's own sky, /sky/road-a): a true 360 - every
+// direction looks up the picture by its bearing and its height, the way
+// a 360 camera's picture wraps a sphere - cropped to the horizon and
+// above, since the land hides the rest. On a laptop it comes in two
+// halves, each as sharp as a GPU takes in one piece; on a phone, one
+// picture half that, so it fits a phone's graphics memory.
+//
+// AN ECLIPSE in it, drawn here rather than painted: a black disc, a thin
+// ring of white fire round it with one bright bead (the diamond ring),
+// and the corona - a soft glow streaked with rays - bright enough for
+// the bloom to make it shine like the real thing.
+//
 // Two sections paint their own sky into it as you travel through them:
 // S, an aurora - curtains of green light hanging all round the sky, now
 // whole however high you look; and T, Train Your Instrument, a voice
@@ -63,6 +75,18 @@ const FRAG = /* glsl */ `
   // How much of each section's sky is showing (0-1).
   uniform float uAurora;
   uniform float uWave;
+  // The panorama: on (1) or the old cylinder picture (0); its halves (or
+  // one picture in both), the bearing it's turned to, and the elevation
+  // its bottom edge reaches (radians, negative: below the horizon).
+  uniform float uPano;
+  uniform sampler2D uLeft;
+  uniform sampler2D uRight;
+  uniform float uSplit;
+  uniform float uTurn;
+  uniform float uBottom;
+  // The eclipse: its direction, and its size (radians across the disc).
+  uniform vec3 uEclipse;
+  uniform float uEclipseR;
   varying vec2 vUv;
   varying vec3 vDir;
 
@@ -83,11 +107,23 @@ const FRAG = /* glsl */ `
     vec2 uv = vec2(u, clamp(v, 0.0, 1.0)) * uRepeat + uOffset;
     float m = mod(uv.x, 2.0);
     uv.x = m < 1.0 ? m : 2.0 - m;
-    vec3 sky = pow(texture2D(uMap, uv).rgb, vec3(uCurve));
-    // Above the picture's top the sky goes on into deep space: the last
-    // stretch of the picture fades into the dark, so there is no edge.
-    sky *= 1.0 - smoothstep(0.8, 1.0, v);
-    sky += vec3(0.004, 0.005, 0.014) * smoothstep(0.85, 1.1, v);
+    vec3 sky;
+    if (uPano > 0.5) {
+      // Bearing round, 0-1; height up the picture, 0 at its bottom edge
+      // and 1 straight overhead.
+      float pu = fract(u + uTurn);
+      float pv = clamp((elev - uBottom) / (1.5707963 - uBottom), 0.0, 1.0);
+      vec3 a = uSplit < 0.5
+        ? texture2D(uLeft, vec2(pu, pv)).rgb
+        : pu < 0.5 ? texture2D(uLeft, vec2(pu * 2.0, pv)).rgb : texture2D(uRight, vec2(pu * 2.0 - 1.0, pv)).rgb;
+      sky = pow(a, vec3(uCurve));
+    } else {
+      sky = pow(texture2D(uMap, uv).rgb, vec3(uCurve));
+      // Above the picture's top the sky goes on into deep space: the last
+      // stretch of the picture fades into the dark, so there is no edge.
+      sky *= 1.0 - smoothstep(0.8, 1.0, v);
+      sky += vec3(0.004, 0.005, 0.014) * smoothstep(0.85, 1.1, v);
+    }
     // Only the brightest of it lifted past the bloom's threshold, so the
     // planet's lit edge and the nebula's heart glow and the rest stays dark.
     sky += sky * smoothstep(0.3, 0.75, dot(sky, vec3(0.299, 0.587, 0.114))) * uGlow;
@@ -114,9 +150,34 @@ const FRAG = /* glsl */ `
     star *= 1.0 - smoothstep(0.06, 0.2, lum);
     // Nor anywhere on the planet - its dark side included, which the
     // brightness test alone let stars sprinkle across.
-    float onPlanet = 1.0 - smoothstep(1.0, 1.12, length((uv - uPlanet.xy) / uPlanet.zw));
+    float onPlanet = uPano > 0.5 ? 0.0 : 1.0 - smoothstep(1.0, 1.12, length((uv - uPlanet.xy) / uPlanet.zw));
     star *= 1.0 - onPlanet;
     vec3 col = sky + vec3(0.8, 0.85, 1.0) * star;
+
+    // THE ECLIPSE: angle from its centre, in units of the disc's radius.
+    if (uEclipseR > 0.0) {
+      float ang = acos(clamp(dot(d, normalize(uEclipse)), -1.0, 1.0));
+      float r = ang / uEclipseR;
+      if (r < 6.0) {
+        // Round its edge: which way from the centre this point lies.
+        vec3 e = normalize(uEclipse);
+        vec3 side = normalize(cross(e, vec3(0.0, 1.0, 0.0)));
+        vec3 up = cross(side, e);
+        float th = atan(dot(d, up), dot(d, side));
+        // The corona: a soft glow falling away, streaked with rays that
+        // shimmer slowly.
+        float rays = 0.55 + 0.45 * sin(th * 9.0 + sin(th * 3.0 + uTime * 0.15) * 2.0) * sin(th * 17.0 - uTime * 0.1);
+        float corona = exp(-(r - 1.0) * 1.6) * (0.55 + 0.45 * rays) * step(1.0, r);
+        float halo = exp(-(r - 1.0) * 0.55) * 0.18 * step(1.0, r);
+        // The ring of fire right at the edge, and the diamond ring's bead.
+        float rim = exp(-pow((r - 1.0) * 14.0, 2.0)) * 2.4;
+        float bead = exp(-pow((r - 1.02) * 9.0, 2.0)) * exp(-pow(th - 0.7, 2.0) * 22.0) * 5.0;
+        vec3 fire = vec3(1.0, 0.97, 0.9);
+        // The moon's disc hides the picture behind it.
+        col *= smoothstep(0.985, 1.0, r);
+        col += fire * (rim + bead) + vec3(0.85, 0.9, 1.0) * (corona * 0.9 + halo);
+      }
+    }
 
     // S - THE AURORA: curtains hanging all round the sky, their hem
     // swaying a little above the horizon, streaked upward, fading high.
@@ -153,6 +214,9 @@ export function SkyDome({
   aurora,
   wave,
 }: {
+  /** A picture for the old cylinder mapping, or the base path of a 360
+   *  panorama (no extension): base-l.webp and base-r.webp on a laptop,
+   *  base-m.webp on a phone. */
   image: string;
   /** How much of S's aurora is showing, read every frame (0-1). */
   aurora?: () => number;
@@ -161,9 +225,19 @@ export function SkyDome({
 }) {
   const mesh = useRef<THREE.Mesh>(null);
   const material = useMemo(() => {
-    const t = new THREE.TextureLoader().load(image);
-    t.colorSpace = THREE.SRGBColorSpace;
-    t.anisotropy = 8;
+    const pano = !/\.[a-z]+$/i.test(image);
+    const load = (src: string) => {
+      const t = new THREE.TextureLoader().load(src);
+      t.colorSpace = THREE.SRGBColorSpace;
+      t.anisotropy = 8;
+      // (No seam where the halves meet or the picture wraps round.)
+      t.wrapS = THREE.ClampToEdgeWrapping;
+      return t;
+    };
+    const fine = typeof window !== "undefined" && window.matchMedia("(pointer: fine)").matches;
+    const t = load(pano && !fine ? `${image}-m.webp` : pano ? `${image}-l.webp` : image);
+    const left = t;
+    const right = pano && fine ? load(`${image}-r.webp`) : t;
     return new THREE.ShaderMaterial({
       vertexShader: VERT,
       fragmentShader: FRAG,
@@ -176,12 +250,24 @@ export function SkyDome({
         uOffset: { value: new THREE.Vector2(0.5, 0) },
         uTime: { value: 0 },
         uPlanet: { value: new THREE.Vector4(0.579, 0.25, 0.185, 0.43) },
-        uCurve: { value: LOOK.sky },
-        uGlow: { value: LOOK.skyGlow },
+        // (The panorama is a photograph and already has its contrast: only
+        // a touch more, where the old painting needed a lot.)
+        uCurve: { value: pano ? 1.1 : LOOK.sky },
+        uGlow: { value: pano ? 0.5 : LOOK.skyGlow },
         uH: { value: PIC_H },
         uFoot: { value: 90 },
         uAurora: { value: 0 },
         uWave: { value: 0 },
+        uPano: { value: pano ? 1 : 0 },
+        uLeft: { value: left },
+        uRight: { value: right },
+        // Two halves on a laptop; on a phone, the one picture whole.
+        uSplit: { value: pano && fine ? 1 : 0 },
+        uTurn: { value: 0.35 },
+        uBottom: { value: -0.227 },
+        // High over the road where it sets off, well clear of the planet.
+        uEclipse: { value: new THREE.Vector3(-0.55, 0.42, -0.72) },
+        uEclipseR: { value: pano ? 0.034 : 0 },
       },
     });
   }, [image]);
