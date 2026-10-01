@@ -102,11 +102,11 @@ export const mainTour: TourStop[] = [
   // challenge, one for the dashboard - each part of the app said once,
   // rather than a stop for every panel on it.
   {
-    id: "challenges-v4",
+    id: "challenges-v5",
     target: "[data-tour='journey']",
     route: "/challenges",
     title: "The challenges",
-    body: "Here you'll find the Speak Better challenges: twenty-five interactive challenges where you watch a video, then upload a video of yourself completing the challenge. I look at your challenge and give you feedback. You can view this as an interactive 3D game, where you're moving across the terrain, or simply press 2D if you'd like a more conventional, course-like experience.",
+    body: "Here you'll find the Speak Better challenges: twenty-five interactive challenges where you watch a video, then upload a video of yourself completing the challenge. I look at your challenge and give you feedback. It starts as a map, like a normal course. Complete the first three challenges and you unlock 3D, the road from above; complete two more and you unlock 4D, the full ride across the terrain.",
     film: ROAD,
   },
   {
@@ -185,10 +185,10 @@ export const sectionTours: Record<SectionId, SectionTour> = {
     label: "Show me the challenges",
     stops: [
       {
-        id: "sec-challenges-v4",
+        id: "sec-challenges-v5",
         target: "[data-tour='journey']",
         title: "The challenges",
-        body: "Here you'll find the Speak Better challenges: twenty-five interactive challenges where you watch a video, then upload a video of yourself completing the challenge. I look at your challenge and give you feedback. You can view this as an interactive 3D game, where you're moving across the terrain, or simply press 2D if you'd like a more conventional, course-like experience.",
+        body: "Here you'll find the Speak Better challenges: twenty-five interactive challenges where you watch a video, then upload a video of yourself completing the challenge. I look at your challenge and give you feedback. It starts as a map, like a normal course. Complete the first three challenges and you unlock 3D, the road from above; complete two more and you unlock 4D, the full ride across the terrain.",
       },
       {
         id: "sec-challenges-record",
