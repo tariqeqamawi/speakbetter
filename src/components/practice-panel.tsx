@@ -77,7 +77,15 @@ function limitLabel(sec: number): string {
   return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
 }
 
-export function PracticePanel({ challenge }: { challenge: Challenge }) {
+export function PracticePanel({
+  challenge,
+  bar = true,
+}: {
+  challenge: Challenge;
+  /** The record bar pinned under the header - off where the panel sits
+   *  inside another page (the landing page's free challenge). */
+  bar?: boolean;
+}) {
   const { state, ready, recordAttempt, attemptsFor, bestAttempt, latestAttempt } =
     useStore();
   // The map's gate, held here as well: a locked challenge reached by
@@ -294,7 +302,7 @@ export function PracticePanel({ challenge }: { challenge: Challenge }) {
       {/* Record and upload, under the header, from the moment the page
           scrolls - the two things a student came here to do shouldn't
           be at the bottom of a long page. */}
-      {canRecordNow && stuck && (
+      {canRecordNow && stuck && bar && (
         <div className="record-bar flex items-center gap-2 border-b border-navy-700/70 bg-navy-900/95 px-4 py-2 backdrop-blur">
           <button
             type="button"

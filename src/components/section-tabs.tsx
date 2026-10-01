@@ -31,7 +31,7 @@ export function SectionTabs({ info }: { info?: ReactNode } = {}) {
   // switch first, then the two tabs as small pills - a setting and a
   // choice of section, not a pair of headline buttons.
   return (
-    <div className="-mt-2 flex items-center gap-2 lg:-mt-6">
+    <div className="-mt-2 flex items-center gap-1.5 lg:-mt-6">
       {!onCards && <SkillsViewToggle />}
       <div role="tablist" aria-label="Skills and cards" className="flex gap-1.5">
         {tabs.map(({ href, label, Icon, accent }) => {
@@ -42,7 +42,7 @@ export function SectionTabs({ info }: { info?: ReactNode } = {}) {
               href={`${prefix}${href}`}
               role="tab"
               aria-selected={active}
-              className={`flex min-h-9 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-colors ${
+              className={`flex min-h-9 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors ${
                 active
                   ? `border-current bg-navy-800 ${accent}`
                   : "border-navy-600 text-ink-faint hover:border-ink-faint hover:text-ink-muted"
@@ -66,10 +66,12 @@ export function SectionTabs({ info }: { info?: ReactNode } = {}) {
             type="button"
             data-tour="spread"
             onClick={() => window.dispatchEvent(new Event("sb-deck-deal"))}
-            className="flex items-center gap-1.5 py-1.5 pl-3 pr-2.5 text-sm font-semibold text-ink-muted transition-colors hover:bg-navy-800 hover:text-ink"
+            className="flex items-center gap-1.5 whitespace-nowrap py-1.5 pl-2.5 pr-2 text-sm font-semibold text-ink-muted transition-colors hover:bg-navy-800 hover:text-ink"
           >
             <MiniFan />
-            Full spread
+            {/* (Shorter on a narrow phone, so the shuffle stays on screen.) */}
+            <span className="min-[400px]:hidden">Spread</span>
+            <span className="hidden min-[400px]:inline">Full spread</span>
           </button>
           <span aria-hidden className="my-1.5 w-px bg-navy-600" />
           <button
@@ -78,7 +80,7 @@ export function SectionTabs({ info }: { info?: ReactNode } = {}) {
             aria-label="A random card"
             title="A random card"
             onClick={() => window.dispatchEvent(new Event("sb-deck-random"))}
-            className="flex items-center px-2.5 transition-colors hover:bg-navy-800"
+            className="flex items-center px-2 transition-colors hover:bg-navy-800"
           >
             <ShuffleFlip />
           </button>

@@ -14,11 +14,14 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function DemoCategoryPage(props: {
+export default async function DemoCategoryPage(props: {
   params: Promise<{ category: string }>;
+  searchParams: Promise<{ bare?: string }>;
 }) {
+  // (?bare=1: without the preview banner - for filming.)
+  const { bare } = await props.searchParams;
   return (
-    <DemoFrame>
+    <DemoFrame bare={bare === "1"}>
       <CategoryPage
         {...(props as unknown as PageProps<"/skills/[category]">)}
       />

@@ -17,7 +17,7 @@ import { ChevronDownIcon, ListenIcon, TrophyIcon } from "@/components/icons";
 // challenges among them.
 
 /** A phone outline around whatever it's given. */
-function Phone({ children, label }: { children: React.ReactNode; label: string }) {
+export function Phone({ children, label }: { children: React.ReactNode; label: string }) {
   return (
     <figure className="flex w-52 shrink-0 flex-col items-center gap-2 sm:w-auto">
       <div className="relative w-full rounded-[2.2rem] border-4 border-navy-600 bg-navy-950 p-1.5 shadow-2xl shadow-navy-950">

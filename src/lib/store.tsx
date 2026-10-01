@@ -396,7 +396,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   // cleanly between an ephemeral store and the live one on navigation.
   const pathname = usePathname();
   const preview =
-    pathname === "/landing" || pathname === "/landing-test"
+    pathname === "/landing" || pathname === "/landing-test" || pathname === "/landing-a" || pathname === "/landing-b"
       ? "landing"
       : pathname === "/demo" || pathname.startsWith("/demo/")
         ? "demo"

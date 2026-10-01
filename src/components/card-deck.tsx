@@ -428,19 +428,13 @@ function ColorCarousel({
           {section.name}
           <span className="ml-2 text-xs font-medium text-ink-muted">{section.subtitle}</span>
         </h2>
-        <span
-          className="text-xs font-bold uppercase tracking-[0.2em]"
-          style={{ color }}
-        >
-          {section.code}
-        </span>
         <button
           type="button"
           onClick={() => {
             playXpChime();
             onIndex(Math.floor(Math.random() * cards.length));
           }}
-          className="flex items-center gap-1.5 text-sm font-semibold text-ink-muted transition-colors hover:text-ink"
+          className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-sm font-semibold text-ink-muted transition-colors hover:text-ink"
         >
           <RepeatIcon className="size-4" />
           Any card
