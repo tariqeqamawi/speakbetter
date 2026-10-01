@@ -1,0 +1,61 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><title>Skills - Dial / Grid switch</title>
+<style>:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#070b18;color:#EEF0F7;font:16px/1.5 system-ui,-apple-system,sans-serif}
+main{max-width:1100px;margin:0 auto;padding:20px 16px 60px}a{color:#22D9F5}h1{font-size:24px;margin:8px 0 4px}h2{font-size:17px;margin:34px 0 10px;color:#B9C0D8}small,.m{color:#8790AB}
+.try{margin-top:16px;padding:22px;border:1px solid #1d2644;border-radius:16px;background:#0B1224;display:flex;flex-direction:column;align-items:center;gap:14px}
+.row{display:flex;align-items:center;justify-content:center;width:100%;max-width:520px;position:relative;min-height:40px}
+.what{position:absolute;left:0;font-size:13px;font-weight:600;color:#8D96B5}
+.sw{position:relative;display:flex;align-items:center;overflow:hidden;border-radius:999px;border:1px solid #2a3355;background:rgba(11,16,32,.9);transition:all .3s ease-out;height:20px;width:36px;padding:2px}
+.sw.open{height:36px;width:144px;padding:4px;border-color:#3b4670;box-shadow:0 10px 30px -10px #000}
+.k{position:absolute;border-radius:999px;transition:all .3s ease-out;top:50%;width:12px;height:12px;transform:translateY(-50%);left:4px;background:#22D9F5;box-shadow:0 0 8px #22D9F5}
+.sw.grid .k{left:calc(100% - 16px)}
+.sw.open .k{top:4px;height:calc(100% - 8px);transform:none;width:calc(50% - 4px);background:#EEF0F7;box-shadow:none;left:4px}
+.sw.open.grid .k{left:50%}
+.sw button.o{position:relative;z-index:1;flex:1;height:100%;border:0;background:none;color:#B9C0D8;font:600 14px system-ui;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .2s;cursor:pointer}
+.sw.open button.o{opacity:1;pointer-events:auto}.sw button.o.on{color:#070b18}
+.cover{position:absolute;inset:0;z-index:2;border:0;background:none;border-radius:999px;cursor:pointer}.sw.open .cover{display:none}
+.state{font-size:13px;color:#8D96B5}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}figure{margin:0}.grid4 img,.two img{width:100%;border-radius:10px;border:1px solid #1d2644;display:block}
+figcaption{font-size:12px;color:#8790AB;padding:5px 2px 0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.phones{max-width:560px}
+@media(max-width:640px){.grid4{grid-template-columns:1fr 1fr}.two.lap{grid-template-columns:1fr}}
+</style></head><body><main>
+<a href="index.html">&lsaquo; All</a>
+<h1>Skills &middot; the Dial / Grid switch</h1>
+<p class="m">A small pill beside &ldquo;What this is&rdquo;: the dot sits left for the Dial, right for the Grid. Hover (or tap) and it opens into <b>Dial | Grid</b>; choose one and it slides across, then shrinks back. It remembers your choice.</p>
+<p>Live, no login: <a href="https://speakbetter.app/demo/skills">speakbetter.app/demo/skills</a></p>
+<div class="try"><b>Try it here</b>
+<div class="row"><span class="what">What this is &#9662;</span>
+<div class="sw" id="sw" role="radiogroup" aria-label="Show skills as"><span class="k"></span>
+<button class="o on" data-v="dial" role="radio">Dial</button><button class="o" data-v="grid" role="radio">Grid</button>
+<button class="cover" aria-label="Open the switch"></button></div></div>
+<span class="state" id="st">Showing: Dial</span></div>
+<h2>The four states - live site, on a phone</h2>
+<div class="grid4">
+<figure><img src="skills-switch/phone-1-small.jpg"><figcaption>1 &middot; Small - dot left (Dial)</figcaption></figure>
+<figure><img src="skills-switch/phone-2-open.jpg"><figcaption>2 &middot; Tapped - opens to Dial | Grid</figcaption></figure>
+<figure><img src="skills-switch/phone-3-slide.jpg"><figcaption>3 &middot; Grid chosen - slides across</figcaption></figure>
+<figure><img src="skills-switch/phone-4-grid-small.jpg"><figcaption>4 &middot; Small again - dot right (Grid)</figcaption></figure></div>
+<h2>On a laptop - hover</h2>
+<div class="grid4">
+<figure><img src="skills-switch/laptop-1-small.jpg"><figcaption>Small</figcaption></figure>
+<figure><img src="skills-switch/laptop-2-open.jpg"><figcaption>Hovered</figcaption></figure>
+<figure><img src="skills-switch/laptop-3-slide.jpg"><figcaption>Grid chosen</figcaption></figure>
+<figure><img src="skills-switch/laptop-4-grid-small.jpg"><figcaption>Small, Grid</figcaption></figure></div>
+<h2>Dial vs Grid - phone</h2>
+<div class="two phones"><figure><img src="skills-switch/phone-dial.jpg"><figcaption>Dial</figcaption></figure>
+<figure><img src="skills-switch/phone-grid.jpg"><figcaption>Grid</figcaption></figure></div>
+<h2>Dial vs Grid - laptop</h2>
+<div class="two lap"><figure><img src="skills-switch/laptop-dial.jpg"><figcaption>Dial</figcaption></figure>
+<figure><img src="skills-switch/laptop-grid.jpg"><figcaption>Grid</figcaption></figure></div>
+<small style="display:block;margin-top:24px">Private link - please do not share.</small>
+</main>
+<script>
+const sw=document.getElementById("sw"),st=document.getElementById("st");let settled=false,t;
+const open=v=>sw.classList.toggle("open",v);
+sw.addEventListener("pointerenter",e=>{if(e.pointerType==="mouse"&&!settled)open(true)});
+sw.addEventListener("pointerleave",e=>{if(e.pointerType==="mouse"){settled=false;open(false)}});
+sw.querySelector(".cover").onclick=()=>{settled=false;open(true)};
+document.addEventListener("pointerdown",e=>{if(!sw.contains(e.target))open(false)});
+sw.querySelectorAll("button.o").forEach(b=>b.onclick=()=>{const g=b.dataset.v==="grid";sw.classList.toggle("grid",g);
+sw.querySelectorAll("button.o").forEach(x=>x.classList.toggle("on",x===b));st.textContent="Showing: "+(g?"Grid":"Dial");settled=true;clearTimeout(t);t=setTimeout(()=>open(false),380)});
+</script></body></html>
