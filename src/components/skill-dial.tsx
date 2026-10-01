@@ -138,23 +138,6 @@ export function SkillDial() {
 
   return (
     <div className="flex flex-col items-center gap-1">
-      {/* The name of whatever the pointer is on, above the dial and in
-          its color - so the hub keeps its shape whatever the length of
-          the name. Held to a fixed height so the dial doesn't shift. */}
-      <div className="flex h-11 flex-col items-center justify-center text-center" aria-live="polite">
-        {active ? (
-          <>
-            <span className={`text-lg font-semibold leading-tight sm:text-xl ${active.textClass}`}>
-              {active.short}
-            </span>
-            <span className="text-xs text-ink-muted">
-              {activeLessons.length} lessons
-              {activeWatched > 0 && ` · ${activeWatched} watched`}
-              <span className="text-ink-faint"> · tap to open</span>
-            </span>
-          </>
-        ) : null}
-      </div>
     <div
       ref={dialRef}
       data-tour="dial"
@@ -227,8 +210,11 @@ export function SkillDial() {
         </g>
       </svg>
 
-      {/* The hub: the lion, ringed in the color the pointer is on. It
-          holds its shape - the naming happens above the dial. */}
+      {/* The hub: the lion, ringed in the color the pointer is on - and
+          while a colour is under the pointer, its name and lessons in
+          the lion's place, right where the eye already is. (It used to
+          be named in a strip above the dial, which stood empty the rest
+          of the time and pushed the dial down the page.) */}
       <div
         className={`absolute left-1/2 top-1/2 flex aspect-square w-[52%] -translate-x-1/2 -translate-y-1/2 items-center justify-center overflow-hidden rounded-full border bg-navy-800/90 transition-[border-color,box-shadow,color] duration-300 ${
           active
@@ -236,7 +222,16 @@ export function SkillDial() {
             : "border-navy-600 shadow-[0_0_0_0_transparent]"
         }`}
       >
-        <RoaringLion className="w-[92%] translate-y-[4%]" />
+        <RoaringLion className={`w-[92%] translate-y-[4%] transition-opacity duration-200 ${active ? "opacity-15" : ""}`} />
+        {active && (
+          <span aria-live="polite" className="absolute inset-0 flex flex-col items-center justify-center gap-0.5 px-3 text-center">
+            <span className={`text-lg font-semibold leading-tight sm:text-2xl ${active.textClass}`}>{active.short}</span>
+            <span className="text-xs text-ink-muted text-balance">
+              {activeLessons.length} lessons
+              {activeWatched > 0 && ` · ${activeWatched} watched`}
+            </span>
+          </span>
+        )}
       </div>
 
       {/* The nodes */}

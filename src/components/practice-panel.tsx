@@ -1417,7 +1417,7 @@ function BarConfetti({ dense = false }: { dense?: boolean }) {
     left: ((i * 37) % 100) + (((i * 17) % 7) - 3) / 3,
     delay: ((i * 53) % 130) / 100,
     dur: 2.4 + ((i * 29) % 100) / 55,
-    color: ["storytelling", "figurative", "acting", "voice", "structure", "mindset", "body-language", "advanced"][i % 8],
+    color: ["storytelling", "figurative", "acting", "advanced", "structure", "voice", "body-language", "mindset"][i % 8],
     w: 4 + (i % 4) * 2,
     // Some pieces are ribbons, some are squares, and they drift to
     // different sides on the way down - all one shape falling straight
