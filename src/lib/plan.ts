@@ -17,14 +17,14 @@ import { includedReviews, LOW_AT } from "@/data/credits";
 // States from before plans existed count as the full experience.
 
 /**
- * THE PAYWALL - OFF until Tariq says the course is opening to its first
- * students (and Stripe is in). While it is off the app is open to
- * everyone: somebody who has not picked a tier - or still carries the
- * old "trial" - gets the full experience, and a tier they do pick is
- * honoured, so each tier's experience can be tried as it will be sold.
- * Switch it on and nobody gets in without a paid tier.
+ * THE PAYWALL - ON since 1 October 2026: the course is selling (Stripe
+ * in, the first students bought). Nobody gets in without a paid tier;
+ * the landing page's one free review (try-challenge.tsx) is the only
+ * way to meet Coach before buying. (Off, the app was open to everyone -
+ * a tier picked was honoured, and anyone without one got the full
+ * experience; browsers let in that way keep their access.)
  */
-export const PAYWALL_ON = false;
+export const PAYWALL_ON = true;
 
 /** The tier they paid for, or null for somebody who hasn't (only while
  *  the paywall is on). A stored plan the app no longer sells ("trial")

@@ -80,8 +80,12 @@ function limitLabel(sec: number): string {
 export function PracticePanel({
   challenge,
   bar = true,
+  trial = false,
 }: {
   challenge: Challenge;
+  /** The landing page's one free review: Coach watches this take
+   *  without a paid plan (try-challenge.tsx limits it to one). */
+  trial?: boolean;
   /** The record bar pinned under the header - off where the panel sits
    *  inside another page (the landing page's free challenge). */
   bar?: boolean;
@@ -179,7 +183,7 @@ export function PracticePanel({
       // Every plan gets the take watched (lib/plan.ts); what Starter
       // doesn't get is Coach's voice, which is decided in the review
       // below rather than here.
-      const watch = coachWatches(state);
+      const watch = trial || coachWatches(state);
       try {
         if (!watch) throw new Error("standing coach");
         const ext = (file.name.split(".").pop() || "mp4").toLowerCase();

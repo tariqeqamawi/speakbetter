@@ -68,7 +68,7 @@ export function TryChallenge() {
         </Link>
       ) : (
         <div className="w-full max-w-xl rounded-2xl border border-navy-600 bg-navy-900/60 p-4 sm:p-5" data-track="try">
-          <PracticePanel challenge={challenge} bar={false} />
+          <PracticePanel challenge={challenge} bar={false} trial />
         </div>
       )}
     </section>
