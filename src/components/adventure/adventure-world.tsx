@@ -427,7 +427,7 @@ function tintOf(hex: string): THREE.Color {
 }
 
 /** The land either side of the road, with its grid of light. */
-function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; travel: Travel }) {
+function Terrain({ road, spans, travel, calm = false }: { road: RoadLayout; spans: Span[]; travel: Travel; calm?: boolean }) {
   const geo = useMemo(() => {
     const ROW = 3; // world units between rows along the road
     const COLS = 64;
@@ -527,7 +527,9 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
           uSurface: { value: LOOK.surface },
           uSheen: { value: LOOK.sheen },
           uWash: { value: LOOK.wash },
-          uGain: { value: LOOK.gain },
+          // (In the calm 3D view the land's patterns sink to a glimmer,
+          // so the lit road is the thing to follow - as on the 2D map.)
+          uGain: { value: LOOK.gain * (calm ? 0.2 : 1) },
           uFogDensity: { value: 0.0052 },
           uHorizon: { value: new THREE.Color("#3a3f8f") },
           // Where Your Impact's rays converge: the city, far past the road.
@@ -536,7 +538,7 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
           uFeel: { value: 0 },
         },
       }),
-    [road.length],
+    [road.length, calm],
   );
 
   // Each wave starts from wherever the traveller is when it sets off.
@@ -698,25 +700,35 @@ function EdgeLights({ road, spans }: { road: RoadLayout; spans: Span[] }) {
 
 /** The road: dark surface, faint edges, and the lit line down the
  *  middle that the traveller follows. */
-function Road({ road, spans, trail }: { road: RoadLayout; spans: Span[]; trail: THREE.BufferGeometry[] }) {
+function Road({ road, spans, trail, calm = false }: { road: RoadLayout; spans: Span[]; trail: THREE.BufferGeometry[]; calm?: boolean }) {
+  // The calm 3D view lights the road itself - a pale surface washed in
+  // the section's colour, a bright line and edges - over a darkened land:
+  // the path is the bright thing on the screen, like the 2D map's.
+  const k = calm ? 2 : 1;
   const g = useMemo(
     () => ({
-      surface: ribbon(road, spans, -ROAD_HALF, ROAD_HALF, 0, (ph, o) => o.set(LOOK.road).lerp(ph, LOOK.roadTint)),
-      glow: ribbon(road, spans, -1.8, 1.8, 0.03, (ph, o) => o.copy(ph).multiplyScalar(LOOK.mid)),
+      surface: ribbon(road, spans, -ROAD_HALF, ROAD_HALF, 0, (ph, o) =>
+        calm ? o.set("#3a4566").lerp(ph, 0.42) : o.set(LOOK.road).lerp(ph, LOOK.roadTint),
+      ),
+      glow: ribbon(road, spans, -1.8, 1.8, 0.03, (ph, o) => o.copy(ph).multiplyScalar(LOOK.mid * k)),
       // The road ahead, not yet travelled: a faint guide line.
-      line: ribbon(road, spans, -0.12, 0.12, 0.05, (ph, o) => o.copy(ph).multiplyScalar(0.45 * LOOK.gain)),
-      left: ribbon(road, spans, -ROAD_HALF, -ROAD_HALF + 0.2, 0.04, (ph, o) => o.copy(ph).multiplyScalar(0.7 * LOOK.gain)),
-      right: ribbon(road, spans, ROAD_HALF - 0.2, ROAD_HALF, 0.04, (ph, o) => o.copy(ph).multiplyScalar(0.7 * LOOK.gain)),
+      line: ribbon(road, spans, -0.12, 0.12, 0.05, (ph, o) => o.copy(ph).multiplyScalar(0.45 * LOOK.gain * k)),
+      left: ribbon(road, spans, -ROAD_HALF, -ROAD_HALF + 0.2, 0.04, (ph, o) => o.copy(ph).multiplyScalar(0.7 * LOOK.gain * k)),
+      right: ribbon(road, spans, ROAD_HALF - 0.2, ROAD_HALF, 0.04, (ph, o) => o.copy(ph).multiplyScalar(0.7 * LOOK.gain * k)),
       // Lane marks: dashes a third of the way out each side, which pour
       // toward you at speed.
       lanes: dashes(road, spans, [-ROAD_HALF / 2.2, ROAD_HALF / 2.2]),
     }),
-    [road, spans],
+    [road, spans, calm, k],
   );
   return (
     <group>
       <mesh geometry={g.surface}>
-        <meshStandardMaterial vertexColors roughness={0.6} metalness={0.2} side={THREE.DoubleSide} />
+        {calm ? (
+          <meshBasicMaterial vertexColors toneMapped={false} side={THREE.DoubleSide} />
+        ) : (
+          <meshStandardMaterial vertexColors roughness={0.6} metalness={0.2} side={THREE.DoubleSide} />
+        )}
       </mesh>
       <mesh geometry={g.glow}>
         <meshBasicMaterial vertexColors transparent opacity={0.45} blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} side={THREE.DoubleSide} />
@@ -1281,8 +1293,8 @@ function AdventureWorldInner({
       <ambientLight intensity={LOOK.lights[1]} />
       <directionalLight position={[40, 80, 30]} intensity={LOOK.lights[2]} color="#c8d2ff" />
       {skyImage ? <SkyDome image={skyImage} aurora={auroraHere} wave={waveHere} storm={stormHere} /> : <Stars />}
-      <Terrain road={road} spans={spans} travel={travel} />
-      <Road road={road} spans={spans} trail={trail} />
+      <Terrain road={road} spans={spans} travel={travel} calm={calm} />
+      <Road road={road} spans={spans} trail={trail} calm={calm} />
       {/* A wall at each threshold between phases - none at the start:
           you begin already in the first. */}
       {spans.slice(1).map((sp) => (
