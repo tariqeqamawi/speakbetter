@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { STORAGE_KEY } from "@/lib/store";
+import { STORAGE_KEY, withTrophiesWon } from "@/lib/store";
 import { demoState } from "@/lib/demo-state";
 
 // Seeds the sample student into this browser's real storage, then drops
@@ -12,7 +12,7 @@ import { demoState } from "@/lib/demo-state";
 
 export default function TryPage() {
   useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(demoState));
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(withTrophiesWon(demoState)));
     // A full navigation, not a client route: the store hydrates from
     // storage on load, and the seed has to be there first.
     window.location.replace("/");

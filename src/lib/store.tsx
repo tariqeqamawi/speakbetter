@@ -405,11 +405,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     <StoreCore
       key={preview ?? "live"}
       ephemeral={preview !== null}
-      seed={preview === "demo" ? demoState : undefined}
+      seed={preview === "demo" ? withTrophiesWon(demoState) : undefined}
     >
       {children}
     </StoreCore>
   );
+}
+
+/** A seeded state - the sample student - with every trophy its record
+ *  has already earned put on the shelf, quietly. Without it the first
+ *  lesson watched re-checks the record and announces trophies for takes
+ *  nobody in this browser recorded. */
+export function withTrophiesWon(seed: AppState): AppState {
+  const earned = evaluateBadges({ ...seed, xp: standing(seed).xp });
+  return earned.length ? { ...seed, badges: [...seed.badges, ...earned] } : seed;
 }
 
 function StoreCore({
@@ -603,9 +612,7 @@ function StoreCore({
       // worked out now and kept quietly - so nothing is announced as new.
       unlock: (plan = "coached") => {
         if (onDemoHost() && stateRef.current.attempts.length === 0) {
-          const seed: AppState = { ...demoState, level: null, intention: "", plan, unlocked: true };
-          const earned = evaluateBadges({ ...seed, xp: standing(seed).xp });
-          persist({ ...seed, badges: [...seed.badges, ...earned] });
+          persist(withTrophiesWon({ ...demoState, level: null, intention: "", plan, unlocked: true }));
           return;
         }
         applyWithBadges((p) => ({ ...p, unlocked: true, plan }));
