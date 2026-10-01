@@ -731,6 +731,9 @@ export class Travel {
     this.v = 0;
     this.target = null;
   }
+  /** Moved by a script rather than by the student (the landing page's
+   *  showcase): counts as travelling, so the speed, blur and streaks show. */
+  driven = false;
   /** On a loop or a corkscrew: the least speed allowed (0 elsewhere).
    *  Set by the camera. Nobody stops halfway round a loop, upside down -
    *  they can go faster, never stop or turn back, until they're through. */

@@ -916,7 +916,7 @@ function Rig({
     // speed asked for - held at the end of the open road, nothing rushes.
     const rate = dt > 0 ? Math.abs(s - prevS.current) / (dt * 60) : 0;
     prevS.current = s;
-    const moving = Math.abs(travel.v) > 0.01 || travel.target !== null ? Math.min(rate, 4) : 0;
+    const moving = Math.abs(travel.v) > 0.01 || travel.target !== null || travel.driven ? Math.min(rate, 4) : 0;
     const pace = Math.min(1, moving / 1.6);
     speed.current += (pace - speed.current) * Math.min(1, dt * 2.5);
     const f = still ? 0 : speed.current;
@@ -929,7 +929,7 @@ function Rig({
     const b = still ? 0 : travel.boost;
     // STANDING STILL for a moment: the camera floats slowly up, to look
     // down on more of the road; it comes back down as soon as you move.
-    stillFor.current = Math.abs(travel.v) < 0.02 && travel.target === null ? stillFor.current + dt : 0;
+    stillFor.current = Math.abs(travel.v) < 0.02 && travel.target === null && !travel.driven ? stillFor.current + dt : 0;
     // (Not in or beside a tube: floating up there would put the camera
     // through its roof.)
     const tubeNear = tubes.some((t) => s + AHEAD > t.from - 25 && s < t.to + 5);

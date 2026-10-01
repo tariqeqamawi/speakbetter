@@ -600,16 +600,19 @@ export function AdventureScreen({
   useEffect(() => {
     if (!demo || !onScreen) return;
     if (showcase === "victory") {
-      // Through the city of colour, up to the ring tunnel, and round again.
+      // Through the city of colour and on down the ring tunnel, flat out -
+      // fast enough for the blur, the streaks and the sparks - and round
+      // again.
       const from = victoryStart(road) + 20;
-      const to = road.finish - FINISH_TUNNEL - 80;
+      const to = road.finish - 220;
+      travel.driven = true;
       let raf = 0;
       let last = performance.now();
       let fading = 0;
       const glide = (now: number) => {
         const dt = Math.min(0.05, (now - last) / 1000);
         last = now;
-        travel.place(Math.min(to, travel.s + 48 * dt));
+        travel.place(Math.min(to, travel.s + 150 * dt));
         if (travel.s >= to && !fading) {
           fading = window.setTimeout(() => {
             setFade(true);
@@ -628,6 +631,7 @@ export function AdventureScreen({
       return () => {
         cancelAnimationFrame(raf);
         clearTimeout(fading);
+        travel.driven = false;
       };
     }
     const firstOpen = Math.max(0, stops.findIndex((st) => st.state === "here"));
