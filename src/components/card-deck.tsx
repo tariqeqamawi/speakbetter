@@ -857,6 +857,7 @@ function CardZoom({
   onJump: (index: number) => void;
   onClose: () => void;
 }) {
+  const skillsHref = usePathname()?.startsWith("/demo") ? "/demo/skills" : "/skills";
   // Escape closes it, the arrows walk it, and the page underneath holds
   // still while it's up.
   useEffect(() => {
@@ -981,7 +982,19 @@ function CardZoom({
           Tap the card to turn it over
           {" · "}
           <Link
-            href={`/skills/${card.categoryId}/${card.vimeoId}`}
+            // From a dealt spread, the lesson opens inside the spread - its
+            // tabs This lesson and Your spread, Back going to the hand.
+            href={
+              hand
+                ? `${skillsHref}/${card.categoryId}?lesson=${card.vimeoId}&spread=${hand.map((h) => h.vimeoId).join(",")}`
+                : `${skillsHref}/${card.categoryId}?lesson=${card.vimeoId}`
+            }
+            onClick={() => {
+              if (!hand) return;
+              try {
+                sessionStorage.setItem(HAND_KEY + "-open", "1");
+              } catch {}
+            }}
             className="font-semibold text-ink-muted underline-offset-4 transition-colors hover:text-ink hover:underline"
           >
             Watch this lesson

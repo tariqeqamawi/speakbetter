@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { categories, categoryById, type CategoryId } from "@/data/categories";
 import { lessonsInCategory } from "@/data/lessons";
 import { CategoryTheater } from "@/components/category-theater";
@@ -23,7 +24,11 @@ export default async function CategoryPage(props: PageProps<"/skills/[category]"
 
   return (
     <div className="flex flex-col gap-6 pb-6">
-      <CategoryTheater category={cat} lessons={lessons} />
+      {/* (Reads the address - ?lesson=, ?spread= - so it renders in the
+          browser, inside its own boundary.) */}
+      <Suspense fallback={<div className="min-h-[70vh]" aria-busy />}>
+        <CategoryTheater category={cat} lessons={lessons} />
+      </Suspense>
       <FeatureReaction feature="lessons" label="the lessons" />
     </div>
   );

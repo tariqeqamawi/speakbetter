@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { categories, type Category } from "@/data/categories";
 import { lessonByVimeoId, type Lesson } from "@/data/lessons";
 import { lessonLength, lessonXp } from "@/lib/progress";
@@ -59,11 +59,15 @@ export function CategoryTheater({
   // `resumed` keeps the "Continue" label up until they pick another.
   const [placed, setPlaced] = useState(false);
   const [resumed, setResumed] = useState(false);
+  // The address as the router has it - the page being arrived at. (Read
+  // off window.location it could still be the page being left, while the
+  // app switches between them: a lesson opened from a spread lost its
+  // spread that way.)
+  const params = useSearchParams();
   if (ready && !placed) {
     setPlaced(true);
     // (A link can ask for a lesson - ?lesson=<id>, from a dealt spread -
     // and that comes first.)
-    const params = new URLSearchParams(window.location.search);
     const asked = params.get("lesson");
     const dealt = params.get("spread")?.split(",").filter((id) => lessonByVimeoId.has(id));
     if (dealt?.length) setSpread(dealt);
