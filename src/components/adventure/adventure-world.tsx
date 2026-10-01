@@ -1200,6 +1200,10 @@ function AdventureWorldInner({
     const sp = spans.find((x) => x.id === "S");
     return () => inside(sp, travel.s + AHEAD);
   }, [spans, travel]);
+  const stormHere = useMemo(() => {
+    const sp = spans.find((x) => x.id === "R");
+    return () => inside(sp, travel.s + AHEAD);
+  }, [spans, travel]);
   const waveHere = useMemo(() => {
     const sp = spans.find((x) => x.id === "T");
     return () => inside(sp, travel.s + AHEAD);
@@ -1276,7 +1280,7 @@ function AdventureWorldInner({
       <hemisphereLight args={["#8090d0", "#05070f", LOOK.lights[0]]} />
       <ambientLight intensity={LOOK.lights[1]} />
       <directionalLight position={[40, 80, 30]} intensity={LOOK.lights[2]} color="#c8d2ff" />
-      {skyImage ? <SkyDome image={skyImage} aurora={auroraHere} wave={waveHere} /> : <Stars />}
+      {skyImage ? <SkyDome image={skyImage} aurora={auroraHere} wave={waveHere} storm={stormHere} /> : <Stars />}
       <Terrain road={road} spans={spans} travel={travel} />
       <Road road={road} spans={spans} trail={trail} />
       {/* A wall at each threshold between phases - none at the start:

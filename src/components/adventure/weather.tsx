@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { AHEAD, pointAt, victoryStart, type RoadLayout, type Travel } from "./road-geometry";
+import { AHEAD, pointAt, sideAt, victoryStart, type RoadLayout, type Travel } from "./road-geometry";
 
 // THE WEATHER OF EACH SECTION - a little air you can see, and only where
 // you are, so it tells you where you are without cluttering the road:
@@ -210,7 +210,7 @@ function Rain({ road, travel, stretch, count, colours }: { road: RoadLayout; tra
         // (Pixels on screen, not world units: near the camera a sized-by-
         // distance drop grew to fill half the view, and the overdraw of
         // two hundred of them was the cost.)
-        size: 22,
+        size: 11,
         sizeAttenuation: false,
         vertexColors: true,
         transparent: true,
@@ -260,6 +260,80 @@ function Rain({ road, travel, stretch, count, colours }: { road: RoadLayout; tra
   return <points geometry={geo} material={mat} frustumCulled={false} />;
 }
 
+/** O's rockets: yellow tracers launching from the land either side of
+ *  the road and streaking up into the sky - a bright head and a tail
+ *  fading behind it - each going up once, then another somewhere else. */
+function Rockets({ road, travel, stretch }: { road: RoadLayout; travel: Travel; stretch: Stretch | undefined }) {
+  const N = 18;
+  const TAIL = 26;
+  const { geo, state } = useMemo(() => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(N * 6), 3));
+    const col = new Float32Array(N * 6);
+    const head = new THREE.Color("#ffe066").multiplyScalar(2.6);
+    const tail = new THREE.Color("#ff9500").multiplyScalar(0.0);
+    for (let i = 0; i < N; i++) col.set([tail.r, tail.g, tail.b, head.r, head.g, head.b], i * 6);
+    g.setAttribute("color", new THREE.BufferAttribute(col, 3));
+    // Each: where it launched from, how fast, how high it goes, and when.
+    const state = Array.from({ length: N }, (_, i) => ({ x: 0, y: 0, z: 0, h: 0, v: 0, top: 0, live: false, wait: (i * 0.37) % 3 }));
+    return { geo: g, state };
+  }, []);
+  const mat = useMemo(
+    () => new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }),
+    [],
+  );
+  useEffect(
+    () => () => {
+      geo.dispose();
+      mat.dispose();
+    },
+    [geo, mat],
+  );
+  const p = useMemo(() => new THREE.Vector3(), []);
+  const side = useMemo(() => new THREE.Vector3(), []);
+  /* eslint-disable react-hooks/immutability -- particles, moved every frame */
+  useFrame((_, dtRaw) => {
+    const dt = Math.min(dtRaw, 0.05);
+    const w = inside(stretch, travel.s + AHEAD);
+    mat.opacity = w;
+    if (w <= 0.001) return;
+    const pos = (geo.attributes.position as THREE.BufferAttribute).array as Float32Array;
+    for (let i = 0; i < N; i++) {
+      const r = state[i];
+      if (!r.live) {
+        r.wait -= dt;
+        pos.fill(-1e5, i * 6 + 1, i * 6 + 2);
+        pos.fill(-1e5, i * 6 + 4, i * 6 + 5);
+        if (r.wait > 0) continue;
+        // Off the land ahead, to one side or the other of the road.
+        const s = travel.s + AHEAD + 40 + Math.random() * 260;
+        pointAt(road, s, p);
+        sideAt(road, s, side);
+        const d = (Math.random() < 0.5 ? -1 : 1) * (30 + Math.random() * 140);
+        r.x = p.x + side.x * d;
+        r.z = p.z + side.z * d;
+        r.y = p.y - 2;
+        r.h = 0;
+        r.v = 90 + Math.random() * 70;
+        r.top = 140 + Math.random() * 120;
+        r.live = true;
+      }
+      r.h += r.v * dt;
+      if (r.h > r.top) {
+        r.live = false;
+        r.wait = 0.4 + Math.random() * 2.2;
+        continue;
+      }
+      // The tail trails the head, shorter at launch.
+      const tail = Math.min(TAIL, r.h);
+      pos.set([r.x, r.y + r.h - tail, r.z, r.x, r.y + r.h, r.z], i * 6);
+    }
+    (geo.attributes.position as THREE.BufferAttribute).needsUpdate = true;
+  });
+  /* eslint-enable react-hooks/immutability */
+  return <lineSegments geometry={geo} material={mat} frustumCulled={false} />;
+}
+
 export function SectionWeather({ road, travel, spans }: { road: RoadLayout; travel: Travel; spans: Stretch[] }) {
   const still = useMemo(
     () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -282,6 +356,7 @@ export function SectionWeather({ road, travel, spans }: { road: RoadLayout; trav
       <Drift road={road} travel={travel} stretch={find("R")} count={65} colours={embers} size={0.8} rise={3.2} wind={0.6} low={0} high={34} />
       {/* (Not over the victory stretch: the city there is busy enough.) */}
       <Rain road={road} travel={travel} stretch={yRain} count={105} colours={neon} />
+      <Rockets road={road} travel={travel} stretch={find("O")} />
     </group>
   );
 }

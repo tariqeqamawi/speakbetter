@@ -75,6 +75,9 @@ const FRAG = /* glsl */ `
   // How much of each section's sky is showing (0-1).
   uniform float uAurora;
   uniform float uWave;
+  // R's lightning: the bolt's bearing (0-1), its seed, and how bright it
+  // is right now (0 between strikes).
+  uniform vec3 uBolt;
   // The panorama: on (1) or the old cylinder picture (0); its halves (or
   // one picture in both), the bearing it's turned to, and the elevation
   // its bottom edge reaches (radians, negative: below the horizon).
@@ -194,6 +197,38 @@ const FRAG = /* glsl */ `
       col += ac * band * streak * arcs * uAurora * 0.55;
     }
 
+    // R - LIGHTNING: now and then a jagged red bolt cracks down the sky
+    // from high up to the horizon - its path wandering in steps, a fork
+    // splitting off it - and the sky round it flares for an instant.
+    if (uBolt.z > 0.001) {
+      float x = u * 6.2831853;
+      float bx = uBolt.x * 6.2831853;
+      float e = clamp(elev, 0.0, 1.2);
+      // The path: a few octaves of jagged wander, by height.
+      float wander = 0.0;
+      float amp = 0.05;
+      float f = 6.0;
+      for (int i = 0; i < 4; i++) {
+        float k = e * f + uBolt.y * (13.0 + float(i) * 7.0);
+        wander += (fract(sin(floor(k) * 91.7 + uBolt.y) * 437.5) - 0.5) * amp * (1.0 - fract(k)) + (fract(sin((floor(k) + 1.0) * 91.7 + uBolt.y) * 437.5) - 0.5) * amp * fract(k);
+        amp *= 0.5;
+        f *= 2.3;
+      }
+      float dx = (x - bx - wander);
+      dx = mod(dx + 3.14159265, 6.2831853) - 3.14159265;
+      float dist = abs(dx) * cos(e);
+      float span = step(0.0, elev) * step(elev, 0.75);
+      float core = exp(-dist * dist * 400000.0) * span;
+      float glow = exp(-dist * dist * 900.0) * span * 0.35;
+      // A fork, from a third of the way down, angling off.
+      float fe = 0.5 - e;
+      float fdx = mod(x - (bx + wander + fe * 0.35) + 3.14159265, 6.2831853) - 3.14159265;
+      float fork = exp(-pow(fdx * cos(e), 2.0) * 400000.0) * step(0.08, elev) * step(elev, 0.5) * 0.7;
+      // The sky lit up round it.
+      float flash = exp(-pow(mod(x - bx + 3.14159265, 6.2831853) - 3.14159265, 2.0) * 3.0) * 0.12;
+      col += vec3(1.0, 0.32, 0.22) * ((core + fork) * 2.6 + glow + flash) * uBolt.z;
+    }
+
     // T - A HEARTBEAT ACROSS THE SKY: a fine trace circling the horizon
     // like an EKG - a flat line, then the sharp spike of a beat and its
     // small after-wave - travelling slowly round. Thin and quiet: a
@@ -217,7 +252,11 @@ export function SkyDome({
   image,
   aurora,
   wave,
+  storm,
 }: {
+  /** How much of R's storm is showing, read every frame (0-1): lightning
+   *  strikes only while it's above nothing. */
+  storm?: () => number;
   /** A picture for the old cylinder mapping, or the base path of a 360
    *  panorama (no extension): base-l.webp and base-r.webp on a laptop,
    *  base-m.webp on a phone. */
@@ -262,6 +301,7 @@ export function SkyDome({
         uFoot: { value: 90 },
         uAurora: { value: 0 },
         uWave: { value: 0 },
+        uBolt: { value: new THREE.Vector3() },
         uPano: { value: pano ? 1 : 0 },
         uLeft: { value: left },
         uRight: { value: right },
@@ -279,6 +319,9 @@ export function SkyDome({
   // The whole sphere round the camera; the shader works out the picture
   // from each direction.
   const geo = useMemo(() => new THREE.SphereGeometry(RADIUS, 96, 48), []);
+  // When the last lightning struck, and when the next may.
+  const strikeAt = useRef(-10);
+  const nextStrike = useRef(0);
   /* eslint-disable react-hooks/immutability */
   useFrame(({ camera, clock }) => {
     mesh.current?.position.copy(camera.position);
@@ -287,6 +330,20 @@ export function SkyDome({
     material.uniforms.uOffset.value.x = 0.5 + clock.elapsedTime * 0.00012;
     material.uniforms.uAurora.value = aurora?.() ?? 0;
     material.uniforms.uWave.value = wave?.() ?? 0;
+    // The storm: a strike every few seconds - a bright crack that flickers
+    // once or twice and fades - somewhere ahead and to the sides.
+    const st = storm?.() ?? 0;
+    const bolt = material.uniforms.uBolt.value as THREE.Vector3;
+    const now = clock.elapsedTime;
+    if (st > 0.05 && now > nextStrike.current) {
+      strikeAt.current = now;
+      nextStrike.current = now + 2.5 + Math.random() * 4;
+      bolt.x = Math.random();
+      bolt.y = Math.random() * 100;
+    }
+    const age = now - strikeAt.current;
+    const flicker = age < 0.06 ? 1 : age < 0.1 ? 0.25 : age < 0.16 ? 0.9 : Math.exp(-(age - 0.16) * 9);
+    bolt.z = age < 0.8 ? flicker * st : 0;
   });
   /* eslint-enable react-hooks/immutability */
   return (
