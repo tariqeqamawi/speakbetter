@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { SiteFooter } from "@/components/site/site-footer";
 import { TeamsCard } from "@/components/site/teams-card";
 import { Soundwave } from "@/components/soundwave";
@@ -161,17 +162,32 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
           <p className="max-w-md text-center text-sm text-ink-muted text-balance">
             And between takes, ask Coach anything about your speaking - he knows your record. (Complete and VIP.)
           </p>
+          {/* What his reviews fill in, take by take. */}
+          <div className="mt-6 flex flex-col items-center gap-3 text-center">
+            <h3 className="text-xl font-semibold tracking-tight">Your Speaking Spectrum</h3>
+            <p className="max-w-md text-sm text-ink-muted text-balance">Eight color-coded skills, each lighting up as Coach sees you use it.</p>
+            <SpectrumDemo />
+          </div>
+        </section>
+
+        {/* THE COHORT: Tariq, live, every week - the human half. */}
+        <section className="flex flex-col items-center gap-5 text-center">
+          <div className="flex flex-col items-center gap-2">
+            <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">6 weekly live sessions</h2>
+            <p className="text-sm text-ink-muted">With Tariq and your cohort · Saturdays, 11 AM CST · recorded if you miss one</p>
+          </div>
+          <LiveRoom />
+          <ul className="flex flex-wrap justify-center gap-2 text-sm font-semibold">
+            {["Hot seat coaching", "Personal refinement", "Support along the way"].map((x) => (
+              <li key={x} className="rounded-full border border-navy-600 bg-navy-900/60 px-4 py-1.5 text-ink">
+                {x}
+              </li>
+            ))}
+          </ul>
         </section>
 
         {/* Why practice beats watching. */}
         <HeroBeat />
-
-        {/* The spectrum. */}
-        <section className="flex flex-col items-center gap-4 text-center">
-          <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">Your Speaking Spectrum</h2>
-          <p className="max-w-md text-ink-muted text-balance">Eight color-coded skills, each lighting up as Coach sees you use it.</p>
-          <SpectrumDemo />
-        </section>
 
         {/* The challenges: a course, or a ride - on film, three ways. */}
         <SectionMark id="challenges" />
@@ -196,11 +212,8 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
               </div>
             ))}
           </div>
-        </section>
-
-        {/* What you earn as you go. */}
-        <section className="flex flex-col items-center gap-4 text-center">
-          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">What you earn as you go</h2>
+          {/* What you earn on the way - how 3D and 4D open, among the rest. */}
+          <p className="mt-2 text-xs font-bold uppercase tracking-[0.18em] text-ink-faint">What you earn as you go</p>
           <ul className="flex max-w-2xl flex-wrap justify-center gap-2 text-sm">
             {[
               ["XP", "for every lesson and take"],
@@ -264,5 +277,51 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
       </div>
       <StickyJoin />
     </LionArtWhenNear>
+  );
+}
+
+/** A live session, as it looks: a video call - Tariq in the main tile,
+ *  the cohort around him - in a plain call window (no app's branding). */
+function LiveRoom() {
+  return (
+    <div className="w-full max-w-3xl overflow-hidden rounded-2xl border border-navy-600 bg-[#0b0f17] shadow-2xl shadow-navy-950/80">
+      <div className="flex items-center gap-1.5 border-b border-white/5 px-3 py-2">
+        <span className="size-2.5 rounded-full bg-[#ff5f57]" />
+        <span className="size-2.5 rounded-full bg-[#febc2e]" />
+        <span className="size-2.5 rounded-full bg-[#28c840]" />
+        <span className="ml-2 text-[0.65rem] font-semibold text-ink-faint">Speak Better · Live session</span>
+        <span className="ml-auto flex items-center gap-1 rounded bg-advanced/90 px-1.5 py-0.5 text-[0.55rem] font-bold uppercase text-white">
+          <span className="size-1.5 rounded-full bg-white" />
+          Live
+        </span>
+      </div>
+      <div className="grid gap-1 p-1 sm:grid-cols-[2fr_3fr]">
+        <div className="relative aspect-video overflow-hidden rounded-md sm:aspect-auto">
+          <Image src="/thumbs/1082011047.jpg" alt="Tariq, leading a live session" fill sizes="(min-width: 640px) 300px, 100vw" className="object-cover" />
+          <span className="absolute bottom-1.5 left-1.5 rounded bg-black/60 px-1.5 py-0.5 text-[0.6rem] font-semibold text-white">Tariq</span>
+          <span className="absolute inset-0 rounded-md ring-2 ring-mindset/80" />
+        </div>
+        {/* The cohort, in their own tiles. */}
+        <div className="grid grid-cols-2 gap-1">
+          {[
+            ["/selfie/maya-story.jpg", "Maya"],
+            ["/selfie/ben-point.jpg", "Ben"],
+            ["/selfie/claire-calm.jpg", "Claire"],
+            ["/selfie/jay-laugh.jpg", "Jay"],
+          ].map(([src, name]) => (
+            <div key={src} className="relative aspect-video overflow-hidden rounded-md">
+              <Image src={src} alt="" fill sizes="(min-width: 640px) 220px, 50vw" className="object-cover object-[50%_30%]" />
+              <span className="absolute bottom-1 left-1 rounded bg-black/60 px-1.5 py-0.5 text-[0.55rem] font-semibold text-white">{name}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="flex items-center justify-center gap-2 border-t border-white/5 py-2 text-[0.6rem] text-ink-faint">
+        <span className="rounded-full bg-white/5 px-2.5 py-1">Mic</span>
+        <span className="rounded-full bg-white/5 px-2.5 py-1">Camera</span>
+        <span className="rounded-full bg-white/5 px-2.5 py-1">Raise hand</span>
+        <span className="rounded-full bg-advanced/80 px-2.5 py-1 text-white">Leave</span>
+      </div>
+    </div>
   );
 }
