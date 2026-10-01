@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { categories, type Category } from "@/data/categories";
 import { lessonsInCategory } from "@/data/lessons";
@@ -33,40 +34,129 @@ function faceOf(cat: Category): string {
   return (wanted && lessons.find((l) => l.vimeoId === wanted)?.vimeoId) || lessons[0].vimeoId;
 }
 
-export function SkillsBrowser() {
+export function SkillsBrowser({ children }: { children?: ReactNode }) {
   const view = useSkillsView();
   return (
     <div className="flex flex-col gap-3">
-      <ViewSwitch view={view} />
+      {/* The section's note on the left, the switch small in the middle
+          of the same row - a setting, not a headline. */}
+      <div className="relative min-h-6">
+        {children}
+        <div className="absolute left-1/2 top-0 z-20 -translate-x-1/2">
+          <ViewSwitch view={view} />
+        </div>
+      </div>
       {view === "grid" ? <SkillGrid /> : <SkillDial />}
     </div>
   );
 }
 
+/** The switch, kept tiny: a pill with a dot in it, the dot on the left
+ *  for the dial and on the right for the grid. Point at it (or tap it,
+ *  or tab to it) and it grows into "Dial | Grid"; choose one and the
+ *  highlight slides across, then it shrinks back to the small pill with
+ *  the dot on its new side. */
 function ViewSwitch({ view }: { view: SkillsView }) {
+  const [open, setOpen] = useState(false);
+  // After a choice it closes even under the pointer; it waits for the
+  // pointer to leave before hovering can open it again.
+  const settled = useRef(false);
+  const root = useRef<HTMLDivElement>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const grid = view === "grid";
+
+  useEffect(() => () => {
+    if (timer.current) clearTimeout(timer.current);
+  }, []);
+
+  // A tap elsewhere closes it on a touch screen.
+  useEffect(() => {
+    if (!open) return;
+    const away = (e: PointerEvent) => {
+      if (root.current && !root.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("pointerdown", away);
+    return () => document.removeEventListener("pointerdown", away);
+  }, [open]);
+
+  const choose = (next: SkillsView) => {
+    setSkillsView(next);
+    settled.current = true;
+    // Long enough to see the highlight slide across, then back to small.
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => setOpen(false), 380);
+  };
+
   const options: { id: SkillsView; label: string }[] = [
     { id: "dial", label: "Dial" },
     { id: "grid", label: "Grid" },
   ];
+
   return (
-    <div role="radiogroup" aria-label="Show skills as" className="flex self-center rounded-full border border-navy-600 bg-navy-900/60 p-1">
-      {options.map((o) => {
-        const on = view === o.id;
-        return (
+    <div
+      ref={root}
+      onPointerEnter={(e) => {
+        if (e.pointerType === "mouse" && !settled.current) setOpen(true);
+      }}
+      onPointerLeave={(e) => {
+        if (e.pointerType !== "mouse") return;
+        settled.current = false;
+        setOpen(false);
+      }}
+      onBlur={(e) => {
+        if (!root.current?.contains(e.relatedTarget as Node | null)) setOpen(false);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") setOpen(false);
+      }}
+    >
+      <div
+        role="radiogroup"
+        aria-label="Show skills as"
+        className={`relative flex items-center overflow-hidden rounded-full border bg-navy-900/90 shadow-lg backdrop-blur transition-all duration-300 ease-out ${
+          open ? "h-9 w-36 border-navy-500 p-1 shadow-navy-950/60" : "h-5 w-9 border-navy-600 p-0.5 shadow-transparent"
+        }`}
+      >
+        {/* The dot when small; the highlight under the chosen word when open. */}
+        <span
+          aria-hidden
+          className={`absolute rounded-full transition-all duration-300 ease-out ${
+            open
+              ? `top-1 bottom-1 w-[calc(50%-0.25rem)] bg-ink ${grid ? "left-1/2" : "left-1"}`
+              : `top-1/2 size-3 -translate-y-1/2 bg-body-language shadow-[0_0_8px_var(--color-body-language)] ${grid ? "left-[calc(100%-1rem)]" : "left-1"}`
+          }`}
+        />
+        {options.map((o) => {
+          const on = view === o.id;
+          return (
+            <button
+              key={o.id}
+              type="button"
+              role="radio"
+              aria-checked={on}
+              tabIndex={open ? (on ? 0 : -1) : -1}
+              onClick={() => choose(o.id)}
+              className={`relative z-10 flex h-full flex-1 items-center justify-center rounded-full text-sm font-semibold transition-opacity duration-200 ${
+                open ? "opacity-100" : "pointer-events-none opacity-0"
+              } ${on ? "text-navy-950" : "text-ink-muted hover:text-ink"}`}
+            >
+              {o.label}
+            </button>
+          );
+        })}
+        {/* Small, the whole pill is one button: tap (or Enter) opens it. */}
+        {!open && (
           <button
-            key={o.id}
             type="button"
-            role="radio"
-            aria-checked={on}
-            onClick={() => setSkillsView(o.id)}
-            className={`min-h-9 rounded-full px-5 text-sm font-semibold transition-colors ${
-              on ? "bg-ink text-navy-950" : "text-ink-muted hover:text-ink"
-            }`}
-          >
-            {o.label}
-          </button>
-        );
-      })}
+            aria-label={`Show skills as: ${grid ? "Grid" : "Dial"}. Change`}
+            onClick={() => {
+              settled.current = false;
+              setOpen(true);
+            }}
+            className="absolute inset-0 z-20 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-body-language"
+          />
+        )}
+      </div>
     </div>
   );
 }
