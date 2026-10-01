@@ -35,7 +35,9 @@ export function LandingTest() {
   return (
     <LionArtWhenNear>
       {/* The date, held under the top bar the whole way down. */}
-      <div className="sticky-under-header no-glass -mx-4 border-b border-navy-600 bg-navy-850 px-4 py-2 xl:-mx-8 xl:px-8">
+      {/* (Pulled up over the page's top padding, so it sits flush under the
+          top bar from the start, not only once it sticks.) */}
+      <div className="sticky-under-header no-glass -mx-4 -mt-8 border-b border-navy-600 bg-navy-850 px-4 py-2 xl:-mx-8 xl:px-8">
         <div className="mx-auto flex max-w-5xl items-center justify-center gap-3 text-sm">
           <span>
             <b className="font-semibold text-storytelling">Starts {cohort.startShort}</b>
