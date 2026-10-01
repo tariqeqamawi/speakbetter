@@ -12,6 +12,7 @@ import {
   BrushIcon,
   CheckCircleIcon,
   CheckIcon,
+  ChevronDownIcon,
   FilmIcon,
   FlatlineIcon,
   HandIcon,
@@ -244,6 +245,10 @@ function PassBurst() {
 
 export function CoachDemo() {
   const lit = categories.filter((c) => SAMPLE_SPECTRUM[c.id] >= 40).length;
+  // The full review is there for anyone who wants it, behind one tap:
+  // the score is enough for somebody skimming, and the whole review
+  // laid open made this the longest stretch of the page.
+  const [open, setOpen] = useState(false);
 
   return (
     <div className="flex w-full max-w-3xl flex-col gap-6 rounded-3xl border border-navy-600 bg-navy-800 p-5 shadow-[0_0_80px_-40px_var(--color-advanced)] sm:p-8">
@@ -288,9 +293,9 @@ export function CoachDemo() {
         </p>
       </div>
 
-      {/* The review as the app shows it: what worked, the spectrum,
-          the lessons this challenge asked for, what to do next - in
-          view from the start, the way it lands after a take. */}
+      {/* The review as the app shows it: the score, and under "View
+          more" what worked, the spectrum, the lessons this challenge
+          asked for and what to do next. */}
       <div className="flex flex-col gap-4">
         <div className="flex items-baseline justify-between px-1">
           <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-mindset">
@@ -302,6 +307,20 @@ export function CoachDemo() {
             <span className="text-base font-normal text-ink-faint">/100</span>
           </span>
         </div>
+
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          aria-controls="coach-demo-review"
+          className="flex min-h-11 items-center justify-center gap-2 self-center rounded-full border border-navy-600 bg-navy-900/70 px-5 text-sm font-semibold text-ink transition-colors hover:border-body-language hover:text-body-language"
+        >
+          {open ? "View less" : "View more"}
+          <ChevronDownIcon className={`size-4 transition-transform ${open ? "rotate-180" : ""}`} />
+        </button>
+
+        {open && (
+        <div id="coach-demo-review" className="flex flex-col gap-4">
 
         {/* min-w-0 on the note bodies below.
             
@@ -424,6 +443,8 @@ export function CoachDemo() {
             The next one is waiting on the map. A better take on this one is worth more XP.
           </p>
         </div>
+        </div>
+        )}
       </div>
     </div>
   );

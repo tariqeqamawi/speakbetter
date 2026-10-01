@@ -25,8 +25,8 @@ const geistMono = Geist_Mono({
 
 // The card a shared link opens into (iMessage, WhatsApp, socials): the
 // lion, the name, the waveform and the promise, 1200x630.
-const PREVIEW = { url: "/social/speak-better-preview-v2.png", width: 1200, height: 630, alt: "Speak Better - Master public speaking in minutes, not months, and roar on screen and stage." };
-const SHARE_LINE = "Master public speaking in minutes, not months, and roar on screen and stage. A guided 6-week speaking experience, with an AI coach on every take.";
+const PREVIEW = { url: "/social/speak-better-preview-v3.png", width: 1200, height: 630, alt: "Speak Better - Master full-spectrum, fearless speaking in minutes, not months. Unleash your true colors and roar on screen and stage." };
+const SHARE_LINE = "Master full-spectrum, fearless speaking in minutes, not months. Unleash your true colors and roar on screen and stage.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://speakbetter.app"),

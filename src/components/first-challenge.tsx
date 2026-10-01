@@ -118,7 +118,7 @@ export function FirstChallenge() {
         <div className="flex flex-col gap-5 rounded-2xl border border-navy-600 bg-navy-900 p-4 sm:p-6">
           <header className="flex flex-col gap-2">
             <p className="text-xs font-medium uppercase tracking-wider text-ink-faint">
-              {phase.id} - {phase.name} · Challenge 1 of 24
+              {phase.id} - {phase.name} · Challenge 1 of 25
             </p>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
               <h3 className="text-2xl font-semibold tracking-tight text-balance">{challenge.title}</h3>

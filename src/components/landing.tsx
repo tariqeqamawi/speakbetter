@@ -111,13 +111,10 @@ function LandingBody() {
           <div className="flex flex-col items-center gap-3 lg:w-fit lg:items-start">
             <h1 className="text-xl font-semibold tracking-tight text-balance sm:text-3xl lg:text-[2.2rem] xl:text-[2.5rem]">
               <span className="block">Master full-spectrum, fearless speaking in minutes, not months.</span>
-              <span className="mt-1 block">Unleash your true colors and roar on screen or stage.</span>
+              <span className="mt-1 block">Unleash your true colors and roar on screen and stage.</span>
             </h1>
             <SpeakLine audioSrc={HEADLINE_AUDIO} label="Listen to Coach" channel="hero" />
           </div>
-          <p className="text-base font-medium text-figurative text-balance sm:text-xl">
-            Go from shy to shining as you dissolve nerves, eliminate filler words, and speak confidently on camera.
-          </p>
           <p className="text-lg text-ink text-balance sm:text-xl">
             <b className="font-semibold text-storytelling">Starts {cohort.startShort}</b> · 20 founding spots - a special
             price, in return for your feedback.
@@ -134,6 +131,10 @@ function LandingBody() {
             />
           </div>
           <p className="mt-2 text-center text-sm font-medium text-ink-muted">From awkward to awesome in minutes a day.</p>
+          {/* What the six weeks do, between watching Tariq and the door. */}
+          <p className="mt-5 text-center text-base font-medium text-figurative text-balance sm:text-xl">
+            Go from shy to shining as you dissolve nerves, eliminate filler words, and speak confidently on camera.
+          </p>
           {/* The door, right under Tariq - where somebody who has just
               watched him decides. */}
           <div className="mt-6">
