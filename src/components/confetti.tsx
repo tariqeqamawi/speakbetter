@@ -49,10 +49,15 @@ export function Confetti({
    * there. Same celebration, shown at arm's length.
    */
   contained = false,
+  side,
 }: {
   count?: number;
   duration?: number;
   contained?: boolean;
+  /** One burst only, from this side, fired up and across - a cannon going
+   *  off beside you (the ring tunnel into the finish) rather than the
+   *  whole room. No shower from the top. */
+  side?: "left" | "right";
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
   // Drawn at the body's level, above whatever opened it - a blurred
@@ -111,10 +116,13 @@ export function Confetti({
         });
       }
     };
-    burst(0, H() * 0.7, Math.round(count * 0.35), 1, 0);
-    burst(W(), H() * 0.7, Math.round(count * 0.35), -1, 60);
+    if (side) burst(side === "left" ? 0 : W(), H() * 0.62, count, side === "left" ? 1 : -1, 0);
+    else {
+      burst(0, H() * 0.7, Math.round(count * 0.35), 1, 0);
+      burst(W(), H() * 0.7, Math.round(count * 0.35), -1, 60);
+    }
     // The shower from the top keeps coming for the first three seconds.
-    for (let i = 0; i < Math.round(count * 0.6); i++) {
+    for (let i = 0; i < (side ? 0 : Math.round(count * 0.6)); i++) {
       pieces.push({
         x: Math.random() * W(), y: -10 - Math.random() * 40,
         vx: (Math.random() - 0.5) * 2, vy: 1 + Math.random() * 2,
@@ -181,7 +189,7 @@ export function Confetti({
       window.removeEventListener("pointerdown", onMove);
       window.removeEventListener("pointerup", onLeave);
     };
-  }, [count, duration, host, contained]);
+  }, [count, duration, host, contained, side]);
 
   // In place, inside whatever card asked for it.
   if (contained) {

@@ -17,7 +17,7 @@ import { soundOn, useSound } from "@/lib/sound";
 import { SkyCoach } from "./sky-coach";
 import { ROAD_CHEERS, ROAD_LINES, ROAD_TALK, cheerClip, roadLineClip, talkClip } from "@/data/greetings";
 import { FINISH_TUNNEL } from "./finish-gate";
-import { activated, playApplause, playCoachLine, playGateChime, playRoadWhoosh, startRoadWind } from "@/lib/feedback-fx";
+import { activated, playApplause, playCoachLine, playGateChime, playRoadWhoosh, playXpChime, startRoadWind } from "@/lib/feedback-fx";
 import { Confetti } from "@/components/confetti";
 import { useStore } from "@/lib/store";
 import type { PickPortal, ViewMode, WorldPhase, WorldStop } from "./adventure-world";
@@ -80,7 +80,7 @@ const TRACERS = Array.from({ length: 44 }, (_, i) => {
 
 /** How long each of Coach's tunnel cheers runs, in seconds (the clips in
  *  /coach/cheer-NN.mp3), so the captions keep time with his voice. */
-const CHEER_SECONDS = [1.71, 2.01, 5.37, 3.5, 3.64, 3.86, 4.14, 3.36, 6.24];
+const CHEER_SECONDS = [1.71, 2.01, 5.37, 3.5, 2.74, 3.86, 4.14, 3.36, 6.24];
 
 /** 0-1, for the white wash into the finish. */
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
@@ -691,6 +691,23 @@ export function AdventureScreen({
   }, [cheerAt, sound]);
   useEffect(() => () => hushCheers.current(), []);
 
+  // CONFETTI CANNONS in the second half of the tunnel, near its end: one
+  // goes off from the right, then the left, then the right, then the
+  // left - each set off as the traveller reaches its spot, so the faster
+  // you go the closer together they come.
+  const BURSTS = [0.6, 0.72, 0.83, 0.93];
+  const burstAt = inTunnel ? BURSTS.filter((f) => at - tunnelFrom >= f * FINISH_TUNNEL).length - 1 : -1;
+  const [bursts, setBursts] = useState<{ key: number; side: "left" | "right" }[]>([]);
+  const lastBurst = useRef(-1);
+  useEffect(() => {
+    if (burstAt <= lastBurst.current) return;
+    const fresh: { key: number; side: "left" | "right" }[] = [];
+    for (let i = lastBurst.current + 1; i <= burstAt; i++) fresh.push({ key: i, side: i % 2 ? "left" : "right" });
+    lastBurst.current = burstAt;
+    if (sound) playXpChime();
+    setBursts((b) => [...b, ...fresh]);
+  }, [burstAt, sound]);
+
   // THE FINISH: once, when the traveller passes under the arch.
   const [finished, setFinished] = useState(false);
   const didFinish = useRef(false);
@@ -865,6 +882,13 @@ export function AdventureScreen({
       <span aria-hidden className="road-shooting-star pointer-events-none absolute left-[10%] top-[12%] z-[4] h-px w-24" />
 
       <SkyCoach talking={talking || cheer >= 0} />
+
+      {/* The confetti cannons: each its own burst, from its own side. */}
+      {bursts.map((b) => (
+        <div key={b.key} aria-hidden className="pointer-events-none absolute inset-0 z-[11]">
+          <Confetti contained side={b.side} count={140} duration={4200} />
+        </div>
+      ))}
 
       {/* The barrage, in words: big, bright and one after another, over
           the tunnel - under Coach, above the traveller. */}

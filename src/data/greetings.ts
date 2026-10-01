@@ -179,7 +179,7 @@ export const ROAD_CHEERS: string[] = [
   "Look at you go!",
   "I can't believe it! You actually completed all of the challenges!",
   "You are such an epic speaker now!",
-  "Every single challenge. Done!",
+  "You're ready for the stage.",
   "That voice of yours? Unstoppable.",
   "Remember where you started? Look at you now!",
   "Champion. Absolute champion.",
