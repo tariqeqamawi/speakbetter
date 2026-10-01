@@ -48,6 +48,16 @@ export function ChallengesTabs({
     );
   }, [ready, tab]);
   const current: Tab = tab ?? "orientation";
+  // Kept in the address, so if the page reloads - a phone that ran out of
+  // memory on the road reloads the tab - it opens where they were, not
+  // back on Orientation.
+  useEffect(() => {
+    if (!tab) return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("view") === tab) return;
+    url.searchParams.set("view", tab);
+    window.history.replaceState(window.history.state, "", url);
+  }, [tab]);
 
   // The road's height: from where it starts to the bottom of the screen,
   // less the tab bar when it is showing.
@@ -67,6 +77,8 @@ export function ChallengesTabs({
   const chose = useRef(false);
   const setFull = (on: boolean) => {
     chose.current = true;
+    // (Chosen with the button: theirs now, not the phone's turning.)
+    autoFull.current = false;
     setFullState(on);
     // Remembered: whoever hides the bars with the button once, on a phone
     // held sideways, finds them hidden every time they come back to the
@@ -113,19 +125,29 @@ export function ChallengesTabs({
     };
   }, []);
 
-  // Sideways on a phone, with the bars hidden last time: hidden again -
-  // on opening the road, and whenever the phone is turned on its side.
+  // Sideways on a phone the bars go by default - on opening the road, and
+  // whenever the phone is turned on its side - since a header and a tab
+  // bar leave a landscape phone only a letterbox of road. Unless the
+  // student has shown them again with the button, which is remembered.
+  // Turned upright again, bars that went by themselves come back.
+  const autoFull = useRef(false);
   useEffect(() => {
     if (current !== "challenges") return;
     const sideways = window.matchMedia("(orientation: landscape) and (pointer: coarse)");
     const apply = () => {
-      let wanted = false;
+      let kept = false;
       try {
-        wanted = localStorage.getItem(FULL_KEY) === "1";
+        kept = localStorage.getItem(FULL_KEY) === "0";
       } catch {
         // no storage
       }
-      if (wanted && sideways.matches) setFullState(true);
+      if (sideways.matches && !kept) {
+        autoFull.current = true;
+        setFullState(true);
+      } else if (!sideways.matches && autoFull.current) {
+        autoFull.current = false;
+        setFullState(false);
+      }
     };
     apply();
     sideways.addEventListener("change", apply);

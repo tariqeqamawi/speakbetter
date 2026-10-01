@@ -40,6 +40,7 @@ const GREETINGS = [
   ...linesFrom(source, "TROPHY_LINES", "trophy"),
   ...linesFrom(source, "ROAD_LINES", "road"),
   ...linesFrom(source, "ROAD_TALK", "talk"),
+  ...linesFrom(source, "ROAD_CHEERS", "cheer"),
 ];
 
 if (!GREETINGS.length) throw new Error("no greetings found in src/data/greetings.ts");

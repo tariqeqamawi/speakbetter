@@ -170,6 +170,26 @@ export const ROAD_LINES: string[] = [
   "Well, well, well. You've gone and done it. You've completed all of the challenges and I bet you don't even recognize yourself. Look who you've become. Do you remember where you started? You deserve every ounce of praise. Congratulations! Take a bow. You've just completed Speak Better. Oh and remember, you can always go back and do the challenges again, unlock even higher scores, and get the coveted gold trophies. See you soon.",
 ];
 
+// Coach in the ring tunnel into the finish: a barrage, one line on the
+// heels of the last, the whole way down it - the victory, said out loud.
+// The four in Tariq's words, and the rest in the same voice, ending on
+// his. Rendered once each into /coach/cheer-NN.mp3.
+export const ROAD_CHEERS: string[] = [
+  "Well done!",
+  "Look at you go!",
+  "I can't believe it! You actually completed all of the challenges!",
+  "You are such an epic speaker now!",
+  "Every single challenge. Done!",
+  "That voice of yours? Unstoppable.",
+  "Remember where you started? Look at you now!",
+  "Champion. Absolute champion.",
+  "You have earned every bit of this victory. Enjoy it. Bask in the success.",
+];
+
+export function cheerClip(index: number): string {
+  return `/coach/cheer-${String(index + 1).padStart(2, "0")}.mp3`;
+}
+
 export function roadLineClip(index: number): string {
   return `/coach/road-${String(index + 1).padStart(2, "0")}.mp3`;
 }

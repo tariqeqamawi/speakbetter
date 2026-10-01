@@ -3562,19 +3562,22 @@ html.bare .demo-banner {
   position: absolute;
   left: 50%;
   top: 42%;
-  width: 11vmin;
-  height: 1.5px;
+  width: 13vmin;
+  height: 2px;
   border-radius: 999px;
   transform-origin: 0 50%;
   background: linear-gradient(90deg, transparent, var(--c, #fff));
-  box-shadow: 0 0 6px var(--c, #fff);
+  /* Soft round the edges: a streak of light smeared by speed, not a
+     drawn line. */
+  box-shadow: 0 0 9px var(--c, #fff);
+  filter: blur(0.6px);
   opacity: 0;
   animation: road-tracer var(--t, 0.5s) linear var(--d, 0s) infinite;
 }
 @keyframes road-tracer {
   0% { transform: rotate(var(--a)) translateX(14vmin) scaleX(0.3); opacity: 0; }
   25% { opacity: 1; }
-  100% { transform: rotate(var(--a)) translateX(75vmax) scaleX(2.2); opacity: 0.9; }
+  100% { transform: rotate(var(--a)) translateX(75vmax) scaleX(3.2); opacity: 0.9; }
 }
 @media (prefers-reduced-motion: reduce) {
   .road-tracers { display: none; }

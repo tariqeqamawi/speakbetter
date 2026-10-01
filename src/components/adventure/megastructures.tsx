@@ -231,9 +231,11 @@ const TOWER_FRAG = /* glsl */ `
 // brighter, and beating slowly like a crowd on its feet.
 const VICTORY_VERT = TOWER_VERT.replace(
   "vKind = floor(h2 * 4.0);",
-  // (Only lines - seams up the corners and bands round the floors - so the
-  // bodies stay dark and the colour is all in the glow.)
-  "vKind = h2 < 0.5 ? 0.0 : 3.0;",
+  // (Seams up the corners, a field of lit dots, or bands round the floors -
+  // the bands, the rings of colour climbing a tower, now one tower in
+  // four rather than one in two - so the bodies stay dark and the colour
+  // is all in the glow, and no two neighbours look alike.)
+  "vKind = h2 < 0.35 ? 0.0 : h2 < 0.75 ? 2.0 : 3.0;",
 ).replace(
   "vBody = h3 < 0.4 ? vec3(0.006, 0.016, 0.075) : h3 < 0.7 ? vec3(0.004, 0.004, 0.010) : vec3(0.022, 0.008, 0.072);",
   "vBody = vec3(0.006, 0.007, 0.011);",
@@ -241,7 +243,10 @@ const VICTORY_VERT = TOWER_VERT.replace(
   "vGlow = h1 < 0.4 ? vec3(0.25, 0.55, 1.0) : h1 < 0.7 ? vec3(0.66, 0.36, 1.0) : vec3(0.2, 0.95, 0.75);",
   "vGlow = h1 < 0.2 ? vec3(0.12, 0.91, 0.56) : h1 < 0.4 ? vec3(0.13, 0.85, 0.96) : h1 < 0.6 ? vec3(1.0, 0.84, 0.04) : h1 < 0.8 ? vec3(1.0, 0.29, 0.17) : vec3(0.96, 0.24, 0.88);",
 );
-const VICTORY_FRAG = TOWER_FRAG.replace("uniform vec3 uFog;", "uniform vec3 uFog;\n  uniform float uTime;").replace(
+const VICTORY_FRAG = TOWER_FRAG.replace("uniform vec3 uFog;", "uniform vec3 uFog;\n  uniform float uTime;")
+  // (Where a tower is banded, the bands twice as far apart.)
+  .replace("g = line(y / 9.0 + vSeed, 0.05) * 1.1;", "g = line(y / 18.0 + vSeed, 0.05) * 1.1;")
+  .replace(
   "vGlow * g * up;",
   "vGlow * g * up * (1.5 + 0.9 * pow(0.5 + 0.5 * sin(uTime * 2.4 + vSeed * 3.0 - vW.y * 0.04), 3.0));",
 );
@@ -1275,6 +1280,40 @@ function Tubes({ road, colourAt, tunnels }: { road: RoadLayout; colourAt: Colour
         const curve = new THREE.CatmullRomCurve3(pts);
         const len = tn.to - tn.from;
         const geo = new THREE.TubeGeometry(curve, Math.ceil(len / 1.5), 8.6, 40, false);
+        // THE RIMS: a hard ring of light round each mouth of a tube, and a
+        // soft wider halo round that - so the tube reads as a solid thing
+        // with an edge you fly into, not a texture wrapped round the road.
+        const rims: THREE.Mesh[] = [];
+        if (!tn.rings) {
+          const colour = colourAt(tn.from).clone().multiplyScalar(2.2);
+          const hard = new THREE.MeshBasicMaterial({ color: colour, toneMapped: false });
+          const soft = new THREE.MeshBasicMaterial({
+            color: colour.clone().multiplyScalar(0.35),
+            toneMapped: false,
+            transparent: true,
+            opacity: 0.6,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+          });
+          const p = new THREE.Vector3();
+          const q = new THREE.Vector3();
+          for (const [at, toward] of [
+            [tn.from, tn.from + 2],
+            [tn.to, tn.to - 2],
+          ]) {
+            pointAt(road, at, p).y += 3.4;
+            pointAt(road, toward, q).y += 3.4;
+            for (const [geo, mat] of [
+              [new THREE.TorusGeometry(8.75, 0.32, 10, 72), hard],
+              [new THREE.TorusGeometry(8.9, 1.1, 10, 72), soft],
+            ] as const) {
+              const m = new THREE.Mesh(geo, mat);
+              m.position.copy(p);
+              m.lookAt(q);
+              rims.push(m);
+            }
+          }
+        }
         const mat = new THREE.ShaderMaterial({
           vertexShader: TUBE_VERT,
           fragmentShader: tn.rings ? RINGS_FRAG : TUBE_FRAG,
@@ -1288,7 +1327,7 @@ function Tubes({ road, colourAt, tunnels }: { road: RoadLayout; colourAt: Colour
             uTime: { value: 0 },
           },
         });
-        return { geo, mat };
+        return { geo, mat, rims };
       }),
     [road, colourAt, tunnels],
   );
@@ -1297,6 +1336,10 @@ function Tubes({ road, colourAt, tunnels }: { road: RoadLayout; colourAt: Colour
       items.forEach((it) => {
         it.geo.dispose();
         it.mat.dispose();
+        for (const r of it.rims) {
+          r.geometry.dispose();
+          (r.material as THREE.Material).dispose();
+        }
       }),
     [items],
   );
@@ -1308,7 +1351,12 @@ function Tubes({ road, colourAt, tunnels }: { road: RoadLayout; colourAt: Colour
   return (
     <group>
       {items.map((it, i) => (
-        <mesh key={i} geometry={it.geo} material={it.mat} />
+        <group key={i}>
+          <mesh geometry={it.geo} material={it.mat} />
+          {it.rims.map((r, k) => (
+            <primitive key={k} object={r} />
+          ))}
+        </group>
       ))}
     </group>
   );
@@ -1494,7 +1542,10 @@ export function structurePlan(road: RoadLayout) {
   const weave = road.skyways.find((w) => (w as { wave?: boolean }).wave);
   if (weave) {
     const from = weave.a + 70 + 50;
-    const to = weave.b - 170 - 50;
+    // (Where the road stays up and runs on into the victory stretch, the
+    // weave straightens 90 short of its end rather than ramping down.)
+    const runsOn = road.liftAt(weave.b + 5) > 1;
+    const to = weave.b - (runsOn ? 90 : 170) - 50;
     const half = WEAVE.K * Math.PI;
     for (let k = Math.ceil((from - weave.a) / half); weave.a + k * half < to; k++) {
       const at = weave.a + k * half;
@@ -1525,7 +1576,9 @@ export function structurePlan(road: RoadLayout) {
     }
   }
   // (All before the ring tunnel into the finish.)
-  for (let s = vFrom + 150; s < road.finish - FINISH_TUNNEL - 40; s += 230) monuments.headphones.push(s);
+  // (None in the last 260 before the ring tunnel: the neon FINISH over
+  // its mouth (finish-gate.tsx) has that moment to itself.)
+  for (let s = vFrom + 150; s < road.finish - FINISH_TUNNEL - 260; s += 230) monuments.headphones.push(s);
   // And podcast mics on boom arms leaning out over it, from one side then
   // the other.
   for (let s = vFrom + 60, side = 1; s < road.finish - FINISH_TUNNEL - 30; s += 115, side = -side)

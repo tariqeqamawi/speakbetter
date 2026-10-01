@@ -58,7 +58,9 @@ export function Bloom({
     const k = travel ? Math.max(0, (travel.feel - 0.25) / 0.75) : 0;
     blur.enabled = k > 0.01;
     // (The edges of the view blur at speed; the middle stays sharp.)
-    blur.uniforms.uAmount.value = k * k * 0.06 + (travel?.boost ?? 0) * 0.05;
+    // (Half as much again as it was, more still flat out: the rush at
+    // top speed should be felt at the edges.)
+    blur.uniforms.uAmount.value = k * k * 0.09 + (travel?.boost ?? 0) * 0.085;
     composer.render(dt);
   }, 1);
   /* eslint-enable react-hooks/immutability */
@@ -78,7 +80,9 @@ export function SpeedSparks({
   travel: Travel;
   colourAt: (s: number) => THREE.Color;
 }) {
-  const N = 420;
+  // (About half what it was: with fewer sparks, the speed streaks at the
+  // edges of the view read through them.)
+  const N = 220;
   const LIFE = 0.6;
   const { geo, vel, age, ground } = useMemo(() => {
     const geo = new THREE.BufferGeometry();
@@ -118,7 +122,7 @@ export function SpeedSparks({
     const col = (geo.attributes.color as THREE.BufferAttribute).array as Float32Array;
     const s = travel.s + AHEAD;
     // New sparks, as many as the boost asks for.
-    debt.current += travel.portal ? 0 : travel.boost * 340 * dt;
+    debt.current += travel.portal ? 0 : travel.boost * 160 * dt;
     if (debt.current >= 1) {
       pointAt(road, s, p);
       pointAt(road, s + 1, q);
@@ -215,7 +219,7 @@ function speedBlur(samples: number) {
         vec2 step = dir * uAmount * far / float(N);
         vec4 sum = vec4(0.0);
         for (int i = 0; i < N; i++) sum += texture2D(tDiffuse, vUv - step * float(i));
-        gl_FragColor = vec4((sum / float(N)).rgb * (1.0 - far * uAmount * 3.0), 1.0);
+        gl_FragColor = vec4((sum / float(N)).rgb * (1.0 - far * min(uAmount * 2.0, 0.28)), 1.0);
       }
     `,
   };

@@ -130,10 +130,16 @@ export function AdventureView({
               title="Orientation"
               className="grid size-9 place-items-center rounded-full border border-navy-600 bg-navy-950/80 text-ink-muted backdrop-blur hover:text-ink"
             >
-              {/* A compass: the welcome and the intro videos. */}
-              <svg viewBox="0 0 24 24" className="size-[1.1rem]" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                <circle cx="12" cy="12" r="9" />
-                <path d="M15.5 8.5l-2 5-5 2 2-5z" />
+              {/* A compass: the welcome and the intro videos. Drawn like
+                  one - a ring with its four points marked, and a needle
+                  whose north half is solid - so it can't be mistaken for
+                  a clock or a play button. */}
+              <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <circle cx="12" cy="12" r="9.5" />
+                <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2" />
+                <path d="M12 5.5l2.6 6.5h-5.2z" fill="currentColor" stroke="none" />
+                <path d="M9.4 12h5.2L12 18.5z" />
+                <circle cx="12" cy="12" r="0.9" fill="currentColor" stroke="none" />
               </svg>
             </button>
           )}
@@ -156,9 +162,15 @@ export function AdventureView({
               type="button"
               onClick={() => chrome.setFull(!chrome.full)}
               aria-label={chrome.full ? "Exit full screen" : "Full screen"}
-              className="grid size-9 place-items-center rounded-full border border-navy-600 bg-navy-950/80 text-ink-muted backdrop-blur hover:text-ink"
+              aria-pressed={chrome.full}
+              title={chrome.full ? "Exit full screen" : "Full screen"}
+              // The same full-screen icon either way, so it's always plain
+              // what the button is - lit up while full screen is on.
+              className={`grid size-9 place-items-center rounded-full backdrop-blur ${
+                chrome.full ? PILL_ON : "border border-navy-600 bg-navy-950/80 text-ink-muted hover:text-ink"
+              }`}
             >
-              <FullScreenIcon full={chrome.full} />
+              <FullScreenIcon full={false} />
             </button>
           )}
         </div>

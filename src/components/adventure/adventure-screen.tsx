@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AHEAD, GATE_BEFORE, Travel, layoutRoad, progressAt, reachedPhase, sAtProgress, victoryStart } from "./road-geometry";
+import { RoadGuard } from "./road-guard";
 import { structurePlan } from "./megastructures";
 import type { MonumentPlan } from "./monuments";
 import { RoadDial } from "./road-dial";
@@ -14,7 +15,8 @@ import { RoadLegendButton } from "./road-legend";
 import { SoundToggle } from "@/components/sound-toggle";
 import { soundOn, useSound } from "@/lib/sound";
 import { SkyCoach } from "./sky-coach";
-import { ROAD_LINES, ROAD_TALK, roadLineClip, talkClip } from "@/data/greetings";
+import { ROAD_CHEERS, ROAD_LINES, ROAD_TALK, cheerClip, roadLineClip, talkClip } from "@/data/greetings";
+import { FINISH_TUNNEL } from "./finish-gate";
 import { activated, playApplause, playCoachLine, playGateChime, playRoadWhoosh, startRoadWind } from "@/lib/feedback-fx";
 import { Confetti } from "@/components/confetti";
 import { useStore } from "@/lib/store";
@@ -75,6 +77,10 @@ const TRACERS = Array.from({ length: 44 }, (_, i) => {
     c: ["#ffffff", "#1FE890", "#22D9F5", "#ffffff", "#FFD60A", "#FF4A2B", "#ffffff", "#F53DE0"][i % 8],
   };
 });
+
+/** How long each of Coach's tunnel cheers runs, in seconds (the clips in
+ *  /coach/cheer-NN.mp3), so the captions keep time with his voice. */
+const CHEER_SECONDS = [1.71, 2.01, 5.37, 3.5, 3.64, 3.86, 4.14, 3.36, 6.24];
 
 /** 0-1, for the white wash into the finish. */
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
@@ -145,12 +151,20 @@ export function AdventureScreen({
       const ms = typeof first === "number" ? first : first && "s" in first ? first.s : first?.a;
       if (ms !== undefined) return Math.max(0, ms - 150);
     }
-    if (startProgress !== null) return sAtProgress(road, startProgress);
+    // Carried over from the other view - but never past where this road
+    // lets them go: the two roads are different lengths, and a spot near
+    // the end of one could land past the other's finish line.
+    if (startProgress !== null) {
+      const done = stops.every((st) => st.state === "done");
+      return Math.min(sAtProgress(road, startProgress), done ? road.finish + 10 : road.finish - AHEAD - 12);
+    }
     return hereIndex > 0 ? Math.max(0, road.stops[hereIndex] - AHEAD - 2) : 0;
     // (Where to open is decided once, on opening.)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [road, hereIndex]);
   const [travel] = useState(() => new Travel(start));
+  // Bumped to rebuild the 3D scene after a failure (RoadGuard).
+  const [worldKey, setWorldKey] = useState(0);
   const [s, setS] = useState(start);
   const frame = useRef<HTMLDivElement>(null);
   // Only draw while the road is on screen - a page with the road far
@@ -635,19 +649,65 @@ export function AdventureScreen({
   // Up against the finish before it is earned: say why the road ends here.
   const atGate = !allDone && s > limit - 3;
 
+  // THE BARRAGE: down the ring tunnel into the finish, Coach overhead,
+  // cheering. The tunnel is cut into as many stretches as he has lines,
+  // and each stretch, as you enter it, sets off the next one - so the
+  // pace is yours: drift through and they come one by one with room to
+  // breathe; go through flat out and they pile in on top of each other,
+  // one on the heels of the last. (His voice takes its turn - lib/
+  // voice-floor - so a line set off while he's still talking follows
+  // straight after it rather than over it.) Only for someone who has
+  // done every challenge.
+  const tunnelFrom = road.finish - FINISH_TUNNEL;
+  const inTunnel = allDone && !demo && at > tunnelFrom && at < road.finish - 6;
+  const cheerAt = inTunnel
+    ? Math.min(ROAD_CHEERS.length - 1, Math.floor(((at - tunnelFrom) / (FINISH_TUNNEL - 40)) * ROAD_CHEERS.length))
+    : -1;
+  const [cheer, setCheer] = useState(-1);
+  const lastCheer = useRef(-1);
+  const cheerStops = useRef<(() => void)[]>([]);
+  const cheerClear = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const hushCheers = useRef<() => void>(() => {});
+  useEffect(() => {
+    hushCheers.current = () => {
+      cheerStops.current.forEach((stop) => stop());
+      cheerStops.current = [];
+      clearTimeout(cheerClear.current);
+      setCheer(-1);
+    };
+  }, []);
+  useEffect(() => {
+    if (cheerAt <= lastCheer.current) return;
+    // Every stretch passed since the last frame gets its line - none is
+    // skipped, however fast.
+    for (let i = lastCheer.current + 1; i <= cheerAt; i++) {
+      if (sound) cheerStops.current.push(playCoachLine(cheerClip(i)));
+    }
+    lastCheer.current = cheerAt;
+    setCheer(cheerAt);
+    // The words stay up while he says them, or until the next stretch.
+    clearTimeout(cheerClear.current);
+    cheerClear.current = setTimeout(() => setCheer(-1), ((CHEER_SECONDS[cheerAt] ?? 3) + 0.6) * 1000);
+  }, [cheerAt, sound]);
+  useEffect(() => () => hushCheers.current(), []);
+
   // THE FINISH: once, when the traveller passes under the arch.
   const [finished, setFinished] = useState(false);
   const didFinish = useRef(false);
   const hushFinish = useRef<() => void>(() => {});
   useEffect(() => {
-    if (!atFinish || didFinish.current) return;
+    // (Only for someone who has done every challenge - however they
+    // came to be standing at the line.)
+    if (!atFinish || !allDone || didFinish.current) return;
     didFinish.current = true;
+    // (The cheering stops for his finishing words.)
+    hushCheers.current();
     setFinished(true);
     if (sound) {
       playApplause();
       hushFinish.current = playCoachLine(roadLineClip(3), FINISH_DELAY);
     }
-  }, [atFinish, sound]);
+  }, [atFinish, allDone, sound]);
   // His finishing words, a sentence at a time, as he says them - each
   // held for its share of the clip by length.
   const [finishLine, setFinishLine] = useState(-1);
@@ -726,7 +786,26 @@ export function AdventureScreen({
       aria-label="The S.T.O.R.Y. road. Drag down or use the down arrow to travel forward."
       className={`relative w-full touch-none select-none ${heightClass} overflow-hidden bg-[#070c18] outline-none`}
     >
-      <AdventureWorld stops={stops} phases={phases} travel={travel} onMove={onMove} avatar={avatar} pickRef={pickRef} limit={limit} skyImage={skyImage} active={onScreen} calm={calm} arrive={arrive} leaveTo={leaveTo} />
+      {/* Guarded: if the scene fails or the phone takes the graphics back,
+          it's rebuilt in place, at the same spot (road-guard.tsx). */}
+      <RoadGuard onRestart={() => setWorldKey((k) => k + 1)}>
+        <AdventureWorld
+          key={worldKey}
+          stops={stops}
+          phases={phases}
+          travel={travel}
+          onMove={onMove}
+          onLost={() => window.setTimeout(() => setWorldKey((k) => k + 1), 400)}
+          avatar={avatar}
+          pickRef={pickRef}
+          limit={limit}
+          skyImage={skyImage}
+          active={onScreen}
+          calm={calm}
+          arrive={arrive}
+          leaveTo={leaveTo}
+        />
+      </RoadGuard>
 
       {bannerPhase && (
         <div key={banner!.key} className="phase-banner pointer-events-none absolute inset-x-0 top-16 z-20 flex justify-center px-4">
@@ -785,7 +864,22 @@ export function AdventureScreen({
       {/* Now and then, a shooting star across the top of the sky. */}
       <span aria-hidden className="road-shooting-star pointer-events-none absolute left-[10%] top-[12%] z-[4] h-px w-24" />
 
-      <SkyCoach talking={talking} />
+      <SkyCoach talking={talking || cheer >= 0} />
+
+      {/* The barrage, in words: big, bright and one after another, over
+          the tunnel - under Coach, above the traveller. */}
+      {cheer >= 0 && (
+        <div className="pointer-events-none absolute inset-x-0 top-[24%] z-10 flex justify-center px-6">
+          <p
+            key={cheer}
+            aria-live="polite"
+            className="coach-note-in spectrum-text max-w-lg text-center text-2xl font-black leading-tight tracking-tight text-balance sm:text-4xl"
+            style={{ filter: "drop-shadow(0 2px 12px rgba(0,0,0,0.9))" }}
+          >
+            {ROAD_CHEERS[cheer]}
+          </p>
+        </div>
+      )}
 
 
       {/* What Coach said, as he said it. */}

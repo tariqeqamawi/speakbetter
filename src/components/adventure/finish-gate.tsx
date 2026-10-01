@@ -40,6 +40,72 @@ function finishLabel(cols: THREE.Color[]) {
   return tex;
 }
 
+/** THE NEON FINISH SIGN over the mouth of the ring tunnel: the word in
+ *  neon tube, each letter its own section's colour, inside a glowing
+ *  frame - the sign you see coming from far down the victory stretch.
+ *  Drawn as strokes, the way a real neon sign is bent glass, with the
+ *  glow laid round them. */
+function neonSign(cols: THREE.Color[]) {
+  const c = document.createElement("canvas");
+  c.width = 2048;
+  c.height = 560;
+  const g = c.getContext("2d")!;
+  const hex = (col: THREE.Color, k = 1) => `#${col.clone().multiplyScalar(k).getHexString()}`;
+  const colour = (i: number) => cols[i % Math.max(1, cols.length)] ?? new THREE.Color("#ffffff");
+  // The frame: a rounded rectangle of white neon, twice glowed.
+  g.lineJoin = "round";
+  g.lineCap = "round";
+  const frame = () => {
+    g.beginPath();
+    g.roundRect(40, 40, 1968, 480, 70);
+    g.stroke();
+  };
+  g.strokeStyle = "#ffffff";
+  for (const [blur, w] of [
+    [50, 14],
+    [20, 10],
+    [0, 6],
+  ]) {
+    g.shadowColor = "rgba(255,255,255,0.95)";
+    g.shadowBlur = blur;
+    g.lineWidth = w;
+    frame();
+  }
+  // The letters, each in its colour: a wide glow, a tight glow, then the
+  // tube itself, with a white-hot line down its middle.
+  g.font = "900 330px system-ui, -apple-system, 'Segoe UI', sans-serif";
+  g.textAlign = "center";
+  g.textBaseline = "middle";
+  const word = "FINISH";
+  const widths = [...word].map((ch) => g.measureText(ch).width);
+  const gap = 34;
+  const total = widths.reduce((a, b) => a + b, 0) + gap * (word.length - 1);
+  let x = 1024 - total / 2;
+  [...word].forEach((ch, i) => {
+    const cx = x + widths[i] / 2;
+    x += widths[i] + gap;
+    const col = colour(i);
+    for (const [blur, w, k] of [
+      [70, 16, 0.9],
+      [26, 12, 1],
+    ] as const) {
+      g.shadowColor = hex(col, k);
+      g.shadowBlur = blur;
+      g.lineWidth = w;
+      g.strokeStyle = hex(col, k);
+      g.strokeText(ch, cx, 290);
+    }
+    g.shadowBlur = 0;
+    g.lineWidth = 3.5;
+    g.strokeStyle = hex(col.clone().lerp(new THREE.Color("#ffffff"), 0.75));
+    g.strokeText(ch, cx, 290);
+  });
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  return tex;
+}
+
 // The sparks pouring off the finish arch: each leaves a point on the arch,
 // drifts out and up and fades, and is reborn - all in the shader, so a few
 // hundred cost nothing.
@@ -199,8 +265,9 @@ export function FinishGate({ road, cols: given }: { road: RoadLayout; cols: THRE
 }
 
 
-/** How long the ring tunnel into the finish is. */
-export const FINISH_TUNNEL = 720;
+/** How long the ring tunnel into the finish is - twice what it was, long
+ *  enough for Coach's barrage of cheers down it (adventure-screen.tsx). */
+export const FINISH_TUNNEL = 1440;
 const RING_GAP = 4.5;
 
 const RING_VERT = /* glsl */ `
@@ -319,6 +386,19 @@ export function FinishTunnel({ road, cols }: { road: RoadLayout; cols: THREE.Col
   /* eslint-enable react-hooks/immutability */
   const label = useMemo(() => (typeof document === "undefined" ? null : finishLabel(cols)), [cols]);
   useEffect(() => () => label?.dispose(), [label]);
+  const neon = useMemo(() => (typeof document === "undefined" ? null : neonSign(cols)), [cols]);
+  useEffect(() => () => neon?.dispose(), [neon]);
+  // Where the sign hangs: over the tunnel's mouth, facing back down the
+  // road at whoever is coming.
+  const mouth = useMemo(
+    () => ({ at: pointAt(road, road.finish - FINISH_TUNNEL), toward: pointAt(road, road.finish - FINISH_TUNNEL - 1) }),
+    [road],
+  );
+  const signGroup = useRef<THREE.Group>(null);
+  const signMat = useRef<THREE.MeshBasicMaterial>(null);
+  useEffect(() => {
+    signGroup.current?.lookAt(mouth.toward.x, mouth.at.y, mouth.toward.z);
+  }, [mouth]);
   const vortex = useMemo(() => {
     const palette = [0, 1, 2, 3, 4].map((i) => (cols[i] ?? cols[0] ?? new THREE.Color("#ffffff")).clone().multiplyScalar(0.9));
     // A long open cone, its mouth round the road and its tip far beyond,
@@ -344,6 +424,13 @@ export function FinishTunnel({ road, cols }: { road: RoadLayout; cols: THREE.Col
   useFrame(({ clock }) => {
     (vortex.material as THREE.ShaderMaterial).uniforms.uTime.value = clock.elapsedTime;
     vortex.rotation.z = clock.elapsedTime * 0.6;
+    // The sign hums: a slow breath of brightness, and now and then the
+    // quick double flicker of a real neon tube.
+    if (signMat.current) {
+      const t = clock.elapsedTime;
+      const flicker = Math.sin(t * 0.7) > 0.985 && Math.sin(t * 47) > 0 ? 0.55 : 1;
+      signMat.current.color.setScalar((1.15 + 0.15 * Math.sin(t * 2.1)) * flicker);
+    }
   });
   /* eslint-enable react-hooks/immutability */
   const { position, facing } = useMemo(() => ({ position: pointAt(road, road.finish), facing: pointAt(road, road.finish - 1) }), [road]);
@@ -354,6 +441,14 @@ export function FinishTunnel({ road, cols }: { road: RoadLayout; cols: THREE.Col
   return (
     <>
       <primitive object={rings} />
+      {neon && (
+        <group ref={signGroup} position={mouth.at}>
+          <mesh position={[0, 30, 0]}>
+            <planeGeometry args={[82, 22.4]} />
+            <meshBasicMaterial ref={signMat} map={neon} transparent toneMapped={false} depthWrite={false} side={THREE.DoubleSide} />
+          </mesh>
+        </group>
+      )}
       {/* (The group looks back down the road: +z toward the traveller.) */}
       <group ref={group} position={position}>
         <group position={[0, 3.5, 0]}>

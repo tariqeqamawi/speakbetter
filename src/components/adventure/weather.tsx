@@ -124,7 +124,7 @@ function Drift({
     const dt = Math.min(dtRaw, 0.05);
     const here = travel.s + AHEAD;
     const w = inside(stretch, here);
-    mat.opacity = w;
+    mat.opacity = w * 0.75;
     if (w <= 0.001) {
       placed.current = false;
       return;
@@ -230,31 +230,61 @@ function Aurora({ travel, stretch }: { travel: Travel; stretch: Stretch | undefi
   );
 }
 
-/** Neon rain: short bright streaks falling fast through the air round
- *  you - one line each, so a few hundred cost almost nothing. */
+/** Neon rain: soft, blurred streaks falling fast through the air round
+ *  you - each drop one point drawn as a smear of light, out of focus,
+ *  rather than a hard line. */
 function Rain({ road, travel, stretch, count, colours }: { road: RoadLayout; travel: Travel; stretch: Stretch | undefined; count: number; colours: string[] }) {
   const R = 40;
   const TOP = 46;
-  const LEN = 4.5;
   const geo = useMemo(() => {
     const g = new THREE.BufferGeometry();
-    const pos = new Float32Array(count * 6);
-    const col = new Float32Array(count * 6);
+    const pos = new Float32Array(count * 3);
+    const col = new Float32Array(count * 3);
     const c = new THREE.Color();
     for (let i = 0; i < count; i++) {
-      c.set(colours[i % colours.length]).multiplyScalar(2.4);
-      // (The tail of each streak fainter than its head.)
-      col.set([c.r * 0.25, c.g * 0.25, c.b * 0.25, c.r, c.g, c.b], i * 6);
-      pos.set([0, -1e5, 0, 0, -1e5, 0], i * 6);
+      c.set(colours[i % colours.length]).multiplyScalar(1.6);
+      col.set([c.r, c.g, c.b], i * 3);
+      pos.set([0, -1e5, 0], i * 3);
     }
     g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
     g.setAttribute("color", new THREE.BufferAttribute(col, 3));
     return g;
   }, [count, colours]);
+  // The smear: a tall soft streak, feathered at every edge - a drop seen
+  // through a lens, out of focus, not drawn.
+  const streak = useMemo(() => {
+    if (typeof document === "undefined") return null;
+    const c = document.createElement("canvas");
+    c.width = c.height = 64;
+    const g2 = c.getContext("2d")!;
+    const img = g2.createImageData(64, 64);
+    for (let y = 0; y < 64; y++)
+      for (let x = 0; x < 64; x++) {
+        const dx = (x - 31.5) / 3.2;
+        const dy = (y - 36) / 24;
+        const a = Math.exp(-dx * dx) * Math.exp(-dy * dy * 1.6) * (y < 36 ? 0.75 : 1);
+        const k = (y * 64 + x) * 4;
+        img.data[k] = img.data[k + 1] = img.data[k + 2] = 255;
+        img.data[k + 3] = Math.round(255 * Math.min(1, a));
+      }
+    g2.putImageData(img, 0, 0);
+    return new THREE.CanvasTexture(c);
+  }, []);
   const mat = useMemo(
-    () => new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }),
-    [],
+    () =>
+      new THREE.PointsMaterial({
+        map: streak,
+        size: 3.4,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        toneMapped: false,
+      }),
+    [streak],
   );
+  useEffect(() => () => streak?.dispose(), [streak]);
   useEffect(
     () => () => {
       geo.dispose();
@@ -276,24 +306,21 @@ function Rain({ road, travel, stretch, count, colours }: { road: RoadLayout; tra
     pointAt(road, travel.s + AHEAD + 18, centre);
     const p = (geo.attributes.position as THREE.BufferAttribute).array as Float32Array;
     for (let i = 0; i < count; i++) {
-      let y = p[i * 6 + 4] - 34 * dt;
-      if (!placed.current || y < centre.y - 2 || (p[i * 6 + 3] - centre.x) ** 2 + (p[i * 6 + 5] - centre.z) ** 2 > R * R) {
+      let y = p[i * 3 + 1] - 34 * dt;
+      if (!placed.current || y < centre.y - 2 || (p[i * 3] - centre.x) ** 2 + (p[i * 3 + 2] - centre.z) ** 2 > R * R) {
         const a = Math.random() * Math.PI * 2;
         const r = Math.sqrt(Math.random()) * R;
-        p[i * 6 + 3] = centre.x + Math.cos(a) * r;
-        p[i * 6 + 5] = centre.z + Math.sin(a) * r;
+        p[i * 3] = centre.x + Math.cos(a) * r;
+        p[i * 3 + 2] = centre.z + Math.sin(a) * r;
         y = centre.y + (placed.current ? TOP : Math.random() * TOP);
       }
-      p[i * 6] = p[i * 6 + 3];
-      p[i * 6 + 2] = p[i * 6 + 5];
-      p[i * 6 + 4] = y;
-      p[i * 6 + 1] = y + LEN;
+      p[i * 3 + 1] = y;
     }
     placed.current = true;
     (geo.attributes.position as THREE.BufferAttribute).needsUpdate = true;
   });
   /* eslint-enable react-hooks/immutability */
-  return <lineSegments geometry={geo} material={mat} frustumCulled={false} />;
+  return <points geometry={geo} material={mat} frustumCulled={false} />;
 }
 
 export function SectionWeather({ road, travel, spans }: { road: RoadLayout; travel: Travel; spans: Stretch[] }) {
@@ -312,11 +339,13 @@ export function SectionWeather({ road, travel, spans }: { road: RoadLayout; trav
   return (
     <group>
       <Aurora travel={travel} stretch={find("S")} />
-      <Drift road={road} travel={travel} stretch={find("T")} count={140} colours={dust} size={0.7} rise={0} wind={3.2} low={1} high={18} />
-      <Drift road={road} travel={travel} stretch={find("O")} count={240} colours={pollen} size={0.8} rise={-1.4} wind={1.2} low={0} high={30} />
-      <Drift road={road} travel={travel} stretch={find("R")} count={110} colours={embers} size={0.8} rise={3.2} wind={0.6} low={0} high={34} />
+      {/* (Thinned out - about half - so at speed the air isn't so full
+          of motes that the streaks at the edges of the view are lost.) */}
+      <Drift road={road} travel={travel} stretch={find("T")} count={80} colours={dust} size={0.7} rise={0} wind={3.2} low={1} high={18} />
+      <Drift road={road} travel={travel} stretch={find("O")} count={130} colours={pollen} size={0.8} rise={-1.4} wind={1.2} low={0} high={30} />
+      <Drift road={road} travel={travel} stretch={find("R")} count={65} colours={embers} size={0.8} rise={3.2} wind={0.6} low={0} high={34} />
       {/* (Not over the victory stretch: the city there is busy enough.) */}
-      <Rain road={road} travel={travel} stretch={yRain} count={420} colours={neon} />
+      <Rain road={road} travel={travel} stretch={yRain} count={210} colours={neon} />
     </group>
   );
 }

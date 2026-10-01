@@ -263,7 +263,10 @@ const TERRAIN_FRAG = /* glsl */ `
       // Twice as many points as the grid has crossings - and alive: each
       // twinkles at its own pace, and now and then one flares bright, a
       // field of stars rather than a pattern of holes.
-      vec2 d2 = g * 2.0;
+      // (Half as many along the road as across it: the rows of studs
+      // running away from you were so close they merged into one glow
+      // at speed.)
+      vec2 d2 = g * vec2(1.0, 2.0);
       vec2 cell = floor(d2 + 0.5);
       float h = fract(sin(dot(cell, vec2(12.9898, 78.233))) * 43758.5453);
       float tw = 0.5 + 0.5 * sin(uTime * (0.8 + h * 2.2) + h * 40.0);
@@ -292,11 +295,14 @@ const TERRAIN_FRAG = /* glsl */ `
           vec2 o = fract(sin(vec2(dot(c, vec2(127.1, 311.7)), dot(c, vec2(269.5, 183.3)))) * 43758.5453);
           r = min(r, length(g - (c + 0.2 + o * 0.6) * 9.0));
         }
-      return lineDist(r * 0.9 - uTime * 0.25);
+      // (Spaced a third wider than they were - fewer rings, each clearer.)
+      return lineDist(r * 0.6 - uTime * 0.25);
     }
     if (id == 4) {
-      // Lines across the land, each a waveform, the ripple travelling.
-      float y = g.x + 0.35 * sin(g.y * 1.6 - uTime * 1.2) * sin(g.y * 0.37 + g.x * 0.2);
+      // Lines across the land, each a waveform, the ripple travelling -
+      // half as many as the grid has rows, so at speed they flash past
+      // one by one rather than blurring into a single sheet of light.
+      float y = g.x * 0.5 + 0.35 * sin(g.y * 1.6 - uTime * 1.2) * sin(g.y * 0.37 + g.x * 0.2);
       return lineDist(y);
     }
     if (id == 5) {
@@ -1140,6 +1146,7 @@ export function AdventureWorld({
   phases,
   travel,
   onMove,
+  onLost,
   avatar = "/lion-head.png",
   pickRef,
   limit,
@@ -1155,6 +1162,9 @@ export function AdventureWorld({
    *  so the controls around the canvas can move it. */
   travel: Travel;
   onMove: (s: number) => void;
+  /** The browser took the graphics back (a phone short of memory): the
+   *  page above rebuilds the scene. */
+  onLost?: () => void;
   /** The student's own picture, on the traveller. */
   avatar?: string;
   /** Filled in with a way to ask which checkpoint's portal is under a
@@ -1229,12 +1239,20 @@ export function AdventureWorld({
       // student's photo included. The glow comes from the bloom, not the
       // grade, so photos show as uploaded and the neon stays pure.
       flat
-      dpr={typeof window !== "undefined" && window.matchMedia("(pointer: fine)").matches ? [1, 1.75] : [1, 1.25]}
+      // (On a phone, one pixel per pixel: the bloom and the blur each keep
+      // copies of the frame, and a sharper frame is several times the
+      // memory - what was running phones out of it near the end.)
+      dpr={typeof window !== "undefined" && window.matchMedia("(pointer: fine)").matches ? [1, 1.75] : [1, 1]}
       frameloop={active ? "always" : "never"}
       gl={{ antialias: true, powerPreference: "high-performance" }}
       camera={{ fov: 62, near: 0.1, far: 1200, position: [0, 3, 6] }}
-      onCreated={({ scene }) => {
+      onCreated={({ scene, gl }) => {
         scene.fog = new THREE.FogExp2(LOOK.haze, 0.0038);
+        // Lost graphics: say so, rather than leaving a frozen black frame.
+        gl.domElement.addEventListener("webglcontextlost", (e) => {
+          e.preventDefault();
+          onLost?.();
+        });
       }}
     >
       <hemisphereLight args={["#8090d0", "#05070f", LOOK.lights[0]]} />
