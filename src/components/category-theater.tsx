@@ -614,7 +614,8 @@ function ColourSwitcher({ current, skillsHref }: { current: Category; skillsHref
   );
 }
 
-/** The third tab under the video: Category. Press it and the eight
+/** The third tab under the video: Color - plain like its neighbours,
+ *  lit in the current colour only while its list is open. Press it and the eight
  *  colours drop down beneath it; slide the thumb down to one - it lights
  *  as you pass over it - and let go to go there. The skill dial's
  *  press-slide-release, as a list. A plain tap opens the list and leaves
@@ -625,7 +626,8 @@ function CategoryTab({ current, skillsHref }: { current: Category; skillsHref: s
   const [lit, setLit] = useState<string | null>(null);
   const box = useRef<HTMLDivElement>(null);
   // Where the press began, and whether the thumb has travelled since.
-  const pressed = useRef<{ x: number; y: number; moved: boolean } | null>(null);
+  // (And whether the list was already open - a tap on an open tab closes it.)
+  const pressed = useRef<{ x: number; y: number; moved: boolean; wasOpen: boolean } | null>(null);
 
   const colourUnder = (x: number, y: number) =>
     (document.elementFromPoint(x, y)?.closest("[data-colour]") as HTMLElement | null)?.dataset.colour ?? null;
@@ -660,7 +662,7 @@ function CategoryTab({ current, skillsHref }: { current: Category; skillsHref: s
         // (No scrolling the page while a thumb is choosing.)
         style={{ touchAction: "none" }}
         onPointerDown={(e) => {
-          pressed.current = { x: e.clientX, y: e.clientY, moved: false };
+          pressed.current = { x: e.clientX, y: e.clientY, moved: false, wasOpen: open };
           e.currentTarget.setPointerCapture?.(e.pointerId);
           setOpen(true);
         }}
@@ -674,7 +676,15 @@ function CategoryTab({ current, skillsHref }: { current: Category; skillsHref: s
           const p = pressed.current;
           pressed.current = null;
           e.currentTarget.releasePointerCapture?.(e.pointerId);
-          if (!p?.moved) return; // a tap: the list stays open
+          // A tap: opens the list and leaves it open - or, if it was
+          // already open, closes it.
+          if (!p?.moved) {
+            if (p?.wasOpen) {
+              setOpen(false);
+              setLit(null);
+            }
+            return;
+          }
           const id = colourUnder(e.clientX, e.clientY);
           if (id) go(id);
           else {
@@ -696,7 +706,7 @@ function CategoryTab({ current, skillsHref }: { current: Category; skillsHref: s
           open ? `${current.textClass} bg-navy-800 ring-1 ring-current` : "text-ink-faint hover:text-ink-muted"
         }`}
       >
-        <span className="truncate">Category</span>
+        <span className="truncate">Color</span>
         <ChevronDownIcon className={`size-3.5 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
