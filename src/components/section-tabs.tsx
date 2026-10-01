@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { DeckIcon, SkillsIcon } from "@/components/icons";
+import { SkillsViewToggle } from "@/components/skills-browser";
 
 // Skills and Cards are two ways through the same library - watch the
 // lesson or hold the card - so they sit as two tabs of one section
@@ -24,27 +25,33 @@ export function SectionTabs() {
   const prefix = pathname.startsWith("/demo") ? "/demo" : "";
   const onCards = pathname.includes("/skills/cards");
 
+  // A slim row tucked right under the top bar: on Skills, the Dial / Grid
+  // switch first, then the two tabs as small pills - a setting and a
+  // choice of section, not a pair of headline buttons.
   return (
-    <div role="tablist" aria-label="Skills and cards" className="flex w-full gap-2">
-      {tabs.map(({ href, label, Icon, accent }) => {
-        const active = href.includes("cards") ? onCards : !onCards;
-        return (
-          <Link
-            key={href}
-            href={`${prefix}${href}`}
-            role="tab"
-            aria-selected={active}
-            className={`flex flex-1 items-center justify-center gap-2.5 rounded-2xl border py-3 transition-colors ${
-              active
-                ? `border-current bg-navy-800 ${accent}`
-                : "border-navy-600 text-ink-faint hover:border-ink-faint hover:text-ink-muted"
-            }`}
-          >
-            <Icon className="size-6 shrink-0" />
-            <span className={`text-lg font-bold tracking-tight ${active ? "text-ink" : ""}`}>{label}</span>
-          </Link>
-        );
-      })}
+    <div className="-mt-2 flex items-center gap-2 lg:-mt-6">
+      {!onCards && <SkillsViewToggle />}
+      <div role="tablist" aria-label="Skills and cards" className="flex gap-1.5">
+        {tabs.map(({ href, label, Icon, accent }) => {
+          const active = href.includes("cards") ? onCards : !onCards;
+          return (
+            <Link
+              key={href}
+              href={`${prefix}${href}`}
+              role="tab"
+              aria-selected={active}
+              className={`flex min-h-9 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-colors ${
+                active
+                  ? `border-current bg-navy-800 ${accent}`
+                  : "border-navy-600 text-ink-faint hover:border-ink-faint hover:text-ink-muted"
+              }`}
+            >
+              <Icon className="size-4 shrink-0" />
+              <span className={active ? "text-ink" : ""}>{label}</span>
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }

@@ -39,18 +39,24 @@ export function SkillsBrowser({ children }: { children?: ReactNode }) {
   const view = useSkillsView();
   return (
     <div className="flex flex-col gap-3">
-      {/* The section's note, and the switch small right beside it - a
-          setting, not a headline. The switch has a fixed small footprint
-          and opens over the page, so opening it never shifts the layout. */}
-      <div className="flex items-start gap-3">
-        {children}
-        <div className="relative z-20 mt-px h-5 w-9 shrink-0">
-          <div className="absolute left-0 top-1/2 -translate-y-1/2">
-            <ViewSwitch view={view} />
-          </div>
-        </div>
-      </div>
+      {/* The section's note. (The Dial / Grid switch lives in the row
+          of section tabs under the top bar - section-tabs.tsx.) */}
+      {children}
       {view === "grid" ? <SkillGrid /> : <SkillDial />}
+    </div>
+  );
+}
+
+/** The Dial / Grid switch on its own, for the section tabs' row: a fixed
+ *  small footprint that opens over the page, so opening it never shifts
+ *  the layout. */
+export function SkillsViewToggle() {
+  const view = useSkillsView();
+  return (
+    <div className="relative z-30 h-5 w-9 shrink-0">
+      <div className="absolute left-0 top-1/2 -translate-y-1/2">
+        <ViewSwitch view={view} />
+      </div>
     </div>
   );
 }
