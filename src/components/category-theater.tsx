@@ -181,7 +181,9 @@ export function CategoryTheater({
         <div className="flex items-center gap-2">
           <BackLink href={skillsHref}>Skills</BackLink>
           <span aria-hidden className="text-ink-faint">/</span>
-          <h1 className={`min-w-0 truncate text-xl font-semibold tracking-tight ${category.textClass}`}>{category.name}</h1>
+          <h1 className="min-w-0">
+            <ColourSwitcher current={category} skillsHref={skillsHref} />
+          </h1>
           <div className="ml-auto flex items-center gap-2.5">
             <button
               type="button"
@@ -544,4 +546,77 @@ function BackToTop() {
 /** 83 -> "1:23". */
 function clock(seconds: number): string {
   return `${Math.floor(seconds / 60)}:${String(Math.round(seconds % 60)).padStart(2, "0")}`;
+}
+
+/** The colour's name in the pinned bar, as a way to every other colour:
+ *  a small arrow beside it says it opens. Tap it, or rest a mouse on it,
+ *  and the eight drop down beneath the bar - each its dot, name and what
+ *  it covers - one tap from any of them. */
+function ColourSwitcher({ current, skillsHref }: { current: Category; skillsHref: string }) {
+  const [open, setOpen] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
+  // Closed by a tap anywhere else, or Escape.
+  useEffect(() => {
+    if (!open) return;
+    const away = (e: PointerEvent) => {
+      if (!box.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const esc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", away);
+    window.addEventListener("keydown", esc);
+    return () => {
+      document.removeEventListener("pointerdown", away);
+      window.removeEventListener("keydown", esc);
+    };
+  }, [open]);
+  // A mouse resting on it opens it; a finger taps.
+  const hover = (on: boolean) => (e: React.PointerEvent) => {
+    if (e.pointerType === "mouse") setOpen(on);
+  };
+  return (
+    <div ref={box} className="relative" onPointerEnter={hover(true)} onPointerLeave={hover(false)}>
+      <button
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className={`flex min-h-9 min-w-0 items-center gap-1 rounded-lg pr-1 text-xl font-semibold tracking-tight ${current.textClass}`}
+      >
+        <span className="truncate">{current.name}</span>
+        <ChevronDownIcon className={`size-4 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div
+          role="menu"
+          aria-label="Skill colours"
+          // (pt-2 bridges the gap below the name, so a mouse moving down
+          // into the list doesn't close it on the way.)
+          className="absolute left-0 top-full z-40 pt-2"
+        >
+          <div className="no-glass flex w-72 flex-col overflow-hidden rounded-xl border border-navy-600 bg-navy-850 py-1.5 shadow-[0_16px_40px_-12px_rgb(2_5_11/0.95)]">
+            {categories.map((c) => {
+              const here = c.id === current.id;
+              return (
+                <Link
+                  key={c.id}
+                  role="menuitem"
+                  href={`${skillsHref}/${c.id}`}
+                  aria-current={here ? "page" : undefined}
+                  onClick={() => setOpen(false)}
+                  className={`flex items-center gap-3 px-3.5 py-2 transition-colors hover:bg-navy-700 ${here ? "bg-navy-800" : ""}`}
+                >
+                  <span className={`size-2.5 shrink-0 rounded-full ${c.bgClass}`} style={{ boxShadow: `0 0 8px var(--color-${c.id})` }} />
+                  <span className={`text-sm font-semibold ${c.textClass}`}>{c.name}</span>
+                  <span className="truncate text-xs text-ink-muted">{c.subtitle}</span>
+                  {here && <CheckIcon className="ml-auto size-3.5 shrink-0 text-ink-muted" />}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
