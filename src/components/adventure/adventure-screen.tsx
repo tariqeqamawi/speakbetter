@@ -82,6 +82,10 @@ const TRACERS = Array.from({ length: 44 }, (_, i) => {
  *  /coach/cheer-NN.mp3), so the captions keep time with his voice. */
 const CHEER_SECONDS = [1.71, 2.01, 5.37, 3.5, 2.74, 3.86, 4.14, 3.36, 6.24];
 
+/** Where on the road this visit last was (in challenges), for coming
+ *  back to it. */
+const ROAD_AT_KEY = "sb-road-at";
+
 /** 0-1, for the white wash into the finish. */
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 
@@ -163,6 +167,15 @@ export function AdventureScreen({
       const done = stops.every((st) => st.state === "done");
       return Math.min(sAtProgress(road, startProgress), done ? road.finish + 10 : road.finish - AHEAD - 12);
     }
+    // Back from a challenge (or anywhere, this visit): where it was left.
+    if (!demo)
+      try {
+        const left = Number(sessionStorage.getItem(ROAD_AT_KEY));
+        if (sessionStorage.getItem(ROAD_AT_KEY) && Number.isFinite(left)) {
+          const done = stops.every((st) => st.state === "done");
+          return Math.min(sAtProgress(road, left), done ? road.finish + 10 : road.finish - AHEAD - 12);
+        }
+      } catch {}
     return hereIndex > 0 ? Math.max(0, road.stops[hereIndex] - AHEAD - 2) : 0;
     // (Where to open is decided once, on opening.)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -198,8 +211,14 @@ export function AdventureScreen({
     (next: number) => {
       setS(next);
       progressTo.current?.(progressAt(road, next));
+      // Remembered for this visit, so coming back from a challenge opens
+      // the road where it was left.
+      if (!demo)
+        try {
+          sessionStorage.setItem(ROAD_AT_KEY, String(progressAt(road, next)));
+        } catch {}
     },
-    [road],
+    [road, demo],
   );
   const chrome = useRoadChrome();
 

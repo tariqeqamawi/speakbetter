@@ -21,6 +21,9 @@ export function InfoEye({
   align?: "left" | "right";
 }) {
   const [open, setOpen] = useState(false);
+  // Which way the panel opens: as asked, unless that would run it off
+  // the screen - then the other way.
+  const [toRight, setToRight] = useState(align === "right");
   const box = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!open) return;
@@ -45,7 +48,11 @@ export function InfoEye({
         aria-label={label}
         aria-expanded={open}
         title={label}
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          const r = box.current?.getBoundingClientRect();
+          if (r) setToRight(r.left + 288 > window.innerWidth - 12 ? true : r.right - 288 < 12 ? false : align === "right");
+          setOpen((v) => !v);
+        }}
         className={`grid size-8 place-items-center rounded-full transition-colors ${
           open ? "bg-navy-700 text-ink" : "text-ink-faint hover:bg-navy-800 hover:text-ink"
         }`}
@@ -57,7 +64,7 @@ export function InfoEye({
           role="dialog"
           aria-label={label}
           className={`no-glass absolute top-full z-40 mt-1.5 flex w-72 max-w-[calc(100vw-2rem)] flex-col gap-2 rounded-xl border border-navy-600 bg-navy-850 p-3.5 text-left text-sm font-normal normal-case tracking-normal text-ink-muted shadow-[0_16px_40px_-12px_rgb(2_5_11/0.95)] text-pretty ${
-            align === "right" ? "right-0" : "left-0"
+            toRight ? "right-0" : "left-0"
           }`}
         >
           {children}

@@ -55,7 +55,13 @@ export function Adventure2D({
   const list = useRef<HTMLOListElement>(null);
   useEffect(() => {
     const el = list.current?.lastElementChild as HTMLElement | null;
-    centre(here.current ?? (list.current?.querySelector("[data-first]") as HTMLElement | null) ?? el);
+    // (Back from a challenge: on the one that was opened.)
+    let back: HTMLElement | null = null;
+    try {
+      const slug = sessionStorage.getItem("sb-road-2d-at");
+      if (slug) back = list.current?.querySelector(`[data-slug="${CSS.escape(slug)}"]`) ?? null;
+    } catch {}
+    centre(back ?? here.current ?? (list.current?.querySelector("[data-first]") as HTMLElement | null) ?? el);
     // Once, on opening.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -65,6 +71,13 @@ export function Adventure2D({
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => () => clearTimeout(timer.current), []);
   const router = useRouter();
+  // Into a challenge - remembered, so Back opens the map on it again.
+  const openStop = (slug: string) => {
+    try {
+      sessionStorage.setItem("sb-road-2d-at", slug);
+    } catch {}
+    router.push(`/challenges/${slug}`);
+  };
   const backToCurrent = () => {
     setNotice(true);
     clearTimeout(timer.current);
@@ -199,6 +212,7 @@ export function Adventure2D({
               key={stop.slug}
               ref={on ? here : undefined}
               data-first={i === 0 ? "" : undefined}
+              data-slug={stop.slug}
               className={`absolute flex gap-3 ${z > 0.02 ? "items-start" : "items-center"}`}
               style={{
                 top: cy - 28,
@@ -210,7 +224,7 @@ export function Adventure2D({
                   to the challenge you're on, or to replay one you've
                   passed. Only a locked one says so instead. */}
               <span
-                onClick={locked ? backToCurrent : () => router.push(`/challenges/${stop.slug}`)}
+                onClick={locked ? backToCurrent : () => openStop(stop.slug)}
                 role={locked ? undefined : "link"}
                 aria-label={locked ? undefined : `${done ? "Replay" : "Open"} ${stop.title}`}
                 className={`grid size-14 shrink-0 cursor-pointer place-items-center rounded-full border-[3px] text-xl font-extrabold ${on ? "animate-pulse" : ""}`}
@@ -225,7 +239,7 @@ export function Adventure2D({
               </span>
               <span className={`flex max-w-[11rem] flex-col gap-1 ${left ? "items-start text-left" : "items-end text-right"}`}>
                 <span
-                  onClick={locked ? backToCurrent : () => router.push(`/challenges/${stop.slug}`)}
+                  onClick={locked ? backToCurrent : () => openStop(stop.slug)}
                   className={`cursor-pointer text-sm font-semibold leading-tight text-balance ${locked ? "text-ink-faint" : "text-ink hover:underline"}`}
                 >
                   {stop.title}
@@ -237,7 +251,7 @@ export function Adventure2D({
                     src={stop.image}
                     alt=""
                     loading="lazy"
-                    onClick={locked ? backToCurrent : () => router.push(`/challenges/${stop.slug}`)}
+                    onClick={locked ? backToCurrent : () => openStop(stop.slug)}
                     // A challenge with no video of its own shows the whole
                     // lion, on the app's navy glass - never cropped to a face.
                     // (The one you're on pulses white, like its number.)
@@ -261,6 +275,11 @@ export function Adventure2D({
                 {on && (
                   <Link
                     href={`/challenges/${stop.slug}`}
+                    onClick={() => {
+                      try {
+                        sessionStorage.setItem("sb-road-2d-at", stop.slug);
+                      } catch {}
+                    }}
                     className="rounded-full px-4 py-1.5 text-xs font-bold text-navy-950"
                     style={{ background: c, boxShadow: `0 0 16px ${c}` }}
                   >
@@ -270,6 +289,11 @@ export function Adventure2D({
                 {done && (
                   <Link
                     href={`/challenges/${stop.slug}`}
+                    onClick={() => {
+                      try {
+                        sessionStorage.setItem("sb-road-2d-at", stop.slug);
+                      } catch {}
+                    }}
                     className="text-xs font-semibold text-ink-muted underline-offset-4 hover:text-ink hover:underline"
                   >
                     Replay challenge

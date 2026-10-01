@@ -532,7 +532,7 @@ function Terrain({ road, spans, travel, calm = false }: { road: RoadLayout; span
           uWash: { value: LOOK.wash },
           // (In the calm 3D view the land's patterns sink to a glimmer,
           // so the lit road is the thing to follow - as on the 2D map.)
-          uGain: { value: LOOK.gain * (calm ? 0.2 : 1) },
+          uGain: { value: LOOK.gain * (calm ? 0.07 : 1) },
           uFogDensity: { value: 0.0052 },
           uHorizon: { value: new THREE.Color("#3a3f8f") },
           // Where Your Impact's rays converge: the city, far past the road.

@@ -76,12 +76,34 @@ export function AdventureView({
   const open3d = touring || (inS.length > 0 && inS.every(({ st }) => st.state === "done"));
   const open4d = touring || (open3d && inT.length > 0 && inT.every(({ st }) => st.state === "done"));
   const isOpen = (m: Mode) => m === "2d" || (m === "3d" ? open3d : open4d);
-  const lockedNote = (m: Mode) =>
+  const phaseColor = (id: string) => phases.find((p) => p.id === id)?.color ?? "#ffffff";
+  // What opens a view: as plain words (a tooltip), and as the note says
+  // it - the number as a numeral, the section's name lit in its colour.
+  const lockedText = (m: Mode) =>
     m === "3d"
-      ? `Locked until you complete all ${inS.length === 3 ? "three" : inS.length} challenges in ${phaseName("S")}.`
+      ? `Locked until you complete all ${inS.length} challenges in ${phaseName("S")}.`
       : `Locked until you complete challenges ${inT.map(({ i }) => i + 1).join(" and ")} in ${phaseName("T")}.`;
-  // The note on screen: the welcome to the views, or why one is locked.
-  const [note, setNote] = useState<{ title: string; body: string; intro?: boolean } | null>(null);
+  const opensWhen = (m: Mode, lead = "Locked until you") =>
+    m === "3d" ? (
+      <>
+        {lead} complete all {inS.length} challenges in{" "}
+        <b className="font-semibold" style={{ color: phaseColor("S") }}>
+          {phaseName("S")}
+        </b>
+        .
+      </>
+    ) : (
+      <>
+        {lead} complete challenges {inT.map(({ i }) => i + 1).join(" and ")} in{" "}
+        <b className="font-semibold" style={{ color: phaseColor("T") }}>
+          {phaseName("T")}
+        </b>
+        .
+      </>
+    );
+  // The note on screen: the welcome to the views, or why one is locked -
+  // with a picture of what's waiting.
+  const [note, setNote] = useState<{ title: string; body: React.ReactNode; intro?: boolean; image?: string } | null>(null);
   const mode = layers[layers.length - 1].mode;
   // Where the traveller is, in challenges, as the 3D and 4D views report it.
   const progress = useRef<number | null>(null);
@@ -122,7 +144,7 @@ export function AdventureView({
   const choose = (m: Mode) => {
     if (m === mode) return;
     if (!isOpen(m)) {
-      setNote({ title: `${m.toUpperCase()} is locked`, body: lockedNote(m) });
+      setNote({ title: `${m.toUpperCase()} is locked`, body: opensWhen(m), image: `/road/preview-${m}.webp` });
       return;
     }
     const calmer = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -160,7 +182,7 @@ export function AdventureView({
                 role="radio"
                 aria-checked={mode === m.id}
                 aria-label={`${m.label}: ${m.name}${isOpen(m.id) ? "" : " (locked)"}`}
-                title={isOpen(m.id) ? m.name : lockedNote(m.id)}
+                title={isOpen(m.id) ? m.name : lockedText(m.id)}
                 onClick={() => choose(m.id)}
                 className={`flex items-center gap-1 rounded-full px-3 py-1.5 transition-colors ${mode === m.id ? PILL_ON : PILL_OFF} ${isOpen(m.id) ? "" : "opacity-60"}`}
               >
@@ -229,21 +251,31 @@ export function AdventureView({
             role="dialog"
             aria-label={note.title}
             onClick={(e) => e.stopPropagation()}
-            className="no-glass coach-cue flex w-full max-w-xs flex-col items-center gap-3 rounded-2xl border border-navy-600 bg-navy-850 p-5 text-center shadow-2xl"
+            className="no-glass coach-cue flex w-full max-w-sm flex-col items-center gap-3 rounded-2xl border border-navy-600 bg-navy-850 p-4 text-center shadow-2xl"
           >
-            <span className="grid size-11 place-items-center rounded-full border border-navy-600 bg-navy-900 text-ink-muted">
-              <LockIcon className="size-5" />
-            </span>
+            {/* What's waiting: a picture of the view itself. */}
+            {note.image && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={note.image} alt="" className="aspect-[2/1] w-full rounded-xl border border-navy-600 object-cover" />
+            )}
+            {!note.image && !note.intro && (
+              <span className="grid size-11 place-items-center rounded-full border border-navy-600 bg-navy-900 text-ink-muted">
+                <LockIcon className="size-5" />
+              </span>
+            )}
             <p className="text-base font-semibold text-ink text-balance">{note.title}</p>
             <p className="text-sm text-ink-muted text-pretty">{note.body}</p>
             {note.intro && (
-              <ul className="flex w-full flex-col gap-1 rounded-xl bg-navy-900/70 px-3 py-2.5 text-left text-xs text-ink-muted">
-                <li>
-                  <b className="text-ink">3D</b> - {lockedNote("3d").replace("Locked until you", "opens when you")}
-                </li>
-                <li>
-                  <b className="text-ink">4D</b> - {lockedNote("4d").replace("Locked until you", "opens when you")}
-                </li>
+              <ul className="grid w-full grid-cols-2 gap-2 text-left text-[0.7rem] leading-snug text-ink-muted">
+                {(["3d", "4d"] as const).map((m) => (
+                  <li key={m} className="flex flex-col gap-1.5">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={`/road/preview-${m}.webp`} alt="" className="aspect-[2/1] w-full rounded-lg border border-navy-600 object-cover" />
+                    <span>
+                      <b className="text-ink">{m.toUpperCase()}</b> {opensWhen(m, "opens when you")}
+                    </span>
+                  </li>
+                ))}
               </ul>
             )}
             <button
