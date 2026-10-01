@@ -22,7 +22,7 @@ export default async function CategoryPage(props: PageProps<"/skills/[category]"
   const lessons = lessonsInCategory(cat.id);
 
   return (
-    <div className="flex flex-col gap-6 pb-6 pt-2">
+    <div className="flex flex-col gap-6 pb-6">
       <CategoryTheater category={cat} lessons={lessons} />
       <FeatureReaction feature="lessons" label="the lessons" />
     </div>

@@ -856,8 +856,9 @@ export function VimeoPlayer({
         </button>}
       </div>
 
-      {/* our controls */}
-      <div className="flex flex-col gap-2 rounded-xl border border-navy-600 bg-navy-800 p-2.5">
+      {/* our controls - kept shallow: the seek bar and one row of
+          buttons, with no spare padding between them and the video */}
+      <div className="flex flex-col rounded-xl border border-navy-600 bg-navy-800 px-2 pb-1">
         <div
           onPointerDown={onScrubDown}
           onPointerMove={onScrubMove}
@@ -872,7 +873,7 @@ export function VimeoPlayer({
           aria-valuemax={100}
           // Tall enough for a thumb, and it never scrolls the page out
           // from under a scrub.
-          className="group -my-1 h-7 cursor-pointer touch-none py-3"
+          className="group h-6 cursor-pointer touch-none py-2.5"
         >
           <div className="relative h-1 rounded-full bg-navy-600">
             <div
@@ -997,7 +998,7 @@ function ControlButton({
       title={label}
       aria-label={label}
       aria-pressed={active}
-      className={`flex min-h-11 min-w-11 items-center justify-center gap-1 rounded-lg px-2 transition-colors ${
+      className={`flex min-h-9 min-w-9 items-center justify-center gap-1 rounded-lg px-2 transition-colors ${
         active
           ? "bg-navy-600 text-ink"
           : "text-ink-faint hover:bg-navy-700 hover:text-ink"

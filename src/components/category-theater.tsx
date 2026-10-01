@@ -116,9 +116,10 @@ export function CategoryTheater({
 
       {/* THE HEADER, in one line: back to Skills, the colour, and on the
           right how many of its lessons are done and which one is playing.
-          The colour's description waits behind the arrow beside its
-          subtitle - read once, it was the top of the screen every visit. */}
-      <header className="relative flex flex-col gap-0.5">
+          Pinned under the nav as a solid bar - edge to edge, with a rule
+          and a shadow beneath it - so where you are and how far through
+          you are stay on screen the whole way down the page. */}
+      <header className="sticky-under-header no-glass -mx-4 -mt-3 border-b border-navy-600 bg-navy-850 px-4 py-1.5 shadow-[0_8px_18px_-10px_rgb(2_5_11/0.9)] lg:-mt-8 xl:-mx-8 xl:px-8">
         <div className="flex items-center gap-2">
           <BackLink href="/skills">Skills</BackLink>
           <span aria-hidden className="text-ink-faint">/</span>
@@ -149,20 +150,10 @@ export function CategoryTheater({
             </span>
           </div>
         </div>
-        <details className="group">
-          <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-ink-faint transition-colors hover:text-ink-muted [&::-webkit-details-marker]:hidden">
-            {category.subtitle}
-            <ChevronDownIcon className="size-3.5 transition-transform group-open:rotate-180" />
-          </summary>
-          <div className="flex max-w-lg flex-col gap-1 pt-2">
-            <p className="text-sm text-ink-muted">{category.blurb}</p>
-            <p className="text-xs text-ink-faint">{lessons.length} lessons · one to two minutes each</p>
-          </div>
-        </details>
       </header>
 
       {/* The stage */}
-      <div ref={stageRef} className="relative flex scroll-mt-20 flex-col gap-3">
+      <div ref={stageRef} className="relative flex scroll-mt-28 flex-col gap-3">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
           <h2 className="text-xl font-semibold tracking-tight text-ink">
             {featured.title}
@@ -204,6 +195,20 @@ export function CategoryTheater({
         />
         </div>
         <LessonWatched key={`w-${featured.vimeoId}`} vimeoId={featured.vimeoId} />
+
+        {/* What this colour is, folded beneath the player's controls -
+            its subtitle and an arrow, opening to the description. Read
+            once, it no longer takes the top of the screen every visit. */}
+        <details className="group -mt-1">
+          <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-ink-faint transition-colors hover:text-ink-muted [&::-webkit-details-marker]:hidden">
+            {category.subtitle}
+            <ChevronDownIcon className="size-3.5 transition-transform group-open:rotate-180" />
+          </summary>
+          <div className="flex max-w-lg flex-col gap-1 pt-2">
+            <p className="text-sm text-ink-muted">{category.blurb}</p>
+            <p className="text-xs text-ink-faint">{lessons.length} lessons · one to two minutes each</p>
+          </div>
+        </details>
 
         {/* What the lesson says, under it: the key ideas keeping pace
             with the video, and the transcript for anyone who wants the
