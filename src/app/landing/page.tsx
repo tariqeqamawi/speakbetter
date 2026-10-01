@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { LandingTest } from "@/components/landing-test";
+import { LandingV } from "@/components/landing-v";
 
 // Preview route: always the visitor's landing page, no matter what
 // progress is saved in this browser. StoreProvider serves an ephemeral
@@ -12,5 +12,5 @@ export const metadata: Metadata = {
 };
 
 export default function LandingPreviewPage() {
-  return <LandingTest />;
+  return <LandingV variant="b" />;
 }
