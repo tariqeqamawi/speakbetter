@@ -6,6 +6,7 @@ import { Adventure2D } from "./adventure-2d";
 import { LevelPicker } from "@/components/level-picker";
 import { ROAD_SKY } from "./world-phases";
 import { FullScreenIcon, PILL_OFF, PILL_ON, useRoadChrome } from "./road-chrome";
+import { LockIcon } from "./lock-icon";
 import type { ViewMode, WorldPhase, WorldStop } from "./adventure-world";
 
 // The adventure three ways - the student's choice, kept on the device:
@@ -14,7 +15,14 @@ import type { ViewMode, WorldPhase, WorldStop } from "./adventure-world";
 //   3D  the calm road: the same land and colours, no loops or stunts,
 //       seen from high above like a map come to life
 //   4D  the full ride - speed, loops, the corkscrew, the skyways
-// 4D is the default.
+//
+// EARNED, NOT HANDED OVER: 2D to begin with. 3D opens once every
+// challenge of the first section (Start With Awareness) is passed, and 4D
+// once the first two of the second (Train Your Instrument) are - so the
+// full ride is something unlocked by doing the work, not a gimmick on the
+// front of it. The locked views stay on the switch, with a lock, and say
+// what opens them; a first visit says so once. (During the guided tour
+// everything is open, so the tour can show it.)
 
 type Mode = ViewMode;
 
@@ -38,6 +46,8 @@ const MODES: { id: Mode; label: string; name: string }[] = [
 // (A new key: under the old one, "3d" meant the full ride.)
 const KEY = "adventure-view-3";
 const OLD_KEY = "adventure-view";
+/** Set once the first-visit note about 3D and 4D has been shown. */
+const INTRO_KEY = "adventure-unlock-intro";
 
 export function AdventureView({
   stops,
@@ -57,7 +67,21 @@ export function AdventureView({
    *  of a box the road scrolls inside. */
   stickyTop?: string;
 }) {
-  const [layers, setLayers] = useState<Layer[]>([{ id: 0, mode: "4d", arrive: null, leaveTo: null, start: null }]);
+  const [layers, setLayers] = useState<Layer[]>([{ id: 0, mode: "2d", arrive: null, leaveTo: null, start: null }]);
+  // What's open, from the record.
+  const phaseName = (id: string) => phases.find((p) => p.id === id)?.name ?? id;
+  const inS = stops.map((st, i) => ({ st, i })).filter(({ st }) => st.phase === "S");
+  const inT = stops.map((st, i) => ({ st, i })).filter(({ st }) => st.phase === "T").slice(0, 2);
+  const touring = typeof document !== "undefined" && Boolean(document.body.dataset.touring);
+  const open3d = touring || (inS.length > 0 && inS.every(({ st }) => st.state === "done"));
+  const open4d = touring || (open3d && inT.length > 0 && inT.every(({ st }) => st.state === "done"));
+  const isOpen = (m: Mode) => m === "2d" || (m === "3d" ? open3d : open4d);
+  const lockedNote = (m: Mode) =>
+    m === "3d"
+      ? `Locked until you complete all ${inS.length === 3 ? "three" : inS.length} challenges in ${phaseName("S")}.`
+      : `Locked until you complete challenges ${inT.map(({ i }) => i + 1).join(" and ")} in ${phaseName("T")}.`;
+  // The note on screen: the welcome to the views, or why one is locked.
+  const [note, setNote] = useState<{ title: string; body: string; intro?: boolean } | null>(null);
   const mode = layers[layers.length - 1].mode;
   // Where the traveller is, in challenges, as the 3D and 4D views report it.
   const progress = useRef<number | null>(null);
@@ -71,13 +95,36 @@ export function AdventureView({
       // After mounting, so the server's render and the first client
       // render agree.
       const saved = localStorage.getItem(KEY) ?? (localStorage.getItem(OLD_KEY) === "2d" ? "2d" : null);
-      if (saved === "2d" || saved === "3d") setMode(saved);
+      // Their last view, if it's open to them; with none saved, the
+      // fullest view they've earned.
+      const want = saved === "2d" || saved === "3d" || saved === "4d" ? saved : open4d ? "4d" : open3d ? "3d" : "2d";
+      if (want !== "2d" && isOpen(want)) setMode(want);
+      // The first time on the road, before anything is earned: say how
+      // the other two views open.
+      if (!open3d && !touring && !localStorage.getItem(INTRO_KEY)) {
+        localStorage.setItem(INTRO_KEY, "1");
+        window.setTimeout(
+          () =>
+            setNote({
+              title: "3D and 4D are waiting",
+              body: "Complete challenges to unlock 3D and 4D mode. For now, the road starts as a map - just like a normal course.",
+              intro: true,
+            }),
+          0,
+        );
+      }
     } catch {
-      // no storage: 4D
+      // no storage: the map
     }
+    // (Once, on opening.)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const choose = (m: Mode) => {
     if (m === mode) return;
+    if (!isOpen(m)) {
+      setNote({ title: `${m.toUpperCase()} is locked`, body: lockedNote(m) });
+      return;
+    }
     const calmer = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const from = layers[layers.length - 1];
     const next: Layer = { id: nextId.current++, mode: m, arrive: calmer ? null : from.mode, leaveTo: null, start: progress.current };
@@ -112,12 +159,13 @@ export function AdventureView({
                 type="button"
                 role="radio"
                 aria-checked={mode === m.id}
-                aria-label={`${m.label}: ${m.name}`}
-                title={m.name}
+                aria-label={`${m.label}: ${m.name}${isOpen(m.id) ? "" : " (locked)"}`}
+                title={isOpen(m.id) ? m.name : lockedNote(m.id)}
                 onClick={() => choose(m.id)}
-                className={`rounded-full px-3 py-1.5 transition-colors ${mode === m.id ? PILL_ON : PILL_OFF}`}
+                className={`flex items-center gap-1 rounded-full px-3 py-1.5 transition-colors ${mode === m.id ? PILL_ON : PILL_OFF} ${isOpen(m.id) ? "" : "opacity-60"}`}
               >
                 {m.label}
+                {!isOpen(m.id) && <LockIcon className="size-3" />}
               </button>
             ))}
           </div>
@@ -175,6 +223,39 @@ export function AdventureView({
           )}
         </div>
       </div>
+      {note && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-navy-950/60 p-6 backdrop-blur-sm" onClick={() => setNote(null)}>
+          <div
+            role="dialog"
+            aria-label={note.title}
+            onClick={(e) => e.stopPropagation()}
+            className="no-glass coach-cue flex w-full max-w-xs flex-col items-center gap-3 rounded-2xl border border-navy-600 bg-navy-850 p-5 text-center shadow-2xl"
+          >
+            <span className="grid size-11 place-items-center rounded-full border border-navy-600 bg-navy-900 text-ink-muted">
+              <LockIcon className="size-5" />
+            </span>
+            <p className="text-base font-semibold text-ink text-balance">{note.title}</p>
+            <p className="text-sm text-ink-muted text-pretty">{note.body}</p>
+            {note.intro && (
+              <ul className="flex w-full flex-col gap-1 rounded-xl bg-navy-900/70 px-3 py-2.5 text-left text-xs text-ink-muted">
+                <li>
+                  <b className="text-ink">3D</b> - {lockedNote("3d").replace("Locked until you", "opens when you")}
+                </li>
+                <li>
+                  <b className="text-ink">4D</b> - {lockedNote("4d").replace("Locked until you", "opens when you")}
+                </li>
+              </ul>
+            )}
+            <button
+              type="button"
+              onClick={() => setNote(null)}
+              className="mt-1 rounded-full border border-body-language/70 bg-navy-800 px-6 py-2 text-sm font-semibold text-ink"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
       {layers.map((l, i) => {
         const top = i === layers.length - 1;
         const switching = layers.length > 1;

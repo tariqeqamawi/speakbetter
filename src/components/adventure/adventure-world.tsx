@@ -316,7 +316,10 @@ const TERRAIN_FRAG = /* glsl */ `
     if (id == 6) {
       // The grid bent by slow waves so no two cells match, a diagonal
       // through each - a web, not a table.
-      vec2 b = g + 0.28 * vec2(sin(g.y * 1.3 + g.x * 0.4), sin(g.x * 1.1 - g.y * 0.6));
+      // (At half the grid's density: at speed the red web read as one
+      // sheet of red, without the dark between its lines.)
+      vec2 gh = g * 0.5;
+      vec2 b = gh + 0.28 * vec2(sin(gh.y * 1.3 + gh.x * 0.4), sin(gh.x * 1.1 - gh.y * 0.6));
       vec2 fb = abs(fract(b - 0.5) - 0.5) / max(fwidth(b), vec2(1e-4));
       return min(min(fb.x, fb.y), lineDist(b.x - b.y * 0.7));
     }
