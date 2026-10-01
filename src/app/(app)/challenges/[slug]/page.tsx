@@ -13,6 +13,7 @@ import { ChallengeThread } from "@/components/challenge-thread";
 import { CircleIcon } from "@/components/icons";
 import { StudentsHere } from "@/components/students-here";
 import { PlayFillIcon } from "@/components/player-icons";
+import { InfoEye } from "@/components/info-eye";
 
 export function generateStaticParams() {
   return challenges.map((c) => ({ slug: c.slug }));
@@ -36,15 +37,33 @@ export default async function ChallengePage(props: PageProps<"/challenges/[slug]
 
   return (
     <div className="flex flex-col gap-6 py-6">
-      <header className="flex flex-col gap-2">
-        <BackLink href="/challenges">Challenges</BackLink>
-        <p className="text-xs font-medium uppercase tracking-wider text-ink-faint">
-          {phase.id} - {phase.name}
-        </p>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+      {/* Clean, like a lesson's page: where you are on one line, the
+          challenge's name on the next with its XP and an eye - the brief
+          and the colours it uses one tap away, not a paragraph and a row
+          of chips at the top of every visit. */}
+      <header className="flex flex-col gap-1.5">
+        <div className="flex items-center gap-2">
+          <BackLink href="/challenges">Challenges</BackLink>
+          <span aria-hidden className="text-ink-faint">/</span>
+          <span className={`text-xs font-bold uppercase tracking-wider ${phase.textClass}`}>
+            {phase.id} · {phase.name}
+          </span>
+        </div>
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
           <h1 className="text-2xl font-semibold tracking-tight text-balance">
             {challenge.title}
           </h1>
+          <InfoEye label="About this challenge">
+            <p>{challenge.brief}</p>
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint">Speaking colors used</span>
+              <div className="flex flex-wrap gap-1.5">
+                {challenge.targetSkills.map((skill) => (
+                  <CategoryChip key={skill} category={skill} />
+                ))}
+              </div>
+            </div>
+          </InfoEye>
           {/* Several times what a lesson pays: a lesson is watched, a
               challenge is performed, recorded and judged. */}
           <XpBadge
@@ -56,15 +75,6 @@ export default async function ChallengePage(props: PageProps<"/challenges/[slug]
           {/* Who else is on this one - the classmates that used to stand
               by the portal on the road. */}
           {!challenge.passive && <StudentsHere slug={challenge.slug} label="On it now" />}
-        </div>
-        <p className="max-w-lg text-ink-muted">{challenge.brief}</p>
-        <div className="mt-1 flex flex-col gap-1.5">
-          <span className="text-xs font-medium uppercase tracking-wider text-ink-faint">Speaking colors used</span>
-          <div className="flex flex-wrap gap-1.5">
-            {challenge.targetSkills.map((skill) => (
-              <CategoryChip key={skill} category={skill} />
-            ))}
-          </div>
         </div>
       </header>
 

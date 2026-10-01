@@ -2,6 +2,7 @@
 
 import { LockIcon } from "./lock-icon";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { WorldPhase, WorldStop } from "./adventure-world";
 
@@ -63,6 +64,7 @@ export function Adventure2D({
   const [notice, setNotice] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => () => clearTimeout(timer.current), []);
+  const router = useRouter();
   const backToCurrent = () => {
     setNotice(true);
     clearTimeout(timer.current);
@@ -204,9 +206,14 @@ export function Adventure2D({
                 flexDirection: left ? "row" : "row-reverse",
               }}
             >
+              {/* The number, the thumbnail and the name are all ways in -
+                  to the challenge you're on, or to replay one you've
+                  passed. Only a locked one says so instead. */}
               <span
-                onClick={locked ? backToCurrent : undefined}
-                className={`grid size-14 shrink-0 place-items-center rounded-full border-[3px] text-xl font-extrabold ${on ? "animate-pulse" : ""} ${locked ? "cursor-pointer" : ""}`}
+                onClick={locked ? backToCurrent : () => router.push(`/challenges/${stop.slug}`)}
+                role={locked ? undefined : "link"}
+                aria-label={locked ? undefined : `${done ? "Replay" : "Open"} ${stop.title}`}
+                className={`grid size-14 shrink-0 cursor-pointer place-items-center rounded-full border-[3px] text-xl font-extrabold ${on ? "animate-pulse" : ""}`}
                 style={{
                   borderColor: locked ? "#3a4260" : on ? "#ffffff" : c,
                   color: locked ? "#5a6282" : "#ffffff",
@@ -218,8 +225,8 @@ export function Adventure2D({
               </span>
               <span className={`flex max-w-[11rem] flex-col gap-1 ${left ? "items-start text-left" : "items-end text-right"}`}>
                 <span
-                  onClick={locked ? backToCurrent : undefined}
-                  className={`text-sm font-semibold leading-tight text-balance ${locked ? "cursor-pointer text-ink-faint" : "text-ink"}`}
+                  onClick={locked ? backToCurrent : () => router.push(`/challenges/${stop.slug}`)}
+                  className={`cursor-pointer text-sm font-semibold leading-tight text-balance ${locked ? "text-ink-faint" : "text-ink hover:underline"}`}
                 >
                   {stop.title}
                 </span>
@@ -230,14 +237,16 @@ export function Adventure2D({
                     src={stop.image}
                     alt=""
                     loading="lazy"
+                    onClick={locked ? backToCurrent : () => router.push(`/challenges/${stop.slug}`)}
                     // A challenge with no video of its own shows the whole
                     // lion, on the app's navy glass - never cropped to a face.
-                    className={`rounded-lg border ${stop.image === LION ? "object-contain p-1.5" : "object-cover"}`}
+                    // (The one you're on pulses white, like its number.)
+                    className={`cursor-pointer rounded-lg border ${stop.image === LION ? "object-contain p-1.5" : "object-cover"} ${on ? "thumb-pulse" : ""}`}
                     style={{
                       width: 128 * z,
                       height: 72 * z,
                       opacity: z * (locked ? 0.45 : 1),
-                      borderColor: locked ? "#3a4260" : c,
+                      borderColor: locked ? "#3a4260" : on ? "#ffffff" : c,
                       filter: locked ? "grayscale(0.7)" : undefined,
                       background:
                         stop.image === LION ? "radial-gradient(120% 90% at 30% 20%, #2a1b5c 0%, #0f1a3a 45%, #0a2a2e 100%)" : undefined,

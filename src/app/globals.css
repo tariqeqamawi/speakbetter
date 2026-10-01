@@ -3617,3 +3617,16 @@ html.bare .demo-banner {
 @media (prefers-reduced-motion: reduce) {
   .shuffle-flip { animation: none; color: var(--color-figurative); }
 }
+
+/* The 2D map's current challenge: its thumbnail pulses white, like the
+   ring round its number. */
+.thumb-pulse {
+  animation: thumb-pulse 1.8s ease-in-out infinite;
+}
+@keyframes thumb-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(255 255 255 / 0.15), 0 0 10px -2px rgb(255 255 255 / 0.4); }
+  50% { box-shadow: 0 0 0 3px rgb(255 255 255 / 0.35), 0 0 22px 0 rgb(255 255 255 / 0.55); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .thumb-pulse { animation: none; }
+}
