@@ -60,6 +60,9 @@ type Zoom = { list: DeckCard[]; index: number };
 const SHAKE_FORCE = 24;
 
 const SHAKE_COOLDOWN = 900;
+/** The dealt hand, kept for the tab's visit so coming back from one of
+ *  its lessons finds it still on the table. */
+const HAND_KEY = "sb-dealt-hand";
 
 /** One card taken at random from a list. */
 function anyOf(cards: DeckCard[]): DeckCard {
@@ -95,6 +98,21 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
   // /skills/cards?color=voice opens onto that colour's cards; otherwise
   // a colour at random, so each visit starts somewhere new.
   useEffect(() => {
+    // Back from a lesson opened out of a dealt spread: the same hand, on
+    // the table again (kept for this tab's visit - see the deal below).
+    try {
+      const kept = JSON.parse(sessionStorage.getItem(HAND_KEY) ?? "null") as string[] | null;
+      const again = kept?.map((id) => cards.find((c) => c.vimeoId === id)).filter((c): c is DeckCard => Boolean(c));
+      if (again?.length && new URLSearchParams(window.location.search).get("color") === null && sessionStorage.getItem(HAND_KEY + "-open") === "1") {
+        sessionStorage.removeItem(HAND_KEY + "-open");
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- restored once, on arrival
+        setHand(again);
+        setView({ mode: "spread" });
+        return;
+      }
+    } catch {
+      // no storage: a fresh table
+    }
     const wanted = new URLSearchParams(window.location.search).get("color");
     const stocked = categories.filter((c) => cards.some((d) => d.categoryId === c.id));
     if (!stocked.length) return;
@@ -102,7 +120,6 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
       wanted && stocked.some((c) => c.id === wanted)
         ? (wanted as CategoryId)
         : stocked[Math.floor(Math.random() * stocked.length)].id;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- chosen once, on arrival, in the browser
     setView({ mode: "color", category: pick, index: 0 });
   }, [cards]);
   useEffect(() => {
@@ -131,6 +148,11 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
       .map(anyOf);
     setHand(dealt);
     setView({ mode: "spread" });
+    try {
+      sessionStorage.setItem(HAND_KEY, JSON.stringify(dealt.map((c) => c.vimeoId)));
+    } catch {
+      // no storage: the hand lasts this page
+    }
     hapticTap();
     playXpChime();
   }, [cards]);
@@ -793,6 +815,11 @@ function FullSpread({
                 <Link
                   href={`${skillsHref}/${c.categoryId}?lesson=${c.vimeoId}`}
                   onMouseEnter={() => setIndex(i)}
+                  onClick={() => {
+                    try {
+                      sessionStorage.setItem(HAND_KEY + "-open", "1");
+                    } catch {}
+                  }}
                   className={`lift-card group flex w-full items-center gap-3 overflow-hidden rounded-xl border pr-3 text-left ${cat?.textClass ?? ""} ${
                     i === index ? "border-current" : "border-navy-600 hover:border-current"
                   }`}
