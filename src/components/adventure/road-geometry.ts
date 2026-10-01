@@ -122,9 +122,10 @@ const VICTORY_RISE = { after: 40, len: 180 };
  *  a carve you sit in, not a flick. */
 export const WEAVE = { A: 0.72, K: 60, BANK: 0.38 };
 /** The corkscrew: how far forward it runs, its radius, and how many times
- *  it rolls over. Two and a half times the length of the first one, with
- *  two full rolls, so it's a ride rather than a moment. */
-export const CORKSCREW = { B: 425, R: 11, ROLLS: 2 };
+ *  it rolls over. Two and a half times the length of the first one, but
+ *  still one roll - upside down once, slowly, over a long stretch, so
+ *  it's a ride rather than a moment. */
+export const CORKSCREW = { B: 425, R: 11, ROLLS: 1 };
 /** The loop's size: its radius, how far it drifts forward, and sideways. */
 export const LOOP = { R: 40, D: 96, W: 18 };
 
@@ -171,7 +172,7 @@ function stuntShape(kind: Stunt["kind"]) {
       upRaw.push([-Math.sin(th), 0, Math.cos(th)]);
     } else {
       // A barrel roll around a line above the road: out over the gap,
-      // all the way round - twice - and down onto the far side.
+      // all the way round, and down onto the far side.
       const { B, R: Rc, ROLLS } = CORKSCREW;
       const ph = Math.PI * 2 * ROLLS * THREE.MathUtils.smootherstep(v, 0, 1);
       pos.push([B * v, Rc * Math.sin(ph), Rc * (1 - Math.cos(ph))]);
