@@ -94,12 +94,14 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
                 poster="/thumbs/1082011047.jpg"
               />
             </div>
-            <p className="mt-2 text-sm font-medium text-ink-muted">From Awkward To Awesome In Minutes A Day.</p>
-            {/* Who's teaching. */}
-            <p className="mt-3 text-base font-semibold text-ink">Tariq EQ Amawi</p>
-            <p className="text-xs font-medium text-ink-muted text-balance">
-              TEDx speaker <span className="text-ink-faint">·</span> Slam poetry winner{" "}
-              <span className="text-ink-faint">·</span> National writing winner
+            {/* Who's teaching: the name, and the credentials beside it. */}
+            <p className="mt-2.5 text-sm text-balance">
+              <b className="font-semibold text-ink">Tariq EQ Amawi</b>
+              <span className="text-ink-muted">
+                {" "}
+                <span className="text-ink-faint">·</span> TEDx speaker <span className="text-ink-faint">·</span> Slam poetry
+                winner <span className="text-ink-faint">·</span> National writing winner
+              </span>
             </p>
           </div>
           <p className="text-sm font-semibold text-ink text-balance">
