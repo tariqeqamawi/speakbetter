@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { categories, type Category } from "@/data/categories";
 import type { Lesson } from "@/data/lessons";
 import { lessonLength, lessonXp } from "@/lib/progress";
@@ -335,9 +335,10 @@ export function CategoryTheater({
             words. Both here, rather than behind a link to another
             page - this is the page. */}
         {list && (
-          <div ref={allRef} role="tablist" aria-label="This lesson or all lessons" className="flex scroll-mt-28 w-full gap-1 rounded-xl border border-navy-600 bg-navy-900/60 p-1">
+          <div ref={allRef} role="tablist" aria-label="This lesson, all lessons, or another colour" className="flex scroll-mt-28 w-full gap-1 rounded-xl border border-navy-600 bg-navy-900/60 p-1">
             <PanelTab label="This lesson" on={panel === "lesson"} category={category} onClick={() => setPanel("lesson")} />
-            <PanelTab label={`All lessons · ${lessons.length}`} on={panel === "all"} category={category} onClick={() => setPanel("all")} />
+            <PanelTab label="All lessons" on={panel === "all"} category={category} onClick={() => setPanel("all")} />
+            <CategoryTab current={category} skillsHref={skillsHref} />
           </div>
         )}
         <Fold when={list} open={panel === "lesson"}>
@@ -612,6 +613,126 @@ function ColourSwitcher({ current, skillsHref }: { current: Category; skillsHref
                   <span className="truncate text-xs text-ink-muted">{c.subtitle}</span>
                   {here && <CheckIcon className="ml-auto size-3.5 shrink-0 text-ink-muted" />}
                 </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** The third tab under the video: Category. Press it and the eight
+ *  colours drop down beneath it; slide the thumb down to one - it lights
+ *  as you pass over it - and let go to go there. The skill dial's
+ *  press-slide-release, as a list. A plain tap opens the list and leaves
+ *  it open, for tapping a colour instead. */
+function CategoryTab({ current, skillsHref }: { current: Category; skillsHref: string }) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [lit, setLit] = useState<string | null>(null);
+  const box = useRef<HTMLDivElement>(null);
+  // Where the press began, and whether the thumb has travelled since.
+  const pressed = useRef<{ x: number; y: number; moved: boolean } | null>(null);
+
+  const colourUnder = (x: number, y: number) =>
+    (document.elementFromPoint(x, y)?.closest("[data-colour]") as HTMLElement | null)?.dataset.colour ?? null;
+  const go = (id: string) => {
+    setOpen(false);
+    setLit(null);
+    if (id !== current.id) router.push(`${skillsHref}/${id}`);
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    const away = (e: PointerEvent) => {
+      if (!box.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const esc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", away);
+    window.addEventListener("keydown", esc);
+    return () => {
+      document.removeEventListener("pointerdown", away);
+      window.removeEventListener("keydown", esc);
+    };
+  }, [open]);
+
+  return (
+    <div ref={box} className="relative flex min-w-0 flex-1">
+      <button
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        // (No scrolling the page while a thumb is choosing.)
+        style={{ touchAction: "none" }}
+        onPointerDown={(e) => {
+          pressed.current = { x: e.clientX, y: e.clientY, moved: false };
+          e.currentTarget.setPointerCapture?.(e.pointerId);
+          setOpen(true);
+        }}
+        onPointerMove={(e) => {
+          const p = pressed.current;
+          if (!p) return;
+          if (Math.hypot(e.clientX - p.x, e.clientY - p.y) > 8) p.moved = true;
+          if (p.moved) setLit(colourUnder(e.clientX, e.clientY));
+        }}
+        onPointerUp={(e) => {
+          const p = pressed.current;
+          pressed.current = null;
+          e.currentTarget.releasePointerCapture?.(e.pointerId);
+          if (!p?.moved) return; // a tap: the list stays open
+          const id = colourUnder(e.clientX, e.clientY);
+          if (id) go(id);
+          else {
+            setOpen(false);
+            setLit(null);
+          }
+        }}
+        onPointerCancel={() => {
+          pressed.current = null;
+          setLit(null);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setOpen((v) => !v);
+          }
+        }}
+        className={`flex min-h-10 min-w-0 flex-1 items-center justify-center gap-1 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+          open ? `${current.textClass} bg-navy-800 ring-1 ring-current` : "text-ink-faint hover:text-ink-muted"
+        }`}
+      >
+        <span className="truncate">Category</span>
+        <ChevronDownIcon className={`size-3.5 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div role="menu" aria-label="Skill colours" className="absolute right-0 top-full z-40 pt-2">
+          <div className="no-glass flex w-64 flex-col overflow-hidden rounded-xl border border-navy-600 bg-navy-850 py-1.5 shadow-[0_16px_40px_-12px_rgb(2_5_11/0.95)]">
+            {categories.map((c) => {
+              const here = c.id === current.id;
+              const on = lit === c.id;
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  role="menuitem"
+                  data-colour={c.id}
+                  aria-current={here ? "page" : undefined}
+                  onClick={() => go(c.id)}
+                  className={`flex items-center gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-navy-700 ${
+                    on ? "bg-navy-700" : here ? "bg-navy-800" : ""
+                  }`}
+                >
+                  <span
+                    className={`size-2.5 shrink-0 rounded-full ${c.bgClass} transition-transform ${on ? "scale-150" : ""}`}
+                    style={{ boxShadow: `0 0 8px var(--color-${c.id})` }}
+                  />
+                  <span className={`text-sm font-semibold ${c.textClass}`}>{c.name}</span>
+                  <span className="truncate text-xs text-ink-muted">{c.subtitle}</span>
+                  {here && <CheckIcon className="ml-auto size-3.5 shrink-0 text-ink-muted" />}
+                </button>
               );
             })}
           </div>
