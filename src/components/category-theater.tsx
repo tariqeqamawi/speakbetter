@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { categories, type Category } from "@/data/categories";
-import type { Lesson } from "@/data/lessons";
+import { lessonByVimeoId, type Lesson } from "@/data/lessons";
 import { lessonLength, lessonXp } from "@/lib/progress";
 import { XpBadge } from "@/components/xp-badge";
 import { useStore } from "@/lib/store";
@@ -48,7 +48,11 @@ export function CategoryTheater({
   // Category.
   // Grid view: which of the two sections under the video is open -
   // "This lesson" or "All lessons" - or neither.
-  const [panel, setPanel] = useState<"lesson" | "all">("lesson");
+  const [panel, setPanel] = useState<"lesson" | "all" | "spread">("lesson");
+  // Opened from a dealt spread (?spread=<ids>, card-deck.tsx): the page
+  // is about that hand - its tabs are This lesson and Your spread, and
+  // Back goes to the spread, not to Skills.
+  const [spread, setSpread] = useState<string[] | null>(null);
   const [featuredId, setFeaturedId] = useState(lessons[0].vimeoId);
   // Coming back to a colour opens on the first lesson not yet watched,
   // not on lesson 1 again - settled once, the moment the record loads.
@@ -59,7 +63,10 @@ export function CategoryTheater({
     setPlaced(true);
     // (A link can ask for a lesson - ?lesson=<id>, from a dealt spread -
     // and that comes first.)
-    const asked = new URLSearchParams(window.location.search).get("lesson");
+    const params = new URLSearchParams(window.location.search);
+    const asked = params.get("lesson");
+    const dealt = params.get("spread")?.split(",").filter((id) => lessonByVimeoId.has(id));
+    if (dealt?.length) setSpread(dealt);
     const wanted = lessons.find((l) => l.vimeoId === asked);
     const firstUnwatched = lessons.find((l) => !state.watchedLessons.includes(l.vimeoId));
     if (wanted) setFeaturedId(wanted.vimeoId);
@@ -104,6 +111,26 @@ export function CategoryTheater({
   const card = cardFor(featured.vimeoId);
   const index = lessons.findIndex((l) => l.vimeoId === featured.vimeoId);
   const next = lessons[index + 1];
+  const router = useRouter();
+  const spreadLessons = (spread ?? []).map((id) => lessonByVimeoId.get(id)).filter((l): l is Lesson => Boolean(l));
+  const spreadAt = spreadLessons.findIndex((l) => l.vimeoId === featured.vimeoId);
+  const spreadNext = spreadAt >= 0 ? spreadLessons[spreadAt + 1] : undefined;
+  // Another lesson of the hand: on this page if it's this colour's, or
+  // its own colour's page, still in the spread.
+  const openFromSpread = (l: Lesson, autoplay = false) => {
+    if (l.category === category.id) {
+      select(l.vimeoId, autoplay);
+      const url = new URL(window.location.href);
+      url.searchParams.set("lesson", l.vimeoId);
+      window.history.replaceState(window.history.state, "", url);
+    } else router.push(`${skillsHref}/${l.category}?lesson=${l.vimeoId}&spread=${(spread ?? []).join(",")}`);
+  };
+  // Back to the cards, with the hand still on the table (card-deck.tsx).
+  const backToSpread = () => {
+    try {
+      sessionStorage.setItem("sb-dealt-hand-open", "1");
+    } catch {}
+  };
   const watched = (id: string) => ready && state.watchedLessons.includes(id);
   const watchedCount = lessons.filter((l) => watched(l.vimeoId)).length;
   const complete = ready && watchedCount === lessons.length;
@@ -184,6 +211,31 @@ export function CategoryTheater({
           and a shadow beneath it - so where you are and how far through
           you are stay on screen the whole way down the page. */}
       <header className="sticky-under-header no-glass -mx-4 -mt-3 border-b border-navy-600 bg-navy-850 px-4 py-1.5 shadow-[0_8px_18px_-10px_rgb(2_5_11/0.9)] lg:-mt-8 xl:-mx-8 xl:px-8">
+        {spread ? (
+          <div className="flex items-center gap-2">
+            <BackLink href={`${skillsHref}/cards`} onClick={backToSpread}>
+              Back to spread
+            </BackLink>
+            <span aria-hidden className="text-ink-faint">/</span>
+            <h1 className={`min-w-0 truncate text-xl font-semibold tracking-tight ${category.textClass}`}>{category.name}</h1>
+            <div className="ml-auto flex items-center gap-2.5">
+              <span className="spectrum-text font-mono text-sm font-bold tabular-nums" aria-label={`Card ${spreadAt + 1} of ${spreadLessons.length} in your spread`}>
+                {spreadAt + 1} / {spreadLessons.length}
+              </span>
+              {spreadNext && (
+                <button
+                  type="button"
+                  onClick={() => openFromSpread(spreadNext, true)}
+                  title={`Next: ${spreadNext.title}`}
+                  className="flex min-h-8 items-center gap-0.5 rounded-full border border-navy-600 py-1 pl-2.5 pr-1.5 text-xs font-semibold text-ink-muted transition-colors hover:border-current hover:text-ink"
+                >
+                  Next
+                  <ChevronDownIcon className="size-3.5 -rotate-90" />
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
         <div className="flex items-center gap-2">
           <BackLink href={skillsHref}>Skills</BackLink>
           <span aria-hidden className="text-ink-faint">/</span>
@@ -242,6 +294,7 @@ export function CategoryTheater({
             )}
           </div>
         </div>
+        )}
       </header>
 
       {/* The colour, finished: said in words under the bar, with the way
@@ -342,8 +395,14 @@ export function CategoryTheater({
             page - this is the page. */}
         <div ref={allRef} role="tablist" aria-label="This lesson, all lessons, or another colour" className="flex scroll-mt-28 w-full gap-1 rounded-xl border border-navy-600 bg-navy-900/60 p-1">
             <PanelTab label="This lesson" on={panel === "lesson"} category={category} onClick={() => setPanel("lesson")} />
-            <PanelTab label="All lessons" on={panel === "all"} category={category} onClick={() => setPanel("all")} />
-            <CategoryTab current={category} skillsHref={skillsHref} />
+            {spread ? (
+              <PanelTab label="Your spread" on={panel === "spread"} category={category} onClick={() => setPanel("spread")} />
+            ) : (
+              <>
+                <PanelTab label="All lessons" on={panel === "all"} category={category} onClick={() => setPanel("all")} />
+                <CategoryTab current={category} skillsHref={skillsHref} />
+              </>
+            )}
         </div>
         <Fold open={panel === "lesson"}>
         <LessonSummary vimeoId={featured.vimeoId} />
@@ -397,6 +456,48 @@ export function CategoryTheater({
 
       {/* The rail - in grid view, every lesson in the colour one under
           another, folded under the lesson until asked for. */}
+      {/* Your spread: the hand's lessons, one under another, each in its
+          own colour - and only those. */}
+      <Fold open={panel === "spread"}>
+        <ul className="flex flex-col gap-2.5">
+          {spreadLessons.map((l, i) => {
+            const cat = categories.find((c) => c.id === l.category);
+            const current = l.vimeoId === featured.vimeoId;
+            return (
+              <li key={l.vimeoId} className="challenge-enter w-full" style={{ animationDelay: `${i * 45}ms` }}>
+                <button
+                  type="button"
+                  onClick={() => openFromSpread(l)}
+                  aria-current={current ? "true" : undefined}
+                  className={`lift-card group flex w-full flex-row items-center gap-3 overflow-hidden rounded-xl border pr-3 text-left ${cat?.textClass ?? ""} ${
+                    current ? "border-current shadow-[0_0_18px_-6px_currentColor]" : "border-navy-600 hover:border-current"
+                  }`}
+                >
+                  <span className="relative block aspect-video w-36 shrink-0 bg-gradient-to-br from-navy-700 to-navy-900 sm:w-44">
+                    {cat && <VideoStill vimeoId={l.vimeoId} accent={cat} sizes="208px" />}
+                    {current && (
+                      <span className={`absolute left-2 top-2 rounded-full px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider text-navy-950 ${cat?.bgClass ?? ""}`}>
+                        Playing
+                      </span>
+                    )}
+                    {watched(l.vimeoId) && !current && (
+                      <span className="absolute right-2 top-2 flex size-5 items-center justify-center rounded-full bg-navy-950/85 text-mindset">
+                        <CheckIcon className="size-3" />
+                      </span>
+                    )}
+                    <span className={`absolute inset-x-0 bottom-0 h-0.5 ${cat?.bgClass ?? ""}`} />
+                  </span>
+                  <span className="flex min-w-0 flex-col gap-0.5 py-2">
+                    <span className="text-[0.6rem] font-bold uppercase tracking-wider">{cat?.name}</span>
+                    <span className="line-clamp-2 text-sm font-medium leading-snug text-ink">{l.title}</span>
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </Fold>
+
       <Fold open={panel === "all"}>
       <div className="relative flex scroll-mt-28 flex-col gap-2">
         <ul className="flex flex-col gap-2.5">

@@ -670,7 +670,7 @@ function FullSpread({
   const section = categories.find((c) => c.id === card.categoryId);
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-3">
       <div className="flex w-full items-center justify-between gap-3">
         <button
           type="button"
@@ -680,14 +680,22 @@ function FullSpread({
           <ChevronDownIcon className="size-4 rotate-90" />
           Back
         </button>
-        <span className="spectrum-text text-xs font-bold uppercase tracking-[0.2em]">Your spread</span>
-        <span className="w-12" aria-hidden />
+        <h2 className="spectrum-text text-xl font-black tracking-tight sm:text-2xl">Your spread</h2>
+        <button
+          type="button"
+          onClick={() => onZoom(index)}
+          className="flex items-center gap-1.5 rounded-lg border border-navy-600 bg-navy-800 px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-ink-faint"
+        >
+          <ExpandIcon className="size-4" />
+          Open card
+        </button>
       </div>
 
       {/* The fan: the card in front face up, the rest of the hand face
-          down either side, each in its own colour's back. */}
+          down either side, each in its own colour's back. (A shallower
+          box than a colour's fan, so less empty room beneath it.) */}
       <div
-        className="relative mx-auto flex aspect-[5/4] w-full max-w-lg touch-pan-y select-none items-center justify-center lg:max-w-3xl"
+        className="relative mx-auto -mb-2 flex aspect-[10/7] w-full max-w-lg touch-pan-y select-none items-center justify-center lg:max-w-3xl"
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={endDrag}
@@ -743,35 +751,6 @@ function FullSpread({
         })}
       </div>
 
-      {/* Which card, and the way to read it big. */}
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => go(-1)}
-          disabled={index === 0}
-          aria-label="Previous card"
-          className="rounded-lg px-2 py-1 text-ink-faint transition-colors hover:text-ink disabled:opacity-30"
-        >
-          <ChevronDownIcon className="size-4 rotate-90" />
-        </button>
-        <button
-          type="button"
-          onClick={() => onZoom(index)}
-          className="flex items-center gap-1.5 rounded-lg border border-navy-600 bg-navy-800 px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-current"
-        >
-          <ExpandIcon className="size-4" />
-          Open card
-        </button>
-        <button
-          type="button"
-          onClick={() => go(1)}
-          disabled={index >= hand.length - 1}
-          aria-label="Next card"
-          className="rounded-lg px-2 py-1 text-ink-faint transition-colors hover:text-ink disabled:opacity-30"
-        >
-          <ChevronDownIcon className="size-4 -rotate-90" />
-        </button>
-      </div>
       <p className="text-center text-xs text-ink-faint">
         <span className="tabular-nums">
           {index + 1} of {hand.length}
@@ -813,7 +792,7 @@ function FullSpread({
             return (
               <li key={c.vimeoId}>
                 <Link
-                  href={`${skillsHref}/${c.categoryId}?lesson=${c.vimeoId}`}
+                  href={`${skillsHref}/${c.categoryId}?lesson=${c.vimeoId}&spread=${hand.map((h) => h.vimeoId).join(",")}`}
                   onMouseEnter={() => setIndex(i)}
                   onClick={() => {
                     try {

@@ -10,12 +10,13 @@ import { usePathname } from "next/navigation";
 // Inside the /demo preview, going "back" stays inside the preview - the
 // real routes are gated and would bounce a visitor to the sales page.
 
-export function BackLink({ href, children }: { href: string; children: React.ReactNode }) {
+export function BackLink({ href, children, onClick }: { href: string; children: React.ReactNode; onClick?: () => void }) {
   const inDemo = usePathname().startsWith("/demo");
   const target = inDemo && !href.startsWith("/demo") ? `/demo${href}` : href;
   return (
     <Link
       href={target}
+      onClick={onClick}
       className="-mx-2 -my-1.5 inline-flex w-fit items-center gap-1.5 px-2 py-2.5 text-sm text-ink-faint transition-colors hover:text-ink-muted"
     >
       <svg
