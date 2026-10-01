@@ -29,7 +29,7 @@ export const SITE_FOOTER: SitePage[] = [
 ];
 
 /** Every page that wears the website's header rather than the app's. */
-export const SITE_PATHS = [...new Set(["/landing", ...SITE_FOOTER.map((p) => p.href)])];
+export const SITE_PATHS = [...new Set(["/landing", "/landing-test", ...SITE_FOOTER.map((p) => p.href)])];
 
 /**
  * A "Talk to us" that opens the visitor's own email, addressed and with

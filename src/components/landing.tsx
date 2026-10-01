@@ -551,7 +551,7 @@ function WhatYouDo({ className = "" }: { className?: string }) {
 
 /** The app itself in a phone: a demo page at a phone's own size, scaled
  *  into the frame - live and tappable, loaded only when scrolled to. */
-function LivePhone({ src, caption }: { src: string; caption: string }) {
+export function LivePhone({ src, caption }: { src: string; caption: string }) {
   return (
     <figure className="flex flex-col items-center gap-2">
       <div className="relative w-[17rem] rounded-[2.2rem] border-4 border-navy-600 bg-navy-950 p-1.5 shadow-2xl shadow-navy-950">

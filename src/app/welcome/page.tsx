@@ -53,7 +53,7 @@ export default function WelcomePage() {
   };
 
   return (
-    <div className="mx-auto flex max-w-lg flex-col gap-8 py-10">
+    <div className="mx-auto flex max-w-lg flex-col gap-5 py-4">
       <header className="flex flex-col gap-3 text-center">
         <div className="spectrum-rule mx-auto h-1 w-16 rounded-full" />
         <h1 className="text-3xl font-semibold tracking-tight">

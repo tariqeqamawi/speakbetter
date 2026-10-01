@@ -100,7 +100,7 @@ function JoinNow() {
   const { state, ready } = useStore();
   const pathname = usePathname();
   if (!ready || !onSalesPage(pathname, state.unlocked)) return null;
-  const href = pathname === "/landing" || pathname === "/" ? "#pricing" : "/landing#pricing";
+  const href = pathname === "/landing" || pathname === "/landing-test" || pathname === "/" ? "#pricing" : "/landing#pricing";
   return (
     // Wrapped, because the button's own class sets its display and would
     // override "hidden" on it.

@@ -55,7 +55,12 @@ export function HeroBeat() {
           <div
             key={b.image}
             aria-hidden={i !== at ? "true" : undefined}
-            className={`relative col-start-1 row-start-1 overflow-hidden rounded-2xl border bg-navy-950 shadow-2xl shadow-navy-950/80 transition-opacity duration-700 lg:col-start-auto lg:row-start-auto lg:opacity-100 ${
+            // (On a phone, a tap on the picture moves on to the next.)
+            onClick={() => {
+              setAt((a) => (a + 1) % BEATS.length);
+              setHeld(true);
+            }}
+            className={`relative col-start-1 row-start-1 cursor-pointer overflow-hidden rounded-2xl border lg:cursor-auto bg-navy-950 shadow-2xl shadow-navy-950/80 transition-opacity duration-700 lg:col-start-auto lg:row-start-auto lg:opacity-100 ${
               i === at ? "opacity-100" : "pointer-events-none opacity-0 lg:pointer-events-auto"
             } ${b.punch ? "border-figurative/60" : "border-navy-600"}`}
           >
@@ -82,7 +87,19 @@ export function HeroBeat() {
           </div>
         ))}
       </div>
-      <div className="flex gap-2 lg:hidden" role="tablist" aria-label="Slides">
+      <div className="flex items-center gap-3 lg:hidden">
+        <button
+          type="button"
+          aria-label="Previous"
+          onClick={() => {
+            setAt((a) => (a + BEATS.length - 1) % BEATS.length);
+            setHeld(true);
+          }}
+          className="grid size-9 place-items-center rounded-full border border-navy-600 text-ink-muted transition-colors hover:text-ink"
+        >
+          <span aria-hidden className="text-lg leading-none">&lsaquo;</span>
+        </button>
+      <div className="flex gap-2" role="tablist" aria-label="Slides">
         {BEATS.map((b, i) => (
           <button
             key={b.image}
@@ -97,6 +114,18 @@ export function HeroBeat() {
             className={`h-2 rounded-full transition-all ${i === at ? "w-6 bg-figurative" : "w-2 bg-navy-600"}`}
           />
         ))}
+      </div>
+        <button
+          type="button"
+          aria-label="Next"
+          onClick={() => {
+            setAt((a) => (a + 1) % BEATS.length);
+            setHeld(true);
+          }}
+          className="grid size-9 place-items-center rounded-full border border-navy-600 text-ink-muted transition-colors hover:text-ink"
+        >
+          <span aria-hidden className="text-lg leading-none">&rsaquo;</span>
+        </button>
       </div>
     </section>
   );
