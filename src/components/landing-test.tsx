@@ -85,9 +85,17 @@ export function LandingTest() {
         {/* The app, live. */}
         <section className="flex flex-col items-center gap-5">
           <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">See the app in action</h2>
-          <div className="flex flex-wrap items-start justify-center gap-6 sm:gap-10">
-            <LivePhone src="/demo/skills/figurative" caption="A lesson" />
-            <LivePhone src="/demo/skills/cards" caption="The deck" />
+          {/* Side by side on a laptop; on a phone, a row to swipe along. */}
+          <div className="-mx-4 flex w-[calc(100%+2rem)] snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:w-full sm:justify-center sm:gap-10 sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden">
+            <div className="shrink-0 snap-center">
+              <LivePhone src="/demo/challenges" caption="The challenges" />
+            </div>
+            <div className="shrink-0 snap-center">
+              <LivePhone src="/demo/skills/figurative" caption="A lesson" />
+            </div>
+            <div className="shrink-0 snap-center">
+              <LivePhone src="/demo/skills/cards" caption="The deck" />
+            </div>
           </div>
         </section>
 

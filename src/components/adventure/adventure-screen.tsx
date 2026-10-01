@@ -605,7 +605,7 @@ export function AdventureScreen({
       // again.
       const from = victoryStart(road) + 20;
       const to = road.finish - 220;
-      travel.driven = true;
+      travel.drive(true);
       let raf = 0;
       let last = performance.now();
       let fading = 0;
@@ -631,7 +631,7 @@ export function AdventureScreen({
       return () => {
         cancelAnimationFrame(raf);
         clearTimeout(fading);
-        travel.driven = false;
+        travel.drive(false);
       };
     }
     const firstOpen = Math.max(0, stops.findIndex((st) => st.state === "here"));

@@ -561,7 +561,9 @@ export function LivePhone({ src, caption }: { src: string; caption: string }) {
             src={src}
             title={caption}
             loading="lazy"
-            className="absolute left-0 top-0 h-[844px] w-[390px] origin-top-left scale-[0.646] border-0"
+            // (16px wider than the phone's window, so the page's own
+            // scrollbar falls outside it and is clipped away.)
+            className="absolute left-0 top-0 h-[844px] w-[406px] origin-top-left scale-[0.646] border-0"
           />
         </div>
       </div>
