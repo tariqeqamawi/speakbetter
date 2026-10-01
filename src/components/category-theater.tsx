@@ -18,7 +18,6 @@ import { LessonSummary } from "@/components/lesson-summary";
 import { LessonTranscript } from "@/components/lesson-transcript";
 import { PlayFillIcon } from "@/components/player-icons";
 import { BackLink } from "@/components/back-link";
-import { useSkillsView } from "@/lib/skills-view";
 
 // A category as a theater: whichever lesson is selected plays full
 // width, and every other lesson in the color waits in a carousel below.
@@ -42,9 +41,11 @@ export function CategoryTheater({
   const { state, ready, markLessonWatched } = useStore();
   // The demo serves these pages under /demo; links stay inside it.
   const skillsHref = usePathname().startsWith("/demo") ? "/demo/skills" : "/skills";
-  // In grid view the rail is a list, one lesson under another, rather
-  // than a carousel to swipe through (skills-view.ts).
-  const list = useSkillsView() === "grid";
+  // One layout for a colour's lessons, whichever way the student came
+  // in (the dial or the grid): the video big at the top, edge to edge on
+  // a phone, and under it three tabs - This lesson, All lessons (a stack,
+  // one under another, rather than a carousel to swipe through), and
+  // Category.
   // Grid view: which of the two sections under the video is open -
   // "This lesson" or "All lessons" - or neither.
   const [panel, setPanel] = useState<"lesson" | "all">("lesson");
@@ -295,7 +296,7 @@ export function CategoryTheater({
         {/* Keyed by lesson so the player rebuilds cleanly on each pick.
             In grid view it runs edge to edge on a phone - the whole width
             of the screen, landscape, at the top of the page. */}
-        <div className={list ? "-mx-4 sm:mx-0" : ""}>
+        <div className="-mx-4 sm:mx-0">
         <VimeoPlayer
           key={featured.vimeoId}
           vimeoId={featured.vimeoId}
@@ -334,14 +335,12 @@ export function CategoryTheater({
             with the video, and the transcript for anyone who wants the
             words. Both here, rather than behind a link to another
             page - this is the page. */}
-        {list && (
-          <div ref={allRef} role="tablist" aria-label="This lesson, all lessons, or another colour" className="flex scroll-mt-28 w-full gap-1 rounded-xl border border-navy-600 bg-navy-900/60 p-1">
+        <div ref={allRef} role="tablist" aria-label="This lesson, all lessons, or another colour" className="flex scroll-mt-28 w-full gap-1 rounded-xl border border-navy-600 bg-navy-900/60 p-1">
             <PanelTab label="This lesson" on={panel === "lesson"} category={category} onClick={() => setPanel("lesson")} />
             <PanelTab label="All lessons" on={panel === "all"} category={category} onClick={() => setPanel("all")} />
             <CategoryTab current={category} skillsHref={skillsHref} />
-          </div>
-        )}
-        <Fold when={list} open={panel === "lesson"}>
+        </div>
+        <Fold open={panel === "lesson"}>
         <LessonSummary vimeoId={featured.vimeoId} />
         <LessonNotes key={`n-${featured.vimeoId}`} vimeoId={featured.vimeoId} category={category.id} seconds={seconds} />
         <LessonTranscript vimeoId={featured.vimeoId} />
@@ -393,33 +392,28 @@ export function CategoryTheater({
 
       {/* The rail - in grid view, every lesson in the colour one under
           another, folded under the lesson until asked for. */}
-      <Fold when={list} open={panel === "all"}>
-      <div ref={list ? undefined : allRef} className="relative flex scroll-mt-28 flex-col gap-2">
-        {!list && (
-          <span className="text-xs font-medium uppercase tracking-wider text-ink-faint">
-            All {lessons.length} lessons in this color
-          </span>
-        )}
-        <ul className={list ? "flex flex-col gap-2.5" : "-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2"}>
+      <Fold open={panel === "all"}>
+      <div className="relative flex scroll-mt-28 flex-col gap-2">
+        <ul className="flex flex-col gap-2.5">
           {lessons.map((lesson, i) => {
             const current = lesson.vimeoId === featured.vimeoId;
             return (
               <li
                 key={lesson.vimeoId}
-                className={list ? "challenge-enter w-full" : "challenge-enter w-44 shrink-0 snap-start sm:w-52"}
+                className="challenge-enter w-full"
                 style={{ animationDelay: `${Math.min(i, 10) * 45}ms` }}
               >
                 <button
                   type="button"
                   onClick={() => select(lesson.vimeoId)}
                   aria-pressed={current}
-                  className={`lift-card group flex w-full overflow-hidden rounded-xl border text-left ${list ? "flex-row items-center gap-3 pr-3" : "flex-col"} ${category.textClass} ${
+                  className={`lift-card group flex w-full overflow-hidden rounded-xl border text-left flex-row items-center gap-3 pr-3 ${category.textClass} ${
                     current
                       ? "border-current shadow-[0_0_18px_-6px_currentColor]"
                       : "border-navy-600 hover:border-current"
                   }`}
                 >
-                  <span className={`relative block aspect-video shrink-0 bg-gradient-to-br from-navy-700 to-navy-900 ${list ? "w-36 sm:w-44" : "w-full"}`}>
+                  <span className={`relative block aspect-video shrink-0 bg-gradient-to-br from-navy-700 to-navy-900 w-36 sm:w-44`}>
                     <VideoStill
                       vimeoId={lesson.vimeoId}
                       accent={category}
@@ -463,11 +457,11 @@ export function CategoryTheater({
                       className={`absolute inset-x-0 bottom-0 h-0.5 ${category.bgClass} ${current ? "" : "opacity-40"}`}
                     />
                   </span>
-                  <span className={`flex min-w-0 flex-col gap-0.5 ${list ? "py-2" : "p-2.5"}`}>
+                  <span className={`flex min-w-0 flex-col gap-0.5 py-2`}>
                     <span className="font-mono text-[0.6rem] tabular-nums text-ink-faint">
                       {String(i + 1).padStart(2, "0")}
                     </span>
-                    <span className={`line-clamp-2 font-medium leading-snug text-ink ${list ? "text-sm" : "text-xs"}`}>
+                    <span className={`line-clamp-2 font-medium leading-snug text-ink text-sm`}>
                       {lesson.title}
                     </span>
                   </span>
@@ -479,7 +473,7 @@ export function CategoryTheater({
       </div>
       </Fold>
 
-      {list && <BackToTop />}
+      <BackToTop />
     </div>
   );
 }
@@ -512,10 +506,8 @@ function PanelTab({
   );
 }
 
-/** In grid view a section shows only while its tab is open; in the
- *  dial's view it shows as it always has. */
-function Fold({ when, open, children }: { when: boolean; open: boolean; children: React.ReactNode }) {
-  if (!when) return <>{children}</>;
+/** A section under the video, shown only while its tab is open. */
+function Fold({ open, children }: { open: boolean; children: React.ReactNode }) {
   if (!open) return null;
   return <div className="challenge-enter flex flex-col gap-3">{children}</div>;
 }
