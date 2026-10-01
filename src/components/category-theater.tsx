@@ -9,7 +9,7 @@ import { useStore } from "@/lib/store";
 import { VimeoPlayer } from "@/components/vimeo-player";
 import { LessonWatched } from "@/components/lesson-watched";
 import { VideoStill } from "@/components/video-still";
-import { CheckIcon, XIcon, ZapIcon } from "@/components/icons";
+import { CheckIcon, ChevronDownIcon, XIcon, ZapIcon } from "@/components/icons";
 import { LessonCard } from "@/components/lesson-card";
 import { cardFor } from "@/data/deck";
 import { LessonNotes } from "@/components/lesson-notes";
@@ -158,7 +158,10 @@ export function CategoryTheater({
 
         </div>
 
-        {/* Keyed by lesson so the player rebuilds cleanly on each pick. */}
+        {/* Keyed by lesson so the player rebuilds cleanly on each pick.
+            In grid view it runs edge to edge on a phone - the whole width
+            of the screen, landscape, at the top of the page. */}
+        <div className={list ? "-mx-4 sm:mx-0" : ""}>
         <VimeoPlayer
           key={featured.vimeoId}
           vimeoId={featured.vimeoId}
@@ -172,12 +175,19 @@ export function CategoryTheater({
             if (next) setUpNext(true);
           }}
         />
+        </div>
         <LessonWatched key={`w-${featured.vimeoId}`} vimeoId={featured.vimeoId} />
 
         {/* What the lesson says, under it: the key ideas keeping pace
             with the video, and the transcript for anyone who wants the
             words. Both here, rather than behind a link to another
             page - this is the page. */}
+        <Fold
+          when={list}
+          label="About this lesson"
+          hint="Summary, key ideas, transcript and card"
+          accentClass={category.textClass}
+        >
         <LessonSummary vimeoId={featured.vimeoId} />
         <LessonNotes key={`n-${featured.vimeoId}`} vimeoId={featured.vimeoId} category={category.id} seconds={seconds} />
         <LessonTranscript vimeoId={featured.vimeoId} />
@@ -192,6 +202,7 @@ export function CategoryTheater({
             <span className="text-[0.65rem] text-ink-faint">Tap the card to turn it over</span>
           </div>
         )}
+        </Fold>
 
         {/* Up next: offered, never taken. The lesson that just finished
             used to roll into the next one on a five second countdown,
@@ -226,12 +237,20 @@ export function CategoryTheater({
         )}
       </div>
 
-      {/* The rail - in grid view, a list at the top of the page: every
-          lesson in the colour first, and tapping one plays it below. */}
-      <div className={`relative flex flex-col gap-2 ${list ? "order-first" : ""}`}>
-        <span className="text-xs font-medium uppercase tracking-wider text-ink-faint">
-          All {lessons.length} lessons in this color
-        </span>
+      {/* The rail - in grid view, every lesson in the colour one under
+          another, folded under the lesson until asked for. */}
+      <Fold
+        when={list}
+        label={`All ${lessons.length} lessons in ${category.name}`}
+        hint={`${watchedCount} watched`}
+        accentClass={category.textClass}
+      >
+      <div className="relative flex flex-col gap-2">
+        {!list && (
+          <span className="text-xs font-medium uppercase tracking-wider text-ink-faint">
+            All {lessons.length} lessons in this color
+          </span>
+        )}
         <ul className={list ? "flex flex-col gap-2.5" : "-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2"}>
           {lessons.map((lesson, i) => {
             const current = lesson.vimeoId === featured.vimeoId;
@@ -302,6 +321,64 @@ export function CategoryTheater({
           })}
         </ul>
       </div>
+      </Fold>
+
+      {list && <BackToTop />}
     </div>
   );
 }
+
+/** A section folded behind one row - only in grid view; in the dial's
+ *  view the children show as they always have. */
+function Fold({
+  when,
+  label,
+  hint,
+  accentClass,
+  children,
+}: {
+  when: boolean;
+  label: string;
+  hint?: string;
+  accentClass: string;
+  children: React.ReactNode;
+}) {
+  if (!when) return <>{children}</>;
+  return (
+    <details className="group rounded-xl border border-navy-600 bg-navy-900/60 open:bg-navy-900/80">
+      <summary className="flex min-h-12 cursor-pointer list-none items-center gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
+        <span className="flex min-w-0 flex-1 flex-col">
+          <span className="text-sm font-semibold text-ink">{label}</span>
+          {hint && <span className="text-xs text-ink-faint">{hint}</span>}
+        </span>
+        <ChevronDownIcon className={`size-5 shrink-0 transition-transform group-open:rotate-180 ${accentClass}`} />
+      </summary>
+      <div className="flex flex-col gap-3 border-t border-navy-700 p-3">{children}</div>
+    </details>
+  );
+}
+
+/** Once the page is well scrolled, a small round button back to the
+ *  video at the top. */
+function BackToTop() {
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    const on = () => setShown(window.scrollY > 700);
+    on();
+    window.addEventListener("scroll", on, { passive: true });
+    return () => window.removeEventListener("scroll", on);
+  }, []);
+  return (
+    <button
+      type="button"
+      aria-label="Back to top"
+      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      className={`fixed bottom-24 right-4 z-40 flex size-11 items-center justify-center rounded-full border border-navy-500 bg-navy-900/90 text-ink shadow-xl shadow-navy-950/70 backdrop-blur transition-all duration-300 hover:border-body-language hover:text-body-language lg:bottom-8 ${
+        shown ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-3 opacity-0"
+      }`}
+    >
+      <ChevronDownIcon className="size-5 rotate-180" />
+    </button>
+  );
+}
+
