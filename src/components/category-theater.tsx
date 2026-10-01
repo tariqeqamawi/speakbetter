@@ -16,6 +16,7 @@ import { LessonNotes } from "@/components/lesson-notes";
 import { LessonSummary } from "@/components/lesson-summary";
 import { LessonTranscript } from "@/components/lesson-transcript";
 import { PlayFillIcon } from "@/components/player-icons";
+import { BackLink } from "@/components/back-link";
 import { useSkillsView } from "@/lib/skills-view";
 
 // A category as a theater: whichever lesson is selected plays full
@@ -43,7 +44,7 @@ export function CategoryTheater({
   const list = useSkillsView() === "grid";
   // Grid view: which of the two sections under the video is open -
   // "This lesson" or "All lessons" - or neither.
-  const [panel, setPanel] = useState<"lesson" | "all" | null>(null);
+  const [panel, setPanel] = useState<"lesson" | "all">("lesson");
   const [featuredId, setFeaturedId] = useState(lessons[0].vimeoId);
   const [autoplayNext, setAutoplayNext] = useState(false);
   const [upNext, setUpNext] = useState(false);
@@ -113,33 +114,56 @@ export function CategoryTheater({
         }}
       />
 
+      {/* THE HEADER, in one line: back to Skills, the colour, and on the
+          right how many of its lessons are done and which one is playing.
+          The colour's description waits behind the arrow beside its
+          subtitle - read once, it was the top of the screen every visit. */}
+      <header className="relative flex flex-col gap-0.5">
+        <div className="flex items-center gap-2">
+          <BackLink href="/skills">Skills</BackLink>
+          <span aria-hidden className="text-ink-faint">/</span>
+          <h1 className={`text-xl font-semibold tracking-tight ${category.textClass}`}>{category.name}</h1>
+          <div className="ml-auto flex items-center gap-2.5">
+            <span className="relative size-8 shrink-0" title={`${watchedCount} of ${lessons.length} completed`}>
+              <svg viewBox="0 0 36 36" className="size-full -rotate-90" aria-hidden>
+                <circle cx="18" cy="18" r="15.5" fill="none" strokeWidth="3" className="stroke-navy-700" />
+                <circle
+                  cx="18"
+                  cy="18"
+                  r="15.5"
+                  fill="none"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  stroke={`var(--color-${category.id})`}
+                  strokeDasharray={`${(watchedCount / lessons.length) * 97.4} 97.4`}
+                  className="transition-[stroke-dasharray] duration-700"
+                />
+              </svg>
+              <span className="absolute inset-0 flex items-center justify-center text-[0.6rem] font-bold tabular-nums text-ink">
+                {watchedCount}
+              </span>
+              <span className="sr-only">{watchedCount} completed</span>
+            </span>
+            <span className={`font-mono text-sm tabular-nums ${category.textClass}`} aria-label={`Lesson ${index + 1} of ${lessons.length}`}>
+              {String(index + 1).padStart(2, "0")} / {lessons.length}
+            </span>
+          </div>
+        </div>
+        <details className="group">
+          <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-ink-faint transition-colors hover:text-ink-muted [&::-webkit-details-marker]:hidden">
+            {category.subtitle}
+            <ChevronDownIcon className="size-3.5 transition-transform group-open:rotate-180" />
+          </summary>
+          <div className="flex max-w-lg flex-col gap-1 pt-2">
+            <p className="text-sm text-ink-muted">{category.blurb}</p>
+            <p className="text-xs text-ink-faint">{lessons.length} lessons · one to two minutes each</p>
+          </div>
+        </details>
+      </header>
+
       {/* The stage */}
       <div ref={stageRef} className="relative flex scroll-mt-20 flex-col gap-3">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-          {/* Progress ring: the category closing toward complete. */}
-          <span className="relative size-9 shrink-0" title={`${watchedCount} of ${lessons.length} watched`}>
-            <svg viewBox="0 0 36 36" className="size-full -rotate-90">
-              <circle cx="18" cy="18" r="15.5" fill="none" strokeWidth="3" className="stroke-navy-700" />
-              <circle
-                cx="18"
-                cy="18"
-                r="15.5"
-                fill="none"
-                strokeWidth="3"
-                strokeLinecap="round"
-                stroke={`var(--color-${category.id})`}
-                strokeDasharray={`${(watchedCount / lessons.length) * 97.4} 97.4`}
-                className="transition-[stroke-dasharray] duration-700"
-              />
-            </svg>
-            <span className="absolute inset-0 flex items-center justify-center text-[0.6rem] font-bold tabular-nums text-ink">
-              {watchedCount}
-            </span>
-          </span>
-
-          <span className={`font-mono text-sm tabular-nums ${category.textClass}`}>
-            {String(index + 1).padStart(2, "0")} / {lessons.length}
-          </span>
           <h2 className="text-xl font-semibold tracking-tight text-ink">
             {featured.title}
           </h2>
@@ -186,11 +210,9 @@ export function CategoryTheater({
             words. Both here, rather than behind a link to another
             page - this is the page. */}
         {list && (
-          <div className="flex items-center gap-2">
-            <PanelTab label="This lesson" open={panel === "lesson"} accentClass={category.textClass}
-              onClick={() => setPanel((v) => (v === "lesson" ? null : "lesson"))} />
-            <PanelTab label="All lessons" open={panel === "all"} accentClass={category.textClass}
-              onClick={() => setPanel((v) => (v === "all" ? null : "all"))} />
+          <div role="tablist" aria-label="This lesson or all lessons" className="flex w-full gap-1 rounded-xl border border-navy-600 bg-navy-900/60 p-1">
+            <PanelTab label="This lesson" on={panel === "lesson"} category={category} onClick={() => setPanel("lesson")} />
+            <PanelTab label={`All lessons · ${lessons.length}`} on={panel === "all"} category={category} onClick={() => setPanel("all")} />
           </div>
         )}
         <Fold when={list} open={panel === "lesson"}>
@@ -329,30 +351,30 @@ export function CategoryTheater({
   );
 }
 
-/** One of the two tabs under the video in grid view: its name and a
- *  small arrow that turns when it is open. */
+/** One of the two tabs under the video in grid view - lit in the
+ *  colour's own colour when chosen, like Orientation's. */
 function PanelTab({
   label,
-  open,
-  accentClass,
+  on,
+  category,
   onClick,
 }: {
   label: string;
-  open: boolean;
-  accentClass: string;
+  on: boolean;
+  category: Category;
   onClick: () => void;
 }) {
   return (
     <button
       type="button"
+      role="tab"
+      aria-selected={on}
       onClick={onClick}
-      aria-expanded={open}
-      className={`flex min-h-10 items-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition-colors ${
-        open ? `border-current bg-navy-800 ${accentClass}` : "border-navy-600 bg-navy-900/60 text-ink hover:border-navy-500"
+      className={`flex min-h-10 min-w-0 flex-1 items-center justify-center rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+        on ? `${category.textClass} bg-navy-800 ring-1 ring-current` : "text-ink-faint hover:text-ink-muted"
       }`}
     >
-      <span className={open ? "" : "text-ink"}>{label}</span>
-      <ChevronDownIcon className={`size-4 transition-transform ${open ? "rotate-180" : ""} ${accentClass}`} />
+      <span className="truncate">{label}</span>
     </button>
   );
 }
