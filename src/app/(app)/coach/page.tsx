@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { AskCoach } from "@/components/ask-coach";
 import { CoachHistory } from "@/components/coach-history";
-import { ChevronDownIcon } from "@/components/icons";
+import { InfoEye } from "@/components/info-eye";
 import { SectionTour } from "@/components/section-tour";
 import { FeatureReaction } from "@/components/feature-reaction";
 
@@ -23,22 +23,18 @@ export default function CoachPage() {
     <div className="flex min-h-[calc(100dvh-10rem)] flex-col gap-4 py-5">
       <header className="flex flex-col gap-1.5">
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Meet &ldquo;Coach&rdquo;</h1>
+          <div className="flex items-center gap-1">
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Meet &ldquo;Coach&rdquo;</h1>
+            <InfoEye label="Who Coach is">
+              <p>
+                Coach is a lion who isn&apos;t afraid of his true colors - and he&apos;ll help you find yours and roar.
+                Talk to him the way you would any other coach: ask how your speaking is developing, read back his
+                reviews, and ask how to get better.
+              </p>
+            </InfoEye>
+          </div>
           <SectionTour section="coach" />
         </div>
-        {/* Native details: no state, no JavaScript, and it keeps
-            working before the page has hydrated. */}
-        <details className="group max-w-lg">
-          <summary className="inline-flex cursor-pointer list-none items-center gap-1.5 text-sm font-semibold text-ink-faint transition-colors hover:text-ink [&::-webkit-details-marker]:hidden">
-            Read more
-            <ChevronDownIcon className="size-4 transition-transform group-open:rotate-180" />
-          </summary>
-          <p className="pt-2 text-sm text-ink-muted">
-            Coach is a lion who isn&apos;t afraid of his true colors - and he&apos;ll help you find yours and roar.
-            Talk to him the way you would any other coach: ask how your speaking is developing, read back his reviews,
-            and ask how to get better.
-          </p>
-        </details>
       </header>
 
       {/* The lion, centered in whatever room is left. */}

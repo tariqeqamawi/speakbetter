@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ChevronDownIcon } from "@/components/icons";
+import { InfoEye } from "@/components/info-eye";
 import { SkillsBrowser } from "@/components/skills-browser";
 import { SectionTabs } from "@/components/section-tabs";
 import { SectionTour } from "@/components/section-tour";
@@ -20,23 +20,19 @@ export default function SkillsPage() {
     <div className="flex flex-col gap-3 pb-10 pt-1">
       {/* The tabs are the heading - see section-tabs.tsx. */}
       <h1 className="sr-only">Skills</h1>
-      <SectionTabs />
+      <SectionTabs
+        info={
+          <InfoEye label="What Skills is">
+            <p>
+              Short, focused lessons - one to two minutes each - across the eight colors of dynamic speaking. Dip in;
+              don&apos;t binge.
+            </p>
+          </InfoEye>
+        }
+      />
       <SectionTour section="skills" />
 
-      {/* "What this is" shares its row with the small Dial / Grid
-          switch (skills-browser.tsx). */}
-      <SkillsBrowser>
-        <details className="group -mt-1">
-          <summary className="inline-flex cursor-pointer list-none items-center gap-1.5 text-xs font-semibold text-ink-faint transition-colors hover:text-ink [&::-webkit-details-marker]:hidden">
-            What this is
-            <ChevronDownIcon className="size-3.5 transition-transform group-open:rotate-180" />
-          </summary>
-          <p className="max-w-lg pt-2 text-sm text-ink-muted">
-            Short, focused lessons - one to two minutes each - across the eight colors of dynamic speaking. Dip in;
-            don&apos;t binge.
-          </p>
-        </details>
-      </SkillsBrowser>
+      <SkillsBrowser />
       <FeatureReaction feature="dial" label="the dial" />
     </div>
   );

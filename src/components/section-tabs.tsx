@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { DeckIcon, SkillsIcon } from "@/components/icons";
 import { SkillsViewToggle } from "@/components/skills-browser";
@@ -20,7 +21,8 @@ const tabs = [
   { href: "/skills/cards", label: "Cards", Icon: DeckIcon, accent: "text-figurative" },
 ];
 
-export function SectionTabs() {
+/** `info`: the section's eye (info-eye.tsx), beside the tabs. */
+export function SectionTabs({ info }: { info?: ReactNode } = {}) {
   const pathname = usePathname();
   const prefix = pathname.startsWith("/demo") ? "/demo" : "";
   const onCards = pathname.includes("/skills/cards");
@@ -52,6 +54,7 @@ export function SectionTabs() {
           );
         })}
       </div>
+      {info}
       {/* On Cards, the deck's two other ways in, in one small pill on the
           right: Full spread (a card of every colour - the little fan says
           so), and, in the same pill, the shuffle - its arrows forever

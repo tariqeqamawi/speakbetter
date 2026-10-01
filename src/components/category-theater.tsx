@@ -18,6 +18,7 @@ import { LessonSummary } from "@/components/lesson-summary";
 import { LessonTranscript } from "@/components/lesson-transcript";
 import { PlayFillIcon } from "@/components/player-icons";
 import { BackLink } from "@/components/back-link";
+import { InfoEye } from "@/components/info-eye";
 
 // A category as a theater: whichever lesson is selected plays full
 // width, and every other lesson in the color waits in a carousel below.
@@ -56,9 +57,7 @@ export function CategoryTheater({
   const [featuredId, setFeaturedId] = useState(lessons[0].vimeoId);
   // Coming back to a colour opens on the first lesson not yet watched,
   // not on lesson 1 again - settled once, the moment the record loads.
-  // `resumed` keeps the "Continue" label up until they pick another.
   const [placed, setPlaced] = useState(false);
-  const [resumed, setResumed] = useState(false);
   // The address as the router has it - the page being arrived at. (Read
   // off window.location it could still be the page being left, while the
   // app switches between them: a lesson opened from a spread lost its
@@ -76,7 +75,6 @@ export function CategoryTheater({
     if (wanted) setFeaturedId(wanted.vimeoId);
     else if (firstUnwatched && firstUnwatched.vimeoId !== lessons[0].vimeoId) {
       setFeaturedId(firstUnwatched.vimeoId);
-      setResumed(true);
     }
   }
   const [autoplayNext, setAutoplayNext] = useState(false);
@@ -92,24 +90,6 @@ export function CategoryTheater({
   const stageRef = useRef<HTMLDivElement>(null);
   const allRef = useRef<HTMLDivElement>(null);
 
-  // The colour's description, open the first time a student comes into
-  // this colour and folded every visit after.
-  const [aboutOpen, setAboutOpen] = useState(false);
-  useEffect(() => {
-    const key = `sb-colour-seen-${category.id}`;
-    try {
-      if (localStorage.getItem(key)) return;
-    } catch {
-      return;
-    }
-    const t = window.setTimeout(() => {
-      setAboutOpen(true);
-      try {
-        localStorage.setItem(key, "1");
-      } catch {}
-    }, 0);
-    return () => clearTimeout(t);
-  }, [category.id]);
 
   const featured = lessons.find((l) => l.vimeoId === featuredId) ?? lessons[0];
   const card = cardFor(featured.vimeoId);
@@ -163,7 +143,6 @@ export function CategoryTheater({
 
   const select = (id: string, autoplay = false) => {
     setUpNext(false);
-    setResumed(false);
     setSeconds(0);
     setAutoplayNext(autoplay);
     setFeaturedId(id);
@@ -329,14 +308,15 @@ export function CategoryTheater({
       {/* The stage */}
       <div ref={stageRef} className="relative flex scroll-mt-28 flex-col gap-3">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-          {resumed && (
-            <span className={`rounded-full border border-current px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider ${category.textClass}`}>
-              Continue
-            </span>
-          )}
           <h2 className="text-xl font-semibold tracking-tight text-ink">
             {featured.title}
           </h2>
+          {/* What this colour is, one tap away beside the title. */}
+          <InfoEye label={`About ${category.name}`}>
+            <p className={`text-xs font-bold uppercase tracking-[0.18em] ${category.textClass}`}>{category.subtitle}</p>
+            <p>{category.blurb}</p>
+            <p className="text-xs text-ink-faint">{lessons.length} lessons · one to two minutes each</p>
+          </InfoEye>
           {watched(featured.vimeoId) && (
             <span className="flex items-center gap-1 text-xs font-medium text-mindset">
               <CheckIcon className="size-3.5" />
@@ -375,23 +355,6 @@ export function CategoryTheater({
         />
         </div>
 
-        {/* What this colour is, folded beneath the player's controls -
-            its subtitle and an arrow, opening to the description. Read
-            once, it no longer takes the top of the screen every visit. */}
-        <details
-          className="group -mt-1"
-          open={aboutOpen}
-          onToggle={(e) => setAboutOpen(e.currentTarget.open)}
-        >
-          <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-ink-faint transition-colors hover:text-ink-muted [&::-webkit-details-marker]:hidden">
-            {category.subtitle}
-            <ChevronDownIcon className="size-3.5 transition-transform group-open:rotate-180" />
-          </summary>
-          <div className="flex max-w-lg flex-col gap-1 pt-2">
-            <p className="text-sm text-ink-muted">{category.blurb}</p>
-            <p className="text-xs text-ink-faint">{lessons.length} lessons · one to two minutes each</p>
-          </div>
-        </details>
 
         {/* What the lesson says, under it: the key ideas keeping pace
             with the video, and the transcript for anyone who wants the

@@ -5,7 +5,8 @@ import { CommunityFeed } from "@/components/community-feed";
 import { Rooms } from "@/components/rooms";
 import { WeeklyBoard } from "@/components/weekly-board";
 import { SectionTour } from "@/components/section-tour";
-import { ChevronDownIcon, GroupIcon } from "@/components/icons";
+import { GroupIcon } from "@/components/icons";
+import { InfoEye } from "@/components/info-eye";
 import { FeatureReaction } from "@/components/feature-reaction";
 
 export const metadata: Metadata = {
@@ -29,21 +30,20 @@ export default function CommunityPage() {
       </Suspense>
 
       <header>
-        <details className="group">
-          <summary className="flex cursor-pointer list-none items-center gap-2.5 [&::-webkit-details-marker]:hidden">
-            <GroupIcon className="size-7 shrink-0 text-mindset" />
-            <h1 className="text-3xl font-semibold tracking-tight">Community</h1>
-            <ChevronDownIcon className="size-5 shrink-0 text-ink-faint transition-transform group-open:rotate-180" />
-            <span className="ml-auto">
-              <SectionTour section="community" />
-            </span>
-          </summary>
-          <p className="max-w-lg pt-2 text-sm text-ink-muted">
-            Everyone&apos;s progress, seen alongside yours - where they started and where they are now. Three
-            leaderboards, because there is more than one way to speak better, and one community bar you all fill
-            together.
-          </p>
-        </details>
+        <div className="flex items-center gap-2.5">
+          <GroupIcon className="size-7 shrink-0 text-mindset" />
+          <h1 className="text-3xl font-semibold tracking-tight">Community</h1>
+          <InfoEye label="What Community is">
+            <p>
+              Everyone&apos;s progress, seen alongside yours - where they started and where they are now. Three
+              leaderboards, because there is more than one way to speak better, and one community bar you all fill
+              together.
+            </p>
+          </InfoEye>
+          <span className="ml-auto">
+            <SectionTour section="community" />
+          </span>
+        </div>
       </header>
       {/* The rooms come first. The boards and the before-and-afters
           are things to look at; the rooms are the thing to be IN, and
