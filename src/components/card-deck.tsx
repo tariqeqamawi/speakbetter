@@ -3,7 +3,10 @@
 
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { VideoStill } from "@/components/video-still";
+import { PlayFillIcon } from "@/components/player-icons";
 import { LessonCard, CardFaceDown } from "@/components/lesson-card";
 import { CategoryIcon } from "@/components/category-icons";
 import { categories, type Category, type CategoryId } from "@/data/categories";
@@ -56,10 +59,6 @@ type Zoom = { list: DeckCard[]; index: number };
 /** How hard a shake has to be before it counts as one. */
 const SHAKE_FORCE = 24;
 
-/** The spread's fan: a card's width as a share of the fan's, and how far
-    along the next card sits, as a share of a card's width. */
-const FAN_CARD = 0.26;
-const FAN_STEP = 0.4;
 const SHAKE_COOLDOWN = 900;
 
 /** One card taken at random from a list. */
@@ -271,6 +270,7 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
     return (
       <>
         <FullSpread
+          key={hand.map((c) => c.vimeoId).join()}
           hand={hand}
           onZoom={(index) => setZoom({ list: hand, index })}
           onDeal={deal}
@@ -553,20 +553,18 @@ function ColorCarousel({
 /**
  * The full spread: one card pulled at random from every color.
  *
- * This is the deck's whole argument in one gesture. Seven cards on the
- * table are the ingredients for a talk that moves - a story, the
- * language to paint it, a way to perform it, a shape, a mindset, a body,
- * a finish - and no two deals hand you the same talk. Random on purpose:
- * a hand you chose is a hand of what you already do.
+ * This is the deck's whole argument in one gesture. A card of every
+ * colour on the table is the ingredients for a talk that moves - a
+ * story, the language to paint it, a way to perform it, a shape, a
+ * mindset, a body, a finish - and no two deals hand you the same talk.
+ * Random on purpose: a hand you chose is a hand of what you already do.
  *
- * Drawn as a hand: seven cards fanned over each other, the way you'd
- * hold them, in the order the colors run. Face up, because a spread is
- * dealt to be looked at - and under a mouse a card lifts out of the fan
- * and comes forward while the pointer is on it, so it can be read where
- * it lies. Any card opens full size with a tap. The seven lessons are
- * named under the fan, because the fan shows you the colors and the
- * titles are what make a card an ingredient you can plan with; hovering
- * a name lifts its card.
+ * Laid out like a colour's fan (ColorCarousel): one card face up in the
+ * middle, the rest of the hand stacked away either side face down - each
+ * in its own colour's back, so it's plain at a glance this is one of
+ * every colour. Slide a thumb across, or use the arrows, and each comes
+ * up in turn. Under it, two tabs: Your spread - the hand's lessons as a
+ * stack, each opening its video - and Deal again.
  */
 function FullSpread({
   hand,
@@ -579,15 +577,18 @@ function FullSpread({
   onDeal: () => void;
   onBack: () => void;
 }) {
-  // A deal in two beats. Swapping the hand outright made seven cards
-  // blink into different colours on the spot, which reads as a bug
-  // rather than a shuffle - so the fan closes into a pile first, the
-  // cards are changed while they are stacked and nobody can see which
-  // is which, and the new hand fans back out. It is the gesture a
-  // person makes, and it takes about as long as they take to make it.
+  // Starts on the middle of the hand, so the fan opens both ways.
+  const [index, setIndex] = useState(Math.floor((hand.length - 1) / 2));
+  const [listOpen, setListOpen] = useState(false);
   const [gathering, setGathering] = useState(false);
   const dealing = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const skillsHref = usePathname()?.startsWith("/demo") ? "/demo/skills" : "/skills";
+  const DEPTH = 3;
+  const card = hand[index];
 
+  // A deal in two beats: the fan closes into a pile, the hand changes
+  // while it's stacked, and the new one fans out - the gesture a person
+  // makes, rather than seven cards blinking into new colours on the spot.
   const deal = () => {
     if (gathering) return;
     hapticTap();
@@ -597,7 +598,6 @@ function FullSpread({
       setGathering(false);
     }, 300);
   };
-
   useEffect(
     () => () => {
       if (dealing.current) clearTimeout(dealing.current);
@@ -605,85 +605,50 @@ function FullSpread({
     [],
   );
 
-  // The card lifted out of the fan: the one under the pointer, or the
-  // one whose name is pointed at below.
-  const [raised, setRaised] = useState<number | null>(null);
-  const mid = (hand.length - 1) / 2;
-  const fanRef = useRef<HTMLDivElement>(null);
-
-  // Which card a point across the fan belongs to. Worked out from where
-  // the cards are laid rather than from what's under the pointer,
-  // because the lifted card grows over its neighbours' edges: read off
-  // the screen, sliding right from a lifted card would skip the one
-  // beside it. Each card owns the strip of itself the next one leaves
-  // showing; the last owns all of itself.
-  const indexAt = useCallback(
-    (clientX: number): number | null => {
-      const fan = fanRef.current;
-      if (!fan) return null;
-      const box = fan.getBoundingClientRect();
-      const w = box.width * FAN_CARD;
-      const step = w * FAN_STEP;
-      const first = box.width / 2 - mid * step - w / 2;
-      const i = Math.floor((clientX - box.left - first) / step);
-      return Math.max(0, Math.min(hand.length - 1, i));
+  const go = useCallback(
+    (delta: number) => {
+      const next = index + delta;
+      if (next < 0 || next >= hand.length) return;
+      hapticTap();
+      setIndex(next);
     },
-    [hand.length, mid],
+    [index, hand.length],
   );
-
-  // Press, slide, release - the same gesture as the dial. A finger down
-  // on the fan lifts the card under it, sliding moves the lift with it,
-  // and letting go opens the card that's up. On a phone the cards
-  // overlap to a sliver each, and a sliver is a poor thing to have to
-  // hit; this way any touch on the fan lands on a card, and the card
-  // shows itself before the finger commits.
   useEffect(() => {
-    const fan = fanRef.current;
-    if (!fan) return;
-    let pressing = false;
-    let last: number | null = null;
-    const onStart = (e: TouchEvent) => {
-      pressing = true;
-      last = indexAt(e.touches[0].clientX);
-      setRaised(last);
-      e.preventDefault();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") go(-1);
+      if (e.key === "ArrowRight") go(1);
     };
-    const onMove = (e: TouchEvent) => {
-      if (!pressing) return;
-      e.preventDefault();
-      const i = indexAt(e.touches[0].clientX);
-      if (i !== last) {
-        last = i;
-        hapticTap();
-        setRaised(i);
-      }
-    };
-    const onEnd = (e: TouchEvent) => {
-      if (!pressing) return;
-      pressing = false;
-      e.preventDefault();
-      const i = indexAt(e.changedTouches[0].clientX);
-      setRaised(null);
-      if (i !== null) onZoom(i);
-    };
-    const onCancel = () => {
-      pressing = false;
-      setRaised(null);
-    };
-    fan.addEventListener("touchstart", onStart, { passive: false });
-    fan.addEventListener("touchmove", onMove, { passive: false });
-    fan.addEventListener("touchend", onEnd, { passive: false });
-    fan.addEventListener("touchcancel", onCancel);
-    return () => {
-      fan.removeEventListener("touchstart", onStart);
-      fan.removeEventListener("touchmove", onMove);
-      fan.removeEventListener("touchend", onEnd);
-      fan.removeEventListener("touchcancel", onCancel);
-    };
-  }, [indexAt, onZoom]);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [go]);
+
+  // Scrub with a thumb, as in a colour's fan.
+  const drag = useRef<number | null>(null);
+  const dragged = useRef(false);
+  const onPointerDown = (e: React.PointerEvent) => {
+    drag.current = e.clientX;
+    dragged.current = false;
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+  };
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (drag.current === null) return;
+    const dx = e.clientX - drag.current;
+    if (Math.abs(dx) < 36) return;
+    drag.current = e.clientX;
+    dragged.current = true;
+    go(dx < 0 ? 1 : -1);
+  };
+  const endDrag = (e: React.PointerEvent) => {
+    drag.current = null;
+    e.currentTarget.releasePointerCapture?.(e.pointerId);
+  };
+
+  if (!card) return null;
+  const section = categories.find((c) => c.id === card.categoryId);
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col items-center gap-4">
       <div className="flex w-full items-center justify-between gap-3">
         <button
           type="button"
@@ -691,119 +656,162 @@ function FullSpread({
           className="flex items-center gap-1.5 text-sm font-semibold text-ink-muted transition-colors hover:text-ink"
         >
           <ChevronDownIcon className="size-4 rotate-90" />
-          All colors
+          Back
         </button>
-        <span className="text-xs font-bold uppercase tracking-[0.2em] text-ink-faint">
-          The spread
+        <span className="spectrum-text text-xs font-bold uppercase tracking-[0.2em]">Your spread</span>
+        <span className="w-12" aria-hidden />
+      </div>
+
+      {/* The fan: the card in front face up, the rest of the hand face
+          down either side, each in its own colour's back. */}
+      <div
+        className="relative mx-auto flex aspect-[5/4] w-full max-w-lg touch-pan-y select-none items-center justify-center lg:max-w-3xl"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+      >
+        {hand.map((c, i) => {
+          const d = i - index;
+          if (Math.abs(d) > DEPTH) return null;
+          const near = Math.min(Math.abs(d), DEPTH);
+          const front = d === 0;
+          const cat = categories.find((x) => x.id === c.categoryId);
+          return (
+            <span
+              // (By seat, so a new deal travels rather than blinks in.)
+              key={i}
+              className="deck-stack-card absolute w-[44%] max-w-[14rem] lg:max-w-[21rem]"
+              style={{
+                zIndex: 20 - near,
+                opacity: gathering ? 0.6 : 1 - near * 0.16,
+                transform: gathering
+                  ? `rotate(${d * 1.6}deg) scale(0.94)`
+                  : `translateX(${d * 24}%) rotate(${d * 6}deg) scale(${1 - near * 0.08})`,
+              }}
+            >
+              {front ? (
+                <span className="deck-front-card block">
+                  <LessonCard
+                    key={c.vimeoId}
+                    data={c}
+                    startFlipped
+                    onActivate={() => {
+                      if (!dragged.current) onZoom(i);
+                    }}
+                    className="max-w-none"
+                  />
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (dragged.current) return;
+                    hapticTap();
+                    setIndex(i);
+                  }}
+                  aria-label={`${cat?.name ?? ""} card, ${i + 1} of ${hand.length}`}
+                  className="card-3d relative block aspect-[89/127] w-full"
+                >
+                  <CardFaceDown section={cat?.name ?? ""} code={cat?.code ?? ""} color={`var(--color-${c.categoryId})`} />
+                </button>
+              )}
+            </span>
+          );
+        })}
+      </div>
+
+      {/* Which card, and the way to read it big. */}
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => go(-1)}
+          disabled={index === 0}
+          aria-label="Previous card"
+          className="rounded-lg px-2 py-1 text-ink-faint transition-colors hover:text-ink disabled:opacity-30"
+        >
+          <ChevronDownIcon className="size-4 rotate-90" />
+        </button>
+        <button
+          type="button"
+          onClick={() => onZoom(index)}
+          className="flex items-center gap-1.5 rounded-lg border border-navy-600 bg-navy-800 px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-current"
+        >
+          <ExpandIcon className="size-4" />
+          Open card
+        </button>
+        <button
+          type="button"
+          onClick={() => go(1)}
+          disabled={index >= hand.length - 1}
+          aria-label="Next card"
+          className="rounded-lg px-2 py-1 text-ink-faint transition-colors hover:text-ink disabled:opacity-30"
+        >
+          <ChevronDownIcon className="size-4 -rotate-90" />
+        </button>
+      </div>
+      <p className="text-center text-xs text-ink-faint">
+        <span className="tabular-nums">
+          {index + 1} of {hand.length}
         </span>
+        {section ? <span className={section.textClass}>{` · ${section.name}`}</span> : null}
+      </p>
+
+      {/* Two tabs: the hand's lessons, and a new hand. */}
+      <div className="flex w-full max-w-lg gap-1 rounded-xl border border-navy-600 bg-navy-900/60 p-1">
+        <button
+          type="button"
+          aria-expanded={listOpen}
+          onClick={() => setListOpen((v) => !v)}
+          className={`flex min-h-10 flex-1 items-center justify-center gap-1 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+            listOpen ? "bg-navy-800 text-ink ring-1 ring-body-language/70" : "text-ink-faint hover:text-ink-muted"
+          }`}
+        >
+          Your spread
+          <ChevronDownIcon className={`size-3.5 transition-transform ${listOpen ? "rotate-180" : ""}`} />
+        </button>
         <button
           type="button"
           onClick={deal}
           disabled={gathering}
-          className="flex items-center gap-1.5 text-sm font-semibold text-ink-muted transition-colors hover:text-ink disabled:opacity-60"
+          className="flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-ink-faint transition-colors hover:text-ink-muted disabled:opacity-60"
         >
           <RepeatIcon className={`size-4 ${gathering ? "animate-spin" : ""}`} />
           Deal again
         </button>
       </div>
 
-      <p className="text-center text-sm text-ink-muted text-balance">
-        One card of every color - the ingredients for a talk that moves.
-        Tap any card to read it.
-      </p>
-
-      {/* The fan. Each card is placed by its distance from the middle
-          one: stepped sideways, turned a little further, and dropped
-          along the arc a hand makes. The transform lives in a custom
-          property so the lift (see .fan-card) can add to it rather than
-          replace it. The box is tall enough for the outer cards'
-          corners and a lifted card.
-
-          Under a mouse the card under the pointer lifts and a click
-          opens it; the cards themselves don't take the pointer, so the
-          fan decides which card is meant (see indexAt) and a click
-          can't land on a different card than the one that's up. They
-          still take the keyboard - each is a button, and Enter on a
-          focused one opens it. */}
-      <div
-        ref={fanRef}
-        className="relative mx-auto aspect-[2/1] w-full max-w-4xl cursor-pointer touch-none select-none"
-        onMouseMove={(e) => setRaised(indexAt(e.clientX))}
-        onMouseLeave={() => setRaised(null)}
-        onClick={(e) => {
-          const i = indexAt(e.clientX);
-          if (i === null) return;
-          hapticTap();
-          onZoom(i);
-        }}
-      >
-        {hand.map((card, i) => {
-          const d = i - mid;
-          return (
-            <span
-              // Keyed by its SEAT in the hand rather than by which card
-              // is in it. Keying by the card would mount seven new
-              // elements on every deal, and a brand-new element has
-              // nowhere to animate FROM - the cards would appear in
-              // their new places rather than travel there.
-              key={i}
-              className={`fan-card absolute left-1/2 top-[6%] ${
-                raised === i ? "is-raised" : ""
-              }`}
-              style={
-                {
-                  width: `${FAN_CARD * 100}%`,
-                  zIndex: 10 + i,
-                  // Gathered: every card on the same spot, squared up
-                  // with a degree or two of slop so it reads as a pile
-                  // rather than one card. Fanned: its place in the hand.
-                  "--fan": gathering
-                    ? `translateX(0%) rotate(${d * 1.6}deg) translateY(0%) scale(0.94)`
-                    : `translateX(${d * FAN_STEP * 100}%) rotate(${d * 6}deg) translateY(${d * d * 2.2}%)`,
-                } as React.CSSProperties
-              }
-            >
-              <LessonCard
-                key={card.vimeoId}
-                data={card}
-                startFlipped
-                onActivate={() => {
-                  hapticTap();
-                  onZoom(i);
-                }}
-                className="pointer-events-none max-w-none"
-              />
-            </span>
-          );
-        })}
-      </div>
-
-      {/* The hand, named. */}
-      <ul className="mx-auto flex max-w-3xl flex-wrap justify-center gap-x-4 gap-y-1.5">
-        {hand.map((card, i) => (
-          <li key={card.vimeoId}>
-            <button
-              type="button"
-              onClick={() => {
-                hapticTap();
-                onZoom(i);
-              }}
-              onMouseEnter={() => setRaised(i)}
-              onMouseLeave={() => setRaised(null)}
-              onFocus={() => setRaised(i)}
-              onBlur={() => setRaised(null)}
-              className="flex items-center gap-1.5 rounded-md px-1 py-0.5 text-left text-xs font-medium text-ink-muted transition-colors hover:text-ink sm:text-[0.8rem]"
-            >
-              <span
-                aria-hidden
-                className="size-2 shrink-0 rounded-full"
-                style={{ background: `var(--color-${card.categoryId})` }}
-              />
-              {card.title}
-            </button>
-          </li>
-        ))}
-      </ul>
+      {/* The hand's lessons, one under another - only these, so the
+          spread doesn't get muddled with a colour's full list. Each
+          opens its video, on its colour's page. */}
+      {listOpen && (
+        <ul className="challenge-enter flex w-full max-w-lg flex-col gap-2.5">
+          {hand.map((c, i) => {
+            const cat = categories.find((x) => x.id === c.categoryId);
+            return (
+              <li key={c.vimeoId}>
+                <Link
+                  href={`${skillsHref}/${c.categoryId}?lesson=${c.vimeoId}`}
+                  onMouseEnter={() => setIndex(i)}
+                  className={`lift-card group flex w-full items-center gap-3 overflow-hidden rounded-xl border pr-3 text-left ${cat?.textClass ?? ""} ${
+                    i === index ? "border-current" : "border-navy-600 hover:border-current"
+                  }`}
+                >
+                  <span className="relative block aspect-video w-32 shrink-0 bg-gradient-to-br from-navy-700 to-navy-900 sm:w-40">
+                    {cat && <VideoStill vimeoId={c.vimeoId} accent={cat} sizes="160px" />}
+                    <span className={`absolute inset-x-0 bottom-0 h-0.5 ${cat?.bgClass ?? ""}`} />
+                  </span>
+                  <span className="flex min-w-0 flex-col gap-0.5 py-2">
+                    <span className="text-[0.6rem] font-bold uppercase tracking-wider">{cat?.name}</span>
+                    <span className="line-clamp-2 text-sm font-medium leading-snug text-ink">{c.title}</span>
+                  </span>
+                  <PlayFillIcon className="ml-auto size-4 shrink-0 text-ink-faint transition-colors group-hover:text-current" />
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }

@@ -57,8 +57,13 @@ export function CategoryTheater({
   const [resumed, setResumed] = useState(false);
   if (ready && !placed) {
     setPlaced(true);
+    // (A link can ask for a lesson - ?lesson=<id>, from a dealt spread -
+    // and that comes first.)
+    const asked = new URLSearchParams(window.location.search).get("lesson");
+    const wanted = lessons.find((l) => l.vimeoId === asked);
     const firstUnwatched = lessons.find((l) => !state.watchedLessons.includes(l.vimeoId));
-    if (firstUnwatched && firstUnwatched.vimeoId !== lessons[0].vimeoId) {
+    if (wanted) setFeaturedId(wanted.vimeoId);
+    else if (firstUnwatched && firstUnwatched.vimeoId !== lessons[0].vimeoId) {
       setFeaturedId(firstUnwatched.vimeoId);
       setResumed(true);
     }
