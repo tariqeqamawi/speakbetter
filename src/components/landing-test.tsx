@@ -56,7 +56,7 @@ export function LandingTest() {
             <HeroLion className="h-28 w-auto sm:h-36" />
             <Soundwave variant="hero" className="-mt-2 h-10 w-full sm:h-12" />
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">Become confident speaking on video.</h1>
+          <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">Become Confident Speaking On Video.</h1>
           <div className="w-full max-w-3xl">
             <div className="overflow-hidden rounded-2xl border border-navy-600 shadow-2xl shadow-navy-950/80">
               <LazyVimeoPlayer
@@ -65,15 +65,15 @@ export function LandingTest() {
                 poster="/thumbs/1082011047.jpg"
               />
             </div>
-            <p className="mt-2 text-sm font-medium text-ink-muted">From awkward to awesome in minutes a day.</p>
+            <p className="mt-2 text-sm font-medium text-ink-muted">From Awkward To Awesome In Minutes A Day.</p>
           </div>
           {/* The whole course in one breath - the facts the feature cards
               used to spread over a screen; the page below shows each one
               working. */}
           <p className="text-sm font-semibold text-ink text-balance">
-            83 lessons <span className="text-ink-faint">·</span> 25 challenges{" "}
-            <span className="text-ink-faint">·</span> 8 colors <span className="text-ink-faint">·</span> an AI coach{" "}
-            <span className="text-ink-faint">·</span> 6 weeks
+            83 Lessons <span className="text-ink-faint">·</span> 25 Challenges{" "}
+            <span className="text-ink-faint">·</span> 8 Colors <span className="text-ink-faint">·</span> An AI Coach{" "}
+            <span className="text-ink-faint">·</span> 6 Weeks
           </p>
           <JoinCta label="Join Speak Better Now" seal sealSize={96} />
         </section>
