@@ -70,15 +70,39 @@ const FILMS = {
 
   // The same road as a map, for anyone who would rather scroll a page.
   async road2d(p) {
+    // Open straight into the map: no 3D road loading first, and none of
+    // the 3D road's roadside lines over the map.
+    await p.addInitScript(() => {
+      try { window.localStorage.setItem("adventure-view", "2d"); } catch {}
+    });
     await p.goto(`${BASE}/prototype/adventure3d`, { waitUntil: "load" });
     await p.waitForTimeout(2500);
-    await p.getByRole("radio", { name: "2D" }).click();
-    await p.waitForTimeout(1500);
-    const y = await p.evaluate(() => window.scrollY);
-    await ease(p, y, y + 1800, 5000);
-    await p.waitForTimeout(1000);
-    await ease(p, y + 1800, y + 600, 2200);
-    await p.waitForTimeout(800);
+    await p.addStyleTag({ content: "nextjs-portal{display:none!important}" });
+    await p.getByRole("radio", { name: /^2D/ }).click({ force: true });
+    await p.waitForTimeout(1800);
+    // The map scrolls in its own panel (adventure-view.tsx), opening
+    // zoomed in - a picture for each challenge and more road between.
+    const panel = (y) =>
+      p.evaluate((top) => {
+        const el = [...document.querySelectorAll("div")].find((d) => d.scrollHeight > d.clientHeight + 200 && getComputedStyle(d).overflowY === "auto");
+        if (el) el.scrollTop = top;
+        else window.scrollTo(0, top);
+      }, y);
+    // It opens on the current challenge; the road ahead is above it.
+    const here = await p.evaluate(() => {
+      const el = [...document.querySelectorAll("div")].find((d) => d.scrollHeight > d.clientHeight + 200 && getComputedStyle(d).overflowY === "auto");
+      return el ? el.scrollTop : window.scrollY;
+    });
+    for (const [from, to, ms] of [[here, here - 1300, 5000], [here - 1300, here - 500, 2200]]) {
+      const steps = Math.round(ms / 40);
+      for (let i = 1; i <= steps; i++) {
+        const t = i / steps;
+        const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        await panel(from + (to - from) * e);
+        await p.waitForTimeout(ms / steps);
+      }
+      await p.waitForTimeout(900);
+    }
   },
 
   // The road, scrolled from the first stop down and back.
@@ -323,7 +347,7 @@ async function film(name) {
       window.localStorage.setItem("coach-welcome-back", new Date().toDateString());
       window.localStorage.setItem(
         "speak-better-state-v1",
-        JSON.stringify({ ...st, unlocked: true, plan: "coached", level: "beginner", displayName: "Tariq" }),
+        JSON.stringify({ ...st, unlocked: true, plan: "coached", level: "beginner", displayName: "Tariq", consentAt: st.consentAt ?? new Date().toISOString() }),
       );
     } catch {}
   });
