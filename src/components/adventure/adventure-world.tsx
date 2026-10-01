@@ -5,7 +5,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { Fireflies, Scenery } from "./world-extras";
 import { Megastructures, structurePlan } from "./megastructures";
-import { SectionWeather } from "./weather";
+import { SectionWeather, inside } from "./weather";
 import { PORTAL_FLAT_SCALE, PORTAL_FLAT_Y, PORTAL_Y, Portal } from "./portal";
 import { SkyDome } from "./sky-dome";
 import { City } from "./city";
@@ -263,10 +263,9 @@ const TERRAIN_FRAG = /* glsl */ `
       // Twice as many points as the grid has crossings - and alive: each
       // twinkles at its own pace, and now and then one flares bright, a
       // field of stars rather than a pattern of holes.
-      // (Half as many along the road as across it: the rows of studs
-      // running away from you were so close they merged into one glow
-      // at speed.)
-      vec2 d2 = g * vec2(1.0, 2.0);
+      // (One per grid crossing - a quarter of what it was: at speed the
+      // field of studs merged into one glow.)
+      vec2 d2 = g;
       vec2 cell = floor(d2 + 0.5);
       float h = fract(sin(dot(cell, vec2(12.9898, 78.233))) * 43758.5453);
       float tw = 0.5 + 0.5 * sin(uTime * (0.8 + h * 2.2) + h * 40.0);
@@ -1082,7 +1081,11 @@ function Rig({
       lastAt.current = now;
       onMove(s);
     }
-  });
+  // (Priority -1: the camera moves first each frame, so everything placed
+  // from where the traveller is - the avatar above all - reads this
+  // frame's position. Run after them, the avatar trailed the camera by a
+  // different sliver each frame at speed: the jitter.)
+  }, -1);
   /* eslint-enable react-hooks/immutability */
   return null;
 }
@@ -1188,6 +1191,16 @@ function AdventureWorldInner({
   const road = useMemo(() => layoutRoad(stops.length, stops.map((s) => s.phase), { calm }), [stops, calm]);
   const spans = useMemo(() => phaseSpans(road, stops, phases), [road, stops, phases]);
   const finishCols = useMemo(() => spans.map((sp) => sp.col.clone()), [spans]);
+  // How much of S's aurora and T's waveform the sky shows, where the
+  // traveller is - read by the sky dome every frame.
+  const auroraHere = useMemo(() => {
+    const sp = spans.find((x) => x.id === "S");
+    return () => inside(sp, travel.s + AHEAD);
+  }, [spans, travel]);
+  const waveHere = useMemo(() => {
+    const sp = spans.find((x) => x.id === "T");
+    return () => inside(sp, travel.s + AHEAD);
+  }, [spans, travel]);
   const phaseCol = useMemo(() => new Map(phases.map((p) => [p.id, new THREE.Color(p.color)])), [phases]);
   // The section the student is in; every one after it is dormant.
   const reached = reachedPhase(stops, phases);
@@ -1258,7 +1271,7 @@ function AdventureWorldInner({
       <hemisphereLight args={["#8090d0", "#05070f", LOOK.lights[0]]} />
       <ambientLight intensity={LOOK.lights[1]} />
       <directionalLight position={[40, 80, 30]} intensity={LOOK.lights[2]} color="#c8d2ff" />
-      {skyImage ? <SkyDome image={skyImage} /> : <Stars />}
+      {skyImage ? <SkyDome image={skyImage} aurora={auroraHere} wave={waveHere} /> : <Stars />}
       <Terrain road={road} spans={spans} travel={travel} />
       <Road road={road} spans={spans} trail={trail} />
       {/* A wall at each threshold between phases - none at the start:

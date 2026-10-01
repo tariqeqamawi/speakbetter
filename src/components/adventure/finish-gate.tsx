@@ -60,10 +60,14 @@ function neonSign(cols: THREE.Color[]) {
     g.roundRect(40, 40, 1968, 480, 70);
     g.stroke();
   };
+  // A dark plate inside the frame: the letters read against black.
+  g.fillStyle = "rgba(2, 4, 10, 0.88)";
+  g.beginPath();
+  g.roundRect(40, 40, 1968, 480, 70);
+  g.fill();
   g.strokeStyle = "#ffffff";
   for (const [blur, w] of [
-    [50, 14],
-    [20, 10],
+    [30, 12],
     [0, 6],
   ]) {
     g.shadowColor = "rgba(255,255,255,0.95)";
@@ -85,19 +89,15 @@ function neonSign(cols: THREE.Color[]) {
     const cx = x + widths[i] / 2;
     x += widths[i] + gap;
     const col = colour(i);
-    for (const [blur, w, k] of [
-      [70, 16, 0.9],
-      [26, 12, 1],
-    ] as const) {
-      g.shadowColor = hex(col, k);
-      g.shadowBlur = blur;
-      g.lineWidth = w;
-      g.strokeStyle = hex(col, k);
-      g.strokeText(ch, cx, 290);
-    }
+    // Solid letters in the colour, a tight glow round them, and a bright
+    // edge - the wide glows there were ran the letters into each other.
+    g.shadowColor = hex(col, 1);
+    g.shadowBlur = 18;
+    g.fillStyle = hex(col, 0.95);
+    g.fillText(ch, cx, 290);
     g.shadowBlur = 0;
-    g.lineWidth = 3.5;
-    g.strokeStyle = hex(col.clone().lerp(new THREE.Color("#ffffff"), 0.75));
+    g.lineWidth = 5;
+    g.strokeStyle = hex(col.clone().lerp(new THREE.Color("#ffffff"), 0.7));
     g.strokeText(ch, cx, 290);
   });
   const tex = new THREE.CanvasTexture(c);
@@ -429,7 +429,7 @@ export function FinishTunnel({ road, cols }: { road: RoadLayout; cols: THREE.Col
     if (signMat.current) {
       const t = clock.elapsedTime;
       const flicker = Math.sin(t * 0.7) > 0.985 && Math.sin(t * 47) > 0 ? 0.55 : 1;
-      signMat.current.color.setScalar((1.15 + 0.15 * Math.sin(t * 2.1)) * flicker);
+      signMat.current.color.setScalar((0.92 + 0.06 * Math.sin(t * 2.1)) * flicker);
     }
   });
   /* eslint-enable react-hooks/immutability */

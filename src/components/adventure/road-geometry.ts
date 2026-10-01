@@ -577,7 +577,10 @@ export function layoutRoad(checkpoints: number, phaseOf: string[] = [], opts: Ro
     y += m * flat;
   }
   const curve = new THREE.CatmullRomCurve3(pts, false, "centripetal");
-  curve.arcLengthDivisions = 6000;
+  // (Fine enough that equal steps along the road are equal on screen -
+  // coarser, the camera and the traveller each lurched by a different
+  // little error, and the traveller shook.)
+  curve.arcLengthDivisions = 24000;
   const length = curve.getLength();
   const bendAt = (s: number) => (headingEff(s + 4) - headingEff(s - 4)) / 8;
   const bankAt = (s: number) => Math.min(1, weight("O", s) + weight("R", s) + weaveAt(s) * 0.6);

@@ -18,14 +18,14 @@ import { AHEAD, pointAt, victoryStart, type RoadLayout, type Travel } from "./ro
 // few hundred points at most; nothing at all for anyone who has asked
 // their device for less motion.
 
-interface Stretch {
+export interface Stretch {
   id: string;
   from: number;
   to: number;
 }
 
 /** How far inside a section s is: 0 outside, easing to 1 within. */
-function inside(sp: Stretch | undefined, s: number): number {
+export function inside(sp: Stretch | undefined, s: number): number {
   if (!sp) return 0;
   return THREE.MathUtils.smoothstep(s, sp.from, sp.from + 80) * (1 - THREE.MathUtils.smoothstep(s, sp.to - 80, sp.to));
 }
@@ -163,73 +163,6 @@ function Drift({
   return <points geometry={geo} material={mat} frustumCulled={false} />;
 }
 
-const AURORA_VERT = /* glsl */ `
-  varying vec2 vUv;
-  void main() {
-    vUv = uv;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  }
-`;
-// Curtains of light: soft vertical streaks that sway along a slow wave,
-// brightest along their lower hem, fading upward and at the ends.
-const AURORA_FRAG = /* glsl */ `
-  uniform float uTime;
-  uniform float uAlpha;
-  varying vec2 vUv;
-  void main() {
-    float x = vUv.x;
-    float hem = 0.25 + 0.12 * sin(x * 9.0 + uTime * 0.25) + 0.06 * sin(x * 23.0 - uTime * 0.4);
-    float y = vUv.y - hem;
-    float band = smoothstep(-0.05, 0.02, y) * exp(-max(y, 0.0) * 3.2);
-    float streak = 0.55 + 0.45 * sin(x * 140.0 + sin(x * 11.0 + uTime * 0.3) * 6.0);
-    float ends = smoothstep(0.0, 0.2, x) * smoothstep(1.0, 0.8, x);
-    vec3 col = mix(vec3(0.12, 0.95, 0.55), vec3(0.2, 0.7, 0.95), smoothstep(0.1, 0.7, y));
-    gl_FragColor = vec4(col, band * streak * ends * uAlpha);
-  }
-`;
-
-/** A faint aurora hanging in the sky ahead, over S. */
-function Aurora({ travel, stretch }: { travel: Travel; stretch: Stretch | undefined }) {
-  const mat = useMemo(
-    () =>
-      new THREE.ShaderMaterial({
-        vertexShader: AURORA_VERT,
-        fragmentShader: AURORA_FRAG,
-        transparent: true,
-        depthWrite: false,
-        side: THREE.DoubleSide,
-        blending: THREE.AdditiveBlending,
-        fog: false,
-        uniforms: { uTime: { value: 0 }, uAlpha: { value: 0 } },
-      }),
-    [],
-  );
-  useEffect(() => () => mat.dispose(), [mat]);
-  const mesh = useRef<THREE.Mesh>(null);
-  const fwd = useMemo(() => new THREE.Vector3(), []);
-  /* eslint-disable react-hooks/immutability -- a sky curtain, placed every frame */
-  useFrame(({ clock, camera }) => {
-    const w = inside(stretch, travel.s + AHEAD);
-    mat.uniforms.uTime.value = clock.elapsedTime;
-    mat.uniforms.uAlpha.value = w * 1.1;
-    const m = mesh.current;
-    if (!m) return;
-    m.visible = w > 0.001;
-    if (!m.visible) return;
-    // Always ahead of you, high in the sky, far off.
-    camera.getWorldDirection(fwd).setY(0).normalize();
-    m.position.copy(camera.position).addScaledVector(fwd, 460);
-    m.position.y = camera.position.y + 170;
-    m.lookAt(camera.position.x, m.position.y, camera.position.z);
-  });
-  /* eslint-enable react-hooks/immutability */
-  return (
-    <mesh ref={mesh} material={mat} frustumCulled={false} renderOrder={-1}>
-      <planeGeometry args={[1800, 320]} />
-    </mesh>
-  );
-}
-
 /** Neon rain: soft, blurred streaks falling fast through the air round
  *  you - each drop one point drawn as a smear of light, out of focus,
  *  rather than a hard line. */
@@ -342,14 +275,13 @@ export function SectionWeather({ road, travel, spans }: { road: RoadLayout; trav
   if (still) return null;
   return (
     <group>
-      <Aurora travel={travel} stretch={find("S")} />
       {/* (Thinned out - about half - so at speed the air isn't so full
           of motes that the streaks at the edges of the view are lost.) */}
       <Drift road={road} travel={travel} stretch={find("T")} count={80} colours={dust} size={0.7} rise={0} wind={3.2} low={1} high={18} />
       <Drift road={road} travel={travel} stretch={find("O")} count={130} colours={pollen} size={0.8} rise={-1.4} wind={1.2} low={0} high={30} />
       <Drift road={road} travel={travel} stretch={find("R")} count={65} colours={embers} size={0.8} rise={3.2} wind={0.6} low={0} high={34} />
       {/* (Not over the victory stretch: the city there is busy enough.) */}
-      <Rain road={road} travel={travel} stretch={yRain} count={210} colours={neon} />
+      <Rain road={road} travel={travel} stretch={yRain} count={105} colours={neon} />
     </group>
   );
 }
