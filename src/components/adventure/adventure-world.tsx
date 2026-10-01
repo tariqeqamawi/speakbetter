@@ -276,7 +276,9 @@ const TERRAIN_FRAG = /* glsl */ `
       return max(length(d) - 1.8 - flare * 0.8, 0.0);
     }
     if (id == 2) {
-      vec2 p = g * 1.7;
+      // (Cells twice the size they were - half as many lines in a section
+      // already lit up by the city.)
+      vec2 p = g * 0.85;
       vec2 k = vec2(1.0, 1.7320508);
       vec2 a = mod(p, k) - k * 0.5;
       vec2 b = mod(p - k * 0.5, k) - k * 0.5;
@@ -526,7 +528,7 @@ function Terrain({ road, spans, travel }: { road: RoadLayout; spans: Span[]; tra
           uSheen: { value: LOOK.sheen },
           uWash: { value: LOOK.wash },
           uGain: { value: LOOK.gain },
-          uFogDensity: { value: 0.0042 },
+          uFogDensity: { value: 0.0052 },
           uHorizon: { value: new THREE.Color("#3a3f8f") },
           // Where Your Impact's rays converge: the city, far past the road.
           uTarget: { value: road.length + 330 },
@@ -1261,7 +1263,9 @@ function AdventureWorldInner({
       gl={{ antialias: true, powerPreference: "high-performance" }}
       camera={{ fov: 62, near: 0.1, far: 1200, position: [0, 3, 6] }}
       onCreated={({ scene, gl }) => {
-        scene.fog = new THREE.FogExp2(LOOK.haze, 0.0038);
+        // (A touch thicker than it was, so the far distance fades into the
+        // dark and the end of the world is never seen drawn in.)
+        scene.fog = new THREE.FogExp2(LOOK.haze, 0.0047);
         // Lost graphics: say so, rather than leaving a frozen black frame.
         gl.domElement.addEventListener("webglcontextlost", (e) => {
           e.preventDefault();

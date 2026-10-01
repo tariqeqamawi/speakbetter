@@ -167,11 +167,12 @@ const FRAG = /* glsl */ `
         // The corona: a soft glow falling away, streaked with rays that
         // shimmer slowly.
         float rays = 0.55 + 0.45 * sin(th * 9.0 + sin(th * 3.0 + uTime * 0.15) * 2.0) * sin(th * 17.0 - uTime * 0.1);
-        float corona = exp(-(r - 1.0) * 1.6) * (0.55 + 0.45 * rays) * step(1.0, r);
-        float halo = exp(-(r - 1.0) * 0.55) * 0.18 * step(1.0, r);
-        // The ring of fire right at the edge, and the diamond ring's bead.
-        float rim = exp(-pow((r - 1.0) * 14.0, 2.0)) * 2.4;
-        float bead = exp(-pow((r - 1.02) * 9.0, 2.0)) * exp(-pow(th - 0.7, 2.0) * 22.0) * 5.0;
+        float corona = exp(-(r - 1.0) * 3.2) * (0.55 + 0.45 * rays) * step(1.0, r);
+        float halo = exp(-(r - 1.0) * 0.9) * 0.14 * step(1.0, r);
+        // The ring of fire - only a hair of the sun left showing round the
+        // moon - and the diamond ring's bead.
+        float rim = exp(-pow((r - 1.0) * 40.0, 2.0)) * 2.2;
+        float bead = exp(-pow((r - 1.008) * 26.0, 2.0)) * exp(-pow(th - 0.7, 2.0) * 30.0) * 4.0;
         vec3 fire = vec3(1.0, 0.97, 0.9);
         // The moon's disc hides the picture behind it.
         col *= smoothstep(0.985, 1.0, r);
@@ -193,17 +194,20 @@ const FRAG = /* glsl */ `
       col += ac * band * streak * arcs * uAurora * 0.55;
     }
 
-    // T - A VOICE ACROSS THE SKY: a waveform circling the horizon, the
-    // shape of speech - bursts and pauses - travelling slowly round,
-    // drawn as a glowing line with a soft halo.
+    // T - A HEARTBEAT ACROSS THE SKY: a fine trace circling the horizon
+    // like an EKG - a flat line, then the sharp spike of a beat and its
+    // small after-wave - travelling slowly round. Thin and quiet: a
+    // detail you find, not a glare.
     if (uWave > 0.001) {
-      float x = u * 6.2831853;
-      float envl = pow(0.5 + 0.5 * sin(x * 5.0 - uTime * 0.35), 2.0) * (0.6 + 0.4 * sin(x * 13.0 + uTime * 0.5));
-      float w = 0.24 + 0.075 * envl * sin(x * 60.0 - uTime * 1.6) * cos(x * 23.0 + uTime * 0.7);
+      float ph = fract(u * 14.0 - uTime * 0.06);
+      float beat = exp(-pow((ph - 0.50) * 70.0, 2.0)) * 0.055
+                 - exp(-pow((ph - 0.53) * 60.0, 2.0)) * 0.02
+                 + exp(-pow((ph - 0.68) * 16.0, 2.0)) * 0.012;
+      float w = 0.24 + beat;
       float dist = abs(elev - w);
-      float line = exp(-dist * dist * 9000.0);
-      float halo = exp(-dist * dist * 600.0) * 0.25;
-      col += vec3(0.25, 0.9, 1.0) * (line * 1.4 + halo) * uWave;
+      float line = exp(-dist * dist * 160000.0);
+      float halo = exp(-dist * dist * 9000.0) * 0.06;
+      col += vec3(0.3, 0.9, 1.0) * (line * 0.55 + halo) * uWave;
     }
     gl_FragColor = vec4(col, 1.0);
   }
@@ -267,7 +271,8 @@ export function SkyDome({
         uBottom: { value: -0.227 },
         // High over the road where it sets off, well clear of the planet.
         uEclipse: { value: new THREE.Vector3(-0.55, 0.42, -0.72) },
-        uEclipseR: { value: pano ? 0.034 : 0 },
+        // (Twice what it was: the focal point of the sky.)
+        uEclipseR: { value: pano ? 0.068 : 0 },
       },
     });
   }, [image]);

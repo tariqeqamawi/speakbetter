@@ -60,7 +60,7 @@ export function Bloom({
     // (The edges of the view blur at speed; the middle stays sharp.)
     // (Half as much again as it was, more still flat out: the rush at
     // top speed should be felt at the edges.)
-    blur.uniforms.uAmount.value = k * k * 0.09 + (travel?.boost ?? 0) * 0.085;
+    blur.uniforms.uAmount.value = k * k * 0.11 + (travel?.boost ?? 0) * 0.12;
     composer.render(dt);
   }, 1);
   /* eslint-enable react-hooks/immutability */

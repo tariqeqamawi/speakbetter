@@ -535,7 +535,7 @@ function City({
       new THREE.ShaderMaterial({
         vertexShader: VICTORY_VERT,
         fragmentShader: VICTORY_FRAG,
-        uniforms: { uFog: { value: new THREE.Color(LOOK.haze) }, uFogD: { value: 0.0036 }, uBody: { value: LOOK.body }, uTime: { value: 0 } },
+        uniforms: { uFog: { value: new THREE.Color(LOOK.haze) }, uFogD: { value: 0.0045 }, uBody: { value: LOOK.body }, uTime: { value: 0 } },
       }),
     [],
   );
@@ -549,7 +549,7 @@ function City({
           "gl_FragColor = vec4(mix(col, uFog, fog * 0.93), 1.0);",
           "col = vec3(0.004, 0.006, 0.02) * (0.6 + 0.8 * side) + vec3(0.10, 0.16, 0.42) * pow(1.0 - abs(dot(N, V)), 3.5) * 0.45;\n    gl_FragColor = vec4(mix(col, uFog, fog * 0.93), 1.0);",
         ),
-        uniforms: { uFog: { value: new THREE.Color(LOOK.haze) }, uFogD: { value: 0.0036 }, uBody: { value: LOOK.body } },
+        uniforms: { uFog: { value: new THREE.Color(LOOK.haze) }, uFogD: { value: 0.0045 }, uBody: { value: LOOK.body } },
       }),
     [],
   );
@@ -568,7 +568,7 @@ function City({
       new THREE.ShaderMaterial({
         vertexShader: TOWER_VERT,
         fragmentShader: TOWER_FRAG,
-        uniforms: { uFog: { value: new THREE.Color(LOOK.haze) }, uFogD: { value: 0.0036 }, uBody: { value: LOOK.body } },
+        uniforms: { uFog: { value: new THREE.Color(LOOK.haze) }, uFogD: { value: 0.0045 }, uBody: { value: LOOK.body } },
       }),
     [],
   );
@@ -655,7 +655,7 @@ function Corridors({ road, colourAt, runs }: { road: RoadLayout; colourAt: Colou
     count,
     useMemo(() => new THREE.BoxGeometry(1, 1, 1), []),
     useMemo(
-      () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color(LOOK.haze) }, uFogD: { value: 0.0036 }, uBody: { value: LOOK.body } } }),
+      () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color(LOOK.haze) }, uFogD: { value: 0.0045 }, uBody: { value: LOOK.body } } }),
       [],
     ),
   );
@@ -738,7 +738,7 @@ function Venue({ road, colourAt, venues }: { road: RoadLayout; colourAt: ColourA
   const rows = venues.reduce((n, v) => n + Math.max(0, Math.floor((v.seatsTo - v.stage - 14) / ROW)), 0);
   const seatCount = rows * PER_ROW * 2;
   const glass = useMemo(
-    () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color(LOOK.haze) }, uFogD: { value: 0.0036 }, uBody: { value: LOOK.body } } }),
+    () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color(LOOK.haze) }, uFogD: { value: 0.0045 }, uBody: { value: LOOK.body } } }),
     [],
   );
   const seats = useInstanced(seatCount, useMemo(() => new THREE.BoxGeometry(1, 1, 1), []), useMemo(() => glass.clone(), [glass]));
@@ -867,7 +867,7 @@ function SpotlightRuns({ road, colourAt, runs }: { road: RoadLayout; colourAt: C
   }, [runs]);
   const gantries = rigs.length / 2;
   const glass = useMemo(
-    () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color(LOOK.haze) }, uFogD: { value: 0.0036 }, uBody: { value: LOOK.body } } }),
+    () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color(LOOK.haze) }, uFogD: { value: 0.0045 }, uBody: { value: LOOK.body } } }),
     [],
   );
   const beams = useInstanced(gantries * 3, useMemo(() => new THREE.BoxGeometry(1, 1, 1), []), glass);
@@ -1124,7 +1124,7 @@ function Pylons({ road, colourAt }: { road: RoadLayout; colourAt: ColourAt }) {
     return out;
   }, [road]);
   const glass = useMemo(
-    () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color(LOOK.haze) }, uFogD: { value: 0.0036 }, uBody: { value: LOOK.body } } }),
+    () => new THREE.ShaderMaterial({ vertexShader: GLASS_VERT, fragmentShader: GLASS_FRAG, uniforms: { uFog: { value: new THREE.Color(LOOK.haze) }, uFogD: { value: 0.0045 }, uBody: { value: LOOK.body } } }),
     [],
   );
   const posts = useInstanced(spots.length * 3, useMemo(() => new THREE.BoxGeometry(1, 1, 1), []), glass);
