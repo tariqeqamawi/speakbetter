@@ -217,34 +217,41 @@ export const sectionTours: Record<SectionId, SectionTour> = {
   skills: {
     id: "skills",
     label: "Show me the lessons",
+    // (New ids where the words changed, so Coach records them afresh -
+    // scripts/build-tour-voice.mjs only speaks what it hasn't yet.)
     stops: [
       {
-        id: "sec-skills-dial",
+        id: "sec-skills-toggle",
+        target: "[data-tour='view-toggle']",
+        title: "Dial or grid",
+        body: "This little switch, up by Skills and Cards, flips the page between the dial and the grid. The dial is a wheel of the eight colors; the grid is the same eight as a list. It stays wherever you leave it.",
+        film: SKILLS,
+      },
+      {
+        id: "sec-skills-dial-v2",
         target: "[data-tour='dial']",
         title: "The dial",
-        body: "Use your thumb and drag it around the circle to dial your chosen skills in the seven key color areas. Lift your thumb up and you will jump into that section, where you'll be able to view video lessons, summaries, the related card, and view the other videos in the series in the carousel below.",
+        body: "Press your thumb on the dial and slide it round. The color under your thumb lights up, with its name in the middle. Let go, and you're into that color's lessons.",
         film: SKILLS,
       },
       {
-        id: "sec-skills-color-v3",
-        target: "[data-tour='dial']",
+        id: "sec-skills-color-v4",
         title: "Inside a color",
-        body: "Every lesson in that color runs down one side, in order, with the one you are on shown large beside it. Eighty-three in total, across the seven.",
+        body: "The lesson plays big at the top. Under it are three tabs. This lesson has its key ideas, a summary, the transcript and its card. All lessons lists every lesson in the color, with how long each one runs. Color jumps you straight to another color.",
         film: SKILLS,
       },
       {
-        id: "sec-skills-lesson",
-        title: "Inside a lesson",
-        body: "One to two minutes, with the key idea appearing beside me as I say it. Underneath you get the key ideas, a written summary, and the full transcript if you want it.",
+        id: "sec-skills-bar",
+        title: "The bar that stays with you",
+        body: "The bar under the top stays put as you scroll. It has the way back to Skills, and the color's name: tap it to switch to another color. The ring shows how many lessons you've watched, and Next takes you straight to the next one.",
         film: SKILLS,
       },
       {
-        id: "sec-skills-portrait",
+        id: "sec-skills-portrait-v2",
         title: "Watching a lesson",
         body:
-          "On mobile you can view the lesson in standard landscape, or tap the portrait button to zoom in and make full use of your phone screen - close enough to see facial expressions and hand gestures.",
-        bodyWide:
-          "View it full screen or in landscape. Lessons have summaries, key ideas and transcripts below each video, as well as a carousel to watch the other skills in the same color series.",
+          "On a phone, watch in landscape, or tap the portrait button and the lesson fills your screen from edge to edge - close enough to see every facial expression and hand gesture. Full screen keeps the same buttons, so portrait is one tap away.",
+        bodyWide: "Watch it big, or full screen. A lesson counts as watched once you've seen most of it, and when you come back to a color it opens on the next lesson you haven't watched.",
         film: SKILLS,
       },
       {
@@ -261,42 +268,36 @@ export const sectionTours: Record<SectionId, SectionTour> = {
     label: "Show me the deck",
     stops: [
       {
-        id: "sec-cards-pull",
+        id: "sec-cards-pull-v2",
         target: "[data-tour='deck']",
         title: "Your deck, open",
-        body: "The deck opens straight onto one color's cards. Tap a color in the strip under them to switch, or pull a random card from the whole deck.",
+        body: "Cards opens straight onto one color's fan, with one card face up in front. Slide your thumb across to move through them, and tap Open the card to read one big.",
         film: DECK,
       },
       {
-        id: "sec-cards-move",
-        title: "Moving between cards",
-        body: "Move your thumb left and right across the cards to choose a different one. The whole color is there, a swipe apart.",
-        film: DECK,
-      },
-      {
-        id: "sec-cards-colors",
+        id: "sec-cards-colors-v2",
         title: "Every color",
-        body: "The strip along the bottom moves you between the seven colors without going back out. Pick from different colors and you build a different talk.",
+        body: "The strip of colors under the fan moves you between all eight without leaving the deck. Pick from different colors and you build a different talk.",
         film: DECK,
       },
       {
-        id: "sec-cards-spread-v2",
+        id: "sec-cards-spread-v3",
         target: "[data-tour='spread']",
         title: "A full spread",
-        body: "Deal a full spread and you get one card of every color, ensuring that your talk lights up with all of the aspects of a highly engaging and dynamic speech.",
+        body: "Tap Spread, up by Skills and Cards, and you're dealt one card of every color, fanned out with each back in its own color. Your spread lists the lessons in your hand, and Deal again gives you a new one.",
         film: DECK,
       },
       {
-        id: "sec-cards-shake",
+        id: "sec-cards-random",
         target: "[data-tour='shuffle']",
-        title: "Shake to shuffle",
-        body: "Or just shake your phone. It shuffles the deck and pulls you a new one.",
+        title: "Random",
+        body: "Random pulls one card from the whole deck. After your first tap, shaking your phone does the same.",
         film: DECK,
       },
       {
-        id: "sec-cards-lesson",
-        title: "The card is the reminder",
-        body: "Every card is a lesson in the course. The card is the reminder; the video is the teaching, and it is one tap away whenever you want the whole thing.",
+        id: "sec-cards-lesson-v2",
+        title: "From a card to its lesson",
+        body: "Every card is a lesson in the course. Open one from your spread and you stay with your hand: the lesson's page has This lesson and Your spread, and Back to spread takes you to the cards you were dealt.",
         film: SKILLS,
       },
     ],

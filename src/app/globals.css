@@ -3600,3 +3600,20 @@ html.bare .demo-banner {
 @media (prefers-reduced-motion: reduce) {
   .road-streaks, .road-shooting-star { display: none; }
 }
+
+/* The deck's shuffle button: the arrows swap direction every couple of
+   seconds, and turn to the next colour as they flip - a different card
+   each time. */
+.shuffle-flip {
+  animation: shuffle-flip 8s ease-in-out infinite;
+}
+@keyframes shuffle-flip {
+  0%, 21% { transform: scaleX(1); color: var(--color-storytelling); }
+  25%, 46% { transform: scaleX(-1); color: var(--color-acting); }
+  50%, 71% { transform: scaleX(1); color: var(--color-structure); }
+  75%, 96% { transform: scaleX(-1); color: var(--color-body-language); }
+  100% { transform: scaleX(1); color: var(--color-storytelling); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shuffle-flip { animation: none; color: var(--color-figurative); }
+}

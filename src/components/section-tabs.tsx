@@ -52,6 +52,71 @@ export function SectionTabs() {
           );
         })}
       </div>
+      {/* On Cards, the deck's two other ways in, in one small pill on the
+          right: Full spread (a card of every colour - the little fan says
+          so), and, in the same pill, the shuffle - its arrows forever
+          swapping direction and colour, so it reads as "a different card".
+          They tell the deck by an event (card-deck.tsx). */}
+      {onCards && (
+        <div className="ml-auto flex min-h-9 items-stretch overflow-hidden rounded-full border border-navy-600">
+          <button
+            type="button"
+            data-tour="spread"
+            onClick={() => window.dispatchEvent(new Event("sb-deck-deal"))}
+            className="flex items-center gap-1.5 py-1.5 pl-3 pr-2.5 text-sm font-semibold text-ink-muted transition-colors hover:bg-navy-800 hover:text-ink"
+          >
+            <MiniFan />
+            Full spread
+          </button>
+          <span aria-hidden className="my-1.5 w-px bg-navy-600" />
+          <button
+            type="button"
+            data-tour="shuffle"
+            aria-label="A random card"
+            title="A random card"
+            onClick={() => window.dispatchEvent(new Event("sb-deck-random"))}
+            className="flex items-center px-2.5 transition-colors hover:bg-navy-800"
+          >
+            <ShuffleFlip />
+          </button>
+        </div>
+      )}
     </div>
+  );
+}
+
+/** A hand of cards in miniature: five tiny cards fanned, each in a
+ *  colour of the spectrum - "one of every colour" at a glance. */
+function MiniFan() {
+  const cols = ["storytelling", "figurative", "acting", "structure", "body-language"];
+  return (
+    <svg viewBox="0 0 22 16" className="h-4 w-[1.35rem] shrink-0" aria-hidden>
+      {cols.map((c, i) => (
+        <rect
+          key={c}
+          x={8.5}
+          y={2}
+          width={5}
+          height={8}
+          rx={1}
+          fill={`var(--color-${c})`}
+          stroke="var(--color-navy-900)"
+          strokeWidth={0.6}
+          transform={`rotate(${(i - 2) * 16} 11 15)`}
+        />
+      ))}
+    </svg>
+  );
+}
+
+/** The shuffle: two arrows passing each other - the top one going right,
+ *  the bottom one left - that every so often swap over, turning through
+ *  the spectrum as they do (.shuffle-flip in globals.css). */
+function ShuffleFlip() {
+  return (
+    <svg viewBox="0 0 24 24" className="shuffle-flip size-[1.15rem]" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M4 8h14M14 4l4 4-4 4" />
+      <path d="M20 16H6M10 12l-4 4 4 4" />
+    </svg>
   );
 }

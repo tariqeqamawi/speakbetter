@@ -193,6 +193,23 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
     setShakeOn(true);
   };
 
+  // ── Spread and Random, from the pills in the section row ───────────
+  // (section-tabs.tsx). The first Random tap also switches shaking on,
+  // where the phone has to ask - the event fires inside that tap.
+  useEffect(() => {
+    const onDeal = () => deal();
+    const onRandom = () => {
+      pullRandom();
+      if (!shakeOn) void enableShake();
+    };
+    window.addEventListener("sb-deck-deal", onDeal);
+    window.addEventListener("sb-deck-random", onRandom);
+    return () => {
+      window.removeEventListener("sb-deck-deal", onDeal);
+      window.removeEventListener("sb-deck-random", onRandom);
+    };
+  });
+
 
   // The card opened full size sits over whichever surface called it.
   // Opened from the spread it carries the whole hand along as a strip,
@@ -218,51 +235,19 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
   // The two ways in that aren't a colour, drawn as two things rather
   // than said as two labels: a fan of seven, and one card pulled at
   // random. Under the colour's fan now that there's no dial to hold them.
-  const waysIn = (
-    <div className="flex flex-col items-center gap-3 pt-3">
-      <div className="grid w-full max-w-md grid-cols-2 gap-2.5">
-        <button
-          type="button"
-          data-tour="spread"
-          onClick={deal}
-          className="group relative flex flex-col items-center gap-1.5 overflow-hidden rounded-2xl border border-navy-600 bg-navy-800 px-3 py-4 transition-colors hover:border-ink-faint"
-        >
-          <span aria-hidden className="spectrum-rule absolute inset-x-0 top-0 h-1" />
-          <FanMark />
-          <span className="text-sm font-bold text-ink">Deal a full spread</span>
-          <span className="text-[0.7rem] leading-tight text-ink-faint">One card of every color</span>
-        </button>
-        <button
-          type="button"
-          data-tour="shuffle"
-          // One tap, one card: pulled at random from the whole deck and
-          // shown. (The first tap also switches shaking on, where the
-          // phone has to ask - so a shake does the same from then on.)
-          onClick={() => {
-            pullRandom();
-            if (!shakeOn) void enableShake();
-          }}
-          className="group relative flex flex-col items-center gap-1.5 overflow-hidden rounded-2xl border border-navy-600 bg-navy-800 px-3 py-4 transition-colors hover:border-ink-faint"
-        >
-          <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-figurative/70" />
-          <span className="deck-shake grid size-10 place-items-center text-figurative">
-            <RepeatIcon className="size-7" />
-          </span>
-          <span className="text-sm font-bold text-ink">Random card</span>
-          <span className="text-[0.7rem] leading-tight text-ink-faint">Any card from the whole deck</span>
-        </button>
-      </div>
-      {hand && (
-        <button
-          type="button"
-          onClick={() => setView({ mode: "spread" })}
-          className="text-xs font-semibold text-ink-muted underline-offset-4 transition-colors hover:text-ink hover:underline"
-        >
-          Back to the spread you dealt
-        </button>
-      )}
+  // Spread and Random live in the section row now (section-tabs.tsx);
+  // under the fan only the way back to a hand already dealt.
+  const waysIn = hand ? (
+    <div className="flex justify-center pt-1">
+      <button
+        type="button"
+        onClick={() => setView({ mode: "spread" })}
+        className="text-xs font-semibold text-ink-muted underline-offset-4 transition-colors hover:text-ink hover:underline"
+      >
+        Back to the spread you dealt
+      </button>
     </div>
-  );
+  ) : null;
 
   // (The first moment, before a colour is chosen: the deck's room held,
   // so nothing jumps when it arrives.)
@@ -437,7 +422,7 @@ function ColorCarousel({
   if (!card) return null;
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-3">
       <div className="flex w-full items-center justify-between gap-3">
         <h2 className="text-lg font-semibold tracking-tight" style={{ color }}>
           {section.name}
@@ -470,7 +455,8 @@ function ColorCarousel({
           and the text on it - about 3% of its own width - is what the
           card is for. */}
       <div
-        className="relative mx-auto flex aspect-[5/4] w-full max-w-lg touch-pan-y select-none items-center justify-center lg:max-w-3xl"
+        // (Shallower than it was: Open the card sits right under the cards.)
+        className="relative mx-auto -mb-3 flex aspect-[10/7] w-full max-w-lg touch-pan-y select-none items-center justify-center lg:max-w-3xl"
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={endDrag}
@@ -1014,30 +1000,3 @@ function CardZoom({
   );
 }
 
-/** Seven cards fanned - what "deal a full spread" actually looks like,
- *  small enough to sit on a button. */
-function FanMark() {
-  return (
-    <span aria-hidden className="grid size-10 place-items-center">
-      <svg viewBox="0 0 44 34" className="h-9 w-auto overflow-visible">
-        {categories.map((cat, i) => {
-          const angle = (i - (categories.length - 1) / 2) * 13;
-          return (
-            <rect
-              key={cat.id}
-              x="18"
-              y="6"
-              width="8"
-              height="22"
-              rx="2"
-              className={cat.textClass}
-              fill="currentColor"
-              opacity="0.9"
-              transform={`rotate(${angle} 22 30)`}
-            />
-          );
-        })}
-      </svg>
-    </span>
-  );
-}

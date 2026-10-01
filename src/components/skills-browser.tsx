@@ -53,7 +53,7 @@ export function SkillsBrowser({ children }: { children?: ReactNode }) {
 export function SkillsViewToggle() {
   const view = useSkillsView();
   return (
-    <div className="relative z-30 h-5 w-9 shrink-0">
+    <div data-tour="view-toggle" className="relative z-30 h-5 w-9 shrink-0">
       <div className="absolute left-0 top-1/2 -translate-y-1/2">
         <ViewSwitch view={view} />
       </div>
