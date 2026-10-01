@@ -23,6 +23,11 @@ export const XP = {
 
 const lessonSeconds = lengths as Record<string, number>;
 
+/** How long a lesson runs, in seconds - for the length on its thumbnail. */
+export function lessonLength(vimeoId: string): number | undefined {
+  return lessonSeconds[vimeoId];
+}
+
 /**
  * What watching a lesson is worth.
  *

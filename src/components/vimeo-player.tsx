@@ -39,6 +39,22 @@ type Frame = "fit" | "portrait";
 
 const SPEEDS = [0.75, 1, 1.25, 1.5, 2];
 
+// A lesson counts as watched once this much of it has actually played -
+// not five seconds on the page, and not a drag of the seek bar to the
+// end. Time skipped over doesn't count; time played at 2x does.
+const WATCHED_SHARE = 0.8;
+
+// The control buttons are icons. A first-timer gets their names under
+// them for the first video they play, then icons only after that.
+const LABELS_SEEN_KEY = "sb-player-labels-seen";
+function labelsSeen(): boolean {
+  try {
+    return localStorage.getItem(LABELS_SEEN_KEY) === "1";
+  } catch {
+    return true;
+  }
+}
+
 // A cue is worth showing while the teacher is still on the thought that
 // earned it. Seek past that and the moment has gone - cues are missed,
 // never queued up to fire late.
@@ -176,6 +192,7 @@ export function VimeoPlayer({
   onNext,
   nextTitle,
   xp,
+  onWatched,
 }: {
   vimeoId: string;
   title: string;
@@ -196,6 +213,9 @@ export function VimeoPlayer({
    * animation.
    */
   xp?: number;
+  /** Fires once, when most of the video has actually been played
+   *  (WATCHED_SHARE) - what marks a lesson watched. */
+  onWatched?: () => void;
 }) {
   const holderRef = useRef<HTMLDivElement>(null);
   // The browser would start nothing we asked for: show Vimeo's own
@@ -217,6 +237,25 @@ export function VimeoPlayer({
   useEffect(() => {
     xpRef.current = xp;
   }, [xp]);
+  const onWatchedRef = useRef(onWatched);
+  useEffect(() => {
+    onWatchedRef.current = onWatched;
+  }, [onWatched]);
+  // Seconds of this video actually played, and whether that has crossed
+  // the line yet. Reset with each video (the player effect below).
+  const playedRef = useRef(0);
+  const lastTickRef = useRef<number | null>(null);
+  const watchedRef = useRef(false);
+
+  // Names under the buttons, for someone who has never played a video
+  // here. Read after mount (storage isn't there on the server); once a
+  // video plays they're marked seen, but stay up for the rest of it.
+  const [labelled, setLabelled] = useState(false);
+  useEffect(() => {
+    if (labelsSeen()) return;
+    const t = window.setTimeout(() => setLabelled(true), 0);
+    return () => clearTimeout(t);
+  }, []);
 
   const [frame, setFrame] = useState<Frame>("fit");
   const [playing, setPlaying] = useState(false);
@@ -354,6 +393,9 @@ export function VimeoPlayer({
       autoplay: autoplay && !native,
     });
     playerRef.current = player;
+    playedRef.current = 0;
+    lastTickRef.current = null;
+    watchedRef.current = false;
 
     player
       .ready()
@@ -374,6 +416,9 @@ export function VimeoPlayer({
     const onPlay = () => {
       setPlaying(true);
       setEnded(false);
+      try {
+        localStorage.setItem(LABELS_SEEN_KEY, "1");
+      } catch {}
       // The app's sound is off (lib/sound.ts): play silently, captions
       // on, and don't ask for sound.
       if (!soundOn()) {
@@ -417,7 +462,9 @@ export function VimeoPlayer({
       setEnded(true);
       player.setCurrentTime(0).then(() => player.pause()).catch(() => {});
       onEndedRef.current?.();
-      if (xpRef.current !== undefined) {
+      // The XP rises only if the lesson was really watched - skipping to
+      // the end earns nothing, so it shows nothing.
+      if (xpRef.current !== undefined && watchedRef.current) {
         playXpChime();
         setRewardKey((n) => n + 1);
         playXpChime();
@@ -425,6 +472,18 @@ export function VimeoPlayer({
       }
     };
     const onTime = (d: { seconds: number; duration: number }) => {
+      // Ticks come every quarter second or so; a jump bigger than a few
+      // seconds (or backwards) is a seek, not viewing, and adds nothing.
+      const last = lastTickRef.current;
+      lastTickRef.current = d.seconds;
+      if (last !== null) {
+        const step = d.seconds - last;
+        if (step > 0 && step < 3) playedRef.current += step;
+      }
+      if (!watchedRef.current && d.duration && playedRef.current >= d.duration * WATCHED_SHARE) {
+        watchedRef.current = true;
+        onWatchedRef.current?.();
+      }
       setProgress(d.duration ? d.seconds / d.duration : 0);
       if (d.duration) setDuration(d.duration);
       cueAt(d.seconds);
@@ -894,13 +953,14 @@ export function VimeoPlayer({
         </div>
 
         <div className="flex items-center gap-1.5">
-          <span className="w-24 shrink-0 font-mono text-[0.7rem] tabular-nums text-ink-faint">
+          <span className="w-20 shrink-0 font-mono sm:w-24 text-[0.7rem] tabular-nums text-ink-faint">
             {fmt((dragAt ?? progress) * duration)} / {fmt(duration)}
           </span>
 
           <div className="ml-auto flex items-center gap-1">
             <ControlButton
               label={captionsOn ? "Captions off" : "Captions on"}
+              name={labelled ? "Captions" : undefined}
               onClick={toggleCaptions}
               active={captionsOn}
               disabled={!captionLang}
@@ -911,6 +971,7 @@ export function VimeoPlayer({
             <div className="relative">
               <ControlButton
                 label="Playback speed"
+                name={labelled ? "Speed" : undefined}
                 onClick={() => setSpeedOpen((v) => !v)}
                 active={speed !== 1}
               >
@@ -941,6 +1002,7 @@ export function VimeoPlayer({
 
             <ControlButton
               label="Zoom to portrait"
+              name={labelled ? "Portrait" : undefined}
               onClick={() => setFrameMode("portrait")}
               active={frame === "portrait"}
             >
@@ -948,19 +1010,20 @@ export function VimeoPlayer({
             </ControlButton>
 
             {frame !== "fit" && (
-              <ControlButton label="Reset framing" onClick={() => setFrame("fit")}>
+              <ControlButton label="Reset framing" name={labelled ? "Reset" : undefined} onClick={() => setFrame("fit")}>
                 <ResetFrameIcon />
               </ControlButton>
             )}
 
             {onNext && (
-              <ControlButton label={nextTitle ? `Next: ${nextTitle}` : "Next lesson"} onClick={onNext}>
+              <ControlButton label={nextTitle ? `Next: ${nextTitle}` : "Next lesson"} name={labelled ? "Next" : undefined} onClick={onNext}>
                 <NextLessonIcon />
               </ControlButton>
             )}
 
             <ControlButton
               label={fullscreen ? "Exit fullscreen" : "Fullscreen"}
+              name={labelled ? "Full screen" : undefined}
               onClick={toggleFullscreen}
               active={fullscreen}
             >
@@ -980,12 +1043,15 @@ export function VimeoPlayer({
 function ControlButton({
   children,
   label,
+  name,
   onClick,
   active = false,
   disabled = false,
 }: {
   children: React.ReactNode;
   label: string;
+  /** A word shown under the icon, for a first-timer. */
+  name?: string;
   onClick: () => void;
   active?: boolean;
   disabled?: boolean;
@@ -998,13 +1064,22 @@ function ControlButton({
       title={label}
       aria-label={label}
       aria-pressed={active}
-      className={`flex min-h-9 min-w-9 items-center justify-center gap-1 rounded-lg px-2 transition-colors ${
+      className={`flex min-h-9 min-w-9 items-center justify-center rounded-lg transition-colors ${
+        name ? "flex-col gap-0.5 px-1 py-1" : "gap-1 px-2"
+      } ${
         active
           ? "bg-navy-600 text-ink"
           : "text-ink-faint hover:bg-navy-700 hover:text-ink"
       } disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent`}
     >
-      {children}
+      {name ? (
+        <>
+          <span className="flex items-center gap-1">{children}</span>
+          <span className="whitespace-nowrap text-[0.55rem] font-semibold leading-none">{name}</span>
+        </>
+      ) : (
+        children
+      )}
     </button>
   );
 }

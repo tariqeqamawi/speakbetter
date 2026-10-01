@@ -6,7 +6,6 @@ import { LessonNotes } from "@/components/lesson-notes";
 import { LessonSummary } from "@/components/lesson-summary";
 import type { CategoryId } from "@/data/categories";
 import { VimeoPlayer } from "@/components/vimeo-player";
-import { LessonWatched } from "@/components/lesson-watched";
 import { lessonXp } from "@/lib/progress";
 import { useStore } from "@/lib/store";
 
@@ -14,7 +13,7 @@ import { useStore } from "@/lib/store";
 // lesson: recording that it was watched, and paying for it.
 //
 // The reward is decided once, when the page opens, and not again - the
-// lesson is marked watched partway through, so asking "is this watched?"
+// lesson is marked watched once most of it has played, so asking "is this watched?"
 // at the moment it finishes would always answer yes and nothing would
 // ever be paid. Deciding up front also settles the rewatch: come back to
 // a lesson you've already seen and it plays with no chime and no badge,
@@ -36,7 +35,7 @@ export function LessonPlayer({
   nextHref?: string;
   nextTitle?: string;
 }) {
-  const { state, ready } = useStore();
+  const { state, ready, markLessonWatched } = useStore();
   const [decidedFor, setDecidedFor] = useState<string | null>(null);
   const [reward, setReward] = useState<number | undefined>(undefined);
   const [seconds, setSeconds] = useState(0);
@@ -62,8 +61,8 @@ export function LessonPlayer({
         onTime={setSeconds}
         onNext={nextHref ? () => router.push(nextHref) : undefined}
         nextTitle={nextTitle}
+        onWatched={() => markLessonWatched(vimeoId)}
       />
-      <LessonWatched vimeoId={vimeoId} />
       <LessonSummary vimeoId={vimeoId} />
       {category && <LessonNotes vimeoId={vimeoId} category={category} seconds={seconds} />}
     </>

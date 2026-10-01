@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { Category } from "@/data/categories";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { categories, type Category } from "@/data/categories";
 import type { Lesson } from "@/data/lessons";
-import { lessonXp } from "@/lib/progress";
+import { lessonLength, lessonXp } from "@/lib/progress";
 import { XpBadge } from "@/components/xp-badge";
 import { useStore } from "@/lib/store";
 import { VimeoPlayer } from "@/components/vimeo-player";
-import { LessonWatched } from "@/components/lesson-watched";
 import { VideoStill } from "@/components/video-still";
 import { CheckIcon, ChevronDownIcon, XIcon, ZapIcon } from "@/components/icons";
 import { LessonCard } from "@/components/lesson-card";
@@ -38,7 +39,9 @@ export function CategoryTheater({
   category: Category;
   lessons: Lesson[];
 }) {
-  const { state, ready } = useStore();
+  const { state, ready, markLessonWatched } = useStore();
+  // The demo serves these pages under /demo; links stay inside it.
+  const skillsHref = usePathname().startsWith("/demo") ? "/demo/skills" : "/skills";
   // In grid view the rail is a list, one lesson under another, rather
   // than a carousel to swipe through (skills-view.ts).
   const list = useSkillsView() === "grid";
@@ -46,6 +49,19 @@ export function CategoryTheater({
   // "This lesson" or "All lessons" - or neither.
   const [panel, setPanel] = useState<"lesson" | "all">("lesson");
   const [featuredId, setFeaturedId] = useState(lessons[0].vimeoId);
+  // Coming back to a colour opens on the first lesson not yet watched,
+  // not on lesson 1 again - settled once, the moment the record loads.
+  // `resumed` keeps the "Continue" label up until they pick another.
+  const [placed, setPlaced] = useState(false);
+  const [resumed, setResumed] = useState(false);
+  if (ready && !placed) {
+    setPlaced(true);
+    const firstUnwatched = lessons.find((l) => !state.watchedLessons.includes(l.vimeoId));
+    if (firstUnwatched && firstUnwatched.vimeoId !== lessons[0].vimeoId) {
+      setFeaturedId(firstUnwatched.vimeoId);
+      setResumed(true);
+    }
+  }
   const [autoplayNext, setAutoplayNext] = useState(false);
   const [upNext, setUpNext] = useState(false);
   const [xpFlash, setXpFlash] = useState(false);
@@ -57,6 +73,26 @@ export function CategoryTheater({
   const [rewardFor, setRewardFor] = useState<string | null>(null);
   const [reward, setReward] = useState<number | undefined>(undefined);
   const stageRef = useRef<HTMLDivElement>(null);
+  const allRef = useRef<HTMLDivElement>(null);
+
+  // The colour's description, open the first time a student comes into
+  // this colour and folded every visit after.
+  const [aboutOpen, setAboutOpen] = useState(false);
+  useEffect(() => {
+    const key = `sb-colour-seen-${category.id}`;
+    try {
+      if (localStorage.getItem(key)) return;
+    } catch {
+      return;
+    }
+    const t = window.setTimeout(() => {
+      setAboutOpen(true);
+      try {
+        localStorage.setItem(key, "1");
+      } catch {}
+    }, 0);
+    return () => clearTimeout(t);
+  }, [category.id]);
 
   const featured = lessons.find((l) => l.vimeoId === featuredId) ?? lessons[0];
   const card = cardFor(featured.vimeoId);
@@ -64,6 +100,19 @@ export function CategoryTheater({
   const next = lessons[index + 1];
   const watched = (id: string) => ready && state.watchedLessons.includes(id);
   const watchedCount = lessons.filter((l) => watched(l.vimeoId)).length;
+  const complete = ready && watchedCount === lessons.length;
+  const nextColour = categories[categories.findIndex((c) => c.id === category.id) + 1];
+
+  // Finishing the colour while here is a moment: the strip under the bar
+  // arrives with a small entrance. Arriving already finished, it's just
+  // there.
+  const wasComplete = useRef<boolean | null>(null);
+  const [justFinished, setJustFinished] = useState(false);
+  useEffect(() => {
+    if (!ready) return;
+    if (wasComplete.current === false && complete) setJustFinished(true);
+    wasComplete.current = complete;
+  }, [ready, complete]);
 
   // Settled during render, before the video can reach its end.
   if (ready && rewardFor !== featured.vimeoId) {
@@ -77,10 +126,19 @@ export function CategoryTheater({
 
   const select = (id: string, autoplay = false) => {
     setUpNext(false);
+    setResumed(false);
     setSeconds(0);
     setAutoplayNext(autoplay);
     setFeaturedId(id);
     stageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  // The ring in the bar is a way in: every lesson in the colour.
+  const showAll = () => {
+    setPanel("all");
+    requestAnimationFrame(() =>
+      allRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
+    );
   };
 
   // The +XP receipt: the moment the featured lesson tips into "watched",
@@ -121,13 +179,26 @@ export function CategoryTheater({
           you are stay on screen the whole way down the page. */}
       <header className="sticky-under-header no-glass -mx-4 -mt-3 border-b border-navy-600 bg-navy-850 px-4 py-1.5 shadow-[0_8px_18px_-10px_rgb(2_5_11/0.9)] lg:-mt-8 xl:-mx-8 xl:px-8">
         <div className="flex items-center gap-2">
-          <BackLink href="/skills">Skills</BackLink>
+          <BackLink href={skillsHref}>Skills</BackLink>
           <span aria-hidden className="text-ink-faint">/</span>
-          <h1 className={`text-xl font-semibold tracking-tight ${category.textClass}`}>{category.name}</h1>
+          <h1 className={`min-w-0 truncate text-xl font-semibold tracking-tight ${category.textClass}`}>{category.name}</h1>
           <div className="ml-auto flex items-center gap-2.5">
-            <span className="relative size-8 shrink-0" title={`${watchedCount} of ${lessons.length} completed`}>
+            <button
+              type="button"
+              onClick={showAll}
+              className="relative size-8 shrink-0 rounded-full transition-transform hover:scale-110"
+              title={`${watchedCount} of ${lessons.length} watched - see all lessons`}
+              aria-label={`${watchedCount} of ${lessons.length} watched. See all lessons`}
+            >
               <svg viewBox="0 0 36 36" className="size-full -rotate-90" aria-hidden>
-                <circle cx="18" cy="18" r="15.5" fill="none" strokeWidth="3" className="stroke-navy-700" />
+                <circle
+                  cx="18"
+                  cy="18"
+                  r="15.5"
+                  strokeWidth="3"
+                  className="stroke-navy-700 transition-[fill] duration-700"
+                  fill={complete ? `var(--color-${category.id})` : "none"}
+                />
                 <circle
                   cx="18"
                   cy="18"
@@ -140,21 +211,64 @@ export function CategoryTheater({
                   className="transition-[stroke-dasharray] duration-700"
                 />
               </svg>
-              <span className="absolute inset-0 flex items-center justify-center text-[0.6rem] font-bold tabular-nums text-ink">
-                {watchedCount}
+              <span className={`absolute inset-0 flex items-center justify-center text-[0.6rem] font-bold tabular-nums ${complete ? "text-navy-950" : "text-ink"}`}>
+                {complete ? <CheckIcon className="size-4" /> : watchedCount}
               </span>
-              <span className="sr-only">{watchedCount} completed</span>
-            </span>
+            </button>
             <span className={`font-mono text-sm tabular-nums ${category.textClass}`} aria-label={`Lesson ${index + 1} of ${lessons.length}`}>
               {String(index + 1).padStart(2, "0")} / {lessons.length}
             </span>
+            {/* The next lesson, one tap away from anywhere on the page -
+                after scrolling down to the notes the player is a long
+                way back up. */}
+            {next && (
+              <button
+                type="button"
+                onClick={() => select(next.vimeoId, true)}
+                title={`Next: ${next.title}`}
+                className="flex min-h-8 items-center gap-0.5 rounded-full border border-navy-600 py-1 pl-2.5 pr-1.5 text-xs font-semibold text-ink-muted transition-colors hover:border-current hover:text-ink"
+              >
+                Next
+                <ChevronDownIcon className="size-3.5 -rotate-90" />
+              </button>
+            )}
           </div>
         </div>
       </header>
 
+      {/* The colour, finished: said in words under the bar, with the way
+          on to the next colour - the ring filling in is the picture, this
+          is the caption. */}
+      {complete && (
+        <div
+          role="status"
+          className={`flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-current bg-navy-900/60 px-4 py-2.5 ${category.textClass} ${
+            justFinished ? "coach-cue shadow-[0_0_28px_-8px_currentColor]" : ""
+          }`}
+        >
+          <CheckIcon className="size-4 shrink-0" />
+          <span className="text-sm font-semibold text-ink">
+            {category.name} complete
+            <span className="font-normal text-ink-muted"> - all {lessons.length} lessons watched.</span>
+          </span>
+          <Link
+            href={nextColour ? `${skillsHref}/${nextColour.id}` : skillsHref}
+            className="ml-auto flex items-center gap-0.5 text-sm font-semibold hover:underline"
+          >
+            {nextColour ? `Next colour: ${nextColour.name}` : "Back to all colours"}
+            <ChevronDownIcon className="size-4 -rotate-90" />
+          </Link>
+        </div>
+      )}
+
       {/* The stage */}
       <div ref={stageRef} className="relative flex scroll-mt-28 flex-col gap-3">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+          {resumed && (
+            <span className={`rounded-full border border-current px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider ${category.textClass}`}>
+              Continue
+            </span>
+          )}
           <h2 className="text-xl font-semibold tracking-tight text-ink">
             {featured.title}
           </h2>
@@ -192,14 +306,18 @@ export function CategoryTheater({
           onEnded={() => {
             if (next) setUpNext(true);
           }}
+          onWatched={() => markLessonWatched(featured.vimeoId)}
         />
         </div>
-        <LessonWatched key={`w-${featured.vimeoId}`} vimeoId={featured.vimeoId} />
 
         {/* What this colour is, folded beneath the player's controls -
             its subtitle and an arrow, opening to the description. Read
             once, it no longer takes the top of the screen every visit. */}
-        <details className="group -mt-1">
+        <details
+          className="group -mt-1"
+          open={aboutOpen}
+          onToggle={(e) => setAboutOpen(e.currentTarget.open)}
+        >
           <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-ink-faint transition-colors hover:text-ink-muted [&::-webkit-details-marker]:hidden">
             {category.subtitle}
             <ChevronDownIcon className="size-3.5 transition-transform group-open:rotate-180" />
@@ -215,7 +333,7 @@ export function CategoryTheater({
             words. Both here, rather than behind a link to another
             page - this is the page. */}
         {list && (
-          <div role="tablist" aria-label="This lesson or all lessons" className="flex w-full gap-1 rounded-xl border border-navy-600 bg-navy-900/60 p-1">
+          <div ref={allRef} role="tablist" aria-label="This lesson or all lessons" className="flex scroll-mt-28 w-full gap-1 rounded-xl border border-navy-600 bg-navy-900/60 p-1">
             <PanelTab label="This lesson" on={panel === "lesson"} category={category} onClick={() => setPanel("lesson")} />
             <PanelTab label={`All lessons · ${lessons.length}`} on={panel === "all"} category={category} onClick={() => setPanel("all")} />
           </div>
@@ -273,7 +391,7 @@ export function CategoryTheater({
       {/* The rail - in grid view, every lesson in the colour one under
           another, folded under the lesson until asked for. */}
       <Fold when={list} open={panel === "all"}>
-      <div className="relative flex flex-col gap-2">
+      <div ref={list ? undefined : allRef} className="relative flex scroll-mt-28 flex-col gap-2">
         {!list && (
           <span className="text-xs font-medium uppercase tracking-wider text-ink-faint">
             All {lessons.length} lessons in this color
@@ -330,6 +448,13 @@ export function CategoryTheater({
                         xp={lessonXp(lesson.vimeoId)}
                         className="absolute right-2 top-2 bg-navy-950/85"
                       />
+                    )}
+                    {/* How long it runs, so a student can tell whether it
+                        fits the minute they have before they tap. */}
+                    {lessonLength(lesson.vimeoId) !== undefined && (
+                      <span className="absolute bottom-1.5 right-1.5 rounded bg-navy-950/85 px-1.5 py-0.5 font-mono text-[0.6rem] tabular-nums text-ink">
+                        {clock(lessonLength(lesson.vimeoId)!)}
+                      </span>
                     )}
                     <span
                       className={`absolute inset-x-0 bottom-0 h-0.5 ${category.bgClass} ${current ? "" : "opacity-40"}`}
@@ -416,3 +541,7 @@ function BackToTop() {
   );
 }
 
+/** 83 -> "1:23". */
+function clock(seconds: number): string {
+  return `${Math.floor(seconds / 60)}:${String(Math.round(seconds % 60)).padStart(2, "0")}`;
+}
