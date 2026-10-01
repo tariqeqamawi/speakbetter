@@ -3,7 +3,7 @@ import { HowItWorks } from "@/components/how-it-works";
 import { WhatsInApp } from "@/components/whats-in-app";
 import { SelfieTake } from "@/components/selfie-take";
 import { SELFIE_TAKES } from "@/data/selfie-takes";
-import { ListenIcon, TrophyIcon } from "@/components/icons";
+import { ChevronDownIcon, ListenIcon, TrophyIcon } from "@/components/icons";
 
 // Two chapters of the landing page (master plan §15), the app shown
 // rather than described.
@@ -67,10 +67,17 @@ export function HowItWorksSection() {
           <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
             This is how you actually record yourself
           </h2>
-          <p className="text-ink-muted text-balance">
-            No studio, no crew, no fancy equipment. Simply prop up your phone and press record through the Speak
-            Better Selfie feature. Talk for a minute or two - then Coach watches it and gives you expert feedback.
-          </p>
+          {/* One line showing; the rest behind the arrow beside "record". */}
+          <details className="group text-ink-muted">
+            <summary className="inline cursor-pointer list-none text-balance [&::-webkit-details-marker]:hidden">
+              No studio, no crew, no fancy equipment. Simply prop up your phone and press record
+              <ChevronDownIcon className="ml-1 inline size-4 align-[-0.15em] text-ink-faint transition-transform group-open:rotate-180" />
+            </summary>
+            <p className="pt-2 text-sm text-balance">
+              Record through the Speak Better Selfie feature. Talk for a minute or two - then Coach watches it and gives
+              you expert feedback.
+            </p>
+          </details>
         </div>
         <div className="-mx-4 flex w-[calc(100%+2rem)] gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:w-full sm:max-w-4xl sm:grid-cols-4 sm:overflow-visible sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {SELFIE_TAKES.map((t) => (
