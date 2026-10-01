@@ -67,6 +67,14 @@ export function LandingTest() {
             </div>
             <p className="mt-2 text-sm font-medium text-ink-muted">From awkward to awesome in minutes a day.</p>
           </div>
+          {/* The whole course in one breath - the facts the feature cards
+              used to spread over a screen; the page below shows each one
+              working. */}
+          <p className="text-sm font-semibold text-ink text-balance">
+            83 lessons <span className="text-ink-faint">·</span> 25 challenges{" "}
+            <span className="text-ink-faint">·</span> 8 colors <span className="text-ink-faint">·</span> an AI coach{" "}
+            <span className="text-ink-faint">·</span> 6 weeks
+          </p>
           <JoinCta label="Join Speak Better Now" seal sealSize={96} />
         </section>
 
