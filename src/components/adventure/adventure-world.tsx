@@ -263,9 +263,10 @@ const TERRAIN_FRAG = /* glsl */ `
       // Twice as many points as the grid has crossings - and alive: each
       // twinkles at its own pace, and now and then one flares bright, a
       // field of stars rather than a pattern of holes.
-      // (One per grid crossing - a quarter of what it was: at speed the
-      // field of studs merged into one glow.)
-      vec2 d2 = g;
+      // (Across the road, two to a grid square, as they were; along it -
+      // the rows running away from you - one every two squares, a quarter
+      // of the first density: at speed they merged into one glow.)
+      vec2 d2 = g * vec2(0.5, 2.0);
       vec2 cell = floor(d2 + 0.5);
       float h = fract(sin(dot(cell, vec2(12.9898, 78.233))) * 43758.5453);
       float tw = 0.5 + 0.5 * sin(uTime * (0.8 + h * 2.2) + h * 40.0);
