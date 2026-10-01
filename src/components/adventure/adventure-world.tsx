@@ -1252,10 +1252,10 @@ function AdventureWorldInner({
       // student's photo included. The glow comes from the bloom, not the
       // grade, so photos show as uploaded and the neon stays pure.
       flat
-      // (On a phone, one pixel per pixel: the bloom and the blur each keep
-      // copies of the frame, and a sharper frame is several times the
-      // memory - what was running phones out of it near the end.)
-      dpr={typeof window !== "undefined" && window.matchMedia("(pointer: fine)").matches ? [1, 1.75] : [1, 1]}
+      // (On a phone, 1.4 pixels to the point: at 1 the whole view - the sky
+      // above all - drew soft on a sharp screen; much past this the bloom's
+      // and blur's copies of the frame cost memory a phone runs short of.)
+      dpr={typeof window !== "undefined" && window.matchMedia("(pointer: fine)").matches ? [1, 1.75] : [1, 1.4]}
       frameloop={active ? "always" : "never"}
       gl={{ antialias: true, powerPreference: "high-performance" }}
       camera={{ fov: 62, near: 0.1, far: 1200, position: [0, 3, 6] }}
