@@ -8,6 +8,7 @@ import { lessonsInCategory } from "@/data/lessons";
 import { SkillDial } from "@/components/skill-dial";
 import { VideoStill } from "@/components/video-still";
 import { CategoryIcon } from "@/components/category-icons";
+import { DeckIcon } from "@/components/icons";
 import { useStore } from "@/lib/store";
 import { setSkillsView, useSkillsView, type SkillsView } from "@/lib/skills-view";
 
@@ -38,12 +39,15 @@ export function SkillsBrowser({ children }: { children?: ReactNode }) {
   const view = useSkillsView();
   return (
     <div className="flex flex-col gap-3">
-      {/* The section's note on the left, the switch small in the middle
-          of the same row - a setting, not a headline. */}
-      <div className="relative min-h-6">
+      {/* The section's note, and the switch small right beside it - a
+          setting, not a headline. The switch has a fixed small footprint
+          and opens over the page, so opening it never shifts the layout. */}
+      <div className="flex items-start gap-3">
         {children}
-        <div className="absolute left-1/2 top-0 z-20 -translate-x-1/2">
-          <ViewSwitch view={view} />
+        <div className="relative z-20 mt-px h-5 w-9 shrink-0">
+          <div className="absolute left-0 top-1/2 -translate-y-1/2">
+            <ViewSwitch view={view} />
+          </div>
         </div>
       </div>
       {view === "grid" ? <SkillGrid /> : <SkillDial />}
@@ -122,7 +126,7 @@ function ViewSwitch({ view }: { view: SkillsView }) {
           aria-hidden
           className={`absolute rounded-full transition-all duration-300 ease-out ${
             open
-              ? `top-1 bottom-1 w-[calc(50%-0.25rem)] bg-ink ${grid ? "left-1/2" : "left-1"}`
+              ? `top-1 bottom-1 w-[calc(50%-0.25rem)] border border-body-language/60 bg-body-language/15 ${grid ? "left-1/2" : "left-1"}`
               : `top-1/2 size-3 -translate-y-1/2 bg-body-language shadow-[0_0_8px_var(--color-body-language)] ${grid ? "left-[calc(100%-1rem)]" : "left-1"}`
           }`}
         />
@@ -138,7 +142,7 @@ function ViewSwitch({ view }: { view: SkillsView }) {
               onClick={() => choose(o.id)}
               className={`relative z-10 flex h-full flex-1 items-center justify-center rounded-full text-sm font-semibold transition-opacity duration-200 ${
                 open ? "opacity-100" : "pointer-events-none opacity-0"
-              } ${on ? "text-navy-950" : "text-ink-muted hover:text-ink"}`}
+              } ${on ? "text-body-language" : "text-body-language/70 hover:text-body-language"}`}
             >
               {o.label}
             </button>
@@ -172,10 +176,10 @@ function SkillGrid() {
         const lessons = lessonsInCategory(cat.id);
         const watched = ready ? lessons.filter((l) => state.watchedLessons.includes(l.vimeoId)).length : 0;
         return (
-          <li key={cat.id} className="challenge-enter" style={{ animationDelay: `${i * 40}ms` }}>
+          <li key={cat.id} className="challenge-enter flex items-stretch gap-2" style={{ animationDelay: `${i * 40}ms` }}>
             <Link
               href={`${prefix}/skills/${cat.id}`}
-              className={`lift-card group flex items-center gap-3 overflow-hidden rounded-xl border border-navy-600 bg-navy-900/60 pr-3 transition-colors hover:border-current ${cat.textClass}`}
+              className={`lift-card group flex min-w-0 flex-1 items-center gap-3 overflow-hidden rounded-xl border border-navy-600 bg-navy-900/60 pr-3 transition-colors hover:border-current ${cat.textClass}`}
             >
               <span className={`w-1 self-stretch ${cat.bgClass}`} />
               <span className="relative my-2 block aspect-video w-32 shrink-0 overflow-hidden rounded-lg bg-gradient-to-br from-navy-700 to-navy-900 sm:w-40">
@@ -190,6 +194,17 @@ function SkillGrid() {
                 <span className="text-xs tabular-nums text-ink-muted">
                   {lessons.length} lessons{watched > 0 ? ` · ${watched} watched` : ""}
                 </span>
+              </span>
+            </Link>
+            {/* The same colour's flash cards, one tap away. */}
+            <Link
+              href={`${prefix}/skills/cards?color=${cat.id}`}
+              aria-label={`${cat.name} flash cards`}
+              className={`lift-card flex w-16 shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl border border-navy-600 bg-navy-900/60 px-1 text-center transition-colors hover:border-current sm:w-20 ${cat.textClass}`}
+            >
+              <DeckIcon className="size-5" />
+              <span className="text-[0.6rem] font-semibold uppercase leading-tight tracking-wider text-ink-muted sm:text-[0.65rem]">
+                Flash cards
               </span>
             </Link>
           </li>

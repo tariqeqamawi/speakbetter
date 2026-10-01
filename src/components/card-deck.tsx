@@ -90,6 +90,16 @@ export function CardDeck({ cards }: { cards: DeckCard[] }) {
     setView({ mode: "color", category, index });
   }, []);
 
+  // Arriving from a colour's "Flash cards" tab (skills-browser.tsx):
+  // /skills/cards?color=voice opens straight onto that colour's cards.
+  useEffect(() => {
+    const wanted = new URLSearchParams(window.location.search).get("color");
+    if (wanted && categories.some((c) => c.id === wanted) && cards.some((c) => c.categoryId === wanted)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- read once from the URL on arrival
+      setView({ mode: "color", category: wanted as CategoryId, index: 0 });
+    }
+  }, [cards]);
+
   // ── Pull a card at random ──────────────────────────────────────────
   const pullRandom = useCallback(() => {
     const card = anyOf(cards);
