@@ -41,6 +41,9 @@ export function CategoryTheater({
   // In grid view the rail is a list, one lesson under another, rather
   // than a carousel to swipe through (skills-view.ts).
   const list = useSkillsView() === "grid";
+  // Grid view: which of the two sections under the video is open -
+  // "This lesson" or "All lessons" - or neither.
+  const [panel, setPanel] = useState<"lesson" | "all" | null>(null);
   const [featuredId, setFeaturedId] = useState(lessons[0].vimeoId);
   const [autoplayNext, setAutoplayNext] = useState(false);
   const [upNext, setUpNext] = useState(false);
@@ -182,12 +185,15 @@ export function CategoryTheater({
             with the video, and the transcript for anyone who wants the
             words. Both here, rather than behind a link to another
             page - this is the page. */}
-        <Fold
-          when={list}
-          label="About this lesson"
-          hint="Summary, key ideas, transcript and card"
-          accentClass={category.textClass}
-        >
+        {list && (
+          <div className="flex items-center gap-2">
+            <PanelTab label="This lesson" open={panel === "lesson"} accentClass={category.textClass}
+              onClick={() => setPanel((v) => (v === "lesson" ? null : "lesson"))} />
+            <PanelTab label="All lessons" open={panel === "all"} accentClass={category.textClass}
+              onClick={() => setPanel((v) => (v === "all" ? null : "all"))} />
+          </div>
+        )}
+        <Fold when={list} open={panel === "lesson"}>
         <LessonSummary vimeoId={featured.vimeoId} />
         <LessonNotes key={`n-${featured.vimeoId}`} vimeoId={featured.vimeoId} category={category.id} seconds={seconds} />
         <LessonTranscript vimeoId={featured.vimeoId} />
@@ -239,12 +245,7 @@ export function CategoryTheater({
 
       {/* The rail - in grid view, every lesson in the colour one under
           another, folded under the lesson until asked for. */}
-      <Fold
-        when={list}
-        label={`All ${lessons.length} lessons in ${category.name}`}
-        hint={`${watchedCount} watched`}
-        accentClass={category.textClass}
-      >
+      <Fold when={list} open={panel === "all"}>
       <div className="relative flex flex-col gap-2">
         {!list && (
           <span className="text-xs font-medium uppercase tracking-wider text-ink-faint">
@@ -328,34 +329,40 @@ export function CategoryTheater({
   );
 }
 
-/** A section folded behind one row - only in grid view; in the dial's
- *  view the children show as they always have. */
-function Fold({
-  when,
+/** One of the two tabs under the video in grid view: its name and a
+ *  small arrow that turns when it is open. */
+function PanelTab({
   label,
-  hint,
+  open,
   accentClass,
-  children,
+  onClick,
 }: {
-  when: boolean;
   label: string;
-  hint?: string;
+  open: boolean;
   accentClass: string;
-  children: React.ReactNode;
+  onClick: () => void;
 }) {
-  if (!when) return <>{children}</>;
   return (
-    <details className="group rounded-xl border border-navy-600 bg-navy-900/60 open:bg-navy-900/80">
-      <summary className="flex min-h-12 cursor-pointer list-none items-center gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
-        <span className="flex min-w-0 flex-1 flex-col">
-          <span className="text-sm font-semibold text-ink">{label}</span>
-          {hint && <span className="text-xs text-ink-faint">{hint}</span>}
-        </span>
-        <ChevronDownIcon className={`size-5 shrink-0 transition-transform group-open:rotate-180 ${accentClass}`} />
-      </summary>
-      <div className="flex flex-col gap-3 border-t border-navy-700 p-3">{children}</div>
-    </details>
+    <button
+      type="button"
+      onClick={onClick}
+      aria-expanded={open}
+      className={`flex min-h-10 items-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition-colors ${
+        open ? `border-current bg-navy-800 ${accentClass}` : "border-navy-600 bg-navy-900/60 text-ink hover:border-navy-500"
+      }`}
+    >
+      <span className={open ? "" : "text-ink"}>{label}</span>
+      <ChevronDownIcon className={`size-4 transition-transform ${open ? "rotate-180" : ""} ${accentClass}`} />
+    </button>
   );
+}
+
+/** In grid view a section shows only while its tab is open; in the
+ *  dial's view it shows as it always has. */
+function Fold({ when, open, children }: { when: boolean; open: boolean; children: React.ReactNode }) {
+  if (!when) return <>{children}</>;
+  if (!open) return null;
+  return <div className="challenge-enter flex flex-col gap-3">{children}</div>;
 }
 
 /** Once the page is well scrolled, a small round button back to the
