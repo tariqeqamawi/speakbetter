@@ -98,7 +98,12 @@ export function AdventureScreen({
   onProgress,
   arrive = null,
   leaveTo = null,
+  showcase,
 }: {
+  /** With demo: instead of driving to the next challenge, glide on a
+   *  loop through the city of every colour at the end of the road - the
+   *  landing page's look at the whole game. */
+  showcase?: "victory";
   stops: WorldStop[];
   phases: WorldPhase[];
   fallbackAvatar?: string;
@@ -575,6 +580,37 @@ export function AdventureScreen({
   const [fade, setFade] = useState(false);
   useEffect(() => {
     if (!demo || !onScreen) return;
+    if (showcase === "victory") {
+      // Through the city of colour, up to the ring tunnel, and round again.
+      const from = victoryStart(road) + 20;
+      const to = road.finish - FINISH_TUNNEL - 80;
+      let raf = 0;
+      let last = performance.now();
+      let fading = 0;
+      const glide = (now: number) => {
+        const dt = Math.min(0.05, (now - last) / 1000);
+        last = now;
+        travel.place(Math.min(to, travel.s + 48 * dt));
+        if (travel.s >= to && !fading) {
+          fading = window.setTimeout(() => {
+            setFade(true);
+            window.setTimeout(() => {
+              travel.jump(from);
+              setFade(false);
+              fading = 0;
+              last = performance.now();
+            }, 500);
+          }, 200);
+        }
+        raf = requestAnimationFrame(glide);
+      };
+      travel.jump(from);
+      raf = requestAnimationFrame(glide);
+      return () => {
+        cancelAnimationFrame(raf);
+        clearTimeout(fading);
+      };
+    }
     const firstOpen = Math.max(0, stops.findIndex((st) => st.state === "here"));
     const target = road.stops[firstOpen];
     const from = Math.max(0, road.stops[Math.max(0, firstOpen - 3)] - AHEAD - 6);
@@ -622,7 +658,7 @@ export function AdventureScreen({
       cancelAnimationFrame(raf);
       timers.forEach(clearTimeout);
     };
-  }, [demo, demoOnce, onScreen, stops, road, travel, router]);
+  }, [demo, demoOnce, onScreen, stops, road, travel, router, showcase]);
 
   // A CHALLENGE NOT YET OPEN. Explore as far ahead as you like, but tap
   // one you have not reached and you are told so, and taken back to the

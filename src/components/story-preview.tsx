@@ -23,8 +23,11 @@ import { storyPhases, type PhaseId } from "@/data/challenges";
 
 export function StoryPreview() {
   const [active, setActive] = useState<PhaseId>("S");
-  // The road as a student chooses it: the flat map, or the 3D world.
-  const [mode, setMode] = useState<"2d" | "3d">("2d");
+  // The road three ways, as a student chooses it: the flat map; 3D, the
+  // calm view from above with the path lit; and 4D, the full ride -
+  // shown here gliding through the city of every colour at the end, so
+  // a visitor sees there's a whole game in there.
+  const [mode, setMode] = useState<"2d" | "3d" | "4d">("2d");
   const frame = useRef<HTMLDivElement>(null);
   const crowd = useMemo(() => presence(), []);
   // A worked-in student's road - the same sample the demo pages use.
@@ -79,7 +82,7 @@ export function StoryPreview() {
           scroll it, or tap a letter above and it travels there. */}
       <figure className="flex flex-col items-center gap-2">
         <div role="radiogroup" aria-label="View" className="flex rounded-full border border-navy-600 bg-navy-950/80 p-1 text-xs font-bold">
-          {(["2d", "3d"] as const).map((m) => (
+          {(["2d", "3d", "4d"] as const).map((m) => (
             <button
               key={m}
               type="button"
@@ -96,7 +99,7 @@ export function StoryPreview() {
           <span className="absolute left-1/2 top-3 z-50 h-1.5 w-14 -translate-x-1/2 rounded-full bg-navy-700" />
           <div
             ref={frame}
-            className={`relative h-[34rem] ${mode === "3d" ? "overflow-hidden" : "overflow-y-auto"} overflow-x-hidden overscroll-contain rounded-[1.8rem] bg-navy-950 pb-6 pt-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`}
+            className={`relative h-[34rem] ${mode !== "2d" ? "overflow-hidden" : "overflow-y-auto"} overflow-x-hidden overscroll-contain rounded-[1.8rem] bg-navy-950 pb-6 pt-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`}
           >
             {/* Laid out at a phone's full width and scaled to fit the
                 frame, so it reads exactly as it does in the app. */}
@@ -105,15 +108,29 @@ export function StoryPreview() {
                 <Adventure2D stops={stops} phases={worldPhases} scrollRoot={frame} />
               </div>
             ) : (
-              <div className="-mb-6 -mt-8">
-                <AdventureScreen stops={stops} phases={worldPhases} heightClass="h-[34rem]" skyImage={ROAD_SKY} demo />
+              <div key={mode} className="-mb-6 -mt-8">
+                <AdventureScreen
+                  stops={stops}
+                  phases={worldPhases}
+                  heightClass="h-[34rem]"
+                  skyImage={ROAD_SKY}
+                  demo
+                  calm={mode === "3d"}
+                  showcase={mode === "4d" ? "victory" : undefined}
+                />
               </div>
             )}
           </div>
         </div>
         <figcaption className="text-center text-xs text-ink-muted">
-          A student a few challenges in - passed, open and still to come. Switch to 3D to watch it travelled.
-          <span className="block text-ink-faint">{mode === "2d" ? "Scroll it, or tap a letter." : "Down the road, up to the next challenge, and in."}</span>
+          {mode === "4d"
+            ? "4D: the full ride - here, the city of every color at the end of the road."
+            : mode === "3d"
+              ? "3D: the road from above, your path lit up - down it to the next challenge, and in."
+              : "A student a few challenges in - passed, open and still to come."}
+          <span className="block text-ink-faint">
+            {mode === "2d" ? "Scroll it, or tap a letter. Switch to 3D or 4D to travel it." : "Switch views above."}
+          </span>
         </figcaption>
       </figure>
     </div>

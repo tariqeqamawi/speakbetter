@@ -345,6 +345,24 @@ function LandingBody() {
         <LessonGallery />
       </section>
 
+      {/* Inside the app: the real thing, live in two phones - a colour's
+          lesson page and the deck - running the demo, so they show the
+          app exactly as it is today. (Loaded only when scrolled to.) */}
+      <section className="flex flex-col items-center gap-5">
+        <h2 className="max-w-xl text-center text-2xl font-semibold tracking-tight text-balance">
+          Inside the app
+        </h2>
+        <p className="max-w-lg text-center text-ink-muted text-pretty">
+          Each lesson plays big, with its key ideas, summary and card beneath it, and every other lesson in the
+          color one tap away. The deck fans out a color at a time, or deals you one card of every color. These are
+          live - go ahead and tap.
+        </p>
+        <div className="flex flex-wrap items-start justify-center gap-6 sm:gap-10">
+          <LivePhone src="/demo/skills/figurative" caption="A lesson, inside a color" />
+          <LivePhone src="/demo/skills/cards" caption="The deck" />
+        </div>
+      </section>
+
       <ProofLine tag="storytelling" />
 
       <SectionMark id="challenges" />
@@ -528,5 +546,26 @@ function WhatYouDo({ className = "" }: { className?: string }) {
         </li>
       ))}
     </Reveal>
+  );
+}
+
+/** The app itself in a phone: a demo page at a phone's own size, scaled
+ *  into the frame - live and tappable, loaded only when scrolled to. */
+function LivePhone({ src, caption }: { src: string; caption: string }) {
+  return (
+    <figure className="flex flex-col items-center gap-2">
+      <div className="relative w-[17rem] rounded-[2.2rem] border-4 border-navy-600 bg-navy-950 p-1.5 shadow-2xl shadow-navy-950">
+        <span className="absolute left-1/2 top-3 z-10 h-1.5 w-14 -translate-x-1/2 rounded-full bg-navy-700" />
+        <div className="relative h-[33.4rem] overflow-hidden rounded-[1.8rem] bg-navy-950">
+          <iframe
+            src={src}
+            title={caption}
+            loading="lazy"
+            className="absolute left-0 top-0 h-[844px] w-[390px] origin-top-left scale-[0.646] border-0"
+          />
+        </div>
+      </div>
+      <figcaption className="text-xs text-ink-muted">{caption}</figcaption>
+    </figure>
   );
 }
