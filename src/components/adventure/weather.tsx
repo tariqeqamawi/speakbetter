@@ -210,7 +210,7 @@ function Rain({ road, travel, stretch, count, colours }: { road: RoadLayout; tra
         // (Pixels on screen, not world units: near the camera a sized-by-
         // distance drop grew to fill half the view, and the overdraw of
         // two hundred of them was the cost.)
-        size: 11,
+        size: 6,
         sizeAttenuation: false,
         vertexColors: true,
         transparent: true,

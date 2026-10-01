@@ -96,6 +96,17 @@ const FRAG = /* glsl */ `
   float hash(vec3 p) {
     return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453);
   }
+  float shash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+  float snoise(vec2 p) {
+    vec2 i = floor(p), f = fract(p);
+    vec2 w = f * f * (3.0 - 2.0 * f);
+    return mix(mix(shash(i), shash(i + vec2(1.0, 0.0)), w.x), mix(shash(i + vec2(0.0, 1.0)), shash(i + vec2(1.0, 1.0)), w.x), w.y);
+  }
+  float sfbm(vec2 p) {
+    float a = 0.5, s = 0.0;
+    for (int i = 0; i < 4; i++) { s += a * snoise(p); p = p * 2.02 + vec2(1.7, 9.2); a *= 0.5; }
+    return s;
+  }
 
   void main() {
     vec3 d = normalize(vDir);
@@ -217,32 +228,45 @@ const FRAG = /* glsl */ `
       float dx = (x - bx - wander);
       dx = mod(dx + 3.14159265, 6.2831853) - 3.14159265;
       float dist = abs(dx) * cos(e);
-      float span = step(0.0, elev) * step(elev, 0.75);
-      float core = exp(-dist * dist * 400000.0) * span;
-      float glow = exp(-dist * dist * 900.0) * span * 0.35;
-      // A fork, from a third of the way down, angling off.
-      float fe = 0.5 - e;
-      float fdx = mod(x - (bx + wander + fe * 0.35) + 3.14159265, 6.2831853) - 3.14159265;
-      float fork = exp(-pow(fdx * cos(e), 2.0) * 400000.0) * step(0.08, elev) * step(elev, 0.5) * 0.7;
+      float span = step(0.0, elev) * step(elev, 0.95);
+      float core = exp(-dist * dist * 60000.0) * span;
+      float glow = exp(-dist * dist * 500.0) * span * 0.45;
+      // Two forks splitting off as it comes down, angling away either side.
+      float fe1 = 0.55 - e;
+      float f1 = mod(x - (bx + wander + fe1 * 0.45) + 3.14159265, 6.2831853) - 3.14159265;
+      float fork1 = exp(-pow(f1 * cos(e), 2.0) * 90000.0) * step(0.06, elev) * step(elev, 0.55);
+      float fe2 = 0.32 - e;
+      float f2 = mod(x - (bx + wander - fe2 * 0.5) + 3.14159265, 6.2831853) - 3.14159265;
+      float fork2 = exp(-pow(f2 * cos(e), 2.0) * 90000.0) * step(0.03, elev) * step(elev, 0.32);
+      float fork = (fork1 + fork2) * 0.75;
       // The sky lit up round it.
-      float flash = exp(-pow(mod(x - bx + 3.14159265, 6.2831853) - 3.14159265, 2.0) * 3.0) * 0.12;
-      col += vec3(1.0, 0.32, 0.22) * ((core + fork) * 2.6 + glow + flash) * uBolt.z;
+      float flash = exp(-pow(mod(x - bx + 3.14159265, 6.2831853) - 3.14159265, 2.0) * 3.0) * 0.16;
+      col += vec3(1.0, 0.35, 0.25) * ((core + fork) * 3.2 + glow + flash) * uBolt.z;
     }
 
-    // T - A HEARTBEAT ACROSS THE SKY: a fine trace circling the horizon
-    // like an EKG - a flat line, then the sharp spike of a beat and its
-    // small after-wave - travelling slowly round. Thin and quiet: a
-    // detail you find, not a glare.
+    // T - A STORM ON THE HORIZON: banks of cloud swirling slowly along
+    // it, lit from within in blue and cyan the way the aurora glows -
+    // brightest low down, thinning and darkening upward, and drifting
+    // round as they churn.
     if (uWave > 0.001) {
-      float ph = fract(u * 14.0 - uTime * 0.06);
-      float beat = exp(-pow((ph - 0.50) * 70.0, 2.0)) * 0.055
-                 - exp(-pow((ph - 0.53) * 60.0, 2.0)) * 0.02
-                 + exp(-pow((ph - 0.68) * 16.0, 2.0)) * 0.012;
-      float w = 0.24 + beat;
-      float dist = abs(elev - w);
-      float line = exp(-dist * dist * 160000.0);
-      float halo = exp(-dist * dist * 9000.0) * 0.06;
-      col += vec3(0.3, 0.9, 1.0) * (line * 0.55 + halo) * uWave;
+      float x = u * 6.2831853;
+      float e = elev;
+      // Domain-warped noise: the warp is what makes it swirl.
+      vec2 q = vec2(x * 3.0 - uTime * 0.03, e * 9.0);
+      vec2 warp = vec2(sfbm(q + vec2(0.0, uTime * 0.02)), sfbm(q + vec2(5.2, 1.3) - uTime * 0.015));
+      float cloud = sfbm(q + 2.2 * warp + vec2(uTime * 0.01, 0.0));
+      // Where the bank sits: from just under the horizon to a third of
+      // the way up, densest low.
+      float band = smoothstep(-0.04, 0.05, e) * (1.0 - smoothstep(0.12, 0.42, e));
+      float dense = smoothstep(0.42, 0.75, cloud) * band;
+      // Lit from within: a glow along the folds, brighter where the cloud
+      // is thick, flickering now and then like distant sheet lightning.
+      float folds = smoothstep(0.55, 0.62, cloud) - smoothstep(0.62, 0.72, cloud);
+      float flick = 0.85 + 0.15 * sin(uTime * 0.7 + warp.x * 6.0);
+      vec3 deep = vec3(0.03, 0.06, 0.16);
+      vec3 glowC = mix(vec3(0.15, 0.45, 1.0), vec3(0.35, 0.95, 1.0), warp.y);
+      col = mix(col, deep, dense * 0.85 * uWave);
+      col += glowC * (dense * 0.22 + folds * band * 0.5) * flick * uWave;
     }
     gl_FragColor = vec4(col, 1.0);
   }
@@ -337,7 +361,7 @@ export function SkyDome({
     const now = clock.elapsedTime;
     if (st > 0.05 && now > nextStrike.current) {
       strikeAt.current = now;
-      nextStrike.current = now + 2.5 + Math.random() * 4;
+      nextStrike.current = now + 1.5 + Math.random() * 2.5;
       bolt.x = Math.random();
       bolt.y = Math.random() * 100;
     }
