@@ -71,37 +71,63 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
       <div className="sticky-under-header no-glass -mx-4 -mt-8 border-b border-navy-600 bg-navy-850 px-4 py-2 xl:-mx-8 xl:px-8">
         <div className="mx-auto flex max-w-5xl items-center justify-center gap-3 text-sm">
           <span className="text-balance">
-            <b className="font-semibold text-storytelling">Starts {cohort.startShort}</b>
-            <span className="text-ink-muted"> · 20 spots · from {FROM_LABEL}</span>
+            <b className="font-semibold text-storytelling">
+              Starts {cohort.startShort}
+            </b>
+            <span className="text-ink-muted">
+              {" "}
+              · 20 spots · from {FROM_LABEL}
+            </span>
           </span>
-          <Link href="#pricing" data-track="strip" className="shrink-0 rounded-full bg-figurative px-3 py-1 text-xs font-bold text-navy-950">
+          <Link
+            href="#pricing"
+            data-track="strip"
+            className="shrink-0 rounded-full bg-figurative px-3 py-1 text-xs font-bold text-navy-950"
+          >
             Join
           </Link>
         </div>
       </div>
 
       <div className="flex flex-col gap-16 pb-8 pt-4">
-        {/* THE HERO: the promise, Tariq and who he is, the course in a
-            line, one result, and the door - price and guarantee on it. */}
-        <section className="flex flex-col items-center gap-4 text-center">
-          {/* Phone: the promise, then the film. Laptop: side by side - the
-              film on the left, the lion and the promise on the right - so
-              all of it is on the first screen. */}
-          <div className="flex w-full max-w-5xl flex-col items-center gap-4 lg:grid lg:grid-cols-[1.2fr_1fr] lg:items-center lg:gap-10">
-            <div className="flex flex-col items-center gap-4">
-              <div className="flex w-full max-w-xs flex-col items-center">
-                <HeroLion className="h-28 w-auto sm:h-36" />
-                <Soundwave variant="hero" className="-mt-2 h-10 w-full sm:h-12" />
-              </div>
-              <h1 className="flex flex-col items-center gap-1 tracking-tight">
-                <span className="text-3xl font-semibold text-balance sm:text-4xl">Become A Natural, Confident Speaker On Video</span>
-                <span className="text-base font-medium text-ink-muted text-balance sm:text-xl">
-                  Overcome Shyness, Remove Filler Words, And Tell Your Story More Powerfully
-                </span>
-                <span className="neon-underline mt-2 text-xl font-bold text-ink sm:text-2xl">In Minutes, Not Months!</span>
-              </h1>
+        {/* THE HERO, the first screen: the promise across the top with
+            what's in the course under it, then Tariq's film beside the lion
+            and the how. Phone: lion, promise, how, film - stacked. */}
+        <section className="flex flex-col items-center text-center lg:pt-6">
+          <div className="grid w-full max-w-6xl justify-items-center gap-4 lg:grid-cols-[1.75fr_1fr] lg:gap-x-10 lg:gap-y-3">
+            <div className="flex w-full max-w-xs flex-col items-center lg:col-start-2 lg:row-start-2 lg:self-end">
+              <HeroLion className="h-28 w-auto sm:h-36" />
+              <Soundwave variant="hero" className="-mt-2 h-10 w-full sm:h-12" />
             </div>
-            <div className="w-full max-w-3xl lg:order-first lg:max-w-none">
+            <div className="flex flex-col items-center gap-2 lg:col-span-2 lg:row-start-1 lg:mb-5">
+              <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl lg:text-5xl">
+                Become A Natural, Confident Speaker On Video
+              </h1>
+              <p className="flex flex-wrap justify-center gap-x-1.5 text-xs font-semibold uppercase tracking-wider text-ink-muted sm:text-sm">
+                {[
+                  "83 Lessons",
+                  "25 Challenges",
+                  "8 Colors",
+                  "An AI Coach",
+                  "6 Weeks",
+                ].map((fact, i) => (
+                  <span key={fact} className="whitespace-nowrap">
+                    {fact}
+                    {i < 4 && <span className="text-ink-faint"> ·</span>}
+                  </span>
+                ))}
+              </p>
+            </div>
+            <div className="flex flex-col items-center gap-1 lg:col-start-2 lg:row-start-3 lg:self-start">
+              <p className="text-base font-medium text-ink-muted text-balance sm:text-xl">
+                Overcome Shyness, Remove Filler Words, And Tell Your Story More
+                Powerfully
+              </p>
+              <p className="neon-underline mt-2 text-xl font-bold tracking-tight text-ink sm:text-2xl">
+                In Minutes, Not Months!
+              </p>
+            </div>
+            <div className="w-full max-w-3xl lg:col-start-1 lg:row-span-2 lg:row-start-2 lg:max-w-none">
               <div className="overflow-hidden rounded-2xl border border-navy-600 shadow-2xl shadow-navy-950/80">
                 <LazyVimeoPlayer
                   vimeoId="1082011912"
@@ -114,64 +140,81 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
                 <b className="font-semibold text-ink">Tariq EQ Amawi</b>
                 <span className="text-ink-muted">
                   {" "}
-                  <span className="text-ink-faint">·</span> TEDx speaker <span className="text-ink-faint">·</span> Slam poetry
-                  winner <span className="text-ink-faint">·</span> National writing winner
+                  <span className="text-ink-faint">·</span> TEDx speaker{" "}
+                  <span className="text-ink-faint">·</span> Slam poetry winner{" "}
+                  <span className="text-ink-faint">·</span> National writing
+                  winner
                 </span>
               </p>
             </div>
           </div>
-          <p className="text-sm font-semibold text-ink text-balance">
-            83 Lessons <span className="text-ink-faint">·</span> 25 Challenges{" "}
-            <span className="text-ink-faint">·</span> 8 Colors <span className="text-ink-faint">·</span> An AI Coach{" "}
-            <span className="text-ink-faint">·</span> 6 Weeks
-          </p>
-          {/* One result, before anything else is asked of them. */}
-          <figure className="max-w-md rounded-2xl border border-navy-600 bg-navy-900/60 px-5 py-4">
-            <blockquote className="text-base font-medium leading-snug text-ink text-balance">
-              &ldquo;In only week 2 I already learned how to stop the &lsquo;um&rsquo;, and the value that Tariq has been
-              dropping is paradigm-shifting.&rdquo;
-            </blockquote>
-            <figcaption className="mt-2 text-xs font-semibold text-ink-muted">Sharon Ho</figcaption>
-          </figure>
-          <div data-track="hero">
-            <JoinCta label={`Join Speak Better · from ${FROM_LABEL}`} seal sealSize={96} />
+        </section>
+
+        {/* WHO IT'S FOR beside one result and the door. Phone: the result
+            and the door come first, straight after the film. */}
+        <section className="mx-auto grid w-full max-w-6xl items-center gap-10 max-lg:-mt-8 lg:grid-cols-[1.3fr_1fr] lg:gap-12">
+          <div className="flex flex-col items-center gap-5 text-center lg:col-start-2 lg:row-start-1">
+            {/* One result, before anything else is asked of them. */}
+            <figure className="max-w-md rounded-2xl border border-navy-600 bg-navy-900/60 px-5 py-4">
+              <blockquote className="text-base font-medium leading-snug text-ink text-balance">
+                &ldquo;In only week 2 I already learned how to stop the
+                &lsquo;um&rsquo;, and the value that Tariq has been dropping is
+                paradigm-shifting.&rdquo;
+              </blockquote>
+              <figcaption className="mt-2 text-xs font-semibold text-ink-muted">
+                Sharon Ho
+              </figcaption>
+            </figure>
+            <div data-track="hero">
+              <JoinCta
+                label={`Join Speak Better · from ${FROM_LABEL}`}
+                seal
+                sealSize={96}
+              />
+            </div>
+          </div>
+          <div className="flex flex-col items-center gap-5 lg:col-start-1 lg:row-start-1">
+            <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+              This is for you if you&hellip;
+            </h2>
+            <ul className="grid w-full max-w-2xl gap-2.5 text-left sm:grid-cols-2">
+              {[
+                "Get shy or nervous talking on camera",
+                "Use a lot of filler words - the ums and ahs",
+                "Lose your place mid-sentence",
+                "Find talking to a camera or phone unnatural",
+                "Freeze up the moment the camera is rolling",
+                "Ramble and go off on tangents",
+                "Want to talk about your product or service without sounding salesy",
+                "Want the confidence to go live on your socials",
+                "Want to tell your stories more powerfully",
+              ].map((line) => (
+                <li
+                  key={line}
+                  className="flex items-start gap-3 rounded-xl sm:last:odd:col-span-2 border border-navy-600 bg-navy-900/50 px-4 py-3 text-sm text-ink"
+                >
+                  <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-mindset/15 text-mindset">
+                    <CheckIcon className="size-3" />
+                  </span>
+                  <span className="text-pretty">{line}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         </section>
 
-        {/* WHO IT'S FOR: the moments it fixes, and the people it's for -
-            so a visitor can find themselves in it before anything else. */}
-        <section className="flex flex-col items-center gap-5">
-          <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">This is for you if you&hellip;</h2>
-          <ul className="grid w-full max-w-2xl gap-2.5 text-left sm:grid-cols-2">
-            {[
-              "Get shy or nervous talking on camera",
-              "Use a lot of filler words - the ums and ahs",
-              "Lose your place mid-sentence",
-              "Find talking to a camera or phone unnatural",
-              "Freeze up the moment the camera is rolling",
-              "Ramble and go off on tangents",
-              "Want to talk about your product or service without sounding salesy",
-              "Want the confidence to go live on your socials",
-              "Want to tell your stories more powerfully",
-            ].map((line) => (
-              <li key={line} className="flex items-start gap-3 rounded-xl border border-navy-600 bg-navy-900/50 px-4 py-3 text-sm text-ink">
-                <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-mindset/15 text-mindset">
-                  <CheckIcon className="size-3" />
-                </span>
-                <span className="text-pretty">{line}</span>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-4 flex flex-col items-center gap-4">
-            <h3 className="text-xl font-semibold tracking-tight text-ink-muted sm:text-2xl">This is made for</h3>
+        {/* And the people it's made for. */}
+        <section className="flex flex-col items-center">
+          <div className="flex flex-col items-center gap-4">
+            <h3 className="text-xl font-semibold tracking-tight text-ink-muted sm:text-2xl">
+              This is made for
+            </h3>
             <ul className="flex max-w-3xl flex-wrap justify-center gap-3">
               {[
-                ["Influencers", "influencer"],
-                ["Authors", "author"],
                 ["Entrepreneurs", "entrepreneur"],
-                ["Coaches", "coach"],
-                ["Creators", "creator"],
                 ["Founders", "founder"],
+                ["Coaches", "coach"],
+                ["Influencers", "influencer"],
                 ["Teachers", "teacher"],
               ].map(([who, pic]) => (
                 <li
@@ -185,7 +228,9 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
                     height={48}
                     className="size-11 rounded-full object-cover sm:size-12"
                   />
-                  <span className="text-lg font-bold tracking-tight text-ink sm:text-xl">{who}</span>
+                  <span className="text-lg font-bold tracking-tight text-ink sm:text-xl">
+                    {who}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -206,15 +251,29 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
 
         {/* The app on film: a lesson, and the deck - a full spread dealt. */}
         <section className="flex flex-col items-center gap-5">
-          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">See the app in action</h2>
+          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            See the app in action
+          </h2>
           <div className="-mx-4 flex w-[calc(100%+2rem)] snap-x snap-mandatory justify-start gap-5 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:w-full sm:justify-center sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden">
             {[
-              { src: "/film/landing-lesson", label: "A lesson - the video, its key ideas, every lesson in the color" },
-              { src: "/film/landing-deck", label: "The deck - deal a full spread: one card of every color, the recipe for a talk" },
+              {
+                src: "/film/landing-lesson",
+                label:
+                  "A lesson - the video, its key ideas, every lesson in the color",
+              },
+              {
+                src: "/film/landing-deck",
+                label:
+                  "The deck - deal a full spread: one card of every color, the recipe for a talk",
+              },
             ].map((f) => (
               <div key={f.src} className="w-56 shrink-0 snap-center">
                 <Phone label={f.label}>
-                  <PhoneFilm src={`${f.src}.mp4`} poster={`${f.src}.jpg`} label={f.label} />
+                  <PhoneFilm
+                    src={`${f.src}.mp4`}
+                    poster={`${f.src}.jpg`}
+                    label={f.label}
+                  />
                 </Phone>
               </div>
             ))}
@@ -226,12 +285,18 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
         <section className="flex w-full flex-col items-center gap-3">
           <CoachDemo />
           <p className="max-w-md text-center text-sm text-ink-muted text-balance">
-            And between takes, ask Coach anything about your speaking - he knows your record. (Complete and VIP.)
+            And between takes, ask Coach anything about your speaking - he knows
+            your record. (Complete and VIP.)
           </p>
           {/* What his reviews fill in, take by take. */}
           <div className="mt-6 flex flex-col items-center gap-3 text-center">
-            <h3 className="text-xl font-semibold tracking-tight">Your Speaking Spectrum</h3>
-            <p className="max-w-md text-sm text-ink-muted text-balance">Eight color-coded skills, each lighting up as Coach sees you use it.</p>
+            <h3 className="text-xl font-semibold tracking-tight">
+              Your Speaking Spectrum
+            </h3>
+            <p className="max-w-md text-sm text-ink-muted text-balance">
+              Eight color-coded skills, each lighting up as Coach sees you use
+              it.
+            </p>
             <SpectrumDemo />
           </div>
         </section>
@@ -239,13 +304,25 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
         {/* THE COHORT: Tariq, live, every week - the human half. */}
         <section className="flex flex-col items-center gap-5 text-center">
           <div className="flex flex-col items-center gap-2">
-            <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">6 weekly live sessions</h2>
-            <p className="text-sm text-ink-muted">With Tariq and your cohort · Saturdays, 11 AM CST · recorded if you miss one</p>
+            <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+              6 weekly live sessions
+            </h2>
+            <p className="text-sm text-ink-muted">
+              With Tariq and your cohort · Saturdays, 11 AM CST · recorded if
+              you miss one
+            </p>
           </div>
           <LiveRoom />
           <ul className="flex flex-wrap justify-center gap-2 text-sm font-semibold">
-            {["Hot seat coaching", "Personal refinement", "Support along the way"].map((x) => (
-              <li key={x} className="rounded-full border border-navy-600 bg-navy-900/60 px-4 py-1.5 text-ink">
+            {[
+              "Hot seat coaching",
+              "Personal refinement",
+              "Support along the way",
+            ].map((x) => (
+              <li
+                key={x}
+                className="rounded-full border border-navy-600 bg-navy-900/60 px-4 py-1.5 text-ink"
+              >
                 {x}
               </li>
             ))}
@@ -262,8 +339,9 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
             25 challenges. Take them as a course, or as a ride.
           </h2>
           <p className="max-w-md text-sm text-ink-muted text-balance">
-            Start on the map, like a normal course. Complete challenges to unlock 3D, then 4D - the full roller-coaster
-            ride through the S.T.O.R.Y. road.
+            Start on the map, like a normal course. Complete challenges to
+            unlock 3D, then 4D - the full roller-coaster ride through the
+            S.T.O.R.Y. road.
           </p>
           <div className="-mx-4 flex w-[calc(100%+2rem)] snap-x snap-mandatory justify-start gap-5 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:w-full sm:justify-center sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden">
             {[
@@ -273,13 +351,19 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
             ].map((f) => (
               <div key={f.src} className="w-48 shrink-0 snap-center">
                 <Phone label={f.label}>
-                  <PhoneFilm src={`${f.src}.mp4`} poster={`${f.src}.jpg`} label={f.label} />
+                  <PhoneFilm
+                    src={`${f.src}.mp4`}
+                    poster={`${f.src}.jpg`}
+                    label={f.label}
+                  />
                 </Phone>
               </div>
             ))}
           </div>
           {/* What you earn on the way - how 3D and 4D open, among the rest. */}
-          <p className="mt-2 text-xs font-bold uppercase tracking-[0.18em] text-ink-faint">What you earn as you go</p>
+          <p className="mt-2 text-xs font-bold uppercase tracking-[0.18em] text-ink-faint">
+            What you earn as you go
+          </p>
           <ul className="flex max-w-2xl flex-wrap justify-center gap-2 text-sm">
             {[
               ["XP", "for every lesson and take"],
@@ -288,7 +372,10 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
               ["Streaks", "up to double XP"],
               ["3D and 4D", "unlocked by your progress"],
             ].map(([b, rest]) => (
-              <li key={b} className="rounded-full border border-navy-600 bg-navy-900/60 px-3.5 py-1.5 text-ink-muted">
+              <li
+                key={b}
+                className="rounded-full border border-navy-600 bg-navy-900/60 px-3.5 py-1.5 text-ink-muted"
+              >
                 <b className="font-semibold text-ink">{b}</b> - {rest}
               </li>
             ))}
@@ -298,7 +385,9 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
         {/* The lessons, as the app lists them. */}
         <SectionMark id="lessons" />
         <section className="flex flex-col items-center gap-4 text-center">
-          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">83 lessons, 1-2 minutes each</h2>
+          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            83 lessons, 1-2 minutes each
+          </h2>
           <LessonStack />
         </section>
 
@@ -306,7 +395,9 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
 
         {/* The five questions people ask, folded. */}
         <section className="flex flex-col items-center gap-4">
-          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Questions</h2>
+          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            Questions
+          </h2>
           <ul className="flex w-full max-w-xl flex-col gap-2">
             {FAQ.map((f) => (
               <li key={f.q}>
@@ -315,7 +406,9 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
                     {f.q}
                     <ChevronDownIcon className="size-4 shrink-0 text-ink-faint transition-transform group-open:rotate-180" />
                   </summary>
-                  <p className="px-4 pb-4 text-sm text-ink-muted text-pretty">{f.a}</p>
+                  <p className="px-4 pb-4 text-sm text-ink-muted text-pretty">
+                    {f.a}
+                  </p>
                 </details>
               </li>
             ))}
@@ -324,14 +417,21 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
 
         {/* The prices. */}
         <SectionMark id="pricing" />
-        <section className="flex flex-col items-center gap-5" data-track="pricing">
+        <section
+          className="flex flex-col items-center gap-5"
+          data-track="pricing"
+        >
           <div className="flex flex-col items-center gap-2 text-center">
             <span className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-figurative">
               <span className="size-2 animate-pulse rounded-full bg-figurative" />
               {foundingCohort.headline}
             </span>
-            <h2 className="text-2xl font-semibold tracking-tight text-balance">Three tiers, by how much support you want</h2>
-            <p className="text-xs text-ink-muted">14-day money-back guarantee, for any reason.</p>
+            <h2 className="text-2xl font-semibold tracking-tight text-balance">
+              Three tiers, by how much support you want
+            </h2>
+            <p className="text-xs text-ink-muted">
+              14-day money-back guarantee, for any reason.
+            </p>
           </div>
           <div className="w-full">
             <Pricing />
@@ -355,7 +455,9 @@ function LiveRoom() {
         <span className="size-2.5 rounded-full bg-[#ff5f57]" />
         <span className="size-2.5 rounded-full bg-[#febc2e]" />
         <span className="size-2.5 rounded-full bg-[#28c840]" />
-        <span className="ml-2 text-[0.65rem] font-semibold text-ink-faint">Speak Better · Live session</span>
+        <span className="ml-2 text-[0.65rem] font-semibold text-ink-faint">
+          Speak Better · Live session
+        </span>
         <span className="ml-auto flex items-center gap-1 rounded bg-advanced/90 px-1.5 py-0.5 text-[0.55rem] font-bold uppercase text-white">
           <span className="size-1.5 rounded-full bg-white" />
           Live
@@ -363,16 +465,44 @@ function LiveRoom() {
       </div>
       <div className="grid gap-1 p-1 sm:grid-cols-[2fr_3fr]">
         <div className="relative aspect-video overflow-hidden rounded-md sm:aspect-auto">
-          <Image src="/thumbs/1082011047.jpg" alt="Tariq, leading a live session" fill sizes="(min-width: 640px) 300px, 100vw" className="object-cover" />
-          <span className="absolute bottom-1.5 left-1.5 rounded bg-black/60 px-1.5 py-0.5 text-[0.6rem] font-semibold text-white">Tariq</span>
+          <Image
+            src="/thumbs/1082011047.jpg"
+            alt="Tariq, leading a live session"
+            fill
+            sizes="(min-width: 640px) 300px, 100vw"
+            className="object-cover"
+          />
+          <span className="absolute bottom-1.5 left-1.5 rounded bg-black/60 px-1.5 py-0.5 text-[0.6rem] font-semibold text-white">
+            Tariq
+          </span>
           <span className="absolute inset-0 rounded-md ring-2 ring-mindset/80" />
         </div>
         {/* The cohort, eight of them, each in their own tile. */}
         <div className="grid grid-cols-4 gap-1">
-          {["Amara", "Paul", "Mei", "Tom", "Sofia", "Marcus", "Hannah", "Ravi"].map((name, i) => (
-            <div key={name} className="relative aspect-[7/8] overflow-hidden rounded-md">
-              <Image src={`/landing/cohort-${i + 1}.webp`} alt="" fill sizes="(min-width: 640px) 110px, 25vw" className="object-cover" />
-              <span className="absolute bottom-1 left-1 rounded bg-black/60 px-1 py-0.5 text-[0.5rem] font-semibold text-white">{name}</span>
+          {[
+            "Amara",
+            "Paul",
+            "Mei",
+            "Tom",
+            "Sofia",
+            "Marcus",
+            "Hannah",
+            "Ravi",
+          ].map((name, i) => (
+            <div
+              key={name}
+              className="relative aspect-[7/8] overflow-hidden rounded-md"
+            >
+              <Image
+                src={`/landing/cohort-${i + 1}.webp`}
+                alt=""
+                fill
+                sizes="(min-width: 640px) 110px, 25vw"
+                className="object-cover"
+              />
+              <span className="absolute bottom-1 left-1 rounded bg-black/60 px-1 py-0.5 text-[0.5rem] font-semibold text-white">
+                {name}
+              </span>
             </div>
           ))}
         </div>
@@ -381,7 +511,9 @@ function LiveRoom() {
         <span className="rounded-full bg-white/5 px-2.5 py-1">Mic</span>
         <span className="rounded-full bg-white/5 px-2.5 py-1">Camera</span>
         <span className="rounded-full bg-white/5 px-2.5 py-1">Raise hand</span>
-        <span className="rounded-full bg-advanced/80 px-2.5 py-1 text-white">Leave</span>
+        <span className="rounded-full bg-advanced/80 px-2.5 py-1 text-white">
+          Leave
+        </span>
       </div>
     </div>
   );
