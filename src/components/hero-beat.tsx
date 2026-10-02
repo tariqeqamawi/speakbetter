@@ -22,8 +22,8 @@ const BEATS = [
     line: "You didn't learn to drive by buying a course.",
   },
   {
-    image: "/hero/lecture-v3.jpg",
-    alt: "Over the shoulder on the sofa, a handful of popcorn on its way up, a speaker in close-up filling the big TV",
+    image: "/hero/lecture-v4.jpg",
+    alt: "Two friends on the sofa, seen from behind, sharing a bowl of popcorn while a speaker on a spotlit stage fills the TV",
     line: "You won't learn to speak just by watching videos.",
     punch: "You have to actually practice.",
   },

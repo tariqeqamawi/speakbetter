@@ -28,6 +28,7 @@ export const LANDING_V_SECTIONS = [
   { id: "made-for", label: "Who it's made for" },
   { id: "try", label: "Try it free" },
   { id: "how", label: "How it works" },
+  { id: "app", label: "The app" },
   { id: "coach", label: "Meet Coach" },
   { id: "live", label: "Live sessions" },
   { id: "challenges", label: "The challenges" },

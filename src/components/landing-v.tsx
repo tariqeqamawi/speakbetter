@@ -271,36 +271,66 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
           <HowItWorksSection />
         </div>
 
-        {/* The app on film: a lesson, and the deck - a full spread dealt. */}
-        <section className="flex flex-col items-center gap-5">
-          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            See the app in action
-          </h2>
-          <div className="-mx-4 flex w-[calc(100%+2rem)] snap-x snap-mandatory justify-start gap-5 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:w-full sm:justify-center sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden">
-            {[
-              {
-                src: "/film/landing-lesson",
-                label:
-                  "A lesson - the video, its key ideas, every lesson in the color",
-              },
-              {
-                src: "/film/landing-deck",
-                label:
-                  "The deck - deal a full spread: one card of every color, the recipe for a talk",
-              },
-            ].map((f) => (
-              <div key={f.src} className="w-56 shrink-0 snap-center">
-                <Phone label={f.label}>
-                  <PhoneFilm
-                    src={`${f.src}.mp4`}
-                    poster={`${f.src}.jpg`}
-                    label={f.label}
-                  />
-                </Phone>
-              </div>
-            ))}
-          </div>
-        </section>
+        {/* The app on film, four things at a glance: the lessons, the
+            deck of cards, the dashboard and a challenge. */}
+        <div
+          id="app"
+          data-landing-section
+          className="fold fold-marked flex flex-col gap-10"
+        >
+          <SectionMark id="app" sections={LANDING_V_SECTIONS} anchor={false} />
+          <section className="flex flex-col items-center gap-6">
+            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+              See the app in action
+            </h2>
+            <div className="-mx-4 flex w-[calc(100%+2rem)] snap-x snap-mandatory justify-start gap-6 overflow-x-auto px-4 pb-2 [scrollbar-width:none] lg:mx-0 lg:w-full lg:justify-center lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden">
+              {[
+                {
+                  src: "/film/landing-lesson",
+                  title: "83 lessons",
+                  line: "1-2 minutes each, in eight colors",
+                },
+                {
+                  src: "/film/landing-deck",
+                  title: "Digital flashcards",
+                  line: "Deal a spread - the recipe for a talk",
+                },
+                {
+                  src: "/film/tour-dashboard",
+                  title: "Gamified dashboard",
+                  line: "XP, ranks, streaks and trophies",
+                },
+                {
+                  src: "/film/tour-challenge",
+                  title: "Interactive challenges",
+                  line: "Record a take - Coach reviews it",
+                },
+              ].map((f) => (
+                <div key={f.src} className="w-44 shrink-0 snap-center xl:w-48">
+                  <Phone
+                    label={`${f.title} - ${f.line}`}
+                    caption={
+                      <span className="flex flex-col items-center gap-0.5 text-center">
+                        <b className="text-base font-semibold text-ink">
+                          {f.title}
+                        </b>
+                        <span className="text-sm text-ink-muted text-balance">
+                          {f.line}
+                        </span>
+                      </span>
+                    }
+                  >
+                    <PhoneFilm
+                      src={`${f.src}.mp4`}
+                      poster={`${f.src}.jpg`}
+                      label={`${f.title} - ${f.line}`}
+                    />
+                  </Phone>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
 
         {/* Coach, a review of his - and that you can ask him anything. */}
         <SectionMark id="coach" sections={LANDING_V_SECTIONS} />
@@ -328,7 +358,7 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
         <section className="flex flex-col items-center gap-5 text-center">
           <div className="flex flex-col items-center gap-2">
             <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
-              6 weekly live sessions
+              6 Weekly Live Sessions
             </h2>
             <p className="text-sm text-ink-muted">
               With Tariq and your cohort · Saturdays, 11 AM CST · recorded if
@@ -359,7 +389,7 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
         <SectionMark id="challenges" sections={LANDING_V_SECTIONS} />
         <section className="flex flex-col items-center gap-4 text-center">
           <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
-            25 challenges. Take them as a course, or as a ride.
+            25 Challenges. Take Them As A Course, Or As A Ride.
           </h2>
           <p className="max-w-md text-sm text-ink-muted text-balance">
             Start on the map, like a normal course. Complete challenges to

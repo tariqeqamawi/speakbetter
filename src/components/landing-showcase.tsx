@@ -17,28 +17,77 @@ import { ChevronDownIcon, ListenIcon, TrophyIcon } from "@/components/icons";
 // challenges among them.
 
 /** A phone outline around whatever it's given. */
-export function Phone({ children, label }: { children: React.ReactNode; label: string }) {
+export function Phone({
+  children,
+  label,
+  caption,
+}: {
+  children: React.ReactNode;
+  label: string;
+  /** Shown under the phone in place of the label, where it needs more. */
+  caption?: React.ReactNode;
+}) {
   return (
     <figure className="flex w-52 shrink-0 flex-col items-center gap-2 sm:w-auto">
       <div className="relative w-full rounded-[2.2rem] border-4 border-navy-600 bg-navy-950 p-1.5 shadow-2xl shadow-navy-950">
         <span className="absolute left-1/2 top-3 z-10 h-1.5 w-14 -translate-x-1/2 rounded-full bg-navy-700" />
-        <div className="relative aspect-[390/844] overflow-hidden rounded-[1.8rem] bg-navy-950">{children}</div>
+        <div className="relative aspect-[390/844] overflow-hidden rounded-[1.8rem] bg-navy-950">
+          {children}
+        </div>
       </div>
-      <figcaption className="text-xs font-semibold text-ink-muted">{label}</figcaption>
+      {caption ? (
+        <figcaption>{caption}</figcaption>
+      ) : (
+        <figcaption className="text-xs font-semibold text-ink-muted">
+          {label}
+        </figcaption>
+      )}
     </figure>
   );
 }
 
 /** The app's real pages on film, in the order a student meets them. */
 const FILMS = [
-  { src: "/film/tour-road3d-v2", label: "The challenges, in 3D", alt: "Travelling the S.T.O.R.Y. road in 3D" },
-  { src: "/film/tour-road2d", label: "Or as a map, in 2D", alt: "The same road as a map, scrolled" },
-  { src: "/film/tour-skills", label: "Skills, into a color", alt: "The skills dial, then a color's lessons" },
-  { src: "/film/tour-deck", label: "The card deck", alt: "Dealing a spread from the card deck" },
-  { src: "/film/tour-coach", label: "Ask Coach", alt: "Asking Coach a question" },
-  { src: "/film/tour-dashboard", label: "Your dashboard", alt: "The dashboard, tab by tab" },
-  { src: "/film/tour-community", label: "The community", alt: "The community's boards and rooms" },
-  { src: "/film/tour-today", label: "Today", alt: "The day's page: what to do next" },
+  {
+    src: "/film/tour-road3d-v2",
+    label: "The challenges, in 3D",
+    alt: "Travelling the S.T.O.R.Y. road in 3D",
+  },
+  {
+    src: "/film/tour-road2d",
+    label: "Or as a map, in 2D",
+    alt: "The same road as a map, scrolled",
+  },
+  {
+    src: "/film/tour-skills",
+    label: "Skills, into a color",
+    alt: "The skills dial, then a color's lessons",
+  },
+  {
+    src: "/film/tour-deck",
+    label: "The card deck",
+    alt: "Dealing a spread from the card deck",
+  },
+  {
+    src: "/film/tour-coach",
+    label: "Ask Coach",
+    alt: "Asking Coach a question",
+  },
+  {
+    src: "/film/tour-dashboard",
+    label: "Your dashboard",
+    alt: "The dashboard, tab by tab",
+  },
+  {
+    src: "/film/tour-community",
+    label: "The community",
+    alt: "The community's boards and rooms",
+  },
+  {
+    src: "/film/tour-today",
+    label: "Today",
+    alt: "The day's page: what to do next",
+  },
 ];
 
 export function HowItWorksSection() {
@@ -51,10 +100,12 @@ export function HowItWorksSection() {
         <HowItWorks />
         <ul className="flex flex-col items-center gap-1.5 text-sm text-ink-muted sm:flex-row sm:gap-6">
           <li className="flex items-center gap-2">
-            <TrophyIcon className="size-4 text-storytelling" />A pass pays by score - a better take is worth more.
+            <TrophyIcon className="size-4 text-storytelling" />A pass pays by
+            score - a better take is worth more.
           </li>
           <li className="flex items-center gap-2">
-            <ListenIcon className="size-4 text-advanced" />Every review is kept to read back, and to ask about.
+            <ListenIcon className="size-4 text-advanced" />
+            Every review is kept to read back, and to ask about.
           </li>
         </ul>
       </section>
@@ -70,18 +121,22 @@ export function HowItWorksSection() {
           {/* One line showing; the rest behind the arrow beside "record". */}
           <details className="group text-ink-muted">
             <summary className="inline cursor-pointer list-none text-balance [&::-webkit-details-marker]:hidden">
-              No studio, no crew, no fancy equipment. Simply prop up your phone and press record
+              No studio, no crew, no fancy equipment. Simply prop up your phone
+              and press record
               <ChevronDownIcon className="ml-1 inline size-4 align-[-0.15em] text-ink-faint transition-transform group-open:rotate-180" />
             </summary>
             <p className="pt-2 text-sm text-balance">
-              Record through the Speak Better Selfie feature. Talk for a minute or two - then Coach watches it and gives
-              you expert feedback.
+              Record through the Speak Better Selfie feature. Talk for a minute
+              or two - then Coach watches it and gives you expert feedback.
             </p>
           </details>
         </div>
         <div className="-mx-4 flex w-[calc(100%+2rem)] gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:w-full sm:max-w-4xl sm:grid-cols-4 sm:overflow-visible sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {SELFIE_TAKES.map((t) => (
-            <div key={t.src} className="w-60 shrink-0 rounded-[2.2rem] border-4 border-navy-600 bg-navy-950 p-1.5 shadow-2xl shadow-navy-950 sm:w-auto">
+            <div
+              key={t.src}
+              className="w-60 shrink-0 rounded-[2.2rem] border-4 border-navy-600 bg-navy-950 p-1.5 shadow-2xl shadow-navy-950 sm:w-auto"
+            >
               <SelfieTake take={t} />
             </div>
           ))}
@@ -100,15 +155,22 @@ export function WhatsInTheApp() {
 
       {/* The app in action - short films of the real pages. */}
       <section className="flex flex-col items-center gap-4">
-        <h2 className="text-2xl font-semibold tracking-tight">See the app in action</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">
+          See the app in action
+        </h2>
         <p className="max-w-xl text-center text-ink-muted text-balance">
-          Your challenges as a 3D adventure or a 2D map, color-coded skills you can dial into, the card deck, Coach
-          on call, your gamified dashboard and the community - all in one place.
+          Your challenges as a 3D adventure or a 2D map, color-coded skills you
+          can dial into, the card deck, Coach on call, your gamified dashboard
+          and the community - all in one place.
         </p>
         <div className="-mx-4 flex w-[calc(100%+2rem)] gap-6 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:w-full sm:max-w-5xl sm:grid-cols-4 sm:overflow-visible sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {FILMS.map((f) => (
             <Phone key={f.src} label={f.label}>
-              <PhoneFilm src={`${f.src}.mp4`} poster={`${f.src}.jpg`} label={f.alt} />
+              <PhoneFilm
+                src={`${f.src}.mp4`}
+                poster={`${f.src}.jpg`}
+                label={f.alt}
+              />
             </Phone>
           ))}
         </div>
