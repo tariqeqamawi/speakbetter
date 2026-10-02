@@ -25,8 +25,8 @@ const geistMono = Geist_Mono({
 
 // The card a shared link opens into (iMessage, WhatsApp, socials): the
 // lion, the name, the waveform and the promise, 1200x630.
-const PREVIEW = { url: "/social/speak-better-preview-v4.png", width: 1200, height: 630, alt: "Speak Better - Become confident speaking on video, in minutes, not months." };
-const SHARE_LINE = "Become confident speaking on video, in minutes, not months.";
+const PREVIEW = { url: "/social/speak-better-preview-v5.png", width: 1200, height: 630, alt: "Speak Better - Speak naturally and confidently on video, in minutes, not months." };
+const SHARE_LINE = "Speak naturally and confidently on video, in minutes, not months.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://speakbetter.app"),
