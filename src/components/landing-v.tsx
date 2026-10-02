@@ -91,7 +91,7 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
         </div>
       </div>
 
-      <div className="flex flex-col gap-16 pb-8 pt-4">
+      <div className="app-glass flex flex-col gap-16 pb-8 pt-4">
         {/* THE HERO, the first screen: the promise across the top with
             what's in the course under it, then Tariq's film beside the lion
             and the how. Phone: lion, promise, how, film - stacked. */}
