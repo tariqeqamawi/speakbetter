@@ -19,6 +19,7 @@ import { proofOf, type Proof } from "@/data/testimonials";
 import { LionArtWhenNear } from "@/components/lion-mouth";
 import { CoachDemo } from "@/components/coach-demo";
 import { PerfectFor } from "@/components/perfect-for";
+import { FoldBackdrop } from "@/components/fold-backdrop";
 import { QuoteCycle } from "@/components/quote-cycle";
 import {
   LANDING_V_SECTIONS,
@@ -168,8 +169,13 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
         <div
           id="for-you"
           data-landing-section
-          className="fold fold-marked flex flex-col gap-10"
+          className="fold fold-marked relative isolate flex flex-col gap-10"
         >
+          {/* Faintly, behind it: people talking to their phones. */}
+          <FoldBackdrop
+            src="/film/bg-for-you.mp4"
+            poster="/film/bg-for-you.jpg"
+          />
           <SectionMark
             id="for-you"
             sections={LANDING_V_SECTIONS}
