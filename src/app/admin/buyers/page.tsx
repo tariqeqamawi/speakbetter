@@ -13,6 +13,23 @@ export const dynamic = "force-dynamic";
 
 const SITE = "https://speakbetter.app";
 
+function seat(name: string, tierName: string, link: string) {
+  const first = name.split(" ")[0] || "there";
+  return `Hi ${first},
+
+Here is the second Speak Better access link you paid for - for the person joining with you, on ${tierName}. Please forward this email to them; it's a separate seat with its own progress, so don't open it on your own phone.
+
+${link}
+
+For them: open the link on your phone and it opens Speak Better, already unlocked. To put it on your home screen:
+- iPhone: open the link in Safari, tap the Share button (the square with the arrow), then "Add to Home Screen", then "Add".
+- Android: open the link in Chrome, tap the menu (three dots), then "Add to Home screen" or "Install app".
+From then on, just tap the lion icon. We start together on ${cohort.startShort} - live sessions are Saturdays at 11 AM CST, recorded if you miss one.
+
+See you both inside,
+Tariq`;
+}
+
 function welcome(name: string, tierName: string, link: string) {
   const first = name.split(" ")[0] || "there";
   return `Hi ${first},
@@ -51,10 +68,12 @@ export default async function BuyersPage({ searchParams }: { searchParams: Promi
   const paid = sessions.data.filter(
     (s) => (s.payment_status === "paid" || s.payment_status === "no_payment_required") && tiers.some((t) => t.id === s.metadata?.plan),
   );
-  const seen = new Map<string, number>();
-  for (const s of paid) {
+  // A second purchase by the same email is a second seat (someone
+  // buying for a friend): it gets the forwarding email.
+  const firstByEmail = new Map<string, string>();
+  for (const s of [...paid].sort((a, b) => a.created - b.created)) {
     const e = (s.customer_details?.email ?? "").toLowerCase();
-    seen.set(e, (seen.get(e) ?? 0) + 1);
+    if (!firstByEmail.has(e)) firstByEmail.set(e, s.id);
   }
   // Every successful payment since the cohort went on sale, whatever
   // route it came by (payment links, invoices, the dashboard) - so a buyer
@@ -81,8 +100,10 @@ export default async function BuyersPage({ searchParams }: { searchParams: Promi
           const plan = s.metadata?.plan ?? "";
           const tierName = tiers.find((t) => t.id === plan)?.name ?? plan;
           const link = `${SITE}/access/${s.id}`;
-          const body = welcome(name, tierName, link);
-          const mailto = `mailto:${email}?subject=${encodeURIComponent("Welcome to Speak Better - your access link")}&body=${encodeURIComponent(body)}`;
+          const second = firstByEmail.get(email.toLowerCase()) !== s.id;
+          const body = second ? seat(name, tierName, link) : welcome(name, tierName, link);
+          const subject = second ? "Speak Better - the second access link, to forward" : "Welcome to Speak Better - your access link";
+          const mailto = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
           return (
             <li key={s.id} className="flex flex-col gap-3 rounded-2xl border border-navy-600 bg-navy-900/60 p-5">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -91,9 +112,10 @@ export default async function BuyersPage({ searchParams }: { searchParams: Promi
                   {new Date(s.created * 1000).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short", timeZone: "America/Chicago" })} CT
                 </span>
               </div>
-              {(seen.get(email.toLowerCase()) ?? 0) > 1 && (
-                <p className="rounded-lg border border-acting/60 bg-acting/10 px-3 py-2 text-sm font-semibold text-acting">
-                  Paid more than once - check in Stripe whether one should be refunded.
+              {second && (
+                <p className="rounded-lg border border-body-language/60 bg-body-language/10 px-3 py-2 text-sm font-semibold text-body-language">
+                  Second seat - bought by the same person for someone else. Its email asks them to forward the link; it opens as a
+                  separate student with its own progress.
                 </p>
               )}
               <p className="text-sm text-ink-muted">

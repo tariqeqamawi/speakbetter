@@ -31,6 +31,17 @@ export default async function AccessPage({ params }: { params: Promise<{ session
       if (s.payment_status === "paid" || s.payment_status === "no_payment_required") {
         plan = s.metadata?.plan ?? null;
         studentId = s.metadata?.studentId ?? null;
+        // One buyer paying for two people pays twice from the same
+        // device, so both purchases carry the same student. Only the
+        // first purchase is that student; any later one is a separate
+        // seat - a fresh student, so the two never share a record.
+        if (studentId) {
+          const others = await stripe().checkout.sessions.list({ limit: 100, status: "complete" });
+          const earlier = others.data.some(
+            (o) => o.id !== s.id && o.metadata?.studentId === studentId && o.created < s.created && o.payment_status !== "unpaid",
+          );
+          if (earlier) studentId = null;
+        }
       }
     } catch {
       // Not a session Stripe knows.
