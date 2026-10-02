@@ -36,6 +36,10 @@ export function Today() {
   const lastAttempt = state.attempts.at(-1);
   const passed = challenges.filter((c) => challengeProgress(c, state).passed).length;
   const meta = state.level ? levelMeta[state.level] : null;
+  // Challenge 1 is watched, not recorded: until it's done, "Start here"
+  // sends them to the Presence lessons rather than the camera.
+  const presenceFirst = challenges[0];
+  const presenceDone = challengeProgress(presenceFirst, state).passed;
 
   return (
     <div className="flex flex-col gap-8 pb-6 pt-1 lg:pt-6">
@@ -105,7 +109,26 @@ export function Today() {
 
       {/* Nothing behind them yet: one line saying where to start,
           rather than three zeroes and no instruction. */}
-      {state.attempts.length === 0 && (
+      {state.attempts.length === 0 && !presenceDone && (
+        <section className="flex flex-col items-start gap-3 rounded-2xl border border-mindset/40 bg-navy-800 p-5 shadow-[0_0_40px_-18px_var(--color-mindset)]">
+          <span className="text-[0.65rem] font-bold uppercase tracking-[0.3em] text-mindset">Start here</span>
+          <p className="text-lg font-semibold leading-snug text-ink text-balance">
+            Watch any five of the green Presence lessons - a minute or two each. That&apos;s your first challenge.
+          </p>
+          <p className="text-sm text-ink-muted">
+            Presence is confidence on camera, and everything else in the course stands on it. Then you record your
+            baseline, and Coach watches it.
+          </p>
+          <Link
+            href={`/challenges/${presenceFirst.slug}`}
+            className="inline-flex min-h-11 items-center gap-2 rounded-full bg-mindset px-5 text-sm font-bold text-navy-950 shadow-[0_0_22px_-6px_var(--color-mindset)] transition-opacity hover:opacity-95"
+          >
+            <TapIcon className="size-4" />
+            Start your first challenge
+          </Link>
+        </section>
+      )}
+      {state.attempts.length === 0 && presenceDone && (
         <section className="flex flex-col items-start gap-3 rounded-2xl border border-acting/40 bg-navy-800 p-5 shadow-[0_0_40px_-18px_var(--color-acting)]">
           <span className="text-[0.65rem] font-bold uppercase tracking-[0.3em] text-acting">Start here</span>
           <p className="text-lg font-semibold leading-snug text-ink text-balance">

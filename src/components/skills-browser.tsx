@@ -11,6 +11,7 @@ import { CategoryIcon } from "@/components/category-icons";
 import { DeckIcon } from "@/components/icons";
 import { useStore } from "@/lib/store";
 import { setSkillsView, useSkillsView, type SkillsView } from "@/lib/skills-view";
+import { useSkillsGate } from "@/components/skills-gate";
 
 // Skills, two ways: the dial, or the grid. A switch at the top flips
 // between them and stays where it is left (skills-view.ts).
@@ -37,6 +38,9 @@ function faceOf(cat: Category): string {
 
 export function SkillsBrowser({ children }: { children?: ReactNode }) {
   const view = useSkillsView();
+  // Before challenge 1 is done, Skills opens on Presence (skills-lock.ts).
+  const { blocked } = useSkillsGate();
+  if (blocked) return null;
   return (
     <div className="flex flex-col gap-3">
       {/* The section's note. (The Dial / Grid switch lives in the row

@@ -161,6 +161,22 @@ export function expectedSecondsFor(challenge: Pick<Challenge, "maxSeconds" | "ba
 export const challenges: Challenge[] = [
   // ── S - Start With Awareness ────────────────────────────────────────
   {
+    slug: "mindset-toolbox",
+    phase: "S",
+    title: "Watch Any 5 Presence Skills",
+    vimeoId: null,
+    passive: true,
+    watchCount: 5,
+    creditEarlier: true,
+    brief:
+      "The challenge you complete by watching: pick any five of the green Presence lessons in Skills. Everything else in the course stands on this foundation.",
+    criteria: ["Watch any 5 of the Presence lessons in Skills"],
+    targetSkills: ["mindset"],
+    // Every Presence lesson in the library, read from it - so a lesson
+    // moved in or out of Presence is picked up here too.
+    relatedLessonIds: lessonsInCategory("mindset").map((l) => l.vimeoId),
+  },
+  {
     slug: "speaking-baseline",
     phase: "S",
     baseline: true,
@@ -192,22 +208,6 @@ export const challenges: Challenge[] = [
     ],
     targetSkills: ["storytelling", "mindset"],
     relatedLessonIds: ["1081030429", "1081031495"],
-  },
-  {
-    slug: "mindset-toolbox",
-    phase: "S",
-    title: "Watch Any 5 Presence Skills",
-    vimeoId: null,
-    passive: true,
-    watchCount: 5,
-    creditEarlier: true,
-    brief:
-      "The challenge you complete by watching: pick any five of the green Presence lessons in Skills. Everything else in the course stands on this foundation.",
-    criteria: ["Watch any 5 of the Presence lessons in Skills"],
-    targetSkills: ["mindset"],
-    // Every Presence lesson in the library, read from it - so a lesson
-    // moved in or out of Presence is picked up here too.
-    relatedLessonIds: lessonsInCategory("mindset").map((l) => l.vimeoId),
   },
 
   // ── T - Train Your Instrument ───────────────────────────────────────

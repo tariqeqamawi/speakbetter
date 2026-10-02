@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { challengeBySlug, storyPhases } from "@/data/challenges";
+import { challengeBySlug, challenges, storyPhases } from "@/data/challenges";
 import { lessonByVimeoId } from "@/data/lessons";
 import { categoryById } from "@/data/categories";
 import { CategoryChip } from "@/components/category-chip";
@@ -33,6 +33,7 @@ const SLUG = "speaking-baseline";
 export function FirstChallenge() {
   const challenge = challengeBySlug.get(SLUG)!;
   const phase = storyPhases.find((p) => p.id === challenge.phase)!;
+  const number = challenges.indexOf(challenge) + 1;
   const warmUp = challenge.relatedLessonIds.map((id) => lessonByVimeoId.get(id)).filter((l) => l !== undefined);
 
   // The lion draws breath while the visitor reads.
@@ -93,7 +94,7 @@ export function FirstChallenge() {
             <LionMouth level={0} live className="w-full" />
           </div>
           <p className="text-sm font-medium text-ink text-balance">
-            This is challenge one of twenty-four. Every one of them works like this.
+            This is the first challenge you record. Every recorded one works like this.
           </p>
           <ul className="flex flex-col gap-1.5 text-left text-xs text-ink-muted">
             {[
@@ -109,7 +110,7 @@ export function FirstChallenge() {
             ))}
           </ul>
           <p className="text-[0.65rem] text-ink-faint">
-            When you join, this is the first thing you do - and the recording stays on your phone. Nobody but Coach
+            When you join, you watch five short Presence lessons, then this is the first thing you record - and the recording stays on your phone. Nobody but Coach
             ever sees it.
           </p>
         </aside>
@@ -118,7 +119,7 @@ export function FirstChallenge() {
         <div className="flex flex-col gap-5 rounded-2xl border border-navy-600 bg-navy-900 p-4 sm:p-6">
           <header className="flex flex-col gap-2">
             <p className="text-xs font-medium uppercase tracking-wider text-ink-faint">
-              {phase.id} - {phase.name} · Challenge 1 of 25
+              {phase.id} - {phase.name} · Challenge {number} of {challenges.length}
             </p>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
               <h3 className="text-2xl font-semibold tracking-tight text-balance">{challenge.title}</h3>
@@ -186,7 +187,7 @@ export function FirstChallenge() {
               What belongs here is the door. */}
           <div className="flex flex-col items-center gap-2 rounded-xl border border-navy-600 bg-navy-800 p-5 text-center">
             <p className="text-sm text-ink-muted text-balance">
-              Coach reviews this one the day you join - your baseline, and the first mark on the road.
+              Coach reviews this one the day you join - your baseline, the first take on the road.
             </p>
           </div>
         </div>

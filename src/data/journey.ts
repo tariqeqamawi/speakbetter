@@ -82,6 +82,14 @@ export const PHASES = [
     summary:
       'The landing page pared back and rebuilt around the visitor: a pain-led headline, "This Is For You If...", roles, proof beside Join, screen-sized folds for laptop and phone, the app\'s glass, share cards for WhatsApp - and the first ads.',
   },
+  {
+    when: "Oct 2",
+    from: "2026-10-02",
+    to: "2026-10-02",
+    title: "The First Student Speaks",
+    summary:
+      "The first feedback from a new student changes the start of the course: challenge 1 becomes watching five Presence lessons instead of going on camera, and Skills opens on Presence alone, with the other seven colours unlocking after five lessons.",
+  },
 ];
 
 export type Decision = {
@@ -467,6 +475,24 @@ export const DECISIONS: Decision[] = [
     result:
       "Smooth scrolling and a smooth ride on ordinary laptops and phones.",
   },
+  // ---------- the first students ----------
+  {
+    area: "road",
+    when: "Oct 2",
+    title: "Watch first, record second",
+    what: 'Challenge 3, "Watch Any 5 Presence Skills", moved to challenge 1. The speaking baseline is now challenge 2 and the unaided story challenge 3. Today\'s "Start here", the checkout page and the welcome email all now name the Presence lessons as the first step. Progress is saved per challenge, so students already under way kept everything and simply see the new order.',
+    why: 'A new student said being asked to go on video as the very first challenge was daunting. Watching is passive and safe; it builds some confidence before the camera comes out. Tariq: "That makes it more passive and less scary."',
+    result: "Shipped Oct 2, across the whole app. No data yet - the test is whether the next new students get as far as recording their baseline.",
+  },
+  {
+    area: "learn",
+    when: "Oct 2",
+    title: "Skills unlock gradually, starting with Presence",
+    what: "Until challenge 1 is done, Presence is the only colour open. Skills opens straight onto Presence with all its lessons listed and a note: watch any five and the other seven colours open (with a countdown). Other colours show a lock in the colour menus, and links into them lead back to Presence. Five lessons watched, or challenge 1 passed, opens everything, so students who were already using the library aren't locked out.",
+    why: "The same student went straight into Storytelling, landed on the storybook lessons, felt they had missed earlier lessons, and stopped. Opening one colour at a time gives a clear first step and makes the library feel supportive rather than overwhelming.",
+    result: "Shipped Oct 2. The whole-app tour still walks through every colour, because the lock stands aside while the tour is running.",
+  },
+
   // ---------- marketing ----------
   {
     area: "ads",
@@ -530,6 +556,10 @@ export const PRINCIPLES = [
   [
     "Candid, checked imagery - and a new filename every time.",
     "Real-looking people build trust; caches keep old images alive.",
+  ],
+  [
+    "Make the first step small, and open the rest in order.",
+    "A first task that feels like a performance, or a library with no clear start, makes new students stop - so the first thing they do is watch.",
   ],
   [
     "Log the why.",

@@ -51,7 +51,7 @@ export function CheckoutDone({
   // Somebody who already had a level was here before - this was an
   // upgrade, not a first purchase.
   const returning = ready && Boolean(state.level) && !preview;
-  const first = challenges.find((c) => !c.passive);
+  const first = challenges[0];
 
   useEffect(() => {
     if (!ready || applied.current) return;
@@ -88,7 +88,9 @@ export function CheckoutDone({
       title: first
         ? `Your first challenge: ${first.title}`
         : "Your first challenge",
-      body: "The first step on the S.T.O.R.Y. road. Coach watches, and tells you what you did well and what to try next.",
+      body: first?.passive
+        ? "The first step on the S.T.O.R.Y. road: five short Presence lessons, the foundation for everything after. Then you record your baseline, and Coach tells you what you did well and what to try next."
+        : "The first step on the S.T.O.R.Y. road. Coach watches, and tells you what you did well and what to try next.",
       accent: "text-storytelling border-storytelling/40",
     },
   ];

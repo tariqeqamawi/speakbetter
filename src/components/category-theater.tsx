@@ -10,7 +10,7 @@ import { XpBadge } from "@/components/xp-badge";
 import { useStore } from "@/lib/store";
 import { VimeoPlayer } from "@/components/vimeo-player";
 import { VideoStill } from "@/components/video-still";
-import { CheckIcon, ChevronDownIcon, XIcon, ZapIcon } from "@/components/icons";
+import { CheckIcon, ChevronDownIcon, LockIcon, XIcon, ZapIcon } from "@/components/icons";
 import { LessonCard } from "@/components/lesson-card";
 import { cardFor } from "@/data/deck";
 import { LessonNotes } from "@/components/lesson-notes";
@@ -19,6 +19,7 @@ import { LessonTranscript } from "@/components/lesson-transcript";
 import { PlayFillIcon } from "@/components/player-icons";
 import { BackLink } from "@/components/back-link";
 import { InfoEye } from "@/components/info-eye";
+import { colourOpen, OPEN_AFTER, skillsOpen } from "@/lib/skills-lock";
 
 // A category as a theater: whichever lesson is selected plays full
 // width, and every other lesson in the color waits in a carousel below.
@@ -70,6 +71,8 @@ export function CategoryTheater({
     const asked = params.get("lesson");
     const dealt = params.get("spread")?.split(",").filter((id) => lessonByVimeoId.has(id));
     if (dealt?.length) setSpread(dealt);
+    // ?all=1 (skills-gate.tsx): open on every lesson in the colour.
+    if (params.get("all") === "1") setPanel("all");
     const wanted = lessons.find((l) => l.vimeoId === asked);
     const firstUnwatched = lessons.find((l) => !state.watchedLessons.includes(l.vimeoId));
     if (wanted) setFeaturedId(wanted.vimeoId);
@@ -119,6 +122,9 @@ export function CategoryTheater({
   const watchedCount = lessons.filter((l) => watched(l.vimeoId)).length;
   const complete = ready && watchedCount === lessons.length;
   const nextColour = categories[categories.findIndex((c) => c.id === category.id) + 1];
+  // Still in the starting colour, the others waiting (skills-lock.ts).
+  const starting = ready && !skillsOpen(state);
+  const toGo = Math.max(0, OPEN_AFTER - state.watchedLessons.length);
 
   // Finishing the colour while here is a moment: the strip under the bar
   // arrives with a small entrance. Arriving already finished, it's just
@@ -279,6 +285,24 @@ export function CategoryTheater({
         </div>
         )}
       </header>
+
+      {/* Where a new student starts: why only this colour is open, and
+          how far they are from the rest. */}
+      {starting && (
+        <div role="status" className={`flex flex-col gap-1 rounded-xl border border-current bg-navy-900/60 px-4 py-3 ${category.textClass}`}>
+          <span className="text-[0.65rem] font-bold uppercase tracking-[0.3em]">Start here</span>
+          <p className="text-sm font-semibold text-ink text-pretty">
+            Watch any five {category.name} lessons and the other seven colors open.
+          </p>
+          <p className="text-xs text-ink-muted text-pretty">
+            {category.name} is confidence on camera - everything else in the course builds on it. This is challenge 1,
+            done just by watching.{" "}
+            <b className="font-semibold text-ink">
+              {toGo} to go.
+            </b>
+          </p>
+        </div>
+      )}
 
       {/* The colour, finished: said in words under the bar, with the way
           on to the next colour - the ring filling in is the picture, this
@@ -620,6 +644,8 @@ function clock(seconds: number): string {
  *  it covers - one tap from any of them. */
 function ColourSwitcher({ current, skillsHref }: { current: Category; skillsHref: string }) {
   const [open, setOpen] = useState(false);
+  const { state, ready } = useStore();
+  const locked = (id: string) => ready && !colourOpen(state, id);
   const box = useRef<HTMLDivElement>(null);
   // Closed by a tap anywhere else, or Escape.
   useEffect(() => {
@@ -670,13 +696,20 @@ function ColourSwitcher({ current, skillsHref }: { current: Category; skillsHref
                   role="menuitem"
                   href={`${skillsHref}/${c.id}`}
                   aria-current={here ? "page" : undefined}
-                  onClick={() => setOpen(false)}
-                  className={`flex items-center gap-3 px-3.5 py-2 transition-colors hover:bg-navy-700 ${here ? "bg-navy-800" : ""}`}
+                  aria-disabled={locked(c.id) || undefined}
+                  onClick={(e) => {
+                    if (locked(c.id)) e.preventDefault();
+                    else setOpen(false);
+                  }}
+                  className={`flex items-center gap-3 px-3.5 py-2 transition-colors ${
+                    locked(c.id) ? "cursor-default opacity-45" : "hover:bg-navy-700"
+                  } ${here ? "bg-navy-800" : ""}`}
                 >
                   <span className={`size-2.5 shrink-0 rounded-full ${c.bgClass}`} style={{ boxShadow: `0 0 8px var(--color-${c.id})` }} />
                   <span className={`text-sm font-semibold ${c.textClass}`}>{c.name}</span>
                   <span className="truncate text-xs text-ink-muted">{c.subtitle}</span>
                   {here && <CheckIcon className="ml-auto size-3.5 shrink-0 text-ink-muted" />}
+                  {locked(c.id) && <LockIcon className="ml-auto size-3.5 shrink-0 text-ink-faint" />}
                 </Link>
               );
             })}
@@ -695,6 +728,8 @@ function ColourSwitcher({ current, skillsHref }: { current: Category; skillsHref
  *  it open, for tapping a colour instead. */
 function CategoryTab({ current, skillsHref }: { current: Category; skillsHref: string }) {
   const router = useRouter();
+  const { state, ready } = useStore();
+  const locked = (id: string) => ready && !colourOpen(state, id);
   const [open, setOpen] = useState(false);
   const [lit, setLit] = useState<string | null>(null);
   const box = useRef<HTMLDivElement>(null);
@@ -705,6 +740,7 @@ function CategoryTab({ current, skillsHref }: { current: Category; skillsHref: s
   const colourUnder = (x: number, y: number) =>
     (document.elementFromPoint(x, y)?.closest("[data-colour]") as HTMLElement | null)?.dataset.colour ?? null;
   const go = (id: string) => {
+    if (locked(id)) return;
     setOpen(false);
     setLit(null);
     if (id !== current.id) router.push(`${skillsHref}/${id}`);
@@ -795,10 +831,11 @@ function CategoryTab({ current, skillsHref }: { current: Category; skillsHref: s
                   role="menuitem"
                   data-colour={c.id}
                   aria-current={here ? "page" : undefined}
+                  aria-disabled={locked(c.id) || undefined}
                   onClick={() => go(c.id)}
-                  className={`flex items-center gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-navy-700 ${
-                    on ? "bg-navy-700" : here ? "bg-navy-800" : ""
-                  }`}
+                  className={`flex items-center gap-3 px-3.5 py-2.5 text-left transition-colors ${
+                    locked(c.id) ? "cursor-default opacity-45" : "hover:bg-navy-700"
+                  } ${on && !locked(c.id) ? "bg-navy-700" : here ? "bg-navy-800" : ""}`}
                 >
                   <span
                     className={`size-2.5 shrink-0 rounded-full ${c.bgClass} transition-transform ${on ? "scale-150" : ""}`}
@@ -807,6 +844,7 @@ function CategoryTab({ current, skillsHref }: { current: Category; skillsHref: s
                   <span className={`text-sm font-semibold ${c.textClass}`}>{c.name}</span>
                   <span className="truncate text-xs text-ink-muted">{c.subtitle}</span>
                   {here && <CheckIcon className="ml-auto size-3.5 shrink-0 text-ink-muted" />}
+                  {locked(c.id) && <LockIcon className="ml-auto size-3.5 shrink-0 text-ink-faint" />}
                 </button>
               );
             })}

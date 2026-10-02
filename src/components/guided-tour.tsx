@@ -1,5 +1,6 @@
 "use client";
 
+import { setTourRunning } from "@/lib/tour-running";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
@@ -28,6 +29,8 @@ export function GuidedTour() {
   const router = useRouter();
   const pathname = usePathname();
   const [running, setRunning] = useState(false);
+  // Tell the gates (skills-gate.tsx) to stand aside while it runs.
+  useEffect(() => setTourRunning(running), [running]);
   const [offer, setOffer] = useState(false);
   const [host, setHost] = useState<HTMLElement | null>(null);
   const seen = useRef(false);

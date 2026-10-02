@@ -45,7 +45,7 @@ PUT IT ON YOUR HOME SCREEN (so it opens like a normal app):
 - Android: open the link in Chrome, tap the menu (three dots), then "Add to Home screen" or "Install app".
 From then on, just tap the lion icon.
 
-WHERE TO START: the app opens on a short welcome, then your first challenge - record your baseline (a minute talking to your phone). Coach, the lion, will review it.
+WHERE TO START: the app opens on a short welcome, then your first challenge - watch any five of the short green Presence lessons. Next you record your baseline (a minute talking to your phone), and Coach, the lion, will review it.
 
 We start together on ${cohort.startShort} - live sessions are Saturdays at 11 AM CST, and they're recorded if you miss one.
 
