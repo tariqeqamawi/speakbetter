@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 // whole sentences only, nothing reworded. All of them sit in the same
 // grid cell, so the card keeps the height of the longest and nothing
 // below it jumps as they change. Waits while the mouse is over it.
+// White with dark ink: the one light card on the page, so the proof is
+// the first thing the eye lands on beside the Join button.
 
 const QUOTES = [
   {
@@ -42,7 +44,7 @@ export function QuoteCycle() {
     <figure
       onMouseEnter={() => setHeld(true)}
       onMouseLeave={() => setHeld(false)}
-      className="w-full max-w-md rounded-2xl border border-navy-600 bg-navy-900/60 px-5 py-4"
+      className="w-full max-w-md rounded-2xl bg-white px-6 py-5 shadow-[0_24px_60px_-28px_rgb(255_255_255_/_0.45)]"
     >
       <div className="grid">
         {QUOTES.map((q, i) => (
@@ -53,10 +55,10 @@ export function QuoteCycle() {
               i === at ? "opacity-100" : "pointer-events-none opacity-0"
             }`}
           >
-            <blockquote className="text-base font-medium leading-snug text-ink text-balance">
+            <blockquote className="text-base font-semibold leading-snug text-navy-950 text-balance">
               &ldquo;{q.quote}&rdquo;
             </blockquote>
-            <p className="mt-2 text-xs font-semibold text-ink-muted">
+            <p className="mt-2 text-xs font-semibold text-[#5b6280]">
               {q.name}
             </p>
           </div>
@@ -73,7 +75,7 @@ export function QuoteCycle() {
             className="p-1"
           >
             <span
-              className={`block size-1.5 rounded-full transition-colors ${i === at ? "bg-ink" : "bg-navy-600"}`}
+              className={`block size-1.5 rounded-full transition-colors ${i === at ? "bg-navy-950" : "bg-navy-950/20"}`}
             />
           </button>
         ))}

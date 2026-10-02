@@ -165,8 +165,17 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
 
         {/* WHO IT'S FOR beside one result and the door. Phone: the result
             and the door come first, straight after the film. */}
-        <div id="for-you" data-landing-section className="fold">
-          <section className="mx-auto grid w-full max-w-6xl items-center gap-10 max-lg:-mt-8 lg:grid-cols-[1.3fr_1fr] lg:gap-12">
+        <div
+          id="for-you"
+          data-landing-section
+          className="fold flex flex-col gap-10"
+        >
+          <SectionMark
+            id="for-you"
+            sections={LANDING_V_SECTIONS}
+            anchor={false}
+          />
+          <section className="mx-auto grid w-full max-w-6xl items-center gap-10 lg:grid-cols-[1.3fr_1fr] lg:gap-12">
             <div className="flex flex-col items-center gap-5 text-center lg:col-start-2 lg:row-start-1">
               {/* Results, before anything else is asked of them. */}
               <QuoteCycle />
@@ -223,13 +232,31 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
         </div>
 
         {/* And the people it's made for, one at a time. */}
-        <div id="made-for" data-landing-section className="fold">
+        <div
+          id="made-for"
+          data-landing-section
+          className="fold flex flex-col gap-10"
+        >
+          <SectionMark
+            id="made-for"
+            sections={LANDING_V_SECTIONS}
+            anchor={false}
+          />
           <PerfectFor />
         </div>
 
         {/* B: TRY IT, right here - one challenge, Coach's review and all. */}
         {variant === "b" && (
-          <div id="try" data-landing-section className="fold">
+          <div
+            id="try"
+            data-landing-section
+            className="fold flex flex-col gap-10"
+          >
+            <SectionMark
+              id="try"
+              sections={LANDING_V_SECTIONS}
+              anchor={false}
+            />
             <TryChallenge />
           </div>
         )}
