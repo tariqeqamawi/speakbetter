@@ -3706,3 +3706,16 @@ html.bare .demo-banner {
     margin-block: auto;
   }
 }
+
+/* The same idea on a phone (landing-v.tsx): the opening screens each
+   fill the screen under the header and the date strip, content centred -
+   lion and promise; the film and the door; the quotes and the guarantee;
+   who it's for; who it's made for. */
+@media (max-width: 1023.98px) {
+  .fold-m {
+    min-height: calc(100svh - 100px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+}

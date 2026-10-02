@@ -10,7 +10,8 @@ import { SpectrumDemo } from "@/components/spectrum-demo";
 import { HeroBeat } from "@/components/hero-beat";
 import { JoinCta } from "@/components/join-cta";
 import { LazyVimeoPlayer } from "@/components/lazy-vimeo-player";
-import { foundingCohort, priceCents } from "@/data/pricing";
+import { foundingCohort, guarantee, priceCents } from "@/data/pricing";
+import { GuaranteeSeal } from "@/components/guarantee-seal";
 import { cohort } from "@/data/cohort";
 import { StickyJoin } from "@/components/sticky-join";
 import { HeroLion } from "@/components/hero-lion";
@@ -102,64 +103,85 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
       <div className="app-glass flex flex-col gap-16 pb-8 pt-4 lg:pt-0">
         {/* THE HERO, the first screen: the promise across the top with
             what's in the course under it, then Tariq's film beside the lion
-            and the how. Phone: lion, promise, how, film - stacked. */}
+            and the how. On a phone it is two screens: the lion and the
+            promise, centred; then "a natural, confident speaker", the film,
+            who's teaching and the door. (The two phone screens are wrappers
+            that dissolve - lg:contents - into the laptop's grid.) */}
         <section
           id="overview"
           data-landing-section
           className="fold flex flex-col items-center text-center"
         >
           <div className="grid w-full max-w-6xl justify-items-center gap-4 lg:grid-cols-[1.75fr_1fr] lg:gap-x-10 lg:gap-y-3">
-            <div className="flex w-full max-w-xs flex-col items-center lg:col-start-2 lg:row-start-2 lg:self-end">
-              <HeroLion className="h-28 w-auto sm:h-36" />
-              <Soundwave variant="hero" className="-mt-2 h-10 w-full sm:h-12" />
-            </div>
-            <div className="mb-4 flex flex-col items-center gap-2.5 lg:col-span-2 lg:row-start-1 lg:mb-5">
-              <h1 className="text-[1.6rem] font-semibold leading-tight tracking-tight text-balance sm:text-4xl lg:text-[2.75rem]">
-                Remove Filler Words And Tell Your Stories More Powerfully On
-                Video
-              </h1>
-              <p className="flex flex-wrap justify-center gap-x-1.5 text-xs font-semibold uppercase tracking-wider text-ink-muted sm:text-sm">
-                {[
-                  "83 Lessons",
-                  "25 Challenges",
-                  "8 Colors Of Feedback",
-                  "An AI Coach",
-                  "6 Weeks Live",
-                ].map((fact, i) => (
-                  <span key={fact} className="whitespace-nowrap">
-                    {fact}
-                    {i < 4 && <span className="text-ink-faint"> ·</span>}
-                  </span>
-                ))}
-              </p>
-            </div>
-            <div className="flex flex-col items-center gap-1 lg:col-start-2 lg:row-start-3 lg:self-start">
-              <p className="text-lg font-semibold text-ink text-balance sm:text-2xl">
-                Become A Natural, Confident Speaker
-              </p>
-              <p className="neon-underline mt-2 text-xl font-bold tracking-tight text-ink sm:text-2xl">
-                In Minutes, Not Months!
-              </p>
-            </div>
-            <div className="w-full max-w-3xl lg:col-start-1 lg:row-span-2 lg:row-start-2 lg:max-w-none">
-              <div className="overflow-hidden rounded-2xl border border-navy-600 shadow-2xl shadow-navy-950/80">
-                <LazyVimeoPlayer
-                  vimeoId="1082011912"
-                  title="Speak Better - From Awkward To Awesome In Minutes A Day"
-                  poster="/thumbs/1082011047.jpg"
+            <div className="fold-m w-full items-center gap-6 lg:contents">
+              <div className="flex w-full max-w-xs flex-col items-center lg:col-start-2 lg:row-start-2 lg:self-end">
+                <HeroLion className="h-40 w-auto lg:h-36" />
+                <Soundwave
+                  variant="hero"
+                  className="-mt-2 h-10 w-full sm:h-12"
                 />
               </div>
-              {/* Who's teaching: the name, and the credentials beside it. */}
-              <p className="mt-2.5 text-sm text-balance">
-                <b className="font-semibold text-ink">Tariq EQ Amawi</b>
-                <span className="text-ink-muted">
-                  {" "}
-                  <span className="text-ink-faint">·</span> TEDx speaker{" "}
-                  <span className="text-ink-faint">·</span> Slam poetry winner{" "}
-                  <span className="text-ink-faint">·</span> National writing
-                  winner
-                </span>
-              </p>
+              <div className="flex flex-col items-center gap-3 lg:col-span-2 lg:row-start-1 lg:mb-5 lg:gap-2.5">
+                <h1 className="max-w-sm text-[1.45rem] font-semibold leading-tight tracking-tight text-balance sm:max-w-none sm:text-4xl lg:text-[2.75rem]">
+                  <span className="lg:hidden">
+                    Overcome Fears, Remove Filler Words &amp; Tell Your Stories
+                    More Powerfully On Video
+                  </span>
+                  <span className="hidden lg:inline">
+                    Remove Filler Words And Tell Your Stories More Powerfully On
+                    Video
+                  </span>
+                </h1>
+                <p className="flex flex-wrap justify-center gap-x-1.5 text-xs font-semibold uppercase tracking-wider text-ink-muted sm:text-sm">
+                  {[
+                    "83 Lessons",
+                    "25 Challenges",
+                    "8 Colors Of Feedback",
+                    "An AI Coach",
+                    "6 Weeks Live",
+                  ].map((fact, i) => (
+                    <span key={fact} className="whitespace-nowrap">
+                      {fact}
+                      {i < 4 && <span className="text-ink-faint"> ·</span>}
+                    </span>
+                  ))}
+                </p>
+              </div>
+            </div>
+            <div className="fold-m w-full items-center gap-5 lg:contents">
+              <div className="flex flex-col items-center gap-1 lg:col-start-2 lg:row-start-3 lg:self-start">
+                <p className="text-lg font-semibold text-ink text-balance sm:text-2xl">
+                  Become A Natural, Confident Speaker
+                </p>
+                <p className="neon-underline mt-2 text-xl font-bold tracking-tight text-ink sm:text-2xl">
+                  In Minutes, Not Months!
+                </p>
+              </div>
+              <div className="w-full max-w-3xl lg:col-start-1 lg:row-span-2 lg:row-start-2 lg:max-w-none">
+                <div className="overflow-hidden rounded-2xl border border-navy-600 shadow-2xl shadow-navy-950/80">
+                  <LazyVimeoPlayer
+                    vimeoId="1082011912"
+                    title="Speak Better - From Awkward To Awesome In Minutes A Day"
+                    poster="/thumbs/1082011047.jpg"
+                  />
+                </div>
+                {/* Who's teaching: the name, and the credentials beside it. */}
+                <p className="mt-2.5 text-sm text-balance">
+                  <b className="font-semibold text-ink">Tariq EQ Amawi</b>
+                  <span className="text-ink-muted">
+                    {" "}
+                    <span className="text-ink-faint">·</span> TEDx speaker{" "}
+                    <span className="text-ink-faint">·</span> Slam poetry winner{" "}
+                    <span className="text-ink-faint">·</span> National writing
+                    winner
+                  </span>
+                </p>
+              </div>
+              {/* The door, on a phone: here, under the film. (On a laptop
+                it stands beside the quotes on the next screen.) */}
+              <div data-track="hero" className="lg:hidden">
+                <JoinCta label={`Join Speak Better · from ${FROM_LABEL}`} />
+              </div>
             </div>
           </div>
         </section>
@@ -182,18 +204,26 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
             anchor={false}
           />
           <section className="mx-auto grid w-full max-w-6xl items-center gap-10 lg:grid-cols-[1.3fr_1fr] lg:gap-12">
-            <div className="flex flex-col items-center gap-5 text-center lg:col-start-2 lg:row-start-1">
+            <div className="fold-m flex flex-col items-center gap-5 text-center lg:col-start-2 lg:row-start-1">
               {/* Results, before anything else is asked of them. */}
               <QuoteCycle />
-              <div data-track="hero">
+              <div data-track="hero" className="hidden lg:block">
                 <JoinCta
                   label={`Join Speak Better · from ${FROM_LABEL}`}
                   seal
                   sealSize={96}
                 />
               </div>
+              {/* On a phone the button was on the screen before; here, the
+                  promise behind it. */}
+              <div className="flex w-full max-w-md items-center gap-3 text-left lg:hidden">
+                <GuaranteeSeal size={112} className="shrink-0" />
+                <span className="text-sm leading-snug text-ink-muted">
+                  {guarantee.promise}
+                </span>
+              </div>
             </div>
-            <div className="flex flex-col items-center gap-5 lg:col-start-1 lg:row-start-1">
+            <div className="fold-m flex flex-col items-center gap-5 lg:col-start-1 lg:row-start-1">
               <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
                 This Is For You If&hellip;
               </h2>
@@ -241,7 +271,7 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
         <div
           id="made-for"
           data-landing-section
-          className="fold fold-marked flex flex-col gap-10"
+          className="fold fold-m fold-marked flex flex-col gap-10"
         >
           <SectionMark
             id="made-for"
