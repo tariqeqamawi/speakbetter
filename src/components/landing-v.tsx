@@ -18,6 +18,8 @@ import { TestimonialStream } from "@/components/testimonial-stream";
 import { proofOf, type Proof } from "@/data/testimonials";
 import { LionArtWhenNear } from "@/components/lion-mouth";
 import { CoachDemo } from "@/components/coach-demo";
+import { PerfectFor } from "@/components/perfect-for";
+import { QuoteCycle } from "@/components/quote-cycle";
 import { SectionMark } from "@/components/landing-sections";
 import { LessonStack } from "@/components/lesson-stack";
 import { LandingTracking } from "@/components/landing-tracking";
@@ -154,17 +156,8 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
             and the door come first, straight after the film. */}
         <section className="mx-auto grid w-full max-w-6xl items-center gap-10 max-lg:-mt-8 lg:grid-cols-[1.3fr_1fr] lg:gap-12">
           <div className="flex flex-col items-center gap-5 text-center lg:col-start-2 lg:row-start-1">
-            {/* One result, before anything else is asked of them. */}
-            <figure className="max-w-md rounded-2xl border border-navy-600 bg-navy-900/60 px-5 py-4">
-              <blockquote className="text-base font-medium leading-snug text-ink text-balance">
-                &ldquo;In only week 2 I already learned how to stop the
-                &lsquo;um&rsquo;, and the value that Tariq has been dropping is
-                paradigm-shifting.&rdquo;
-              </blockquote>
-              <figcaption className="mt-2 text-xs font-semibold text-ink-muted">
-                Sharon Ho
-              </figcaption>
-            </figure>
+            {/* Results, before anything else is asked of them. */}
+            <QuoteCycle />
             <div data-track="hero">
               <JoinCta
                 label={`Join Speak Better · from ${FROM_LABEL}`}
@@ -202,40 +195,8 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
           </div>
         </section>
 
-        {/* And the people it's made for. */}
-        <section className="flex flex-col items-center">
-          <div className="flex flex-col items-center gap-4">
-            <h3 className="text-xl font-semibold tracking-tight text-ink-muted sm:text-2xl">
-              This is made for
-            </h3>
-            <ul className="flex max-w-3xl flex-wrap justify-center gap-3">
-              {[
-                ["Entrepreneurs", "entrepreneur"],
-                ["Founders", "founder"],
-                ["Coaches", "coach"],
-                ["Influencers", "influencer"],
-                ["Podcasters", "podcaster"],
-                ["Teachers", "teacher"],
-              ].map(([who, pic]) => (
-                <li
-                  key={who}
-                  className="flex items-center gap-3 rounded-full border border-navy-600 bg-navy-900/60 py-1.5 pl-1.5 pr-5"
-                >
-                  <Image
-                    src={`/landing/role-${pic}.webp`}
-                    alt=""
-                    width={48}
-                    height={48}
-                    className="size-11 rounded-full object-cover sm:size-12"
-                  />
-                  <span className="text-lg font-bold tracking-tight text-ink sm:text-xl">
-                    {who}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
+        {/* And the people it's made for, one at a time. */}
+        <PerfectFor />
 
         {/* B: TRY IT, right here - one challenge, Coach's review and all. */}
         {variant === "b" && (

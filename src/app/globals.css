@@ -3658,3 +3658,24 @@ html.bare .demo-banner {
 @media (prefers-reduced-motion: reduce) {
   .neon-underline::after { animation: none; }
 }
+
+/* "Perfect for": the name falls into place letter by letter, then its
+   line rises in under it. */
+.cascade-letter {
+  display: inline-block;
+  white-space: pre;
+  animation: cascade-in 0.55s cubic-bezier(0.2, 0.75, 0.25, 1) both;
+  animation-delay: calc(var(--i) * 38ms);
+}
+@keyframes cascade-in {
+  from { opacity: 0; transform: translateY(-0.45em); filter: blur(6px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+.cascade-fade { animation: cascade-fade 0.6s 0.3s ease-out both; }
+@keyframes cascade-fade {
+  from { opacity: 0; transform: translateY(0.4em); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cascade-letter, .cascade-fade { animation: none; }
+}
