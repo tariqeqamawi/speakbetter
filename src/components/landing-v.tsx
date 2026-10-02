@@ -89,7 +89,7 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
             <Soundwave variant="hero" className="-mt-2 h-10 w-full sm:h-12" />
           </div>
           <h1 className="flex flex-col items-center gap-1 tracking-tight">
-            <span className="text-3xl font-semibold text-balance sm:text-4xl">Become A Natural And Confident Speaker On Video</span>
+            <span className="text-3xl font-semibold text-balance sm:text-4xl">Become A Natural, Confident Speaker On Video</span>
             <span className="text-base font-medium text-ink-muted text-balance sm:text-xl">
               Overcome Shyness, Fears, And Filler Words In Minutes, Not Months
             </span>
