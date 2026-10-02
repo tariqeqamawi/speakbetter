@@ -21,6 +21,7 @@ import { CoachDemo } from "@/components/coach-demo";
 import { SectionMark } from "@/components/landing-sections";
 import { LessonStack } from "@/components/lesson-stack";
 import { LandingTracking } from "@/components/landing-tracking";
+import { NeonTracer } from "@/components/neon-tracer";
 import { TryChallenge } from "@/components/try-challenge";
 import { ChevronDownIcon } from "@/components/icons";
 
@@ -64,6 +65,7 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
   return (
     <LionArtWhenNear>
       <LandingTracking page={page} />
+      <NeonTracer />
 
       {/* The date and the price, held under the top bar the whole way. */}
       <div className="sticky-under-header no-glass -mx-4 -mt-8 border-b border-navy-600 bg-navy-850 px-4 py-2 xl:-mx-8 xl:px-8">
