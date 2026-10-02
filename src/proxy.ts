@@ -8,7 +8,14 @@ import { SUPABASE_ANON_KEY, SUPABASE_URL, supabaseConfigured } from "@/lib/supab
 //
 // (Next 16 calls this file "proxy"; it is what used to be middleware.)
 
+// Pages whose shared link should open as the square card in WhatsApp.
+const SQUARE_SHARE = new Set(["/", "/landing"]);
+
 export default async function proxy(request: NextRequest) {
+  // WhatsApp's link-preview crawler gets the square-card metadata.
+  if (SQUARE_SHARE.has(request.nextUrl.pathname) && /WhatsApp/i.test(request.headers.get("user-agent") ?? "")) {
+    return NextResponse.rewrite(new URL("/share/whatsapp", request.url));
+  }
   if (!supabaseConfigured()) return NextResponse.next();
   const response = NextResponse.next({ request });
   const db = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
