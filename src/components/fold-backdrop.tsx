@@ -8,6 +8,12 @@ import { useEffect, useRef } from "react";
 // stay the thing to read. Laptop only (on a phone it would be data spent
 // on something nobody could make out), never for anyone who asked for
 // less motion, and it plays only while the fold is on screen.
+//
+// The softness is baked into the film itself, and the dimming is plain
+// opacity on the wrapper - never a CSS filter on the <video>. With a
+// filter on a playing video, Chrome on some Windows graphics drivers
+// drew the first frame and then dropped the layer: half a second of
+// film, then nothing.
 
 export function FoldBackdrop({ src, poster }: { src: string; poster: string }) {
   const ref = useRef<HTMLVideoElement>(null);
@@ -30,7 +36,7 @@ export function FoldBackdrop({ src, poster }: { src: string; poster: string }) {
   return (
     <div
       aria-hidden
-      className="pointer-events-none absolute inset-0 -z-10 hidden overflow-hidden lg:block"
+      className="pointer-events-none absolute inset-0 -z-10 hidden overflow-hidden opacity-[0.28] lg:block"
       style={{
         maskImage:
           "radial-gradient(50% 50% at 50% 50%, #000 55%, transparent 100%)",
@@ -45,7 +51,7 @@ export function FoldBackdrop({ src, poster }: { src: string; poster: string }) {
         loop
         playsInline
         preload="none"
-        className="size-full object-cover opacity-[0.28] blur-[1px] saturate-[0.85]"
+        className="size-full object-cover"
       />
     </div>
   );

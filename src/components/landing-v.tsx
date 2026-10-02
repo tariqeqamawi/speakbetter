@@ -173,8 +173,8 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
         >
           {/* Faintly, behind it: people talking to their phones. */}
           <FoldBackdrop
-            src="/film/bg-for-you.mp4"
-            poster="/film/bg-for-you.jpg"
+            src="/film/bg-for-you-v2.mp4"
+            poster="/film/bg-for-you-v2.jpg"
           />
           <SectionMark
             id="for-you"
