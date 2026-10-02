@@ -20,7 +20,11 @@ import { LionArtWhenNear } from "@/components/lion-mouth";
 import { CoachDemo } from "@/components/coach-demo";
 import { PerfectFor } from "@/components/perfect-for";
 import { QuoteCycle } from "@/components/quote-cycle";
-import { SectionMark } from "@/components/landing-sections";
+import {
+  LANDING_V_SECTIONS,
+  SectionMark,
+  SectionNav,
+} from "@/components/landing-sections";
 import { LessonStack } from "@/components/lesson-stack";
 import { LandingTracking } from "@/components/landing-tracking";
 import { NeonTracer } from "@/components/neon-tracer";
@@ -91,11 +95,18 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
         </div>
       </div>
 
-      <div className="app-glass flex flex-col gap-16 pb-8 pt-4">
+      {/* The chapters, as dots down the right edge on a laptop. */}
+      <SectionNav sections={LANDING_V_SECTIONS} phone={false} />
+
+      <div className="app-glass flex flex-col gap-16 pb-8 pt-4 lg:pt-0">
         {/* THE HERO, the first screen: the promise across the top with
             what's in the course under it, then Tariq's film beside the lion
             and the how. Phone: lion, promise, how, film - stacked. */}
-        <section className="flex flex-col items-center text-center lg:pt-6">
+        <section
+          id="overview"
+          data-landing-section
+          className="fold flex flex-col items-center text-center"
+        >
           <div className="grid w-full max-w-6xl justify-items-center gap-4 lg:grid-cols-[1.75fr_1fr] lg:gap-x-10 lg:gap-y-3">
             <div className="flex w-full max-w-xs flex-col items-center lg:col-start-2 lg:row-start-2 lg:self-end">
               <HeroLion className="h-28 w-auto sm:h-36" />
@@ -154,61 +165,84 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
 
         {/* WHO IT'S FOR beside one result and the door. Phone: the result
             and the door come first, straight after the film. */}
-        <section className="mx-auto grid w-full max-w-6xl items-center gap-10 max-lg:-mt-8 lg:grid-cols-[1.3fr_1fr] lg:gap-12">
-          <div className="flex flex-col items-center gap-5 text-center lg:col-start-2 lg:row-start-1">
-            {/* Results, before anything else is asked of them. */}
-            <QuoteCycle />
-            <div data-track="hero">
-              <JoinCta
-                label={`Join Speak Better · from ${FROM_LABEL}`}
-                seal
-                sealSize={96}
-              />
+        <div id="for-you" data-landing-section className="fold">
+          <section className="mx-auto grid w-full max-w-6xl items-center gap-10 max-lg:-mt-8 lg:grid-cols-[1.3fr_1fr] lg:gap-12">
+            <div className="flex flex-col items-center gap-5 text-center lg:col-start-2 lg:row-start-1">
+              {/* Results, before anything else is asked of them. */}
+              <QuoteCycle />
+              <div data-track="hero">
+                <JoinCta
+                  label={`Join Speak Better · from ${FROM_LABEL}`}
+                  seal
+                  sealSize={96}
+                />
+              </div>
             </div>
-          </div>
-          <div className="flex flex-col items-center gap-5 lg:col-start-1 lg:row-start-1">
-            <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
-              This is for you if you&hellip;
-            </h2>
-            <ul className="grid w-full max-w-2xl gap-2.5 text-left sm:grid-cols-2">
-              {[
-                "Get shy or nervous talking on camera",
-                "Use a lot of filler words - the ums and ahs",
-                "Lose your place mid-sentence",
-                "Find it difficult talking to a phone or camera",
-                "Ramble and go off on tangents",
-                "Want to talk about your product or service without sounding salesy",
-                "Want the confidence to go live on your socials",
-                "Want to tell your stories more powerfully",
-              ].map((line) => (
-                <li
-                  key={line}
-                  className="flex items-start gap-3 rounded-xl sm:last:odd:col-span-2 border border-navy-600 bg-navy-900/50 px-4 py-3 text-sm text-ink"
-                >
-                  <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-mindset/15 text-mindset">
-                    <CheckIcon className="size-3" />
-                  </span>
-                  <span className="text-pretty">{line}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
+            <div className="flex flex-col items-center gap-5 lg:col-start-1 lg:row-start-1">
+              <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+                This is for you if you&hellip;
+              </h2>
+              <ul className="grid w-full max-w-2xl gap-2.5 text-left sm:grid-cols-2">
+                {[
+                  "Get shy or nervous talking on camera",
+                  "Use a lot of filler words - the ums and ahs",
+                  "Lose your place mid-sentence",
+                  "Find it difficult talking to a phone or camera",
+                  "Ramble and go off on tangents",
+                  "Want to talk about your product or service without sounding salesy",
+                  "Want the confidence to go live on your socials",
+                  "Want to tell your stories more powerfully",
+                ].map((line) => {
+                  // The problems get a caution mark - "this is what's going
+                  // wrong" - and what they want keeps the green tick.
+                  const want = line.startsWith("Want");
+                  return (
+                    <li
+                      key={line}
+                      className="flex items-start gap-3 rounded-xl border border-navy-600 bg-navy-900/50 px-4 py-3 text-sm text-ink sm:last:odd:col-span-2 lg:py-4 lg:text-base"
+                    >
+                      {want ? (
+                        <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-mindset/15 text-mindset">
+                          <CheckIcon className="size-3" />
+                        </span>
+                      ) : (
+                        <span
+                          aria-hidden
+                          className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-storytelling text-[0.8rem] font-black leading-none text-navy-950 shadow-[0_0_10px_-2px_var(--color-storytelling)]"
+                        >
+                          !
+                        </span>
+                      )}
+                      <span className="text-pretty">{line}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </section>
+        </div>
 
         {/* And the people it's made for, one at a time. */}
-        <PerfectFor />
+        <div id="made-for" data-landing-section className="fold">
+          <PerfectFor />
+        </div>
 
         {/* B: TRY IT, right here - one challenge, Coach's review and all. */}
         {variant === "b" && (
-          <>
-            <div id="try" className="scroll-mt-28" />
+          <div id="try" data-landing-section className="fold">
             <TryChallenge />
-          </>
+          </div>
         )}
 
         {/* How it works, and what recording yourself looks like. */}
-        <SectionMark id="how" />
-        <HowItWorksSection />
+        <div
+          id="how"
+          data-landing-section
+          className="fold flex flex-col gap-16 lg:gap-10"
+        >
+          <SectionMark id="how" sections={LANDING_V_SECTIONS} anchor={false} />
+          <HowItWorksSection />
+        </div>
 
         {/* The app on film: a lesson, and the deck - a full spread dealt. */}
         <section className="flex flex-col items-center gap-5">
@@ -242,7 +276,7 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
         </section>
 
         {/* Coach, a review of his - and that you can ask him anything. */}
-        <SectionMark id="coach" />
+        <SectionMark id="coach" sections={LANDING_V_SECTIONS} />
         <section className="flex w-full flex-col items-center gap-3">
           <CoachDemo />
           <p className="max-w-md text-center text-sm text-ink-muted text-balance">
@@ -263,6 +297,7 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
         </section>
 
         {/* THE COHORT: Tariq, live, every week - the human half. */}
+        <SectionMark id="live" sections={LANDING_V_SECTIONS} />
         <section className="flex flex-col items-center gap-5 text-center">
           <div className="flex flex-col items-center gap-2">
             <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
@@ -294,7 +329,7 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
         <HeroBeat />
 
         {/* The challenges: a course, or a ride - on film, three ways. */}
-        <SectionMark id="challenges" />
+        <SectionMark id="challenges" sections={LANDING_V_SECTIONS} />
         <section className="flex flex-col items-center gap-4 text-center">
           <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
             25 challenges. Take them as a course, or as a ride.
@@ -344,7 +379,7 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
         </section>
 
         {/* The lessons, as the app lists them. */}
-        <SectionMark id="lessons" />
+        <SectionMark id="lessons" sections={LANDING_V_SECTIONS} />
         <section className="flex flex-col items-center gap-4 text-center">
           <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
             83 lessons, 1-2 minutes each
@@ -377,7 +412,7 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
         </section>
 
         {/* The prices. */}
-        <SectionMark id="pricing" />
+        <SectionMark id="pricing" sections={LANDING_V_SECTIONS} />
         <section
           className="flex flex-col items-center gap-5"
           data-track="pricing"

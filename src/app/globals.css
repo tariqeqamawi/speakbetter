@@ -3679,3 +3679,21 @@ html.bare .demo-banner {
 @media (prefers-reduced-motion: reduce) {
   .cascade-letter, .cascade-fade { animation: none; }
 }
+
+/* The landing page's folds (landing-v.tsx): on a laptop, each of the
+   first chapters fills the screen under the header and the date strip
+   (100px together), its content centred in it - one idea per screen,
+   with room around it (and room at the top of one too tall to fit).
+   A jump from the section dots lands exactly on one. Phones keep the natural flow. */
+.fold {
+  scroll-margin-top: 100px;
+}
+@media (min-width: 1024px) {
+  .fold {
+    min-height: calc(100svh - 100px);
+    padding-block: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+}

@@ -20,19 +20,53 @@ export const LANDING_SECTIONS = [
   { id: "pricing", label: "Pricing" },
 ] as const;
 
-type SectionId = (typeof LANDING_SECTIONS)[number]["id"];
+/** The current landing page's chapters (landing-v.tsx). The first five
+ *  are its folds - on a laptop, each fills the screen. */
+export const LANDING_V_SECTIONS = [
+  { id: "overview", label: "Overview" },
+  { id: "for-you", label: "Is it for you?" },
+  { id: "made-for", label: "Who it's made for" },
+  { id: "try", label: "Try it free" },
+  { id: "how", label: "How it works" },
+  { id: "coach", label: "Meet Coach" },
+  { id: "live", label: "Live sessions" },
+  { id: "challenges", label: "The challenges" },
+  { id: "lessons", label: "The lessons" },
+  { id: "pricing", label: "Pricing" },
+] as const;
+
+type Section = { readonly id: string; readonly label: string };
+type SectionId = string;
 
 /** The start of a chapter. The first one is only an anchor - the hero
  *  needs no label over it. */
-export function SectionMark({ id }: { id: SectionId }) {
-  const i = LANDING_SECTIONS.findIndex((s) => s.id === id);
-  const s = LANDING_SECTIONS[i];
-  if (i === 0) return <div id={s.id} data-landing-section className="scroll-mt-24" />;
+export function SectionMark({
+  id,
+  sections = LANDING_SECTIONS,
+  anchor = true,
+}: {
+  id: SectionId;
+  sections?: readonly Section[];
+  /** Off when the chapter's anchor sits on something around the mark - a
+   *  fold, say, whose top is where a jump should land. */
+  anchor?: boolean;
+}) {
+  const i = sections.findIndex((s) => s.id === id);
+  const s = sections[i];
+  const at = anchor ? { id: s.id, "data-landing-section": true } : {};
+  if (i === 0) return <div {...at} className="scroll-mt-24" />;
   return (
-    <div id={s.id} data-landing-section className="flex scroll-mt-24 items-center gap-4 pt-4" aria-hidden>
+    <div
+      {...at}
+      className="flex scroll-mt-24 items-center gap-4 pt-4"
+      aria-hidden
+    >
       <span className="h-px flex-1 bg-gradient-to-r from-transparent to-navy-600" />
       <span className="text-xs font-semibold uppercase tracking-[0.3em] text-ink-faint">
-        <span className="tabular-nums text-ink-muted">{String(i + 1).padStart(2, "0")}</span> · {s.label}
+        <span className="tabular-nums text-ink-muted">
+          {String(i + 1).padStart(2, "0")}
+        </span>{" "}
+        · {s.label}
       </span>
       <span className="h-px flex-1 bg-gradient-to-l from-transparent to-navy-600" />
     </div>
@@ -42,12 +76,16 @@ export function SectionMark({ id }: { id: SectionId }) {
 function useActive(): SectionId {
   const [active, setActive] = useState<SectionId>("overview");
   useEffect(() => {
-    const marks = () => Array.from(document.querySelectorAll<HTMLElement>("[data-landing-section]"));
+    const marks = () =>
+      Array.from(
+        document.querySelectorAll<HTMLElement>("[data-landing-section]"),
+      );
     const onScroll = () => {
       // The chapter whose mark was last passed, a third of the way down.
       const line = window.innerHeight / 3;
       let current: SectionId = "overview";
-      for (const m of marks()) if (m.getBoundingClientRect().top <= line) current = m.id as SectionId;
+      for (const m of marks())
+        if (m.getBoundingClientRect().top <= line) current = m.id as SectionId;
       setActive(current);
     };
     onScroll();
@@ -61,12 +99,23 @@ function useActive(): SectionId {
   return active;
 }
 
-const go = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+const go = (id: string) =>
+  document
+    .getElementById(id)
+    ?.scrollIntoView({ behavior: "smooth", block: "start" });
 
-export function SectionNav() {
+export function SectionNav({
+  sections = LANDING_SECTIONS,
+  phone = true,
+}: {
+  sections?: readonly Section[];
+  /** The "Sections" button on a phone - off where it would sit on top of
+   *  something already pinned there. */
+  phone?: boolean;
+}) {
   const active = useActive();
   const [open, setOpen] = useState(false);
-  const current = LANDING_SECTIONS.find((s) => s.id === active)!;
+  const current = sections.find((s) => s.id === active) ?? sections[0];
 
   return (
     <>
@@ -75,7 +124,7 @@ export function SectionNav() {
         aria-label="Page sections"
         className="group/nav fixed right-3 top-1/2 z-30 hidden -translate-y-1/2 flex-col gap-1 lg:flex"
       >
-        {LANDING_SECTIONS.map((s, i) => {
+        {sections.map((s, i) => {
           const on = s.id === active;
           return (
             <button
@@ -90,12 +139,16 @@ export function SectionNav() {
                   on ? "text-ink" : "text-ink-muted"
                 } pointer-events-none bg-navy-900/95 opacity-0 shadow-lg shadow-navy-950 group-hover/nav:opacity-100 group-focus-within/nav:opacity-100`}
               >
-                <span className="mr-1 tabular-nums text-ink-faint">{String(i + 1).padStart(2, "0")}</span>
+                <span className="mr-1 tabular-nums text-ink-faint">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
                 {s.label}
               </span>
               <span
                 className={`shrink-0 rounded-full transition-all ${
-                  on ? "h-6 w-2 bg-figurative" : "size-2 bg-navy-600 group-hover/item:bg-ink-faint"
+                  on
+                    ? "h-6 w-2 bg-figurative"
+                    : "size-2 bg-navy-600 group-hover/item:bg-ink-faint"
                 }`}
               />
             </button>
@@ -104,41 +157,50 @@ export function SectionNav() {
       </nav>
 
       {/* Phone and tablet: one button, the list on a tap. */}
-      <div className="fixed right-3 top-[4.6rem] z-30 lg:hidden">
-        <button
-          type="button"
-          onClick={() => setOpen((o) => !o)}
-          aria-expanded={open}
-          className="flex items-center gap-2 rounded-full border border-navy-600 bg-navy-900/95 px-3 py-1.5 text-xs font-semibold text-ink-muted shadow-lg shadow-navy-950"
-        >
-          <span className="size-1.5 rounded-full bg-figurative" />
-          {current.label}
-          <span aria-hidden className={`transition-transform ${open ? "rotate-180" : ""}`}>
-            ▾
-          </span>
-        </button>
-        {open && (
-          <ul className="mt-2 flex w-52 flex-col rounded-2xl border border-navy-600 bg-navy-900/98 p-1.5 shadow-2xl shadow-navy-950">
-            {LANDING_SECTIONS.map((s, i) => (
-              <li key={s.id}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setOpen(false);
-                    go(s.id);
-                  }}
-                  className={`flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm ${
-                    s.id === active ? "bg-navy-700 text-ink" : "text-ink-muted"
-                  }`}
-                >
-                  <span className="w-5 text-xs tabular-nums text-ink-faint">{String(i + 1).padStart(2, "0")}</span>
-                  {s.label}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      {phone && (
+        <div className="fixed right-3 top-[4.6rem] z-30 lg:hidden">
+          <button
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
+            className="flex items-center gap-2 rounded-full border border-navy-600 bg-navy-900/95 px-3 py-1.5 text-xs font-semibold text-ink-muted shadow-lg shadow-navy-950"
+          >
+            <span className="size-1.5 rounded-full bg-figurative" />
+            {current.label}
+            <span
+              aria-hidden
+              className={`transition-transform ${open ? "rotate-180" : ""}`}
+            >
+              ▾
+            </span>
+          </button>
+          {open && (
+            <ul className="mt-2 flex w-52 flex-col rounded-2xl border border-navy-600 bg-navy-900/98 p-1.5 shadow-2xl shadow-navy-950">
+              {sections.map((s, i) => (
+                <li key={s.id}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpen(false);
+                      go(s.id);
+                    }}
+                    className={`flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm ${
+                      s.id === active
+                        ? "bg-navy-700 text-ink"
+                        : "text-ink-muted"
+                    }`}
+                  >
+                    <span className="w-5 text-xs tabular-nums text-ink-faint">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    {s.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
     </>
   );
 }
