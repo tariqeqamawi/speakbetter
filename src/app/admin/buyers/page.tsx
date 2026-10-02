@@ -46,7 +46,24 @@ export default async function BuyersPage({ searchParams }: { searchParams: Promi
   if (!stripeEnabled()) return <main className="py-24 text-center text-sm text-ink-muted">Stripe isn&apos;t configured.</main>;
 
   const sessions = await stripe().checkout.sessions.list({ limit: 100, status: "complete" });
-  const paid = sessions.data.filter((s) => s.payment_status === "paid" || s.payment_status === "no_payment_required");
+  // Speak Better purchases only - the same Stripe account sells other
+  // things, which carry no tier.
+  const paid = sessions.data.filter(
+    (s) => (s.payment_status === "paid" || s.payment_status === "no_payment_required") && tiers.some((t) => t.id === s.metadata?.plan),
+  );
+  const seen = new Map<string, number>();
+  for (const s of paid) {
+    const e = (s.customer_details?.email ?? "").toLowerCase();
+    seen.set(e, (seen.get(e) ?? 0) + 1);
+  }
+  // Every successful payment since the cohort went on sale, whatever
+  // route it came by (payment links, invoices, the dashboard) - so a buyer
+  // who didn't come through checkout isn't missed.
+  const since = Math.floor(new Date("2026-09-15T00:00:00Z").getTime() / 1000);
+  const viaCheckout = new Set(paid.map((s) => (typeof s.payment_intent === "string" ? s.payment_intent : s.payment_intent?.id)));
+  const charges = (await stripe().charges.list({ limit: 100, created: { gte: since } })).data.filter(
+    (c) => c.paid && !c.refunded && !viaCheckout.has(typeof c.payment_intent === "string" ? c.payment_intent : (c.payment_intent?.id ?? "")),
+  );
 
   return (
     <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 py-8">
@@ -74,6 +91,11 @@ export default async function BuyersPage({ searchParams }: { searchParams: Promi
                   {new Date(s.created * 1000).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short", timeZone: "America/Chicago" })} CT
                 </span>
               </div>
+              {(seen.get(email.toLowerCase()) ?? 0) > 1 && (
+                <p className="rounded-lg border border-acting/60 bg-acting/10 px-3 py-2 text-sm font-semibold text-acting">
+                  Paid more than once - check in Stripe whether one should be refunded.
+                </p>
+              )}
               <p className="text-sm text-ink-muted">
                 {email} · <b className="text-ink">{tierName}</b> · {s.amount_total != null ? `$${(s.amount_total / 100).toFixed(2)}` : ""}
                 {s.livemode ? "" : " · TEST"}
@@ -95,6 +117,26 @@ export default async function BuyersPage({ searchParams }: { searchParams: Promi
           );
         })}
       </ul>
+      <section className="flex flex-col gap-3">
+        <h2 className="text-xl font-semibold tracking-tight">Other payments since Sep 15</h2>
+        <p className="text-sm text-ink-muted">
+          Paid in Stripe but not through the site&apos;s checkout - a payment link, an invoice or the dashboard. Anyone here who bought
+          Speak Better has no access link yet: tell Claude their name.
+        </p>
+        {charges.length === 0 ? (
+          <p className="text-sm text-ink-faint">None.</p>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {charges.map((c) => (
+              <li key={c.id} className="rounded-xl border border-navy-600 bg-navy-900/60 px-4 py-3 text-sm text-ink-muted">
+                <b className="text-ink">{c.billing_details?.name ?? "(no name)"}</b> · {c.billing_details?.email ?? c.receipt_email ?? ""} · $
+                {(c.amount / 100).toFixed(2)} · {c.description ?? ""} ·{" "}
+                {new Date(c.created * 1000).toLocaleDateString("en-US", { dateStyle: "medium", timeZone: "America/Chicago" })}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </main>
   );
 }
