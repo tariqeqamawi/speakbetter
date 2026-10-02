@@ -255,6 +255,17 @@ export function EyeIcon({ className = "size-5" }: IconProps) {
   );
 }
 
+/** A ringed "i" - more about this, for the section notes (info-eye.tsx). */
+export function InfoIcon({ className = "size-5" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <circle cx="12" cy="12" r="9.25" />
+      <path d="M12 11v5.5" />
+      <circle cx="12" cy="7.75" r="0.4" fill="currentColor" />
+    </svg>
+  );
+}
+
 /** A brush - painting the picture with words. */
 export function BrushIcon({ className = "size-5" }: IconProps) {
   return (
