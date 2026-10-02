@@ -113,8 +113,9 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
               <Soundwave variant="hero" className="-mt-2 h-10 w-full sm:h-12" />
             </div>
             <div className="flex flex-col items-center gap-2 lg:col-span-2 lg:row-start-1 lg:mb-5">
-              <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl lg:text-5xl">
-                Become A Natural, Confident Speaker On Video
+              <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl lg:text-[2.75rem] lg:leading-tight">
+                Overcome Shyness, Remove Filler Words, And Tell Your Stories
+                More Powerfully On Video
               </h1>
               <p className="flex flex-wrap justify-center gap-x-1.5 text-xs font-semibold uppercase tracking-wider text-ink-muted sm:text-sm">
                 {[
@@ -132,9 +133,8 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
               </p>
             </div>
             <div className="flex flex-col items-center gap-1 lg:col-start-2 lg:row-start-3 lg:self-start">
-              <p className="text-base font-medium text-ink-muted text-balance sm:text-xl">
-                Overcome Shyness, Remove Filler Words, And Tell Your Story More
-                Powerfully
+              <p className="text-lg font-semibold text-ink text-balance sm:text-2xl">
+                Become A Natural, Confident Speaker
               </p>
               <p className="neon-underline mt-2 text-xl font-bold tracking-tight text-ink sm:text-2xl">
                 In Minutes, Not Months!
@@ -168,7 +168,7 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
         <div
           id="for-you"
           data-landing-section
-          className="fold flex flex-col gap-10"
+          className="fold fold-marked flex flex-col gap-10"
         >
           <SectionMark
             id="for-you"
@@ -235,7 +235,7 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
         <div
           id="made-for"
           data-landing-section
-          className="fold flex flex-col gap-10"
+          className="fold fold-marked flex flex-col gap-10"
         >
           <SectionMark
             id="made-for"
@@ -250,7 +250,7 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
           <div
             id="try"
             data-landing-section
-            className="fold flex flex-col gap-10"
+            className="fold fold-marked flex flex-col gap-10"
           >
             <SectionMark
               id="try"
@@ -265,7 +265,7 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
         <div
           id="how"
           data-landing-section
-          className="fold flex flex-col gap-16 lg:gap-10"
+          className="fold fold-marked flex flex-col gap-16 lg:gap-10"
         >
           <SectionMark id="how" sections={LANDING_V_SECTIONS} anchor={false} />
           <HowItWorksSection />

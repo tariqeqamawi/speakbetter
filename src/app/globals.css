@@ -3696,4 +3696,13 @@ html.bare .demo-banner {
     flex-direction: column;
     justify-content: center;
   }
+  /* A fold with a chapter mark: the mark sits on the fold's top edge,
+     where one chapter ends and the next begins, and the content centres
+     in the rest. */
+  .fold-marked {
+    justify-content: flex-start;
+  }
+  .fold-marked > :nth-child(2) {
+    margin-block: auto;
+  }
 }

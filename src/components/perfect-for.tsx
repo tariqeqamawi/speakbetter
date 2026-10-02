@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { RoarMark } from "@/components/roar-mark";
 
 // "Speak Better is perfect for..." and then the people it's for, one at a
 // time: the name cascading in, letter by letter, a line on what they want
@@ -82,6 +83,7 @@ export function PerfectFor() {
       className="mx-auto grid w-full max-w-6xl items-center gap-8 lg:grid-cols-2 lg:gap-14"
     >
       <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
+        <RoarMark className="mb-4 h-20 w-auto sm:h-24" />
         <h2 className="flex flex-col items-center gap-1 lg:items-start">
           <span className="text-2xl font-semibold tracking-tight text-ink-muted sm:text-3xl">
             Speak Better is perfect for
