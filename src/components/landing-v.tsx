@@ -142,7 +142,7 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
               "Find talking to a camera or phone unnatural",
               "Freeze up the moment the camera is rolling",
               "Ramble and go off on tangents",
-              "Want to talk about your product or service with confidence - without sounding salesy",
+              "Want to talk about your product or service without sounding salesy",
               "Want the confidence to go live on your socials",
               "Want to tell your stories more powerfully",
             ].map((line) => (
