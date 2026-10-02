@@ -215,6 +215,7 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
                 ["Founders", "founder"],
                 ["Coaches", "coach"],
                 ["Influencers", "influencer"],
+                ["Podcasters", "podcaster"],
                 ["Teachers", "teacher"],
               ].map(([who, pic]) => (
                 <li
