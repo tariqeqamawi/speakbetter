@@ -113,7 +113,15 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
           className="fold flex flex-col items-center text-center"
         >
           <div className="grid w-full max-w-6xl justify-items-center gap-4 lg:grid-cols-[1.75fr_1fr] lg:gap-x-10 lg:gap-y-3">
-            <div className="fold-m w-full items-center gap-6 lg:contents">
+            <div className="fold-m relative isolate w-full items-center gap-6 lg:contents">
+              {/* On a phone, faintly behind the lion: people talking to
+                  their phones. (On a laptop it plays behind "Is it for
+                  you?" instead.) */}
+              <FoldBackdrop
+                src="/film/bg-hero-phone.webp"
+                still="/film/bg-for-you-v2.jpg"
+                on="phone"
+              />
               <div className="flex w-full max-w-xs flex-col items-center lg:col-start-2 lg:row-start-2 lg:self-end">
                 <HeroLion className="h-40 w-auto lg:h-36" />
                 <Soundwave
