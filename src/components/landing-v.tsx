@@ -84,34 +84,41 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
         {/* THE HERO: the promise, Tariq and who he is, the course in a
             line, one result, and the door - price and guarantee on it. */}
         <section className="flex flex-col items-center gap-4 text-center">
-          <div className="flex w-full max-w-xs flex-col items-center">
-            <HeroLion className="h-28 w-auto sm:h-36" />
-            <Soundwave variant="hero" className="-mt-2 h-10 w-full sm:h-12" />
-          </div>
-          <h1 className="flex flex-col items-center gap-1 tracking-tight">
-            <span className="text-3xl font-semibold text-balance sm:text-4xl">Become A Natural, Confident Speaker On Video</span>
-            <span className="text-base font-medium text-ink-muted text-balance sm:text-xl">
-              Overcome Shyness, Remove Filler Words, And Tell Your Story More Powerfully
-            </span>
-            <span className="neon-underline mt-2 text-xl font-bold text-ink sm:text-2xl">In Minutes, Not Months!</span>
-          </h1>
-          <div className="w-full max-w-3xl">
-            <div className="overflow-hidden rounded-2xl border border-navy-600 shadow-2xl shadow-navy-950/80">
-              <LazyVimeoPlayer
-                vimeoId="1082011912"
-                title="Speak Better - From Awkward To Awesome In Minutes A Day"
-                poster="/thumbs/1082011047.jpg"
-              />
+          {/* Phone: the promise, then the film. Laptop: side by side - the
+              film on the left, the lion and the promise on the right - so
+              all of it is on the first screen. */}
+          <div className="flex w-full max-w-5xl flex-col items-center gap-4 lg:grid lg:grid-cols-[1.2fr_1fr] lg:items-center lg:gap-10">
+            <div className="flex flex-col items-center gap-4">
+              <div className="flex w-full max-w-xs flex-col items-center">
+                <HeroLion className="h-28 w-auto sm:h-36" />
+                <Soundwave variant="hero" className="-mt-2 h-10 w-full sm:h-12" />
+              </div>
+              <h1 className="flex flex-col items-center gap-1 tracking-tight">
+                <span className="text-3xl font-semibold text-balance sm:text-4xl">Become A Natural, Confident Speaker On Video</span>
+                <span className="text-base font-medium text-ink-muted text-balance sm:text-xl">
+                  Overcome Shyness, Remove Filler Words, And Tell Your Story More Powerfully
+                </span>
+                <span className="neon-underline mt-2 text-xl font-bold text-ink sm:text-2xl">In Minutes, Not Months!</span>
+              </h1>
             </div>
-            {/* Who's teaching: the name, and the credentials beside it. */}
-            <p className="mt-2.5 text-sm text-balance">
-              <b className="font-semibold text-ink">Tariq EQ Amawi</b>
-              <span className="text-ink-muted">
-                {" "}
-                <span className="text-ink-faint">·</span> TEDx speaker <span className="text-ink-faint">·</span> Slam poetry
-                winner <span className="text-ink-faint">·</span> National writing winner
-              </span>
-            </p>
+            <div className="w-full max-w-3xl lg:order-first lg:max-w-none">
+              <div className="overflow-hidden rounded-2xl border border-navy-600 shadow-2xl shadow-navy-950/80">
+                <LazyVimeoPlayer
+                  vimeoId="1082011912"
+                  title="Speak Better - From Awkward To Awesome In Minutes A Day"
+                  poster="/thumbs/1082011047.jpg"
+                />
+              </div>
+              {/* Who's teaching: the name, and the credentials beside it. */}
+              <p className="mt-2.5 text-sm text-balance">
+                <b className="font-semibold text-ink">Tariq EQ Amawi</b>
+                <span className="text-ink-muted">
+                  {" "}
+                  <span className="text-ink-faint">·</span> TEDx speaker <span className="text-ink-faint">·</span> Slam poetry
+                  winner <span className="text-ink-faint">·</span> National writing winner
+                </span>
+              </p>
+            </div>
           </div>
           <p className="text-sm font-semibold text-ink text-balance">
             83 Lessons <span className="text-ink-faint">·</span> 25 Challenges{" "}
