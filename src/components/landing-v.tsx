@@ -23,7 +23,7 @@ import { LessonStack } from "@/components/lesson-stack";
 import { LandingTracking } from "@/components/landing-tracking";
 import { NeonTracer } from "@/components/neon-tracer";
 import { TryChallenge } from "@/components/try-challenge";
-import { ChevronDownIcon } from "@/components/icons";
+import { CheckIcon, ChevronDownIcon } from "@/components/icons";
 
 // THE LANDING PAGE, TWO WAYS, to compare (/landing-a and /landing-b):
 // the pared-back page with what a first-time visitor needs to decide -
@@ -127,6 +127,40 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
           </figure>
           <div data-track="hero">
             <JoinCta label={`Join Speak Better · from ${FROM_LABEL}`} seal sealSize={96} />
+          </div>
+        </section>
+
+        {/* WHO IT'S FOR: the moments it fixes, and the people it's for -
+            so a visitor can find themselves in it before anything else. */}
+        <section className="flex flex-col items-center gap-5">
+          <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">This is for you if you&hellip;</h2>
+          <ul className="grid w-full max-w-2xl gap-2.5 text-left sm:grid-cols-2">
+            {[
+              "Use a lot of filler words - the ums and ahs",
+              "Lose your place mid-sentence",
+              "Find talking to a camera or phone unnatural",
+              "Freeze up the moment the camera is rolling",
+              "Ramble and go off on tangents",
+              "Want to talk about your product or service with confidence - without sounding salesy",
+              "Want to tell your stories more powerfully",
+            ].map((line) => (
+              <li key={line} className="flex items-start gap-3 rounded-xl border border-navy-600 bg-navy-900/50 px-4 py-3 text-sm text-ink">
+                <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-mindset/15 text-mindset">
+                  <CheckIcon className="size-3" />
+                </span>
+                <span className="text-pretty">{line}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="flex flex-col items-center gap-2.5">
+            <p className="text-sm font-semibold text-ink-muted">And for you if you&apos;re a&hellip;</p>
+            <ul className="flex max-w-2xl flex-wrap justify-center gap-2">
+              {["Influencer", "Author", "Entrepreneur", "Coach", "Creator", "Founder", "Teacher"].map((who) => (
+                <li key={who} className="rounded-full border border-navy-600 bg-navy-900/60 px-4 py-1.5 text-sm font-semibold text-ink">
+                  {who}
+                </li>
+              ))}
+            </ul>
           </div>
         </section>
 
