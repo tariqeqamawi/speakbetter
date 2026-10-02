@@ -3630,3 +3630,31 @@ html.bare .demo-banner {
 @media (prefers-reduced-motion: reduce) {
   .thumb-pulse { animation: none; }
 }
+
+/* Hero promise: a neon underline with the spectrum's colours cascading
+   along it, glowing softly. */
+.neon-underline {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 0.3em;
+}
+.neon-underline::after {
+  content: "";
+  position: absolute;
+  left: 2%;
+  right: 2%;
+  bottom: 0;
+  height: 4px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #ffd60a, #ff9500, #ff4a2b, #d11149, #f53de0, #4d6bff, #22d9f5, #1fe890, #ffd60a, #ff9500, #ff4a2b, #d11149, #f53de0, #4d6bff, #22d9f5, #1fe890, #ffd60a);
+  background-size: 200% 100%;
+  filter: drop-shadow(0 0 6px rgb(245 61 224 / 0.55)) drop-shadow(0 0 12px rgb(34 217 245 / 0.35));
+  animation: neon-cascade 6s linear infinite;
+}
+@keyframes neon-cascade {
+  from { background-position: 0% 0; }
+  to { background-position: -200% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .neon-underline::after { animation: none; }
+}

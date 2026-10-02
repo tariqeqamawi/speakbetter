@@ -91,8 +91,9 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
           <h1 className="flex flex-col items-center gap-1 tracking-tight">
             <span className="text-3xl font-semibold text-balance sm:text-4xl">Become A Natural, Confident Speaker On Video</span>
             <span className="text-base font-medium text-ink-muted text-balance sm:text-xl">
-              Overcome Shyness, Fears, And Filler Words In Minutes, Not Months
+              Overcome Shyness, Remove Filler Words, And Tell Your Story More Powerfully
             </span>
+            <span className="neon-underline mt-2 text-xl font-bold text-ink sm:text-2xl">In Minutes, Not Months!</span>
           </h1>
           <div className="w-full max-w-3xl">
             <div className="overflow-hidden rounded-2xl border border-navy-600 shadow-2xl shadow-navy-950/80">
@@ -154,12 +155,30 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
               </li>
             ))}
           </ul>
-          <div className="flex flex-col items-center gap-2.5">
-            <p className="text-sm font-semibold text-ink-muted">And for you if you&apos;re a&hellip;</p>
-            <ul className="flex max-w-2xl flex-wrap justify-center gap-2">
-              {["Influencer", "Author", "Entrepreneur", "Coach", "Creator", "Founder", "Teacher"].map((who) => (
-                <li key={who} className="rounded-full border border-navy-600 bg-navy-900/60 px-4 py-1.5 text-sm font-semibold text-ink">
-                  {who}
+          <div className="mt-4 flex flex-col items-center gap-4">
+            <h3 className="text-xl font-semibold tracking-tight text-ink-muted sm:text-2xl">This is made for</h3>
+            <ul className="flex max-w-3xl flex-wrap justify-center gap-3">
+              {[
+                ["Influencers", "influencer"],
+                ["Authors", "author"],
+                ["Entrepreneurs", "entrepreneur"],
+                ["Coaches", "coach"],
+                ["Creators", "creator"],
+                ["Founders", "founder"],
+                ["Teachers", "teacher"],
+              ].map(([who, pic]) => (
+                <li
+                  key={who}
+                  className="flex items-center gap-3 rounded-full border border-navy-600 bg-navy-900/60 py-1.5 pl-1.5 pr-5"
+                >
+                  <Image
+                    src={`/landing/role-${pic}.webp`}
+                    alt=""
+                    width={48}
+                    height={48}
+                    className="size-11 rounded-full object-cover sm:size-12"
+                  />
+                  <span className="text-lg font-bold tracking-tight text-ink sm:text-xl">{who}</span>
                 </li>
               ))}
             </ul>
