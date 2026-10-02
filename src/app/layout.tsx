@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { TopBar, BottomTabs, Sidebar } from "@/components/nav";
 import { AppShell } from "@/components/app-shell";
 import { GuidedTour } from "@/components/guided-tour";
+import { LockNotice } from "@/components/lock-notice";
 import { StoreProvider } from "@/lib/store";
 import { AmbientBackground } from "@/components/ambient-background";
 import { CelebrationHost } from "@/components/celebrations";
@@ -88,6 +89,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <BareMode />
           <CoachPopIn />
           <GuidedTour />
+          <LockNotice />
           <ServiceWorkerRegister />
         </StoreProvider>
       </body>

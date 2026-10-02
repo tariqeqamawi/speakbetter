@@ -13,7 +13,8 @@ import { useStore } from "@/lib/store";
 import { setSkillsView, useSkillsView, type SkillsView } from "@/lib/skills-view";
 import { useSkillsGate } from "@/components/skills-gate";
 import { FeatureReaction } from "@/components/feature-reaction";
-import { colourOpen, frontier, neededIn, opensAfter, skillsOpen, UNLOCK_ORDER } from "@/lib/skills-lock";
+import { colourOpen, frontier, neededIn, opensAfter, UNLOCK_ORDER } from "@/lib/skills-lock";
+import { showLocked } from "@/lib/lock-notice";
 
 // Skills, two ways: the dial, or the grid. A switch at the top flips
 // between them and stays where it is left (skills-view.ts).
@@ -39,14 +40,10 @@ function faceOf(cat: Category): string {
 }
 
 export function SkillsBrowser({ children }: { children?: ReactNode }) {
-  const chosen = useSkillsView();
-  const { state } = useStore();
-  // Before challenge 1 is done, Skills opens on Presence (skills-lock.ts).
+  const view = useSkillsView();
+  // A brand-new student's first visit opens on Presence (skills-gate.tsx).
   const { blocked } = useSkillsGate();
   if (blocked) return null;
-  // While colours are still locked it's the grid: a list in learning
-  // order says "this one, then this one" in a way the wheel can't.
-  const view = skillsOpen(state) ? chosen : "grid";
   return (
     <div className="flex flex-col gap-3">
       {/* The section's note. (The Dial / Grid switch lives in the row
@@ -69,9 +66,6 @@ export function SkillsBrowser({ children }: { children?: ReactNode }) {
  *  the layout. */
 export function SkillsViewToggle() {
   const view = useSkillsView();
-  const { state, ready } = useStore();
-  // No dial until every colour is open (SkillsBrowser).
-  if (!ready || !skillsOpen(state)) return null;
   return (
     <div data-tour="view-toggle" className="relative z-30 h-5 w-9 shrink-0">
       <div className="absolute left-0 top-1/2 -translate-y-1/2">
@@ -210,9 +204,12 @@ function SkillGrid() {
         if (locked)
           return (
             <li key={cat.id} className="challenge-enter flex items-stretch" style={{ animationDelay: `${i * 40}ms` }}>
-              <div
+              <button
+                type="button"
                 aria-disabled
-                className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden rounded-xl border border-navy-700 bg-navy-900/40 pr-3"
+                aria-label={`${cat.name} - locked`}
+                onClick={() => showLocked(cat.id)}
+                className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden rounded-xl border border-navy-700 bg-navy-900/40 pr-3 text-left"
               >
                 <span className={`w-1 self-stretch opacity-40 ${cat.bgClass}`} />
                 <span className="relative my-2 block aspect-video w-32 shrink-0 overflow-hidden rounded-lg bg-navy-900 opacity-35 grayscale sm:w-40">
@@ -228,7 +225,7 @@ function SkillGrid() {
                     {after ? `Opens after ${neededIn(after.id)} ${after.name} lessons` : "Locked"}
                   </span>
                 </span>
-              </div>
+              </button>
             </li>
           );
         return (

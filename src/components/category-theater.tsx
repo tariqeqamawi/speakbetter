@@ -20,6 +20,8 @@ import { PlayFillIcon } from "@/components/player-icons";
 import { BackLink } from "@/components/back-link";
 import { InfoEye } from "@/components/info-eye";
 import { colourOpen, FIRST_COLOUR, frontier, neededIn, opensNext, watchedIn } from "@/lib/skills-lock";
+import { showLocked } from "@/lib/lock-notice";
+import type { CategoryId } from "@/data/categories";
 
 // A category as a theater: whichever lesson is selected plays full
 // width, and every other lesson in the color waits in a carousel below.
@@ -699,11 +701,14 @@ function ColourSwitcher({ current, skillsHref }: { current: Category; skillsHref
                   aria-current={here ? "page" : undefined}
                   aria-disabled={locked(c.id) || undefined}
                   onClick={(e) => {
-                    if (locked(c.id)) e.preventDefault();
-                    else setOpen(false);
+                    if (locked(c.id)) {
+                      e.preventDefault();
+                      showLocked(c.id);
+                    }
+                    setOpen(false);
                   }}
                   className={`flex items-center gap-3 px-3.5 py-2 transition-colors ${
-                    locked(c.id) ? "cursor-default opacity-45" : "hover:bg-navy-700"
+                    locked(c.id) ? "opacity-45" : "hover:bg-navy-700"
                   } ${here ? "bg-navy-800" : ""}`}
                 >
                   <span className={`size-2.5 shrink-0 rounded-full ${c.bgClass}`} style={{ boxShadow: `0 0 8px var(--color-${c.id})` }} />
@@ -741,7 +746,12 @@ function CategoryTab({ current, skillsHref }: { current: Category; skillsHref: s
   const colourUnder = (x: number, y: number) =>
     (document.elementFromPoint(x, y)?.closest("[data-colour]") as HTMLElement | null)?.dataset.colour ?? null;
   const go = (id: string) => {
-    if (locked(id)) return;
+    if (locked(id)) {
+      setOpen(false);
+      setLit(null);
+      showLocked(id as CategoryId);
+      return;
+    }
     setOpen(false);
     setLit(null);
     if (id !== current.id) router.push(`${skillsHref}/${id}`);
@@ -835,7 +845,7 @@ function CategoryTab({ current, skillsHref }: { current: Category; skillsHref: s
                   aria-disabled={locked(c.id) || undefined}
                   onClick={() => go(c.id)}
                   className={`flex items-center gap-3 px-3.5 py-2.5 text-left transition-colors ${
-                    locked(c.id) ? "cursor-default opacity-45" : "hover:bg-navy-700"
+                    locked(c.id) ? "opacity-45" : "hover:bg-navy-700"
                   } ${on && !locked(c.id) ? "bg-navy-700" : here ? "bg-navy-800" : ""}`}
                 >
                   <span

@@ -110,3 +110,21 @@ export function lessonOpen(state: AppState, vimeoId: string, from?: string | nul
   if (!challenge?.relatedLessonIds.includes(vimeoId)) return false;
   return phaseGate(state, storyPhases.findIndex((p) => p.id === challenge.phase)).open;
 }
+
+/** What to say when a locked colour (or a lesson in one) is asked for:
+ *  which colour is open now, how many more of its lessons to watch, and
+ *  what that opens - so a lock always comes with the way through it. */
+export function lockMessage(state: LockState, colour: CategoryId): { title: string; body: string; now: Category } {
+  const now = categoryById.get(frontier(state) ?? FIRST_COLOUR)!;
+  const next = opensNext(now.id);
+  const asked = categoryById.get(colour)!;
+  const toGo = Math.max(1, neededIn(now.id) - watchedIn(state, now.id));
+  const lessons = `${toGo} more ${now.name} lesson${toGo === 1 ? "" : "s"}`;
+  if (!next || next.id === asked.id)
+    return { title: `${asked.name} is locked`, body: `Watch ${lessons} to unlock ${asked.name}.`, now };
+  return {
+    title: `${asked.name} is locked`,
+    body: `The colors open one at a time. Watch ${lessons} to unlock ${next.name} next - ${asked.name} opens after that, in order.`,
+    now,
+  };
+}

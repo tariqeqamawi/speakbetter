@@ -5,7 +5,14 @@ import { RoaringLion } from "@/components/roaring-lion";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { categories, type CategoryId } from "@/data/categories";
+import { categoryById, type CategoryId } from "@/data/categories";
+import { colourOpen, opensAfter, neededIn, UNLOCK_ORDER } from "@/lib/skills-lock";
+import { showLocked } from "@/lib/lock-notice";
+import { LockIcon } from "@/components/icons";
+
+// Round the dial in the order the colours open (skills-lock.ts), Presence
+// first at the top - the wheel and the grid tell the same story.
+const categories = UNLOCK_ORDER.map((id) => categoryById.get(id)!);
 import { lessonsInCategory } from "@/data/lessons";
 import { CategoryIcon } from "@/components/category-icons";
 import { useStore } from "@/lib/store";
@@ -57,7 +64,13 @@ function useSkillsPrefix(): string {
 export function SkillDial() {
   const router = useRouter();
   const prefix = useSkillsPrefix();
-  const { state } = useStore();
+  const { state, ready } = useStore();
+  const locked = useCallback((id: CategoryId) => ready && !colourOpen(state, id), [ready, state]);
+  // A locked colour says how to open it rather than opening.
+  const open = useCallback(
+    (id: CategoryId) => (locked(id) ? showLocked(id) : router.push(`${prefix}/skills/${id}`)),
+    [locked, router, prefix],
+  );
   const [hovered, setHoveredRaw] = useState<CategoryId | null>(null);
   const dialRef = useRef<HTMLDivElement>(null);
   /** Where the head of the tracer sits - the middle of the live
@@ -110,7 +123,7 @@ export function SkillDial() {
       // not from state, which may not have settled yet.
       const cat = catUnder(e.changedTouches[0]);
       setHovered(null);
-      if (cat) router.push(`${prefix}/skills/${cat}`);
+      if (cat) open(cat);
     };
     const onCancel = () => {
       dialing = false;
@@ -127,7 +140,7 @@ export function SkillDial() {
       dial.removeEventListener("touchend", onEnd);
       dial.removeEventListener("touchcancel", onCancel);
     };
-  }, [router, prefix, setHovered]);
+  }, [open, setHovered]);
 
   const active = hovered ? categories.find((c) => c.id === hovered) : null;
   const activeIndex = active ? categories.indexOf(active) : -1;
@@ -227,8 +240,17 @@ export function SkillDial() {
           <span aria-live="polite" className="absolute inset-0 flex flex-col items-center justify-center gap-0.5 px-3 text-center">
             <span className={`text-lg font-semibold leading-tight sm:text-2xl ${active.textClass}`}>{active.short}</span>
             <span className="text-xs text-ink-muted text-balance">
-              {activeLessons.length} lessons
-              {activeWatched > 0 && ` · ${activeWatched} watched`}
+              {locked(active.id) ? (
+                <>
+                  <LockIcon className="mr-1 inline size-3 align-[-1px]" />
+                  Opens after {neededIn(opensAfter(active.id)!.id)} {opensAfter(active.id)!.name} lessons
+                </>
+              ) : (
+                <>
+                  {activeLessons.length} lessons
+                  {activeWatched > 0 && ` · ${activeWatched} watched`}
+                </>
+              )}
             </span>
           </span>
         )}
@@ -239,17 +261,18 @@ export function SkillDial() {
       {categories.map((cat, i) => {
         const pos = polar(i * NODE_ANGLE + NODE_ANGLE / 2, RADIUS);
         const lit = hovered === cat.id;
+        const shut = locked(cat.id);
         return (
           <button
             key={cat.id}
             type="button"
             data-dial-node={cat.id}
-            aria-label={`${cat.name} - open lessons`}
+            aria-label={shut ? `${cat.name} - locked` : `${cat.name} - open lessons`}
             onMouseEnter={() => setHovered(cat.id)}
             onMouseLeave={() => setHovered(null)}
             onFocus={() => setHovered(cat.id)}
             onBlur={() => setHovered(null)}
-            onClick={() => router.push(`${prefix}/skills/${cat.id}`)}
+            onClick={() => open(cat.id)}
             className={`absolute flex size-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border bg-navy-800 transition-all duration-300 sm:size-[4.5rem] ${cat.textClass} ${
               lit
                 ? "z-10 scale-125 border-current shadow-[0_0_24px_-4px_currentColor]"
@@ -259,8 +282,13 @@ export function SkillDial() {
           >
             <CategoryIcon
               category={cat.id}
-              className={`transition-transform duration-300 ${lit ? "size-8 sm:size-9" : "size-6 sm:size-7"}`}
+              className={`transition-[transform,opacity] duration-300 ${lit ? "size-8 sm:size-9" : "size-6 sm:size-7"} ${shut ? "opacity-35" : ""}`}
             />
+            {shut && (
+              <span className="absolute -bottom-0.5 -right-0.5 flex size-5 items-center justify-center rounded-full border border-navy-600 bg-navy-900 text-ink-muted sm:size-6">
+                <LockIcon className="size-3 sm:size-3.5" />
+              </span>
+            )}
           </button>
         );
       })}
