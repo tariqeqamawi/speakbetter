@@ -136,12 +136,14 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
           <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">This is for you if you&hellip;</h2>
           <ul className="grid w-full max-w-2xl gap-2.5 text-left sm:grid-cols-2">
             {[
+              "Get shy or nervous talking on camera",
               "Use a lot of filler words - the ums and ahs",
               "Lose your place mid-sentence",
               "Find talking to a camera or phone unnatural",
               "Freeze up the moment the camera is rolling",
               "Ramble and go off on tangents",
               "Want to talk about your product or service with confidence - without sounding salesy",
+              "Want the confidence to go live on your socials",
               "Want to tell your stories more powerfully",
             ].map((line) => (
               <li key={line} className="flex items-start gap-3 rounded-xl border border-navy-600 bg-navy-900/50 px-4 py-3 text-sm text-ink">
