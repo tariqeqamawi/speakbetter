@@ -33,9 +33,9 @@ export function FoldBackdrop({ src, poster }: { src: string; poster: string }) {
       className="pointer-events-none absolute inset-0 -z-10 hidden overflow-hidden lg:block"
       style={{
         maskImage:
-          "radial-gradient(75% 70% at 50% 50%, #000 30%, transparent 100%)",
+          "radial-gradient(50% 50% at 50% 50%, #000 55%, transparent 100%)",
         WebkitMaskImage:
-          "radial-gradient(75% 70% at 50% 50%, #000 30%, transparent 100%)",
+          "radial-gradient(50% 50% at 50% 50%, #000 55%, transparent 100%)",
       }}
     >
       <video
@@ -45,7 +45,7 @@ export function FoldBackdrop({ src, poster }: { src: string; poster: string }) {
         loop
         playsInline
         preload="none"
-        className="size-full object-cover opacity-[0.13] blur-[2px] saturate-[0.7]"
+        className="size-full object-cover opacity-[0.28] blur-[1px] saturate-[0.85]"
       />
     </div>
   );
