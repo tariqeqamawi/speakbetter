@@ -186,7 +186,8 @@ export function DataRoom() {
 // ── What students love ────────────────────────────────────────────────
 // The students' own verdicts, in two kinds: on Coach's reviews (👌 spot
 // on, 🤏 partly right, 👎 way off the mark) and on each part of the app
-// (🔥 love it, 👇 not for me) - with what they wrote when they said no.
+// (👌 working, 🤏 partly, 👎 not working) - with what they wrote when it
+// wasn't.
 function Feedback({ data }: { data: SampleCohort }) {
   const rated = data.takes.filter((t) => t.rating);
   const count = (r: Rating) => rated.filter((t) => t.rating === r).length;
@@ -194,8 +195,9 @@ function Feedback({ data }: { data: SampleCohort }) {
     .map((f) => {
       const rs = data.reactions.filter((r) => r.feature === f);
       const love = rs.filter((r) => r.reaction === "love").length;
-      const dislike = rs.length - love;
-      return { f, love, dislike, total: rs.length, notes: [...new Set(rs.flatMap((r) => (r.note ? [r.note] : [])))] };
+      const dislike = rs.filter((r) => r.reaction === "dislike").length;
+      const partly = rs.filter((r) => r.reaction === "partly").length;
+      return { f, love, partly, dislike, total: rs.length, notes: [...new Set(rs.flatMap((r) => (r.note ? [r.note] : [])))] };
     })
     .filter((x) => x.total)
     .sort((a, b) => b.love / b.total - a.love / a.total);
@@ -206,24 +208,25 @@ function Feedback({ data }: { data: SampleCohort }) {
       <Panel
         id="features"
         title="Which parts of the app students love"
-        blurb={`🔥 love it or 👇 not for me, under each part of the app - ${data.reactions.length} reactions from ${reacted} students, most loved first.`}
+        blurb={`👌 working, 🤏 partly or 👎 not working, under each part of the app - ${data.reactions.length} reactions from ${reacted} students, most loved first.`}
       >
         <ol className="flex flex-col gap-3">
-          {features.map(({ f, love, dislike, total, notes }) => (
+          {features.map(({ f, love, partly, dislike, total, notes }) => (
             <li key={f} className="flex flex-col gap-1.5">
               <div className="grid grid-cols-[8rem_1fr_7rem] items-center gap-3 text-sm">
                 <b className="text-ink">{FEATURE_NAME[f]}</b>
                 <div className="flex h-3 overflow-hidden rounded-full bg-navy-900">
                   <div className="bg-figurative" style={{ width: `${pct(love, total)}%` }} />
+                  <div className="bg-figurative/40" style={{ width: `${pct(partly, total)}%` }} />
                   <div className="bg-navy-600" style={{ width: `${pct(dislike, total)}%` }} />
                 </div>
                 <span className="text-right text-xs tabular-nums text-ink-muted">
-                  🔥 {love} · 👇 {dislike} · <b className="text-ink">{pct(love, total)}%</b>
+                  👌 {love} · 🤏 {partly} · 👎 {dislike} · <b className="text-ink">{pct(love, total)}%</b>
                 </span>
               </div>
               {notes.length > 0 && (
                 <p className="pl-[8.75rem] text-xs text-ink-faint">
-                  {notes.slice(0, 2).map((n) => `👇 “${n}”`).join("   ")}
+                  {notes.slice(0, 2).map((n) => `“${n}”`).join("   ")}
                 </p>
               )}
             </li>

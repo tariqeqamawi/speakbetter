@@ -3,15 +3,17 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import { categories, type Category } from "@/data/categories";
+import { categoryById, type Category } from "@/data/categories";
 import { lessonsInCategory } from "@/data/lessons";
 import { SkillDial } from "@/components/skill-dial";
 import { VideoStill } from "@/components/video-still";
 import { CategoryIcon } from "@/components/category-icons";
-import { DeckIcon } from "@/components/icons";
+import { DeckIcon, LockIcon } from "@/components/icons";
 import { useStore } from "@/lib/store";
 import { setSkillsView, useSkillsView, type SkillsView } from "@/lib/skills-view";
 import { useSkillsGate } from "@/components/skills-gate";
+import { FeatureReaction } from "@/components/feature-reaction";
+import { colourOpen, frontier, neededIn, opensAfter, skillsOpen, UNLOCK_ORDER } from "@/lib/skills-lock";
 
 // Skills, two ways: the dial, or the grid. A switch at the top flips
 // between them and stays where it is left (skills-view.ts).
@@ -37,16 +39,27 @@ function faceOf(cat: Category): string {
 }
 
 export function SkillsBrowser({ children }: { children?: ReactNode }) {
-  const view = useSkillsView();
+  const chosen = useSkillsView();
+  const { state } = useStore();
   // Before challenge 1 is done, Skills opens on Presence (skills-lock.ts).
   const { blocked } = useSkillsGate();
   if (blocked) return null;
+  // While colours are still locked it's the grid: a list in learning
+  // order says "this one, then this one" in a way the wheel can't.
+  const view = skillsOpen(state) ? chosen : "grid";
   return (
     <div className="flex flex-col gap-3">
       {/* The section's note. (The Dial / Grid switch lives in the row
           of section tabs under the top bar - section-tabs.tsx.) */}
       {children}
       {view === "grid" ? <SkillGrid /> : <SkillDial />}
+      {/* Named for the view on screen - asked about the dial while
+          looking at the grid, the answer means nothing. */}
+      {view === "grid" ? (
+        <FeatureReaction key="grid" feature="grid" label="the grid" />
+      ) : (
+        <FeatureReaction key="dial" feature="dial" label="the dial" />
+      )}
     </div>
   );
 }
@@ -56,6 +69,9 @@ export function SkillsBrowser({ children }: { children?: ReactNode }) {
  *  the layout. */
 export function SkillsViewToggle() {
   const view = useSkillsView();
+  const { state, ready } = useStore();
+  // No dial until every colour is open (SkillsBrowser).
+  if (!ready || !skillsOpen(state)) return null;
   return (
     <div data-tour="view-toggle" className="relative z-30 h-5 w-9 shrink-0">
       <div className="absolute left-0 top-1/2 -translate-y-1/2">
@@ -175,21 +191,53 @@ function ViewSwitch({ view }: { view: SkillsView }) {
   );
 }
 
-/** The eight colours, one under another: a lesson from each as its
- *  face, its name, and how many of its lessons you have watched. */
+/** The eight colours, one under another in the order they open
+ *  (skills-lock.ts): a lesson from each as its face, its name, and how
+ *  many of its lessons you have watched. A locked colour is shown, dimmed,
+ *  with what opens it; the one being worked on is lit. */
 function SkillGrid() {
   const prefix = usePathname().startsWith("/demo") ? "/demo" : "";
   const { state, ready } = useStore();
+  const working = ready ? frontier(state) : null;
   return (
     <ul className="flex flex-col gap-3">
-      {categories.map((cat, i) => {
+      {UNLOCK_ORDER.map((id, i) => {
+        const cat = categoryById.get(id)!;
         const lessons = lessonsInCategory(cat.id);
         const watched = ready ? lessons.filter((l) => state.watchedLessons.includes(l.vimeoId)).length : 0;
+        const locked = ready && !colourOpen(state, cat.id);
+        const after = opensAfter(cat.id);
+        if (locked)
+          return (
+            <li key={cat.id} className="challenge-enter flex items-stretch" style={{ animationDelay: `${i * 40}ms` }}>
+              <div
+                aria-disabled
+                className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden rounded-xl border border-navy-700 bg-navy-900/40 pr-3"
+              >
+                <span className={`w-1 self-stretch opacity-40 ${cat.bgClass}`} />
+                <span className="relative my-2 block aspect-video w-32 shrink-0 overflow-hidden rounded-lg bg-navy-900 opacity-35 grayscale sm:w-40">
+                  <VideoStill vimeoId={faceOf(cat)} accent={cat} sizes="160px" />
+                </span>
+                <span className="flex min-w-0 flex-1 flex-col gap-0.5 py-2">
+                  <span className={`flex items-center gap-1.5 opacity-60 ${cat.textClass}`}>
+                    <CategoryIcon category={cat.id} className="size-4" />
+                    <span className="text-base font-semibold text-ink-muted">{cat.name}</span>
+                  </span>
+                  <span className="flex items-center gap-1.5 text-xs text-ink-faint">
+                    <LockIcon className="size-3.5 shrink-0" />
+                    {after ? `Opens after ${neededIn(after.id)} ${after.name} lessons` : "Locked"}
+                  </span>
+                </span>
+              </div>
+            </li>
+          );
         return (
           <li key={cat.id} className="challenge-enter flex items-stretch gap-2" style={{ animationDelay: `${i * 40}ms` }}>
             <Link
               href={`${prefix}/skills/${cat.id}`}
-              className={`lift-card group flex min-w-0 flex-1 items-center gap-3 overflow-hidden rounded-xl border border-navy-600 bg-navy-900/60 pr-3 transition-colors hover:border-current ${cat.textClass}`}
+              className={`lift-card group flex min-w-0 flex-1 items-center gap-3 overflow-hidden rounded-xl border bg-navy-900/60 pr-3 transition-colors hover:border-current ${cat.textClass} ${
+                working === cat.id ? "border-current shadow-[0_0_24px_-10px_currentColor]" : "border-navy-600"
+              }`}
             >
               <span className={`w-1 self-stretch ${cat.bgClass}`} />
               <span className="relative my-2 block aspect-video w-32 shrink-0 overflow-hidden rounded-lg bg-gradient-to-br from-navy-700 to-navy-900 sm:w-40">
@@ -203,6 +251,7 @@ function SkillGrid() {
                 <span className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-ink-faint">{cat.subtitle}</span>
                 <span className="text-xs tabular-nums text-ink-muted">
                   {lessons.length} lessons{watched > 0 ? ` · ${watched} watched` : ""}
+                  {working === cat.id && ` · ${Math.max(0, neededIn(cat.id) - watched)} to open the next`}
                 </span>
               </span>
             </Link>

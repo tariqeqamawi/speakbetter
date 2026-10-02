@@ -25,7 +25,9 @@ export default async function CategoryPage(props: PageProps<"/skills/[category]"
 
   return (
     <div className="flex flex-col gap-6 pb-6">
-      <SkillsGate category={cat.id} />
+      <Suspense>
+        <SkillsGate category={cat.id} />
+      </Suspense>
       {/* (Reads the address - ?lesson=, ?spread= - so it renders in the
           browser, inside its own boundary.) */}
       <Suspense fallback={<div className="min-h-[70vh]" aria-busy />}>

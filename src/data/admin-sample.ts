@@ -43,7 +43,7 @@ export interface SampleQuestion {
 export interface SampleReaction {
   studentNo: number;
   feature: string;
-  reaction: "love" | "dislike";
+  reaction: "love" | "partly" | "dislike";
   note?: string;
 }
 
@@ -141,6 +141,7 @@ const QUESTIONS: [string, string][] = [
 export const FEATURE_NAME: Record<string, string> = {
   road: "The road",
   dial: "Skill dial",
+  grid: "Skill grid",
   lessons: "Lessons",
   deck: "Card deck",
   dashboard: "Dashboard",

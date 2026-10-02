@@ -3,7 +3,7 @@ import { InfoEye } from "@/components/info-eye";
 import { SkillsBrowser } from "@/components/skills-browser";
 import { SectionTabs } from "@/components/section-tabs";
 import { SectionTour } from "@/components/section-tour";
-import { FeatureReaction } from "@/components/feature-reaction";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Skills",
@@ -32,8 +32,10 @@ export default function SkillsPage() {
       />
       <SectionTour section="skills" />
 
-      <SkillsBrowser />
-      <FeatureReaction feature="dial" label="the dial" />
+      {/* (The lock reads the address, so it renders in the browser.) */}
+      <Suspense>
+        <SkillsBrowser />
+      </Suspense>
     </div>
   );
 }

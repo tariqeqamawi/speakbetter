@@ -5,14 +5,17 @@ import { track } from "@/lib/insights";
 
 // One quiet line under each main part of the app - the road, the dial,
 // the lessons, the deck, the dashboard, the trophies, Ask Coach, the live
-// sessions and the community: 🔥 if it's working for you, 👇 if it isn't,
-// and on 👇 one optional line on why. A student's answer is remembered on
-// the device, so it's asked once, not every visit (tapping the other one
-// changes it).
+// sessions and the community: 👌 working, 🤏 partly, 👎 not working - the
+// same three a student rates Coach's reviews with (rate-review.tsx), so
+// there is one way to give feedback across the app. On 🤏 or 👎, one
+// optional line on why. A student's answer is remembered on the device, so
+// it's asked once, not every visit (tapping another one changes it).
+// (Stored as love / partly / dislike - the names from when it was 🔥 / 👇.)
 
 export type Feature =
   | "road"
   | "dial"
+  | "grid"
   | "deck"
   | "lessons"
   | "dashboard"
@@ -23,7 +26,15 @@ export type Feature =
 
 const KEY = "feature-reactions-v1";
 
-function load(): Record<string, "love" | "dislike"> {
+export type Reaction = "love" | "partly" | "dislike";
+
+const PILLS: { id: Reaction; emoji: string; title: string }[] = [
+  { id: "love", emoji: "👌", title: "Working well" },
+  { id: "partly", emoji: "🤏", title: "Partly working" },
+  { id: "dislike", emoji: "👎", title: "Not working" },
+];
+
+function load(): Record<string, Reaction> {
   try {
     return JSON.parse(localStorage.getItem(KEY) ?? "{}");
   } catch {
@@ -32,13 +43,13 @@ function load(): Record<string, "love" | "dislike"> {
 }
 
 export function FeatureReaction({ feature, label }: { feature: Feature; label: string }) {
-  const [mine, setMine] = useState<"love" | "dislike" | null>(null);
+  const [mine, setMine] = useState<Reaction | null>(null);
   const [note, setNote] = useState("");
   const [sent, setSent] = useState(false);
   // eslint-disable-next-line react-hooks/set-state-in-effect -- read the device's answer after hydration
   useEffect(() => setMine(load()[feature] ?? null), [feature]);
 
-  const react = (r: "love" | "dislike") => {
+  const react = (r: Reaction) => {
     setMine(r);
     setSent(false);
     try {
@@ -48,12 +59,14 @@ export function FeatureReaction({ feature, label }: { feature: Feature; label: s
   };
   const send = () => {
     if (!note.trim()) return;
-    track({ type: "feature-reaction", feature, reaction: "dislike", note: note.trim() });
+    if (mine !== "partly" && mine !== "dislike") return;
+    track({ type: "feature-reaction", feature, reaction: mine, note: note.trim() });
     setSent(true);
   };
 
-  const pill = (r: "love" | "dislike", emoji: string, title: string) => (
+  const pill = (r: Reaction, emoji: string, title: string) => (
     <button
+      key={r}
       type="button"
       onClick={() => react(r)}
       aria-pressed={mine === r}
@@ -70,10 +83,9 @@ export function FeatureReaction({ feature, label }: { feature: Feature; label: s
     <div className="flex flex-col items-center gap-2 py-2 text-xs text-ink-faint">
       <div className="flex items-center gap-2">
         <span>{mine ? "Thanks - noted." : `How's ${label} working for you?`}</span>
-        {pill("love", "🔥", "Love it")}
-        {pill("dislike", "👇", "Not for me")}
+        {PILLS.map((p) => pill(p.id, p.emoji, p.title))}
       </div>
-      {mine === "dislike" && !sent && (
+      {(mine === "partly" || mine === "dislike") && !sent && (
         <div className="flex w-full max-w-sm gap-2">
           <input
             value={note}

@@ -19,7 +19,7 @@ import { LessonTranscript } from "@/components/lesson-transcript";
 import { PlayFillIcon } from "@/components/player-icons";
 import { BackLink } from "@/components/back-link";
 import { InfoEye } from "@/components/info-eye";
-import { colourOpen, OPEN_AFTER, skillsOpen } from "@/lib/skills-lock";
+import { colourOpen, FIRST_COLOUR, frontier, neededIn, opensNext, watchedIn } from "@/lib/skills-lock";
 
 // A category as a theater: whichever lesson is selected plays full
 // width, and every other lesson in the color waits in a carousel below.
@@ -122,9 +122,10 @@ export function CategoryTheater({
   const watchedCount = lessons.filter((l) => watched(l.vimeoId)).length;
   const complete = ready && watchedCount === lessons.length;
   const nextColour = categories[categories.findIndex((c) => c.id === category.id) + 1];
-  // Still in the starting colour, the others waiting (skills-lock.ts).
-  const starting = ready && !skillsOpen(state);
-  const toGo = Math.max(0, OPEN_AFTER - state.watchedLessons.length);
+  // The colour being worked on, the next one waiting on it (skills-lock.ts).
+  const working = ready && frontier(state) === category.id;
+  const toGo = Math.max(0, neededIn(category.id) - watchedIn(state, category.id));
+  const opens = opensNext(category.id);
 
   // Finishing the colour while here is a moment: the strip under the bar
   // arrives with a small entrance. Arriving already finished, it's just
@@ -286,20 +287,20 @@ export function CategoryTheater({
         )}
       </header>
 
-      {/* Where a new student starts: why only this colour is open, and
-          how far they are from the rest. */}
-      {starting && (
+      {/* The colour being worked on: what opens next, and how far off it
+          is. Presence, the first, also says why it comes first. */}
+      {working && opens && (
         <div role="status" className={`flex flex-col gap-1 rounded-xl border border-current bg-navy-900/60 px-4 py-3 ${category.textClass}`}>
-          <span className="text-[0.65rem] font-bold uppercase tracking-[0.3em]">Start here</span>
+          <span className="text-[0.65rem] font-bold uppercase tracking-[0.3em]">{category.id === FIRST_COLOUR ? "Start here" : "Keep going"}</span>
           <p className="text-sm font-semibold text-ink text-pretty">
-            Watch any five {category.name} lessons and the other seven colors open.
+            Watch any {neededIn(category.id) === 5 ? "five" : neededIn(category.id)} {category.name} lessons and{" "}
+            <span className={opens.textClass}>{opens.name}</span> opens next.
           </p>
           <p className="text-xs text-ink-muted text-pretty">
-            {category.name} is confidence on camera - everything else in the course builds on it. This is challenge 1,
-            done just by watching.{" "}
-            <b className="font-semibold text-ink">
-              {toGo} to go.
-            </b>
+            {category.id === FIRST_COLOUR
+              ? `${category.name} is confidence on camera - everything else in the course builds on it. This is challenge 1, done just by watching. `
+              : "The colors open one at a time, so each one builds on the last. "}
+            <b className="font-semibold text-ink">{toGo} to go.</b>
           </p>
         </div>
       )}

@@ -88,7 +88,7 @@ export const PHASES = [
     to: "2026-10-02",
     title: "The First Student Speaks",
     summary:
-      "The first feedback from a new student changes the start of the course: challenge 1 becomes watching five Presence lessons instead of going on camera, and Skills opens on Presence alone, with the other seven colours unlocking after five lessons.",
+      "The first feedback from a new student changes the start of the course: challenge 1 becomes watching five Presence lessons instead of going on camera, and the Skills colours open one at a time - Presence, Body, Voice, Tell, Paint, Act, Frame, Pro - five lessons opening the next. Feedback everywhere moves to Coach's three: 👌 🤏 👎.",
   },
 ];
 
@@ -487,10 +487,19 @@ export const DECISIONS: Decision[] = [
   {
     area: "learn",
     when: "Oct 2",
-    title: "Skills unlock gradually, starting with Presence",
-    what: "Until challenge 1 is done, Presence is the only colour open. Skills opens straight onto Presence with all its lessons listed and a note: watch any five and the other seven colours open (with a countdown). Other colours show a lock in the colour menus, and links into them lead back to Presence. Five lessons watched, or challenge 1 passed, opens everything, so students who were already using the library aren't locked out.",
-    why: "The same student went straight into Storytelling, landed on the storybook lessons, felt they had missed earlier lessons, and stopped. Opening one colour at a time gives a clear first step and makes the library feel supportive rather than overwhelming.",
+    title: "Skills unlock gradually, one colour at a time",
+    what: "The colours open in a set order - Presence, Body, Voice, Tell, Paint, Act, Frame, Pro - and five lessons watched in one opens the next. Skills opens straight onto Presence for a new student; after that it shows the grid in learning order, the colour being worked on lit, the locked ones dimmed with what opens them (\"Opens after 5 Body lessons\"), and a countdown banner inside the current colour. A challenge's warm-up lessons open from that challenge whatever their colour, but stay locked when browsing Skills. Anyone who started before the lock keeps everything open. Inside Body, Posture Warm Up moved to straight after the introduction.",
+    why: `The same student went straight into Storytelling, landed on the storybook lessons, felt they had missed earlier lessons, and stopped. Tariq: "if somebody is going through this course, then it needs to unlock in a certain order... otherwise it's going to be daunting." The order runs from how you feel on camera, to your body and voice, to what you say, to shaping it, to the advanced craft.`,
     result: "Shipped Oct 2. The whole-app tour still walks through every colour, because the lock stands aside while the tour is running.",
+  },
+
+  {
+    area: "nav",
+    when: "Oct 2",
+    title: "One way to give feedback: Coach's three",
+    what: `Every "How's ... working for you?" line moved from 🔥 / 👇 to 👌 working, 🤏 partly, 👎 not working - the same three students rate Coach's reviews with - and 🤏 also asks what would make it better. On Skills the line names the view on screen: the grid or the dial. The "what this is" eye became an "i", and its panel no longer runs off the edge of a phone.`,
+    why: `Tariq: "Let's actually have it be consistent with the coaching." Two answers missed the student for whom something half works, and a question about the dial asked under the grid means nothing.`,
+    result: "Shipped Oct 2. The admin dashboards count the new 🤏 answers.",
   },
 
   // ---------- marketing ----------

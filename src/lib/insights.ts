@@ -24,7 +24,7 @@ export type InsightEvent =
   | { type: "view"; area: string; path: string }
   | { type: "time"; area: string; seconds: number }
   | { type: "review-rating"; attemptId: string; challenge: string; level: string; rating: ReviewRating; note?: string }
-  | { type: "feature-reaction"; feature: string; reaction: "love" | "dislike"; note?: string }
+  | { type: "feature-reaction"; feature: string; reaction: "love" | "partly" | "dislike"; note?: string }
   | { type: "coach-question"; question: string }
   | { type: "tour"; stop: string; action: "next" | "back" | "end" }
   | { type: "check-in"; moment: "start" | "end"; confidence?: number; recommend?: number; story?: string; quoteOk?: boolean };

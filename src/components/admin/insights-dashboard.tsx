@@ -516,6 +516,7 @@ function Voice({ data }: { data: SampleCohort }) {
     return {
       f,
       love: rs.filter((r) => r.reaction === "love").length,
+      partly: rs.filter((r) => r.reaction === "partly").length,
       dislike: rs.filter((r) => r.reaction === "dislike").length,
       notes: rs.filter((r) => r.note).map((r) => r.note!),
     };
@@ -529,23 +530,24 @@ function Voice({ data }: { data: SampleCohort }) {
   const topMax = topicList[0]?.[1].n ?? 1;
 
   return (
-    <Panel id="voice" title="Voice of the student" blurb="🔥 and 👇 on each part of the app, and what students ask Coach.">
+    <Panel id="voice" title="Voice of the student" blurb="👌, 🤏 and 👎 on each part of the app, and what students ask Coach.">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {features.map(({ f, love, dislike, notes }) => (
+        {features.map(({ f, love, partly, dislike, notes }) => (
           <div key={f} className="flex flex-col gap-2 rounded-xl border border-navy-600 bg-navy-900/60 p-3 text-xs">
             <div className="flex items-center justify-between">
               <b className="text-sm">{FEATURE_NAME[f]}</b>
               <span className="tabular-nums text-ink-muted">
-                🔥 {love} · 👇 {dislike}
+                👌 {love} · 🤏 {partly} · 👎 {dislike}
               </span>
             </div>
             <div className="flex h-2 overflow-hidden rounded-full bg-navy-900">
-              <div className="bg-figurative" style={{ width: `${pct(love, love + dislike)}%` }} />
-              <div className="bg-navy-600" style={{ width: `${pct(dislike, love + dislike)}%` }} />
+              <div className="bg-figurative" style={{ width: `${pct(love, love + partly + dislike)}%` }} />
+              <div className="bg-figurative/40" style={{ width: `${pct(partly, love + partly + dislike)}%` }} />
+              <div className="bg-navy-600" style={{ width: `${pct(dislike, love + partly + dislike)}%` }} />
             </div>
             {[...new Set(notes)].slice(0, 2).map((n) => (
               <p key={n} className="text-ink-faint">
-                👇 &ldquo;{n}&rdquo;
+                &ldquo;{n}&rdquo;
               </p>
             ))}
           </div>
@@ -603,11 +605,13 @@ function Insights({ data }: { data: SampleCohort }) {
       const rs = data.reactions.filter((r) => r.feature === f);
       return pct(rs.filter((r) => r.reaction === "love").length, rs.length);
     };
-    const ranked = Object.keys(FEATURE_NAME).sort((a, b) => love(a) - love(b));
-    out.push({
+    const ranked = Object.keys(FEATURE_NAME)
+      .filter((f) => data.reactions.some((r) => r.feature === f))
+      .sort((a, b) => love(a) - love(b));
+    if (ranked.length) out.push({
       title: `${FEATURE_NAME[ranked.at(-1)!]} is the favourite; ${FEATURE_NAME[ranked[0]]} the least loved`,
-      detail: `${love(ranked.at(-1)!)}% 🔥 against ${love(ranked[0])}% 🔥.`,
-      suggestion: `Read the 👇 notes on ${FEATURE_NAME[ranked[0]].toLowerCase()} before adding anything new to it.`,
+      detail: `${love(ranked.at(-1)!)}% 👌 against ${love(ranked[0])}% 👌.`,
+      suggestion: `Read the 🤏 and 👎 notes on ${FEATURE_NAME[ranked[0]].toLowerCase()} before adding anything new to it.`,
     });
 
     const topic = [...data.questions.reduce((m, q) => m.set(q.topic, (m.get(q.topic) ?? 0) + 1), new Map<string, number>())].sort(
