@@ -9,49 +9,92 @@ import { useEffect, useRef } from "react";
 // on something nobody could make out), never for anyone who asked for
 // less motion, and it plays only while the fold is on screen.
 //
-// The softness is baked into the film itself, and the dimming is plain
-// opacity on the wrapper - never a CSS filter on the <video>. With a
-// filter on a playing video, Chrome on some Windows graphics drivers
-// drew the first frame and then dropped the layer: half a second of
-// film, then nothing.
+// It is PAINTED, frame by frame, onto a canvas - the <video> itself is
+// never on screen. A playing video is handed to the graphics card as its
+// own layer, and on some Windows drivers that layer, under a mask and
+// dimmed, showed for a moment and then vanished (with or without a CSS
+// filter on it). A canvas is ordinary drawing: masks and opacity on it
+// behave everywhere. The softness is baked into the film itself.
+
+const MASK = "radial-gradient(50% 50% at 50% 50%, #000 55%, transparent 100%)";
 
 export function FoldBackdrop({ src, poster }: { src: string; poster: string }) {
-  const ref = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const v = ref.current;
-    if (!v) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
     if (!window.matchMedia("(min-width: 1024px)").matches) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) {
-        if (!v.src) v.src = src;
-        v.play().catch(() => {});
-      } else v.pause();
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Off screen, but still decoding: a video that is display:none or
+    // zero-sized is skipped by some browsers.
+    const video = document.createElement("video");
+    video.muted = true;
+    video.loop = true;
+    video.playsInline = true;
+    video.preload = "auto";
+    video.setAttribute("aria-hidden", "true");
+    Object.assign(video.style, {
+      position: "fixed",
+      left: "-10000px",
+      top: "0",
+      width: "160px",
+      height: "90px",
+      opacity: "0",
+      pointerEvents: "none",
     });
-    io.observe(v);
-    return () => io.disconnect();
+    document.body.appendChild(video);
+
+    let raf = 0;
+    let visible = false;
+    const draw = () => {
+      if (video.readyState >= 2) {
+        if (canvas.width !== video.videoWidth) {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+        }
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      }
+      if (visible) raf = requestAnimationFrame(draw);
+    };
+
+    const io = new IntersectionObserver(([e]) => {
+      visible = e.isIntersecting;
+      cancelAnimationFrame(raf);
+      if (visible) {
+        if (!video.src) video.src = src;
+        video.play().catch(() => {});
+        raf = requestAnimationFrame(draw);
+      } else video.pause();
+    });
+    io.observe(canvas);
+    return () => {
+      io.disconnect();
+      cancelAnimationFrame(raf);
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
+      video.remove();
+    };
   }, [src]);
 
   return (
     <div
       aria-hidden
       className="pointer-events-none absolute inset-0 -z-10 hidden overflow-hidden opacity-[0.28] lg:block"
-      style={{
-        maskImage:
-          "radial-gradient(50% 50% at 50% 50%, #000 55%, transparent 100%)",
-        WebkitMaskImage:
-          "radial-gradient(50% 50% at 50% 50%, #000 55%, transparent 100%)",
-      }}
+      style={{ maskImage: MASK, WebkitMaskImage: MASK }}
     >
-      <video
-        ref={ref}
-        poster={poster}
-        muted
-        loop
-        playsInline
-        preload="none"
-        className="size-full object-cover"
+      {/* The poster sits under the canvas until the first frame lands. */}
+      <div
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: `url(${poster})` }}
+      />
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 size-full object-cover"
       />
     </div>
   );

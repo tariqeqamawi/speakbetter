@@ -113,10 +113,10 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
               <HeroLion className="h-28 w-auto sm:h-36" />
               <Soundwave variant="hero" className="-mt-2 h-10 w-full sm:h-12" />
             </div>
-            <div className="flex flex-col items-center gap-2 lg:col-span-2 lg:row-start-1 lg:mb-5">
-              <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl lg:text-[2.75rem] lg:leading-tight">
-                Overcome Shyness, Remove Filler Words, And Tell Your Stories
-                More Powerfully On Video
+            <div className="mb-4 flex flex-col items-center gap-2.5 lg:col-span-2 lg:row-start-1 lg:mb-5">
+              <h1 className="text-[1.6rem] font-semibold leading-tight tracking-tight text-balance sm:text-4xl lg:text-[2.75rem]">
+                Remove Filler Words And Tell Your Stories More Powerfully On
+                Video
               </h1>
               <p className="flex flex-wrap justify-center gap-x-1.5 text-xs font-semibold uppercase tracking-wider text-ink-muted sm:text-sm">
                 {[

@@ -8,7 +8,8 @@ import { RoarMark } from "@/components/roar-mark";
 // time: the name cascading in, letter by letter, a line on what they want
 // from it, and their photo large beside it. It moves on by itself once
 // it's on screen, waits while the mouse is over it, and the bars under
-// the line jump straight to anyone.
+// the line jump straight to anyone. On a phone a thumb swipe steps
+// through them too.
 
 const ROLES = [
   {
@@ -54,6 +55,11 @@ const STEP = 3600; // ms each person is shown
 export function PerfectFor() {
   const ref = useRef<HTMLElement>(null);
   const [at, setAt] = useState(0);
+  // A thumb swipe: where it started, to tell a sideways flick from a
+  // scroll down the page.
+  const touch = useRef<{ x: number; y: number } | null>(null);
+  const step = (by: number) =>
+    setAt((i) => (i + by + ROLES.length) % ROLES.length);
   const [seen, setSeen] = useState(false);
   const [held, setHeld] = useState(false);
 
@@ -80,7 +86,22 @@ export function PerfectFor() {
       ref={ref}
       onMouseEnter={() => setHeld(true)}
       onMouseLeave={() => setHeld(false)}
-      className="mx-auto grid w-full max-w-6xl items-center gap-8 lg:grid-cols-2 lg:gap-14"
+      onTouchStart={(e) => {
+        const t = e.touches[0];
+        touch.current = { x: t.clientX, y: t.clientY };
+      }}
+      onTouchEnd={(e) => {
+        const from = touch.current;
+        touch.current = null;
+        if (!from) return;
+        const t = e.changedTouches[0];
+        const dx = t.clientX - from.x;
+        const dy = t.clientY - from.y;
+        // Sideways and far enough to mean it - not a scroll.
+        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5)
+          step(dx < 0 ? 1 : -1);
+      }}
+      className="mx-auto grid w-full max-w-6xl touch-pan-y items-center gap-8 lg:grid-cols-2 lg:gap-14"
     >
       <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
         <RoarMark className="mb-4 h-20 w-auto sm:h-24" />
