@@ -24,15 +24,15 @@ export const LANDING_SECTIONS = [
  *  are its folds - on a laptop, each fills the screen. */
 export const LANDING_V_SECTIONS = [
   { id: "overview", label: "Overview" },
-  { id: "for-you", label: "Is it for you?" },
-  { id: "made-for", label: "Who it's made for" },
-  { id: "try", label: "Try it free" },
-  { id: "how", label: "How it works" },
-  { id: "app", label: "The app" },
+  { id: "for-you", label: "Is It For You?" },
+  { id: "made-for", label: "Who It's Made For" },
+  { id: "try", label: "Try It Free" },
+  { id: "how", label: "How It Works" },
+  { id: "app", label: "The App" },
   { id: "coach", label: "Meet Coach" },
-  { id: "live", label: "Live sessions" },
-  { id: "challenges", label: "The challenges" },
-  { id: "lessons", label: "The lessons" },
+  { id: "live", label: "Live Sessions" },
+  { id: "challenges", label: "The Challenges" },
+  { id: "lessons", label: "The Lessons" },
   { id: "pricing", label: "Pricing" },
 ] as const;
 

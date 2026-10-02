@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { RoarMark } from "@/components/roar-mark";
 
-// "Speak Better is perfect for..." and then the people it's for, one at a
+// "Speak Better Is Perfect For..." and then the people it's for, one at a
 // time: the name cascading in, letter by letter, a line on what they want
 // from it, and their photo large beside it. It moves on by itself once
 // it's on screen, waits while the mouse is over it, and the bars under

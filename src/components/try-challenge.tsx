@@ -51,7 +51,9 @@ export function TryChallenge() {
         <span className="rounded-full border border-mindset/50 bg-mindset/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-mindset">
           Free
         </span>
-        <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">Try the first challenge - Coach reviews it</h2>
+        <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+          Try The First Challenge - Coach Reviews It
+        </h2>
         <p className="text-ink-muted text-balance">
           {spent
             ? "You've had your free review. The rest of the challenges - and Coach on every one - are inside."
@@ -67,7 +69,10 @@ export function TryChallenge() {
           Join to keep going
         </Link>
       ) : (
-        <div className="w-full max-w-xl rounded-2xl border border-navy-600 bg-navy-900/60 p-4 sm:p-5" data-track="try">
+        <div
+          className="w-full max-w-xl rounded-2xl border border-navy-600 bg-navy-900/60 p-4 sm:p-5"
+          data-track="try"
+        >
           <PracticePanel challenge={challenge} bar={false} trial />
         </div>
       )}

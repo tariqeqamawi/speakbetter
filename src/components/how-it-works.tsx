@@ -27,7 +27,7 @@ const STEPS = [
   {
     n: 1,
     image: "/how/watch-2.webp",
-    title: "Watch the challenge",
+    title: "Watch The Challenge",
     line: "A short brief, on camera, saying exactly what this one asks of you.",
     Icon: PlayFillIcon,
     color: "text-structure",
@@ -35,7 +35,7 @@ const STEPS = [
   {
     n: 2,
     image: "/how/record-2.webp",
-    title: "Record yourself speaking",
+    title: "Record Yourself Speaking",
     line: "In the app, with the brief and a countdown on screen. One to two minutes.",
     Icon: VideoIcon,
     color: "text-acting",
@@ -43,7 +43,7 @@ const STEPS = [
   {
     n: 3,
     image: "/how/upload-2.webp",
-    title: "Upload your take for Coach",
+    title: "Upload Your Take For Coach",
     line: "One tap. Nobody else ever sees the video - it stays yours.",
     Icon: UploadIcon,
     color: "text-figurative",
@@ -51,7 +51,7 @@ const STEPS = [
   {
     n: 4,
     image: "/how/feedback-2.webp",
-    title: "Receive detailed feedback",
+    title: "Receive Detailed Feedback",
     line: "Coach the lion watches it and talks you through what landed and what didn't.",
     Icon: null,
     color: "text-storytelling",
@@ -59,7 +59,7 @@ const STEPS = [
   {
     n: 5,
     image: "/how/improve-2.webp",
-    title: "Improve quickly",
+    title: "Improve Quickly",
     line: "Do it again, better, the same day - which is the part videos alone can never give you.",
     Icon: TrendingUpIcon,
     color: "text-mindset",
@@ -70,7 +70,10 @@ export function HowItWorks() {
   return (
     // The middle step arrives first and the rest open out from it, to
     // the left and right.
-    <Reveal as="ol" className="grid w-full max-w-4xl gap-3 sm:grid-cols-2 lg:grid-cols-5">
+    <Reveal
+      as="ol"
+      className="grid w-full max-w-4xl gap-3 sm:grid-cols-2 lg:grid-cols-5"
+    >
       {STEPS.map(({ n, title, line, Icon, color, image }) => (
         <li
           key={n}
@@ -79,19 +82,37 @@ export function HowItWorks() {
         >
           {/* The step, pictured. */}
           <span className="relative -mx-4 -mt-4 mb-1 block aspect-[4/3] self-stretch overflow-hidden">
-            <Image src={image} alt="" fill sizes="(min-width: 1024px) 20vw, (min-width: 640px) 50vw, 100vw" className="object-cover" />
+            <Image
+              src={image}
+              alt=""
+              fill
+              sizes="(min-width: 1024px) 20vw, (min-width: 640px) 50vw, 100vw"
+              className="object-cover"
+            />
           </span>
           <span className="flex items-center gap-2.5 lg:flex-col lg:gap-1.5">
-            <span className={`flex size-9 items-center justify-center ${color}`}>
-              {Icon ? <Icon className="size-6" /> : <CoachMark className="size-9" />}
+            <span
+              className={`flex size-9 items-center justify-center ${color}`}
+            >
+              {Icon ? (
+                <Icon className="size-6" />
+              ) : (
+                <CoachMark className="size-9" />
+              )}
             </span>
             {/* In the step's own colour, held back. In navy-600 it
                 was a shade off the card it sat on and read as a
                 smudge - and the whole point of numbering these is
                 that the ORDER is legible at a glance. */}
-            <span className={`text-2xl font-black tabular-nums leading-none opacity-60 ${color}`}>{n}</span>
+            <span
+              className={`text-2xl font-black tabular-nums leading-none opacity-60 ${color}`}
+            >
+              {n}
+            </span>
           </span>
-          <span className="text-sm font-bold leading-tight text-ink">{title}</span>
+          <span className="text-sm font-bold leading-tight text-ink">
+            {title}
+          </span>
           <span className="text-xs leading-snug text-ink-muted">{line}</span>
         </li>
       ))}

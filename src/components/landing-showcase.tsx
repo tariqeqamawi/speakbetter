@@ -95,7 +95,7 @@ export function HowItWorksSection() {
     <div className="flex flex-col gap-14">
       <section className="flex w-full flex-col items-center gap-5">
         <h2 className="max-w-2xl text-center text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-          How it works
+          How It Works
         </h2>
         <HowItWorks />
         <ul className="flex flex-col items-center gap-1.5 text-sm text-ink-muted sm:flex-row sm:gap-6">
@@ -116,7 +116,7 @@ export function HowItWorksSection() {
       <section className="flex flex-col items-center gap-6">
         <div className="flex max-w-2xl flex-col items-center gap-2 text-center">
           <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
-            This is how you actually record yourself
+            This Is How You Actually Record Yourself
           </h2>
           {/* One line showing; the rest behind the arrow beside "record". */}
           <details className="group text-ink-muted">
@@ -156,7 +156,7 @@ export function WhatsInTheApp() {
       {/* The app in action - short films of the real pages. */}
       <section className="flex flex-col items-center gap-4">
         <h2 className="text-2xl font-semibold tracking-tight">
-          See the app in action
+          See The App In Action
         </h2>
         <p className="max-w-xl text-center text-ink-muted text-balance">
           Your challenges as a 3D adventure or a 2D map, color-coded skills you

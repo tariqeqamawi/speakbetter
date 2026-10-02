@@ -121,9 +121,9 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
                 {[
                   "83 Lessons",
                   "25 Challenges",
-                  "8 Colors",
+                  "8 Colors Of Feedback",
                   "An AI Coach",
-                  "6 Weeks",
+                  "6 Weeks Live",
                 ].map((fact, i) => (
                   <span key={fact} className="whitespace-nowrap">
                     {fact}
@@ -189,22 +189,22 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
             </div>
             <div className="flex flex-col items-center gap-5 lg:col-start-1 lg:row-start-1">
               <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
-                This is for you if you&hellip;
+                This Is For You If&hellip;
               </h2>
               <ul className="grid w-full max-w-2xl gap-2.5 text-left sm:grid-cols-2">
                 {[
-                  "Get shy or nervous talking on camera",
-                  "Use a lot of filler words - the ums and ahs",
-                  "Lose your place mid-sentence",
-                  "Find it difficult talking to a phone or camera",
-                  "Ramble and go off on tangents",
-                  "Want to talk about your product or service without sounding salesy",
-                  "Want the confidence to go live on your socials",
-                  "Want to tell your stories more powerfully",
+                  "You get shy or nervous talking on camera",
+                  "You use a lot of filler words - the ums and ahs",
+                  "You lose your place mid-sentence",
+                  "You find it difficult talking to a phone or camera",
+                  "You ramble and go off on tangents",
+                  "You want to talk about your product or service without sounding salesy",
+                  "You want the confidence to go live on your socials",
+                  "You want to tell your stories more powerfully",
                 ].map((line) => {
                   // The problems get a caution mark - "this is what's going
                   // wrong" - and what they want keeps the green tick.
-                  const want = line.startsWith("Want");
+                  const want = line.startsWith("You want");
                   return (
                     <li
                       key={line}
@@ -272,7 +272,9 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
         </div>
 
         {/* The app on film, four things at a glance: the lessons, the
-            deck of cards, the dashboard and a challenge. */}
+            deck of cards, the dashboard and a challenge. On a laptop the
+            phones grow with the screen's height - as big as the fold
+            allows with the heading and captions still on it. */}
         <div
           id="app"
           data-landing-section
@@ -281,32 +283,35 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
           <SectionMark id="app" sections={LANDING_V_SECTIONS} anchor={false} />
           <section className="flex flex-col items-center gap-6">
             <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-              See the app in action
+              See The App In Action
             </h2>
             <div className="-mx-4 flex w-[calc(100%+2rem)] snap-x snap-mandatory justify-start gap-6 overflow-x-auto px-4 pb-2 [scrollbar-width:none] lg:mx-0 lg:w-full lg:justify-center lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden">
               {[
                 {
                   src: "/film/landing-lesson",
-                  title: "83 lessons",
+                  title: "83 Lessons",
                   line: "1-2 minutes each, in eight colors",
                 },
                 {
                   src: "/film/landing-deck",
-                  title: "Digital flashcards",
+                  title: "Digital Flashcards",
                   line: "Deal a spread - the recipe for a talk",
                 },
                 {
                   src: "/film/tour-dashboard",
-                  title: "Gamified dashboard",
+                  title: "Gamified Dashboard",
                   line: "XP, ranks, streaks and trophies",
                 },
                 {
-                  src: "/film/tour-challenge",
-                  title: "Interactive challenges",
+                  src: "/film/landing-challenge",
+                  title: "Interactive Challenges",
                   line: "Record a take - Coach reviews it",
                 },
               ].map((f) => (
-                <div key={f.src} className="w-44 shrink-0 snap-center xl:w-48">
+                <div
+                  key={f.src}
+                  className="w-52 shrink-0 snap-center lg:w-[min(16.5rem,calc((100svh-370px)/2.12))]"
+                >
                   <Phone
                     label={`${f.title} - ${f.line}`}
                     caption={
@@ -439,7 +444,7 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
         <SectionMark id="lessons" sections={LANDING_V_SECTIONS} />
         <section className="flex flex-col items-center gap-4 text-center">
           <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            83 lessons, 1-2 minutes each
+            83 Lessons, 1-2 Minutes Each
           </h2>
           <LessonStack />
         </section>
@@ -480,7 +485,7 @@ export function LandingV({ variant }: { variant: "a" | "b" }) {
               {foundingCohort.headline}
             </span>
             <h2 className="text-2xl font-semibold tracking-tight text-balance">
-              Three tiers, by how much support you want
+              Three Tiers, By How Much Support You Want
             </h2>
             <p className="text-xs text-ink-muted">
               14-day money-back guarantee, for any reason.
