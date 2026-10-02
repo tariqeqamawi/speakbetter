@@ -62,8 +62,8 @@ export function NeonTracer() {
       // faint haze and a narrower glow - no hard core, the colours
       // shading into each other along it.
       for (const [width, alpha, blur] of [
-        [9, 0.05, 18],
-        [3, 0.12, 10],
+        [13, 0.05, 20],
+        [4.5, 0.12, 11],
       ] as const) {
         for (let i = 2; i < pts.length; i++) {
           const p0 = pts[i - 2];
@@ -75,8 +75,10 @@ export function NeonTracer() {
           ctx.strokeStyle = color;
           ctx.shadowColor = color;
           ctx.shadowBlur = blur;
-          ctx.globalAlpha = alpha * life * k;
-          ctx.lineWidth = width * (0.4 + 0.6 * k);
+          // Tapered: full width at the cursor, narrowing to nothing at
+          // the tail.
+          ctx.globalAlpha = alpha * life * Math.pow(k, 1.3);
+          ctx.lineWidth = width * Math.pow(k, 1.6);
           ctx.beginPath();
           // Through the midpoints: a curve, not a chain of segments.
           ctx.moveTo((p0.x + p1.x) / 2, (p0.y + p1.y) / 2);
