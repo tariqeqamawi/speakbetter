@@ -42,6 +42,29 @@ const TAIL = Array.from({ length: 7 }, (_, i) => ({
   opacity: 0.62 * Math.pow(0.72, i),
 }));
 
+/** The ring, smoothed: each colour pure where its node sits, blending
+ *  into its neighbours on either side, so the ring flows all the way
+ *  round whatever order the colours are in. Drawn as short arcs, each a
+ *  mix of the two nearest colours - exact along the curve, where one
+ *  gradient across a curved path would only approximate it. */
+const STEPS_PER_COLOUR = 12;
+const RING = Array.from({ length: categories.length * STEPS_PER_COLOUR }, (_, k) => {
+  const step = NODE_ANGLE / STEPS_PER_COLOUR;
+  const from = k * step;
+  // Where this piece's middle sits between two node centres.
+  const t = (from + step / 2 - NODE_ANGLE / 2) / NODE_ANGLE;
+  const i = ((Math.floor(t) % categories.length) + categories.length) % categories.length;
+  const f = t - Math.floor(t);
+  const a = categories[i].id;
+  const b = categories[(i + 1) % categories.length].id;
+  return {
+    from,
+    // A hair of overlap, so no seam shows between pieces.
+    to: from + step + 0.4,
+    colour: `color-mix(in oklab, var(--color-${a}) ${Math.round((1 - f) * 100)}%, var(--color-${b}))`,
+  };
+});
+
 function polar(angleDeg: number, r: number): { x: number; y: number } {
   const rad = ((angleDeg - 90) * Math.PI) / 180;
   return { x: 50 + r * Math.cos(rad), y: 50 + r * Math.sin(rad) };
@@ -165,17 +188,17 @@ export function SkillDial() {
         className="absolute inset-0 h-full w-full"
         aria-hidden
       >
-        {categories.map((cat, i) => (
-          <path
-            key={cat.id}
-            d={arcPath(i * NODE_ANGLE, (i + 1) * NODE_ANGLE, ARC_R)}
-            fill="none"
-            stroke={`var(--color-${cat.id})`}
-            strokeWidth={1}
-            opacity={hovered ? 0.18 : 0.3}
-            className="transition-opacity duration-300"
-          />
-        ))}
+        <g opacity={hovered ? 0.18 : 0.3} className="transition-opacity duration-300">
+          {RING.map((piece) => (
+            <path
+              key={piece.from}
+              d={arcPath(piece.from, piece.to, ARC_R)}
+              fill="none"
+              style={{ stroke: piece.colour }}
+              strokeWidth={1}
+            />
+          ))}
+        </g>
         <circle
           cx="50"
           cy="50"

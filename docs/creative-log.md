@@ -15,6 +15,12 @@ The full history up to 1 Oct 2026 is in the Creative Developer AI case study
 
 ## Entries (newest first)
 
+### 2026-10-02 - The dial's ring, smoothed
+- **What changed:** The ring under the dial used to be eight solid arcs. It is now a continuous blend: each colour is pure at its node and mixes into its neighbours on either side (96 short arcs mixed in oklab).
+- **Why:** Putting the dial in learning order broke the rainbow flow, leaving hard jumps between unrelated colours. Tariq: "Keep the ring's dial colors smoothed."
+- **Effect:** The ring reads as one wheel again. Voice to Tell and Pro to Presence pass through muted mid-tones, because those colours sit opposite each other.
+- **Reversible?:** Yes.
+
 ### 2026-10-02 - A lock always says how to open it; the dial follows the sequence
 - **What changed:** Opening a locked colour or lesson (from the dial, the grid, the colour menus, search, or a link) no longer just redirects. A notice appears: "Act is locked. The colors open one at a time. Watch 3 more Presence lessons to unlock Body next - Act opens after that, in order." It has a "Watch Presence lessons" button. The dial is back while colours are locked, now in learning order clockwise from Presence at the top, with a lock on each closed colour. The hub shows "Opens after 5 Body lessons" when you point at one. Skills only jumps straight to Presence on a brand-new student's first visit.
 - **Why:** Tariq: "if somebody tries to open a lesson that's locked, have a message come up... and tell them what they need to watch next to unlock", and "the dial follows the same sequence so you can see the dial there but you can't access the lessons." A silent redirect felt like being bounced without knowing why.
