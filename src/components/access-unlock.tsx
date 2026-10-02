@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { InstallGuide } from "@/components/install-guide";
 import { useStore } from "@/lib/store";
 import { adoptStudentId } from "@/lib/student-id";
 import { tiers, type Plan } from "@/data/pricing";
@@ -18,6 +20,7 @@ export function AccessUnlock({ plan, studentId }: { plan: Plan; studentId: strin
   const done = useRef(false);
   const [saved, setSaved] = useState<string | null>(null);
   const tier = tiers.find((t) => t.id === plan);
+  const router = useRouter();
 
   useEffect(() => {
     if (!ready || done.current) return;
@@ -34,6 +37,15 @@ export function AccessUnlock({ plan, studentId }: { plan: Plan; studentId: strin
   }, [ready, plan, studentId, unlock]);
 
   const next = state.level ? "/challenges" : "/welcome";
+
+  // Opened from the home-screen icon (whose start is this link): unlock
+  // and go straight in - no welcome page every time the app is tapped.
+  useEffect(() => {
+    if (!ready) return;
+    const installed =
+      window.matchMedia("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
+    if (installed) router.replace(next);
+  }, [ready, next, router]);
 
   return (
     <main className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center gap-5 px-4 text-center">
@@ -64,6 +76,7 @@ export function AccessUnlock({ plan, studentId }: { plan: Plan; studentId: strin
         <span className="cta-neon-glow rounded-xl" aria-hidden />
         <span className="cta-neon block rounded-xl px-9 py-4 text-base">Open Speak Better</span>
       </Link>
+      <InstallGuide />
     </main>
   );
 }

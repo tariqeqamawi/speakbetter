@@ -4,7 +4,17 @@ import { stripe, stripeEnabled } from "@/lib/stripe/config";
 import { isPlan } from "@/data/pricing";
 import { AccessUnlock } from "@/components/access-unlock";
 
-export const metadata: Metadata = { title: "Welcome back", robots: { index: false } };
+// The buyer's own manifest, so "Add to Home Screen" here makes an icon
+// that opens this link (manifest.webmanifest/route.ts says why).
+export async function generateMetadata({ params }: { params: Promise<{ session: string }> }): Promise<Metadata> {
+  const { session } = await params;
+  return {
+    title: "Welcome back",
+    robots: { index: false },
+    manifest: `/access/${session}/manifest.webmanifest`,
+    appleWebApp: { capable: true, title: "Speak Better", statusBarStyle: "black-translucent" },
+  };
+}
 
 // A buyer's access link (components/access-link.tsx): the Stripe session
 // they paid with, checked with Stripe here on the server - a link anybody
